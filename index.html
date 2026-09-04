@@ -40,7 +40,6 @@
             font-size: 1.2rem;
         }
 
-        /* Container de Autenticação Otimizado para Mobile */
         .auth-container {
             max-width: 400px;
             margin: 20px auto;
@@ -62,6 +61,7 @@
             background-color: #e55757;
             padding: 8px 14px;
             font-size: 0.85rem;
+            width: auto !important;
         }
 
         .link-toggle {
@@ -75,7 +75,6 @@
             padding: 5px;
         }
 
-        /* Entradas de Texto (Tamanho de fonte 16px previne zoom no celular) */
         input, select, textarea {
             width: 100%;
             padding: 12px;
@@ -108,16 +107,12 @@
             touch-action: manipulation;
         }
 
-        button:hover {
-            background-color: #996dff;
+        button:active {
+            opacity: 0.8;
         }
 
         .btn-ia {
             background-color: #00b37e;
-        }
-
-        .btn-ia:hover {
-            background-color: #00e6a3;
         }
 
         .btn-limpar {
@@ -139,13 +134,15 @@
             button {
                 width: auto;
             }
+            .auth-container button {
+                width: 100%;
+            }
         }
 
         .campo {
             flex: 1;
         }
 
-        /* Abas */
         .abas-container {
             display: flex;
             gap: 10px;
@@ -171,7 +168,6 @@
             border-color: #8257e5;
         }
 
-        /* Resumo Cards */
         .grid-resumo {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
@@ -202,7 +198,6 @@
         .card-estatistica strong.verde { color: #00b37e; }
         .card-estatistica strong.vermelho { color: #f75a68; }
 
-        /* Cronômetro */
         #tempo {
             font-size: 3rem;
             text-align: center;
@@ -217,7 +212,6 @@
             justify-content: center;
         }
 
-        /* Tabelas com rolagem horizontal no celular */
         .tabela-wrapper {
             width: 100%;
             overflow-x: auto;
@@ -289,7 +283,7 @@
             font-size: 0.75rem;
             background: #e55757;
             border-radius: 4px;
-            width: auto;
+            width: auto !important;
         }
 
         .status-loading {
@@ -313,9 +307,9 @@
     <div id="secao-auth" class="card auth-container">
         <div id="form-login">
             <h2 style="text-align: center;">Acessar Painel</h2>
-            <input type="text" id="login-username" placeholder="Nome de Usuário" required autocomplete="username">
-            <input type="password" id="login-senha" placeholder="Senha" required autocomplete="current-password">
-            <button onclick="fazerLogin()">Entrar</button>
+            <input type="text" id="login-username" placeholder="Nome de Usuário" autocapitalize="none" autocorrect="off">
+            <input type="password" id="login-senha" placeholder="Senha">
+            <button type="button" onclick="fazerLogin()">Entrar</button>
             
             <span class="link-toggle" onclick="alternarTelaAuth('cadastro')">Não tem conta? Cadastre-se</span>
             <span class="link-toggle" onclick="alternarTelaAuth('recuperar')" style="color: #a8a8b3; font-size: 0.8rem;">Esqueci minha senha</span>
@@ -323,18 +317,18 @@
 
         <div id="form-cadastro" style="display: none;">
             <h2 style="text-align: center;">Criar Conta</h2>
-            <input type="text" id="cad-username" placeholder="Escolha um Nome de Usuário" required autocomplete="username">
-            <input type="password" id="cad-senha" placeholder="Senha (mínimo 6 caracteres)" required autocomplete="new-password">
-            <input type="email" id="cad-email-recuperacao" placeholder="E-mail de Recuperação (Gmail, etc.)" required autocomplete="email">
-            <button onclick="fazerCadastro()">Cadastrar</button>
+            <input type="text" id="cad-username" placeholder="Escolha um Nome de Usuário" autocapitalize="none" autocorrect="off">
+            <input type="password" id="cad-senha" placeholder="Senha (mínimo 6 caracteres)">
+            <input type="email" id="cad-email-recuperacao" placeholder="E-mail de Recuperação (Gmail, etc.)" autocapitalize="none" autocorrect="off">
+            <button type="button" id="btn-cadastrar-trigger" onclick="fazerCadastro()">Cadastrar</button>
             <span class="link-toggle" onclick="alternarTelaAuth('login')">Já tem conta? Faça Login</span>
         </div>
 
         <div id="form-recuperar" style="display: none;">
             <h2 style="text-align: center;">Recuperar Senha</h2>
             <p style="font-size: 0.85rem; color: #a8a8b3;">Digite seu nome de usuário. Enviaremos o link para o e-mail cadastrado na sua conta.</p>
-            <input type="text" id="rec-username" placeholder="Seu Nome de Usuário" required>
-            <button onclick="recuperarSenha()">Enviar Link de Recuperação</button>
+            <input type="text" id="rec-username" placeholder="Seu Nome de Usuário" autocapitalize="none" autocorrect="off">
+            <button type="button" onclick="recuperarSenha()">Enviar Link de Recuperação</button>
             <span class="link-toggle" onclick="alternarTelaAuth('login')">Voltar ao Login</span>
         </div>
     </div>
@@ -394,7 +388,7 @@
                         <input type="text" id="plan-topico" placeholder="Ex: Controle de Constitucionalidade">
                     </div>
                 </div>
-                <button onclick="adicionarPlanejamento()">Adicionar ao Planejamento</button>
+                <button type="button" onclick="adicionarPlanejamento()">Adicionar ao Planejamento</button>
             </div>
 
             <div id="modo-planejamento-ia" style="display: none;">
@@ -406,7 +400,7 @@
                 <label>Texto do Edital:</label>
                 <textarea id="ia-edital-texto" placeholder="Cole o conteúdo do edital aqui..."></textarea>
 
-                <button class="btn-ia" onclick="processarEditalComIA()">⚡ Gerar Estrutura com IA</button>
+                <button type="button" class="btn-ia" onclick="processarEditalComIA()">⚡ Gerar Estrutura com IA</button>
                 <div id="ia-loading" class="status-loading">⏳ A IA está analisando o edital... Aguarde!</div>
             </div>
 
@@ -418,9 +412,9 @@
             <h2>2. Cronômetro de Estudo</h2>
             <div id="tempo">00:00:00</div>
             <div class="acoes-cronometro">
-                <button onclick="iniciarCronometro()">Iniciar</button>
-                <button onclick="pausarCronometro()">Pausar</button>
-                <button onclick="finalizarSessao()">Finalizar</button>
+                <button type="button" onclick="iniciarCronometro()">Iniciar</button>
+                <button type="button" onclick="pausarCronometro()">Pausar</button>
+                <button type="button" onclick="finalizarSessao()">Finalizar</button>
             </div>
         </div>
 
@@ -507,7 +501,7 @@
                     <tbody id="tabela-historico"></tbody>
                 </table>
             </div>
-            <button class="btn-limpar" onclick="limparHistorico()">Limpar Histórico</button>
+            <button type="button" class="btn-limpar" onclick="limparHistorico()">Limpar Histórico</button>
         </div>
 
     </div>
@@ -578,8 +572,8 @@
         });
 
         function fazerLogin() {
-            const userRaw = document.getElementById('login-username').value;
-            const senha = document.getElementById('login-senha').value;
+            const userRaw = document.getElementById('login-username').value.trim();
+            const senha = document.getElementById('login-senha').value.trim();
 
             if (!userRaw || !senha) {
                 alert("Preencha o nome de usuário e a senha!");
@@ -587,18 +581,19 @@
             }
 
             const emailVirtual = formatarEmailUsuario(userRaw);
-            auth.signInWithEmailAndPassword(emailVirtual, senha).catch(() => {
+            auth.signInWithEmailAndPassword(emailVirtual, senha).catch((err) => {
                 alert("Usuário ou senha incorretos!");
             });
         }
 
         function fazerCadastro() {
-            const userRaw = document.getElementById('cad-username').value;
-            const senha = document.getElementById('cad-senha').value;
+            const btn = document.getElementById('btn-cadastrar-trigger');
+            const userRaw = document.getElementById('cad-username').value.trim();
+            const senha = document.getElementById('cad-senha').value.trim();
             const emailRec = document.getElementById('cad-email-recuperacao').value.trim();
 
             if (!userRaw || !senha || !emailRec) {
-                alert("Preencha o nome de usuário, a senha e o e-mail!");
+                alert("Por favor, preencha TODOS os campos (Usuário, Senha e E-mail)!");
                 return;
             }
 
@@ -607,12 +602,17 @@
                 return;
             }
 
+            btn.disabled = true;
+            btn.innerText = "Criando conta...";
+
             const emailVirtual = formatarEmailUsuario(userRaw);
-            const userKey = userRaw.trim().toLowerCase().replace(/[^a-z0-9]/g, "");
+            const userKey = userRaw.toLowerCase().replace(/[^a-z0-9]/g, "");
 
             db.ref('mapa_recuperacao/' + userKey).once('value').then((snapshot) => {
                 if (snapshot.exists()) {
                     alert("Este nome de usuário já está sendo utilizado.");
+                    btn.disabled = false;
+                    btn.innerText = "Cadastrar";
                     return;
                 }
 
@@ -627,9 +627,17 @@
                     });
 
                     alert("Conta criada com sucesso!");
+                    btn.disabled = false;
+                    btn.innerText = "Cadastrar";
                 }).catch((err) => {
                     alert("Erro ao cadastrar: " + err.message);
+                    btn.disabled = false;
+                    btn.innerText = "Cadastrar";
                 });
+            }).catch((err) => {
+                alert("Erro ao conectar ao servidor. Verifique sua conexão!");
+                btn.disabled = false;
+                btn.innerText = "Cadastrar";
             });
         }
 
@@ -651,7 +659,7 @@
                 const emailReal = snapshot.val().emailReal;
 
                 auth.sendPasswordResetEmail(emailReal).then(() => {
-                    alert(`Um link de redefinição de senha foi enviado para ${emailReal}!`);
+                    alert(`Um link de redefinição foi enviado para ${emailReal}!`);
                     alternarTelaAuth('login');
                 }).catch((err) => {
                     alert("Erro ao enviar e-mail: " + err.message);
@@ -732,296 +740,4 @@
                 }
 
                 let respostaTexto = data.candidates[0].content.parts[0].text;
-                respostaTexto = respostaTexto.replace(/```json/g, '').replace(/```/g, '').trim();
-
-                const novasMaterias = JSON.parse(respostaTexto);
-
-                novasMaterias.forEach(itemNova => {
-                    let itemExistente = planejamento.find(item => item.disciplina.toLowerCase() === itemNova.disciplina.toLowerCase());
-                    if (itemExistente) {
-                        itemNova.topicos.forEach(top => {
-                            if (!itemExistente.topicos.includes(top)) {
-                                itemExistente.topicos.push(top);
-                            }
-                        });
-                    } else {
-                        planejamento.push(itemNova);
-                    }
-                });
-
-                refUser.child('planejamento').set(planejamento);
-                alert("Edital processado com sucesso!");
-                document.getElementById('ia-edital-texto').value = '';
-                alternarModoPlanejamento('manual');
-
-            } catch (err) {
-                document.getElementById('ia-loading').style.display = 'none';
-                alert("Erro ao processar o edital. Verifique a chave de API.");
-            }
-        }
-
-        function alternarCamposMaterial() {
-            let material = document.getElementById("select-material").value;
-            document.getElementById("campo-pdf").style.display = material === "PDF" ? "block" : "none";
-            document.getElementById("campo-video").style.display = material === "Videoaula" ? "block" : "none";
-            document.getElementById("campo-questoes").style.display = material === "Questoes" ? "block" : "none";
-        }
-
-        function adicionarPlanejamento() {
-            let discInput = document.getElementById("plan-disciplina").value.trim();
-            let topicoInput = document.getElementById("plan-topico").value.trim();
-
-            if (discInput === "" || topicoInput === "") {
-                alert("Preencha a disciplina e o tópico!");
-                return;
-            }
-
-            let itemExistente = planejamento.find(item => item.disciplina.toLowerCase() === discInput.toLowerCase());
-
-            if (itemExistente) {
-                if (!itemExistente.topicos.includes(topicoInput)) {
-                    itemExistente.topicos.push(topicoInput);
-                }
-            } else {
-                planejamento.push({
-                    disciplina: discInput,
-                    topicos: [topicoInput]
-                });
-            }
-
-            refUser.child('planejamento').set(planejamento);
-            document.getElementById("plan-topico").value = "";
-        }
-
-        function renderizarPlanejamento() {
-            let container = document.getElementById("container-planejamento");
-            container.innerHTML = "";
-
-            if (planejamento.length === 0) {
-                container.innerHTML = "<p style='font-size:0.85rem; color:#888;'>Nenhuma matéria ou tópico planejado ainda.</p>";
-                return;
-            }
-
-            planejamento.forEach((item, indexDisc) => {
-                let divPasta = document.createElement("div");
-                divPasta.className = "pasta-materia";
-
-                let topicosHTML = item.topicos.map((topico, indexTop) => `
-                    <div class="item-topico">
-                        <span>• ${topico}</span>
-                        <button class="btn-excluir-materia" onclick="removerTopico(${indexDisc}, ${indexTop})">Excluir Tópico</button>
-                    </div>
-                `).join("");
-
-                divPasta.innerHTML = `
-                    <div class="cabecalho-pasta" onclick="alternarPasta('pasta-${indexDisc}')">
-                        <span>📁 ${item.disciplina} <small style="color:#a8a8b3; font-weight:normal;">(${item.topicos.length})</small></span>
-                        <span>▼</span>
-                    </div>
-                    <div class="conteudo-pasta" id="pasta-${indexDisc}">
-                        ${topicosHTML}
-                        <button class="btn-excluir-materia" style="margin-top:10px; width:100%;" onclick="removerMateria(${indexDisc})">Excluir Matéria Completa</button>
-                    </div>
-                `;
-
-                container.appendChild(divPasta);
-            });
-        }
-
-        function alternarPasta(idPasta) {
-            document.getElementById(idPasta).classList.toggle("aberta");
-        }
-
-        function removerTopico(indexDisc, indexTop) {
-            planejamento[indexDisc].topicos.splice(indexTop, 1);
-            if (planejamento[indexDisc].topicos.length === 0) {
-                planejamento.splice(indexDisc, 1);
-            }
-            refUser.child('planejamento').set(planejamento);
-        }
-
-        function removerMateria(indexDisc) {
-            if (confirm("Deseja realmente excluir toda essa matéria?")) {
-                planejamento.splice(indexDisc, 1);
-                refUser.child('planejamento').set(planejamento);
-            }
-        }
-
-        function atualizarDisciplinasSelect() {
-            let selectDisc = document.getElementById("select-disciplina");
-            selectDisc.innerHTML = '<option value="">Selecione uma disciplina...</option>';
-
-            planejamento.forEach((item) => {
-                let opt = document.createElement("option");
-                opt.value = item.disciplina;
-                opt.innerText = item.disciplina;
-                selectDisc.appendChild(opt);
-            });
-
-            atualizarTopicosSelect();
-        }
-
-        function atualizarTopicosSelect() {
-            let discSelecionada = document.getElementById("select-disciplina").value;
-            let selectTopico = document.getElementById("select-topico");
-            selectTopico.innerHTML = '<option value="">Selecione um tópico...</option>';
-
-            let itemEncontrado = planejamento.find(item => item.disciplina === discSelecionada);
-
-            if (itemEncontrado) {
-                itemEncontrado.topicos.forEach(topico => {
-                    let opt = document.createElement("option");
-                    opt.value = topico;
-                    opt.innerText = topico;
-                    selectTopico.appendChild(opt);
-                });
-            }
-        }
-
-        function formatarTempo(seg) {
-            let hrs = Math.floor(seg / 3600);
-            let mins = Math.floor((seg % 3600) / 60);
-            let secs = seg % 60;
-            return `${hrs < 10 ? "0"+hrs : hrs}:${mins < 10 ? "0"+mins : mins}:${secs < 10 ? "0"+secs : secs}`;
-        }
-
-        function iniciarCronometro() {
-            if (timer !== null) return;
-            timer = setInterval(() => {
-                segundos++;
-                document.getElementById("tempo").innerText = formatarTempo(segundos);
-            }, 1000);
-        }
-
-        function pausarCronometro() {
-            clearInterval(timer);
-            timer = null;
-        }
-
-        function finalizarSessao() {
-            pausarCronometro();
-
-            let disciplina = document.getElementById("select-disciplina").value;
-            let assunto = document.getElementById("select-topico").value;
-            let tipo = document.getElementById("select-tipo").value;
-            let material = document.getElementById("select-material").value;
-            let questoes = parseInt(document.getElementById("input-questoes").value) || 0;
-            let acertos = parseInt(document.getElementById("input-acertos").value) || 0;
-            let tempoFormatado = formatarTempo(segundos);
-
-            if (disciplina === "" || assunto === "") {
-                alert("Por favor, selecione uma disciplina e um tópico!");
-                return;
-            }
-
-            if (segundos === 0) {
-                alert("O tempo estudado precisa ser maior que zero!");
-                return;
-            }
-
-            if (acertos > questoes) {
-                alert("O número de acertos não pode ser maior que o número de questões!");
-                return;
-            }
-
-            let detalheMaterial = "-";
-            if (material === "PDF") {
-                let paginas = document.getElementById("input-paginas").value;
-                detalheMaterial = paginas ? `PDF (${paginas} pág)` : "PDF";
-            } else if (material === "Videoaula") {
-                let videoInfo = document.getElementById("input-video").value;
-                detalheMaterial = videoInfo ? `Vídeo (${videoInfo})` : "Videoaula";
-            } else if (material === "Questoes") {
-                let fonte = document.getElementById("input-fonte-questoes").value;
-                detalheMaterial = fonte ? `Questões (${fonte})` : "Questões";
-            }
-
-            let agora = new Date();
-            let dataHora = agora.toLocaleDateString("pt-BR") + " " + agora.toLocaleTimeString("pt-BR", { hour: '2-digit', minute: '2-digit' });
-
-            let erros = questoes - acertos;
-            let porcentagem = questoes > 0 ? Math.round((acertos / questoes) * 100) : 0;
-
-            let novaSessao = {
-                dataHora: dataHora,
-                disciplina: disciplina,
-                assunto: assunto,
-                tipo: tipo,
-                material: detalheMaterial,
-                tempoSegundos: segundos,
-                tempo: tempoFormatado,
-                questoes: questoes,
-                acertos: acertos,
-                erros: erros,
-                porcentagem: porcentagem
-            };
-
-            historico.unshift(novaSessao);
-            refUser.child('historico').set(historico);
-
-            segundos = 0;
-            document.getElementById("tempo").innerText = "00:00:00";
-            document.getElementById("input-questoes").value = "0";
-            document.getElementById("input-acertos").value = "0";
-            document.getElementById("input-paginas").value = "";
-            document.getElementById("input-video").value = "";
-            document.getElementById("input-fonte-questoes").value = "";
-            document.getElementById("select-material").value = "Nenhum";
-            alternarCamposMaterial();
-        }
-
-        function renderizarTabela() {
-            let tabela = document.getElementById("tabela-historico");
-            tabela.innerHTML = "";
-
-            let totalSegundos = 0;
-            let totalQuestoes = 0;
-            let totalAcertos = 0;
-            let totalErros = 0;
-
-            historico.forEach((sessao) => {
-                totalSegundos += sessao.tempoSegundos || 0;
-                totalQuestoes += sessao.questoes || 0;
-                totalAcertos += sessao.acertos || 0;
-                totalErros += sessao.erros || 0;
-
-                let txtAcertos = sessao.questoes > 0 ? sessao.acertos : "-";
-                let txtErros = sessao.questoes > 0 ? sessao.erros : "-";
-                let txtQuestoes = sessao.questoes > 0 ? sessao.questoes : "-";
-                let txtPorcentagem = sessao.questoes > 0 ? `${sessao.porcentagem}%` : "-";
-
-                let linha = `
-                    <tr>
-                        <td><small>${sessao.dataHora || '-'}</small></td>
-                        <td>${sessao.disciplina}</td>
-                        <td>${sessao.assunto}</td>
-                        <td>${sessao.tipo}</td>
-                        <td>${sessao.material || '-'}</td>
-                        <td>${sessao.tempo}</td>
-                        <td class="texto-acertos">${txtAcertos}</td>
-                        <td class="texto-erros">${txtErros}</td>
-                        <td>${txtQuestoes}</td>
-                        <td class="texto-acertos">${txtPorcentagem}</td>
-                    </tr>
-                `;
-                tabela.innerHTML += linha;
-            });
-
-            let porcentagemGeral = totalQuestoes > 0 ? Math.round((totalAcertos / totalQuestoes) * 100) : 0;
-
-            document.getElementById("resumo-tempo").innerText = formatarTempo(totalSegundos);
-            document.getElementById("resumo-questoes").innerText = totalQuestoes;
-            document.getElementById("resumo-acertos").innerText = totalAcertos;
-            document.getElementById("resumo-erros").innerText = totalErros;
-            document.getElementById("resumo-porcentagem").innerText = `${porcentagemGeral}%`;
-        }
-
-        function limparHistorico() {
-            if (confirm("Tem certeza que deseja apagar todo o seu histórico de estudos?")) {
-                historico = [];
-                refUser.child('historico').remove();
-            }
-        }
-    </script>
-</body>
-</html>
+                respostaTexto = respostaTexto.replace(/```json/g, '').replace(/
