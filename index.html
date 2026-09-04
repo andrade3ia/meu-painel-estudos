@@ -34,7 +34,6 @@
             font-size: 1.2rem;
         }
 
-        /* Auth Container */
         .auth-container {
             max-width: 400px;
             margin: 50px auto;
@@ -67,7 +66,29 @@
             text-decoration: underline;
         }
 
-        /* Resumo Cards */
+        .abas-container {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #323238;
+            padding-bottom: 10px;
+        }
+
+        .aba-btn {
+            background: #121214;
+            color: #a8a8b3;
+            border: 1px solid #323238;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .aba-btn.ativa {
+            background: #8257e5;
+            color: white;
+            border-color: #8257e5;
+        }
+
         .grid-resumo {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
@@ -98,7 +119,6 @@
         .card-estatistica strong.verde { color: #00b37e; }
         .card-estatistica strong.vermelho { color: #f75a68; }
 
-        /* Cronômetro */
         #tempo {
             font-size: 3.5rem;
             text-align: center;
@@ -128,6 +148,14 @@
             background-color: #996dff;
         }
 
+        .btn-ia {
+            background-color: #00b37e;
+        }
+
+        .btn-ia:hover {
+            background-color: #00e6a3;
+        }
+
         .btn-limpar {
             background-color: #e55757;
             margin-top: 15px;
@@ -146,7 +174,7 @@
             flex: 1;
         }
 
-        input, select {
+        input, select, textarea {
             width: 100%;
             padding: 10px;
             margin-top: 5px;
@@ -156,6 +184,12 @@
             border-radius: 4px;
             color: white;
             box-sizing: border-box;
+            font-family: inherit;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 120px;
         }
 
         table {
@@ -178,7 +212,6 @@
         .texto-acertos { color: #00b37e; font-weight: bold; }
         .texto-erros { color: #f75a68; font-weight: bold; }
 
-        /* Pastas de Matérias */
         .lista-planejamento {
             margin-top: 15px;
             border-top: 1px solid #323238;
@@ -237,6 +270,13 @@
             background: #e55757;
             border-radius: 4px;
         }
+
+        .status-loading {
+            color: #00b37e;
+            font-weight: bold;
+            display: none;
+            margin-top: 10px;
+        }
     </style>
 
     <!-- SDKs do Firebase -->
@@ -248,10 +288,8 @@
 
     <h1>Meu Painel de Estudos</h1>
 
-    <!-- TELA DE AUTENTICAÇÃO -->
+    <!-- AUTENTICAÇÃO -->
     <div id="secao-auth" class="card auth-container">
-        
-        <!-- Formulário de Login -->
         <div id="form-login">
             <h2 style="text-align: center;">Acessar Painel</h2>
             <input type="text" id="login-username" placeholder="Nome de Usuário" required>
@@ -262,7 +300,6 @@
             <span class="link-toggle" onclick="alternarTelaAuth('recuperar')" style="color: #a8a8b3; font-size: 0.8rem;">Esqueci minha senha</span>
         </div>
 
-        <!-- Formulário de Cadastro -->
         <div id="form-cadastro" style="display: none;">
             <h2 style="text-align: center;">Criar Conta</h2>
             <input type="text" id="cad-username" placeholder="Escolha um Nome de Usuário" required>
@@ -272,7 +309,6 @@
             <span class="link-toggle" onclick="alternarTelaAuth('login')">Já tem conta? Faça Login</span>
         </div>
 
-        <!-- Formulário de Recuperação -->
         <div id="form-recuperar" style="display: none;">
             <h2 style="text-align: center;">Recuperar Senha</h2>
             <p style="font-size: 0.85rem; color: #a8a8b3;">Informe o e-mail cadastrado na recuperação para receber o link.</p>
@@ -280,7 +316,6 @@
             <button onclick="recuperarSenha()" style="width: 100%;">Enviar Link de Recuperação</button>
             <span class="link-toggle" onclick="alternarTelaAuth('login')">Voltar ao Login</span>
         </div>
-
     </div>
 
     <!-- PAINEL PRINCIPAL -->
@@ -291,7 +326,7 @@
             <button class="btn-logout" onclick="fazerLogout()">Sair</button>
         </div>
 
-        <!-- Resumo Acumulado -->
+        <!-- Resumo -->
         <div class="card">
             <h2>Resumo Geral Acumulado</h2>
             <div class="grid-resumo">
@@ -318,22 +353,39 @@
             </div>
         </div>
 
-        <!-- Planejamento com Pastas -->
+        <!-- Planejamento com IA Integrada -->
         <div class="card">
             <h2>1. Planejamento de Matérias e Tópicos</h2>
-            <p style="font-size: 0.9rem; color: #a8a8b3;">Cadastre suas disciplinas. Cada matéria terá uma pasta própria contendo seus tópicos.</p>
-            
-            <div class="linha-inputs">
-                <div class="campo">
-                    <label>Disciplina:</label>
-                    <input type="text" id="plan-disciplina" placeholder="Ex: Direito Constitucional">
-                </div>
-                <div class="campo">
-                    <label>Tópico / Assunto:</label>
-                    <input type="text" id="plan-topico" placeholder="Ex: Controle de Constitucionalidade">
-                </div>
+
+            <div class="abas-container">
+                <button class="aba-btn ativa" id="aba-manual-btn" onclick="alternarModoPlanejamento('manual')">Cadastrar Manual</button>
+                <button class="aba-btn" id="aba-ia-btn" onclick="alternarModoPlanejamento('ia')">🤖 Montar Edital com IA</button>
             </div>
-            <button onclick="adicionarPlanejamento()">Adicionar ao Planejamento</button>
+
+            <!-- Modo Manual -->
+            <div id="modo-planejamento-manual">
+                <div class="linha-inputs">
+                    <div class="campo">
+                        <label>Disciplina:</label>
+                        <input type="text" id="plan-disciplina" placeholder="Ex: Direito Constitucional">
+                    </div>
+                    <div class="campo">
+                        <label>Tópico / Assunto:</label>
+                        <input type="text" id="plan-topico" placeholder="Ex: Controle de Constitucionalidade">
+                    </div>
+                </div>
+                <button onclick="adicionarPlanejamento()">Adicionar ao Planejamento</button>
+            </div>
+
+            <!-- Modo IA -->
+            <div id="modo-planejamento-ia" style="display: none;">
+                <p style="font-size: 0.9rem; color: #a8a8b3;">Cole o texto do edital ou do conteúdo programático abaixo. A IA vai montar as pastas de matérias e tópicos para você!</p>
+
+                <textarea id="ia-edital-texto" placeholder="Cole o conteúdo do edital aqui... (ex: PORTUGUÊS: 1. Compreensão de texto. 2. Ortografia...)"></textarea>
+
+                <button class="btn-ia" onclick="processarEditalComIA()">⚡ Gerar Estrutura com IA</button>
+                <div id="ia-loading" class="status-loading">⏳ A IA do Gemini está analisando o edital e criando as matérias... Aguarde!</div>
+            </div>
 
             <div class="lista-planejamento" id="container-planejamento">
             </div>
@@ -384,7 +436,6 @@
                 </div>
             </div>
 
-            <!-- Campos dinâmicos do Material -->
             <div id="campo-pdf" style="display: none;">
                 <label>Quantidade de Páginas Lidas:</label>
                 <input type="number" id="input-paginas" placeholder="Ex: 25" min="0">
@@ -438,8 +489,10 @@
 
     </div>
 
-    <!-- Lógica JavaScript -->
     <script>
+        // CHAVE DE API DO GEMINI CONFIGURADA
+        const GEMINI_API_KEY = "AQ.Ab8RN6IgtM6kg7kw_l-n0uCrlXzD1m5iubb2xsnnyjCKQjw8TQ";
+
         const firebaseConfig = {
             apiKey: "AIzaSyCIPK3YBKulMbjJzm_UahdtQrNjgqLmYho",
             authDomain: "plataforma-de-estudos-98ec8.firebaseapp.com",
@@ -460,23 +513,19 @@
         let historico = [];
         let planejamento = [];
 
-        // Converte o nome de usuário em um e-mail válido internamente
         function formatarEmailUsuario(username) {
             const cleanUser = username.trim().toLowerCase().replace(/[^a-z0-9]/g, "");
             return `${cleanUser}@meupainel.local`;
         }
 
-        // Alternar telas de autenticação
         function alternarTelaAuth(tela) {
             document.getElementById('form-login').style.display = tela === 'login' ? 'block' : 'none';
             document.getElementById('form-cadastro').style.display = tela === 'cadastro' ? 'block' : 'none';
             document.getElementById('form-recuperar').style.display = tela === 'recuperar' ? 'block' : 'none';
         }
 
-        // ESCUTAR MUDANÇA DE AUTENTICAÇÃO
         auth.onAuthStateChanged((user) => {
             if (user) {
-                // Pega o nome do usuário salvo
                 db.ref('usuarios/' + user.uid + '/username').once('value').then((snapshot) => {
                     const nomeExibicao = snapshot.val() || user.email.split('@')[0];
                     document.getElementById('user-display').innerText = nomeExibicao;
@@ -505,7 +554,6 @@
             }
         });
 
-        // AÇÕES DE AUTH
         function fazerLogin() {
             const userRaw = document.getElementById('login-username').value;
             const senha = document.getElementById('login-senha').value;
@@ -516,7 +564,7 @@
             }
 
             const emailVirtual = formatarEmailUsuario(userRaw);
-            auth.signInWithEmailAndPassword(emailVirtual, senha).catch((err) => {
+            auth.signInWithEmailAndPassword(emailVirtual, senha).catch(() => {
                 alert("Usuário ou senha incorretos!");
             });
         }
@@ -539,7 +587,6 @@
             const emailVirtual = formatarEmailUsuario(userRaw);
 
             auth.createUserWithEmailAndPassword(emailVirtual, senha).then((cred) => {
-                // Salva o nome de usuário puro e o e-mail de recuperação opcional
                 db.ref('usuarios/' + cred.user.uid).set({
                     username: userRaw,
                     emailRecuperacao: emailRec || null
@@ -547,7 +594,7 @@
                 alert("Conta criada com sucesso!");
             }).catch((err) => {
                 if (err.code === "auth/email-already-in-use") {
-                    alert("Este nome de usuário já está sendo utilizado por outra pessoa.");
+                    alert("Este nome de usuário já está sendo utilizado.");
                 } else {
                     alert("Erro ao cadastrar: " + err.message);
                 }
@@ -573,6 +620,97 @@
             auth.signOut();
         }
 
+        function alternarModoPlanejamento(modo) {
+            const btnManual = document.getElementById('aba-manual-btn');
+            const btnIA = document.getElementById('aba-ia-btn');
+            const divManual = document.getElementById('modo-planejamento-manual');
+            const divIA = document.getElementById('modo-planejamento-ia');
+
+            if (modo === 'manual') {
+                btnManual.classList.add('ativa');
+                btnIA.classList.remove('ativa');
+                divManual.style.display = 'block';
+                divIA.style.display = 'none';
+            } else {
+                btnIA.classList.add('ativa');
+                btnManual.classList.remove('ativa');
+                divIA.style.display = 'block';
+                divManual.style.display = 'none';
+            }
+        }
+
+        async function processarEditalComIA() {
+            const textoEdital = document.getElementById('ia-edital-texto').value.trim();
+
+            if (!textoEdital) {
+                alert("Cole o texto do edital na caixa antes de clicar!");
+                return;
+            }
+
+            document.getElementById('ia-loading').style.display = 'block';
+
+            const prompt = `
+            Você é um assistente especialista em concursos e estudos.
+            Analise o seguinte texto de edital/conteúdo programático e extraia as disciplinas e seus respectivos tópicos.
+            Retorne RIGOROSAMENTE apenas um JSON no seguinte formato (sem formatação de código markdown, sem texto extra):
+            [
+              {
+                "disciplina": "Nome da Disciplina",
+                "topicos": ["Tópico 1", "Tópico 2", "Tópico 3"]
+              }
+            ]
+
+            Texto do Edital:
+            ${textoEdital}
+            `;
+
+            try {
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: prompt }] }]
+                    })
+                });
+
+                const data = await response.json();
+                document.getElementById('ia-loading').style.display = 'none';
+
+                if (data.error) {
+                    alert("Erro na IA: " + data.error.message);
+                    return;
+                }
+
+                let respostaTexto = data.candidates[0].content.parts[0].text;
+                respostaTexto = respostaTexto.replace(/```json/g, '').replace(/```/g, '').trim();
+
+                const novasMaterias = JSON.parse(respostaTexto);
+
+                novasMaterias.forEach(itemNova => {
+                    let itemExistente = planejamento.find(item => item.disciplina.toLowerCase() === itemNova.disciplina.toLowerCase());
+                    if (itemExistente) {
+                        itemNova.topicos.forEach(top => {
+                            if (!itemExistente.topicos.includes(top)) {
+                                itemExistente.topicos.push(top);
+                            }
+                        });
+                    } else {
+                        planejamento.push(itemNova);
+                    }
+                });
+
+                refUser.child('planejamento').set(planejamento);
+
+                alert("Edital processado com sucesso! Suas matérias e tópicos foram adicionados automaticamente.");
+                document.getElementById('ia-edital-texto').value = '';
+                alternarModoPlanejamento('manual');
+
+            } catch (err) {
+                document.getElementById('ia-loading').style.display = 'none';
+                alert("Erro ao processar o edital com IA. Tente novamente.");
+            }
+        }
+
         function alternarCamposMaterial() {
             let material = document.getElementById("select-material").value;
             document.getElementById("campo-pdf").style.display = material === "PDF" ? "block" : "none";
@@ -580,7 +718,6 @@
             document.getElementById("campo-questoes").style.display = material === "Questoes" ? "block" : "none";
         }
 
-        // PLANEJAMENTO
         function adicionarPlanejamento() {
             let discInput = document.getElementById("plan-disciplina").value.trim();
             let topicoInput = document.getElementById("plan-topico").value.trim();
@@ -692,7 +829,6 @@
             }
         }
 
-        // CRONÔMETRO E HISTÓRICO
         function formatarTempo(seg) {
             let hrs = Math.floor(seg / 3600);
             let mins = Math.floor((seg % 3600) / 60);
