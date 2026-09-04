@@ -2,29 +2,35 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Meu Painel de Estudos</title>
     <style>
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: #121214;
             color: #e1e1e6;
             max-width: 980px;
-            margin: 40px auto;
-            padding: 20px;
+            margin: 20px auto;
+            padding: 15px;
         }
 
         h1 {
             text-align: center;
             color: #00b37e;
-            margin-bottom: 4px;
+            margin-bottom: 8px;
+            font-size: 1.8rem;
         }
 
         .card {
             background-color: #202024;
             border-radius: 8px;
             padding: 20px;
-            margin-bottom: 24px;
+            margin-bottom: 20px;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
         }
 
@@ -34,9 +40,11 @@
             font-size: 1.2rem;
         }
 
+        /* Container de Autenticação Otimizado para Mobile */
         .auth-container {
             max-width: 400px;
-            margin: 50px auto;
+            margin: 20px auto;
+            width: 100%;
         }
 
         .user-header {
@@ -44,7 +52,7 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 20px;
-            padding: 10px 15px;
+            padding: 12px 15px;
             background-color: #202024;
             border-radius: 6px;
             border: 1px solid #323238;
@@ -52,7 +60,7 @@
 
         .btn-logout {
             background-color: #e55757;
-            padding: 6px 12px;
+            padding: 8px 14px;
             font-size: 0.85rem;
         }
 
@@ -64,84 +72,40 @@
             cursor: pointer;
             font-size: 0.9rem;
             text-decoration: underline;
+            padding: 5px;
         }
 
-        .abas-container {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 15px;
-            border-bottom: 1px solid #323238;
-            padding-bottom: 10px;
-        }
-
-        .aba-btn {
-            background: #121214;
-            color: #a8a8b3;
-            border: 1px solid #323238;
-            padding: 8px 16px;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-
-        .aba-btn.ativa {
-            background: #8257e5;
-            color: white;
-            border-color: #8257e5;
-        }
-
-        .grid-resumo {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
-            gap: 12px;
-            margin-bottom: 20px;
-        }
-
-        .card-estatistica {
+        /* Entradas de Texto (Tamanho de fonte 16px previne zoom no celular) */
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            margin-top: 6px;
+            margin-bottom: 16px;
             background-color: #121214;
             border: 1px solid #323238;
             border-radius: 6px;
-            padding: 12px;
-            text-align: center;
+            color: white;
+            font-size: 16px;
+            font-family: inherit;
         }
 
-        .card-estatistica span {
-            display: block;
-            font-size: 0.8rem;
-            color: #a8a8b3;
-            margin-bottom: 5px;
-        }
-
-        .card-estatistica strong {
-            font-size: 1.3rem;
-            color: #e1e1e6;
-        }
-
-        .card-estatistica strong.verde { color: #00b37e; }
-        .card-estatistica strong.vermelho { color: #f75a68; }
-
-        #tempo {
-            font-size: 3.5rem;
-            text-align: center;
-            margin: 15px 0;
-            font-family: monospace;
-            color: #00b37e;
-        }
-
-        .acoes-cronometro {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
+        textarea {
+            resize: vertical;
+            min-height: 120px;
         }
 
         button {
-            padding: 10px 20px;
+            width: 100%;
+            padding: 14px;
             font-weight: bold;
+            font-size: 1rem;
             border: none;
-            border-radius: 4px;
+            border-radius: 6px;
             cursor: pointer;
             background-color: #8257e5;
             color: white;
             transition: background-color 0.2s;
+            touch-action: manipulation;
         }
 
         button:hover {
@@ -161,41 +125,109 @@
             margin-top: 15px;
         }
 
-        .btn-limpar:hover {
-            background-color: #ff6d6d;
-        }
-
         .linha-inputs {
             display: flex;
-            gap: 15px;
+            flex-direction: column;
+            gap: 0px;
+        }
+
+        @media (min-width: 600px) {
+            .linha-inputs {
+                flex-direction: row;
+                gap: 15px;
+            }
+            button {
+                width: auto;
+            }
         }
 
         .campo {
             flex: 1;
         }
 
-        input, select, textarea {
-            width: 100%;
-            padding: 10px;
-            margin-top: 5px;
+        /* Abas */
+        .abas-container {
+            display: flex;
+            gap: 10px;
             margin-bottom: 15px;
-            background-color: #121214;
-            border: 1px solid #323238;
-            border-radius: 4px;
-            color: white;
-            box-sizing: border-box;
-            font-family: inherit;
+            border-bottom: 1px solid #323238;
+            padding-bottom: 10px;
         }
 
-        textarea {
-            resize: vertical;
-            min-height: 120px;
+        .aba-btn {
+            flex: 1;
+            background: #121214;
+            color: #a8a8b3;
+            border: 1px solid #323238;
+            padding: 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        .aba-btn.ativa {
+            background: #8257e5;
+            color: white;
+            border-color: #8257e5;
+        }
+
+        /* Resumo Cards */
+        .grid-resumo {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .card-estatistica {
+            background-color: #121214;
+            border: 1px solid #323238;
+            border-radius: 6px;
+            padding: 10px;
+            text-align: center;
+        }
+
+        .card-estatistica span {
+            display: block;
+            font-size: 0.75rem;
+            color: #a8a8b3;
+            margin-bottom: 4px;
+        }
+
+        .card-estatistica strong {
+            font-size: 1.1rem;
+            color: #e1e1e6;
+        }
+
+        .card-estatistica strong.verde { color: #00b37e; }
+        .card-estatistica strong.vermelho { color: #f75a68; }
+
+        /* Cronômetro */
+        #tempo {
+            font-size: 3rem;
+            text-align: center;
+            margin: 15px 0;
+            font-family: monospace;
+            color: #00b37e;
+        }
+
+        .acoes-cronometro {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        /* Tabelas com rolagem horizontal no celular */
+        .tabela-wrapper {
+            width: 100%;
+            overflow-x: auto;
         }
 
         table {
             width: 100%;
             border-collapse: collapse;
             margin-top: 10px;
+            min-width: 600px;
         }
 
         th, td {
@@ -205,10 +237,7 @@
             font-size: 0.88rem;
         }
 
-        th {
-            color: #8257e5;
-        }
-
+        th { color: #8257e5; }
         .texto-acertos { color: #00b37e; font-weight: bold; }
         .texto-erros { color: #f75a68; font-weight: bold; }
 
@@ -235,11 +264,6 @@
             align-items: center;
             font-weight: bold;
             color: #00b37e;
-            user-select: none;
-        }
-
-        .cabecalho-pasta:hover {
-            background-color: #323238;
         }
 
         .conteudo-pasta {
@@ -260,15 +284,12 @@
             border-bottom: 1px dashed #29292e;
         }
 
-        .item-topico:last-child {
-            border-bottom: none;
-        }
-
         .btn-excluir-materia {
-            padding: 4px 8px;
+            padding: 6px 10px;
             font-size: 0.75rem;
             background: #e55757;
             border-radius: 4px;
+            width: auto;
         }
 
         .status-loading {
@@ -276,10 +297,10 @@
             font-weight: bold;
             display: none;
             margin-top: 10px;
+            text-align: center;
         }
     </style>
 
-    <!-- SDKs do Firebase -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
@@ -292,9 +313,9 @@
     <div id="secao-auth" class="card auth-container">
         <div id="form-login">
             <h2 style="text-align: center;">Acessar Painel</h2>
-            <input type="text" id="login-username" placeholder="Nome de Usuário" required>
-            <input type="password" id="login-senha" placeholder="Senha" required>
-            <button onclick="fazerLogin()" style="width: 100%;">Entrar</button>
+            <input type="text" id="login-username" placeholder="Nome de Usuário" required autocomplete="username">
+            <input type="password" id="login-senha" placeholder="Senha" required autocomplete="current-password">
+            <button onclick="fazerLogin()">Entrar</button>
             
             <span class="link-toggle" onclick="alternarTelaAuth('cadastro')">Não tem conta? Cadastre-se</span>
             <span class="link-toggle" onclick="alternarTelaAuth('recuperar')" style="color: #a8a8b3; font-size: 0.8rem;">Esqueci minha senha</span>
@@ -302,10 +323,10 @@
 
         <div id="form-cadastro" style="display: none;">
             <h2 style="text-align: center;">Criar Conta</h2>
-            <input type="text" id="cad-username" placeholder="Escolha um Nome de Usuário" required>
-            <input type="password" id="cad-senha" placeholder="Senha (mínimo 6 caracteres)" required>
-            <input type="email" id="cad-email-recuperacao" placeholder="E-mail de Recuperação (Gmail, etc.)" required>
-            <button onclick="fazerCadastro()" style="width: 100%;">Cadastrar</button>
+            <input type="text" id="cad-username" placeholder="Escolha um Nome de Usuário" required autocomplete="username">
+            <input type="password" id="cad-senha" placeholder="Senha (mínimo 6 caracteres)" required autocomplete="new-password">
+            <input type="email" id="cad-email-recuperacao" placeholder="E-mail de Recuperação (Gmail, etc.)" required autocomplete="email">
+            <button onclick="fazerCadastro()">Cadastrar</button>
             <span class="link-toggle" onclick="alternarTelaAuth('login')">Já tem conta? Faça Login</span>
         </div>
 
@@ -313,7 +334,7 @@
             <h2 style="text-align: center;">Recuperar Senha</h2>
             <p style="font-size: 0.85rem; color: #a8a8b3;">Digite seu nome de usuário. Enviaremos o link para o e-mail cadastrado na sua conta.</p>
             <input type="text" id="rec-username" placeholder="Seu Nome de Usuário" required>
-            <button onclick="recuperarSenha()" style="width: 100%;">Enviar Link de Recuperação</button>
+            <button onclick="recuperarSenha()">Enviar Link de Recuperação</button>
             <span class="link-toggle" onclick="alternarTelaAuth('login')">Voltar ao Login</span>
         </div>
     </div>
@@ -322,7 +343,7 @@
     <div id="secao-painel" style="display: none;">
         
         <div class="user-header">
-            <span>👤 Conectado como: <strong id="user-display" style="color:#00b37e;"></strong></span>
+            <span>👤 Conectado: <strong id="user-display" style="color:#00b37e;"></strong></span>
             <button class="btn-logout" onclick="fazerLogout()">Sair</button>
         </div>
 
@@ -331,38 +352,37 @@
             <h2>Resumo Geral Acumulado</h2>
             <div class="grid-resumo">
                 <div class="card-estatistica">
-                    <span>Total de Horas</span>
+                    <span>Total Horas</span>
                     <strong id="resumo-tempo">00:00:00</strong>
                 </div>
                 <div class="card-estatistica">
-                    <span>Questões Feitas</span>
+                    <span>Questões</span>
                     <strong id="resumo-questoes">0</strong>
                 </div>
                 <div class="card-estatistica">
-                    <span>Total Acertos</span>
+                    <span>Acertos</span>
                     <strong id="resumo-acertos" class="verde">0</strong>
                 </div>
                 <div class="card-estatistica">
-                    <span>Total Erros</span>
+                    <span>Erros</span>
                     <strong id="resumo-erros" class="vermelho">0</strong>
                 </div>
                 <div class="card-estatistica">
-                    <span>Porcentagem Total</span>
+                    <span>Desempenho</span>
                     <strong id="resumo-porcentagem" class="verde">0%</strong>
                 </div>
             </div>
         </div>
 
-        <!-- Planejamento com IA Integrada -->
+        <!-- Planejamento com IA -->
         <div class="card">
             <h2>1. Planejamento de Matérias e Tópicos</h2>
 
             <div class="abas-container">
                 <button class="aba-btn ativa" id="aba-manual-btn" onclick="alternarModoPlanejamento('manual')">Cadastrar Manual</button>
-                <button class="aba-btn" id="aba-ia-btn" onclick="alternarModoPlanejamento('ia')">🤖 Montar Edital com IA</button>
+                <button class="aba-btn" id="aba-ia-btn" onclick="alternarModoPlanejamento('ia')">🤖 Edital com IA</button>
             </div>
 
-            <!-- Modo Manual -->
             <div id="modo-planejamento-manual">
                 <div class="linha-inputs">
                     <div class="campo">
@@ -377,18 +397,20 @@
                 <button onclick="adicionarPlanejamento()">Adicionar ao Planejamento</button>
             </div>
 
-            <!-- Modo IA -->
             <div id="modo-planejamento-ia" style="display: none;">
-                <p style="font-size: 0.9rem; color: #a8a8b3;">Cole o texto do edital ou do conteúdo programático abaixo. A IA vai montar as pastas de matérias e tópicos para você!</p>
+                <p style="font-size: 0.85rem; color: #a8a8b3;">Insira a sua chave do Gemini e cole o edital. Ela ficará salva com segurança apenas no seu navegador!</p>
 
-                <textarea id="ia-edital-texto" placeholder="Cole o conteúdo do edital aqui... (ex: PORTUGUÊS: 1. Compreensão de texto. 2. Ortografia...)"></textarea>
+                <label>Chave de API do Gemini:</label>
+                <input type="password" id="ia-api-key" placeholder="Cole sua API Key aqui (ex: AIzaSy...)">
+
+                <label>Texto do Edital:</label>
+                <textarea id="ia-edital-texto" placeholder="Cole o conteúdo do edital aqui..."></textarea>
 
                 <button class="btn-ia" onclick="processarEditalComIA()">⚡ Gerar Estrutura com IA</button>
-                <div id="ia-loading" class="status-loading">⏳ A IA do Gemini está analisando o edital e criando as matérias... Aguarde!</div>
+                <div id="ia-loading" class="status-loading">⏳ A IA está analisando o edital... Aguarde!</div>
             </div>
 
-            <div class="lista-planejamento" id="container-planejamento">
-            </div>
+            <div class="lista-planejamento" id="container-planejamento"></div>
         </div>
 
         <!-- Cronômetro -->
@@ -398,7 +420,7 @@
             <div class="acoes-cronometro">
                 <button onclick="iniciarCronometro()">Iniciar</button>
                 <button onclick="pausarCronometro()">Pausar</button>
-                <button onclick="finalizarSessao()">Finalizar Sessão</button>
+                <button onclick="finalizarSessao()">Finalizar</button>
             </div>
         </div>
 
@@ -408,7 +430,7 @@
             
             <label>Disciplina:</label>
             <select id="select-disciplina" onchange="atualizarTopicosSelect()">
-                <option value="">Selecione uma disciplina cadastrada...</option>
+                <option value="">Selecione uma disciplina...</option>
             </select>
 
             <label>Tópico / Assunto:</label>
@@ -431,33 +453,33 @@
                         <option value="Nenhum">Nenhum / Outro</option>
                         <option value="PDF">PDF</option>
                         <option value="Videoaula">Videoaula</option>
-                        <option value="Questoes">Base/Plataforma de Questões</option>
+                        <option value="Questoes">Plataforma de Questões</option>
                     </select>
                 </div>
             </div>
 
             <div id="campo-pdf" style="display: none;">
-                <label>Quantidade de Páginas Lidas:</label>
+                <label>Páginas Lidas:</label>
                 <input type="number" id="input-paginas" placeholder="Ex: 25" min="0">
             </div>
 
             <div id="campo-video" style="display: none;">
-                <label>Número da Aula / Bloco:</label>
-                <input type="text" id="input-video" placeholder="Ex: Aula 03 (Blocos 1 e 2)">
+                <label>Número da Aula:</label>
+                <input type="text" id="input-video" placeholder="Ex: Aula 03">
             </div>
 
             <div id="campo-questoes" style="display: none;">
-                <label>Fonte / Plataforma das Questões:</label>
-                <input type="text" id="input-fonte-questoes" placeholder="Ex: QConcursos, TEC, Caderno de Erros">
+                <label>Fonte das Questões:</label>
+                <input type="text" id="input-fonte-questoes" placeholder="Ex: QConcursos">
             </div>
 
             <div class="linha-inputs">
                 <div class="campo">
-                    <label>Qtd. de Questões:</label>
+                    <label>Qtd. Questões:</label>
                     <input type="number" id="input-questoes" placeholder="Ex: 20" min="0" value="0">
                 </div>
                 <div class="campo">
-                    <label>Qtd. de Acertos:</label>
+                    <label>Qtd. Acertos:</label>
                     <input type="number" id="input-acertos" placeholder="Ex: 17" min="0" value="0">
                 </div>
             </div>
@@ -466,32 +488,31 @@
         <!-- Histórico -->
         <div class="card">
             <h2>Histórico de Estudos</h2>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Data / Hora</th>
-                        <th>Disciplina</th>
-                        <th>Tópico</th>
-                        <th>Tipo</th>
-                        <th>Material</th>
-                        <th>Tempo</th>
-                        <th>Acertos</th>
-                        <th>Erros</th>
-                        <th>Total</th>
-                        <th>%</th>
-                    </tr>
-                </thead>
-                <tbody id="tabela-historico">
-                </tbody>
-            </table>
+            <div class="tabela-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Data</th>
+                            <th>Disciplina</th>
+                            <th>Tópico</th>
+                            <th>Tipo</th>
+                            <th>Material</th>
+                            <th>Tempo</th>
+                            <th>Acertos</th>
+                            <th>Erros</th>
+                            <th>Total</th>
+                            <th>%</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabela-historico"></tbody>
+                </table>
+            </div>
             <button class="btn-limpar" onclick="limparHistorico()">Limpar Histórico</button>
         </div>
 
     </div>
 
     <script>
-        const GEMINI_API_KEY = "AQ.Ab8RN6IgtM6kg7kw_l-n0uCrlXzD1m5iubb2xsnnyjCKQjw8TQ";
-
         const firebaseConfig = {
             apiKey: "AIzaSyCIPK3YBKulMbjJzm_UahdtQrNjgqLmYho",
             authDomain: "plataforma-de-estudos-98ec8.firebaseapp.com",
@@ -546,6 +567,9 @@
                     renderizarTabela();
                 });
 
+                const keySalva = localStorage.getItem('gemini_user_api_key');
+                if (keySalva) document.getElementById('ia-api-key').value = keySalva;
+
             } else {
                 refUser = null;
                 document.getElementById('secao-auth').style.display = 'block';
@@ -574,7 +598,7 @@
             const emailRec = document.getElementById('cad-email-recuperacao').value.trim();
 
             if (!userRaw || !senha || !emailRec) {
-                alert("Preencha o nome de usuário, a senha e um e-mail de recuperação!");
+                alert("Preencha o nome de usuário, a senha e o e-mail!");
                 return;
             }
 
@@ -584,8 +608,6 @@
             }
 
             const emailVirtual = formatarEmailUsuario(userRaw);
-
-            // Mapeia o nome de usuário para o e-mail real de recuperação
             const userKey = userRaw.trim().toLowerCase().replace(/[^a-z0-9]/g, "");
 
             db.ref('mapa_recuperacao/' + userKey).once('value').then((snapshot) => {
@@ -600,7 +622,6 @@
                         emailRecuperacao: emailRec
                     });
 
-                    // Cria um índice rápido para buscas de recuperação
                     db.ref('mapa_recuperacao/' + userKey).set({
                         emailReal: emailRec
                     });
@@ -612,7 +633,6 @@
             });
         }
 
-        // FUNÇÃO DE RECUPERAÇÃO CORRIGIDA
         function recuperarSenha() {
             const userRaw = document.getElementById('rec-username').value.trim();
             if (!userRaw) {
@@ -622,7 +642,6 @@
 
             const userKey = userRaw.toLowerCase().replace(/[^a-z0-9]/g, "");
 
-            // Busca o e-mail real vinculado ao nome de usuário
             db.ref('mapa_recuperacao/' + userKey).once('value').then((snapshot) => {
                 if (!snapshot.exists()) {
                     alert("Nome de usuário não encontrado!");
@@ -631,12 +650,11 @@
 
                 const emailReal = snapshot.val().emailReal;
 
-                // Envia o e-mail de redefinição diretamente para o Gmail/E-mail Real informado no cadastro
                 auth.sendPasswordResetEmail(emailReal).then(() => {
-                    alert(`Um link de redefinição de senha foi enviado com sucesso para o e-mail registrado (${emailReal})!`);
+                    alert(`Um link de redefinição de senha foi enviado para ${emailReal}!`);
                     alternarTelaAuth('login');
                 }).catch((err) => {
-                    alert("Erro ao enviar o e-mail de redefinição: " + err.message);
+                    alert("Erro ao enviar e-mail: " + err.message);
                 });
             });
         }
@@ -665,32 +683,39 @@
         }
 
         async function processarEditalComIA() {
+            const userApiKey = document.getElementById('ia-api-key').value.trim();
             const textoEdital = document.getElementById('ia-edital-texto').value.trim();
 
-            if (!textoEdital) {
-                alert("Cole o texto do edital na caixa antes de clicar!");
+            if (!userApiKey) {
+                alert("Por favor, insira sua chave de API do Gemini!");
                 return;
             }
 
+            if (!textoEdital) {
+                alert("Cole o texto do edital na caixa!");
+                return;
+            }
+
+            localStorage.setItem('gemini_user_api_key', userApiKey);
             document.getElementById('ia-loading').style.display = 'block';
 
             const prompt = `
-            Você é um assistente especialista em concursos e estudos.
-            Analise o seguinte texto de edital/conteúdo programático e extraia as disciplinas e seus respectivos tópicos.
-            Retorne RIGOROSAMENTE apenas um JSON no seguinte formato (sem formatação de código markdown, sem texto extra):
+            Você é um assistente especialista em concursos.
+            Analise o edital e extraia disciplinas e tópicos.
+            Retorne RIGOROSAMENTE apenas um JSON neste formato:
             [
               {
                 "disciplina": "Nome da Disciplina",
-                "topicos": ["Tópico 1", "Tópico 2", "Tópico 3"]
+                "topicos": ["Tópico 1", "Tópico 2"]
               }
             ]
 
-            Texto do Edital:
+            Edital:
             ${textoEdital}
             `;
 
             try {
-                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${userApiKey}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -725,14 +750,13 @@
                 });
 
                 refUser.child('planejamento').set(planejamento);
-
-                alert("Edital processado com sucesso! Suas matérias e tópicos foram adicionados automaticamente.");
+                alert("Edital processado com sucesso!");
                 document.getElementById('ia-edital-texto').value = '';
                 alternarModoPlanejamento('manual');
 
             } catch (err) {
                 document.getElementById('ia-loading').style.display = 'none';
-                alert("Erro ao processar o edital com IA. Tente novamente.");
+                alert("Erro ao processar o edital. Verifique a chave de API.");
             }
         }
 
@@ -748,7 +772,7 @@
             let topicoInput = document.getElementById("plan-topico").value.trim();
 
             if (discInput === "" || topicoInput === "") {
-                alert("Preencha a disciplina e o tópico para cadastrar!");
+                alert("Preencha a disciplina e o tópico!");
                 return;
             }
 
@@ -791,7 +815,7 @@
 
                 divPasta.innerHTML = `
                     <div class="cabecalho-pasta" onclick="alternarPasta('pasta-${indexDisc}')">
-                        <span>📁 ${item.disciplina} <small style="color:#a8a8b3; font-weight:normal;">(${item.topicos.length} tópico(s))</small></span>
+                        <span>📁 ${item.disciplina} <small style="color:#a8a8b3; font-weight:normal;">(${item.topicos.length})</small></span>
                         <span>▼</span>
                     </div>
                     <div class="conteudo-pasta" id="pasta-${indexDisc}">
@@ -825,7 +849,7 @@
 
         function atualizarDisciplinasSelect() {
             let selectDisc = document.getElementById("select-disciplina");
-            selectDisc.innerHTML = '<option value="">Selecione uma disciplina cadastrada...</option>';
+            selectDisc.innerHTML = '<option value="">Selecione uma disciplina...</option>';
 
             planejamento.forEach((item) => {
                 let opt = document.createElement("option");
@@ -886,7 +910,7 @@
             let tempoFormatado = formatarTempo(segundos);
 
             if (disciplina === "" || assunto === "") {
-                alert("Por favor, selecione uma disciplina e um tópico antes de finalizar!");
+                alert("Por favor, selecione uma disciplina e um tópico!");
                 return;
             }
 
