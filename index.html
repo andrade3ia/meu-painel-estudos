@@ -727,7 +727,7 @@
             }
         }
 
-        // INTEGRAÇÃO OFICIAL COM A API MAIS RECENTE DO GEMINI (3.X)
+        // INTEGRAÇÃO COM MODELOS SUPORTADOS (3.1-PRO-PREVIEW E 2.5-FLASH)
         async function processarEditalComIA() {
             const userApiKey = document.getElementById('ia-api-key').value.trim();
             const textoEdital = document.getElementById('ia-edital-texto').value.trim();
@@ -760,8 +760,8 @@
             ${textoEdital}
             `;
 
-            // Modelos ativas e recomendadas no ecossistema Gemini
-            const modelosVigentes = ['gemini-3.6-flash', 'gemini-3.5-flash-lite', 'gemini-3.1-pro-preview'];
+            // Modelos vigentes sem dependência de versões descontinuadas
+            const modelosVigentes = ['gemini-3.1-pro-preview', 'gemini-2.5-flash'];
             let data = null;
             let ultimoErroAPI = null;
 
