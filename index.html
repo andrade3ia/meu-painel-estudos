@@ -398,10 +398,10 @@
                 <input type="password" id="ia-api-key" placeholder="Cole sua API Key aqui (ex: AIzaSy...)">
 
                 <label>Texto do Edital:</label>
-                <textarea id="ia-edital-texto" placeholder="Cole o conteúdo do edital aqui..."></textarea>
+                <textarea id="ia-edital-texto" placeholder="Cole o conteúdo do edital aqui... (Dica: cole apenas os conteúdos programáticos)"></textarea>
 
                 <button type="button" class="btn-ia" onclick="processarEditalComIA()">⚡ Gerar Estrutura com IA</button>
-                <div id="ia-loading" class="status-loading">⏳ A IA está analisando o edital... Aguarde!</div>
+                <div id="ia-loading" class="status-loading">⏳ A IA está processando o edital... Por favor, aguarde!</div>
             </div>
 
             <div class="lista-planejamento" id="container-planejamento"></div>
@@ -727,10 +727,10 @@
             }
         }
 
-        // INTEGRAÇÃO COM MODELOS SUPORTADOS (3.1-PRO-PREVIEW E 2.5-FLASH)
+        // LÓGICA OTIMIZADA PARA CONTEÚDOS DE GRANDE PORTE
         async function processarEditalComIA() {
             const userApiKey = document.getElementById('ia-api-key').value.trim();
-            const textoEdital = document.getElementById('ia-edital-texto').value.trim();
+            let textoEdital = document.getElementById('ia-edital-texto').value.trim();
 
             if (!userApiKey) {
                 alert("Insira a sua chave de API do Gemini!");
@@ -742,13 +742,18 @@
                 return;
             }
 
+            // Truncamento defensivo de segurança se o texto ultrapassar 30.000 caracteres
+            if (textoEdital.length > 30000) {
+                textoEdital = textoEdital.substring(0, 30000);
+            }
+
             localStorage.setItem('gemini_user_api_key', userApiKey);
             document.getElementById('ia-loading').style.display = 'block';
 
             const prompt = `
             Você é um assistente especialista em concursos.
-            Analise o edital e extraia disciplinas e tópicos.
-            Retorne RIGOROSAMENTE apenas um JSON neste formato:
+            Analise o edital e extraia disciplinas e tópicos de forma resumida e concisa.
+            Retorne RIGOROSAMENTE apenas um JSON neste formato, sem explicações adicionais:
             [
               {
                 "disciplina": "Nome da Disciplina",
@@ -760,7 +765,6 @@
             ${textoEdital}
             `;
 
-            // Modelos vigentes sem dependência de versões descontinuadas
             const modelosVigentes = ['gemini-3.1-pro-preview', 'gemini-2.5-flash'];
             let data = null;
             let ultimoErroAPI = null;
@@ -774,7 +778,10 @@
                             'x-goog-api-key': userApiKey
                         },
                         body: JSON.stringify({
-                            contents: [{ parts: [{ text: prompt }] }]
+                            contents: [{ parts: [{ text: prompt }] }],
+                            generationConfig: {
+                                maxOutputTokens: 8192
+                            }
                         })
                     });
 
@@ -793,12 +800,12 @@
             document.getElementById('ia-loading').style.display = 'none';
 
             if (!data) {
-                alert("Erro na API do Gemini: " + (ultimoErroAPI || "Falha ao conectar com o serviço"));
+                alert("Erro ao processar edital grande: " + (ultimoErroAPI || "Tempo limite excedido. Tente colar uma parte menor do edital."));
                 return;
             }
 
             if (!data.candidates || !data.candidates[0]?.content?.parts[0]?.text) {
-                alert("Não foi possível extrair os dados. Tente um trecho menor do edital.");
+                alert("Não foi possível extrair os dados. Tente colar apenas a seção de Conteúdo Programático.");
                 return;
             }
 
@@ -827,7 +834,7 @@
                 alternarModoPlanejamento('manual');
 
             } catch (parseErr) {
-                alert("A resposta da IA não pôde ser convertida em formato estruturado. Tente colar um trecho mais direto do edital.");
+                alert("A resposta gerada foi muito extensa e teve a formatação cortada. Experimente colar o edital dividindo por matérias.");
             }
         }
 
