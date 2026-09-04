@@ -304,15 +304,15 @@
             <h2 style="text-align: center;">Criar Conta</h2>
             <input type="text" id="cad-username" placeholder="Escolha um Nome de Usuário" required>
             <input type="password" id="cad-senha" placeholder="Senha (mínimo 6 caracteres)" required>
-            <input type="email" id="cad-email-recuperacao" placeholder="E-mail de Recuperação (Opcional)">
+            <input type="email" id="cad-email-recuperacao" placeholder="E-mail de Recuperação (Gmail, etc.)" required>
             <button onclick="fazerCadastro()" style="width: 100%;">Cadastrar</button>
             <span class="link-toggle" onclick="alternarTelaAuth('login')">Já tem conta? Faça Login</span>
         </div>
 
         <div id="form-recuperar" style="display: none;">
             <h2 style="text-align: center;">Recuperar Senha</h2>
-            <p style="font-size: 0.85rem; color: #a8a8b3;">Informe o e-mail cadastrado na recuperação para receber o link.</p>
-            <input type="email" id="rec-email" placeholder="Seu E-mail de Recuperação" required>
+            <p style="font-size: 0.85rem; color: #a8a8b3;">Digite seu nome de usuário. Enviaremos o link para o e-mail cadastrado na sua conta.</p>
+            <input type="text" id="rec-username" placeholder="Seu Nome de Usuário" required>
             <button onclick="recuperarSenha()" style="width: 100%;">Enviar Link de Recuperação</button>
             <span class="link-toggle" onclick="alternarTelaAuth('login')">Voltar ao Login</span>
         </div>
@@ -490,7 +490,6 @@
     </div>
 
     <script>
-        // CHAVE DE API DO GEMINI CONFIGURADA
         const GEMINI_API_KEY = "AQ.Ab8RN6IgtM6kg7kw_l-n0uCrlXzD1m5iubb2xsnnyjCKQjw8TQ";
 
         const firebaseConfig = {
@@ -574,8 +573,8 @@
             const senha = document.getElementById('cad-senha').value;
             const emailRec = document.getElementById('cad-email-recuperacao').value.trim();
 
-            if (!userRaw || !senha) {
-                alert("Preencha o nome de usuário e a senha!");
+            if (!userRaw || !senha || !emailRec) {
+                alert("Preencha o nome de usuário, a senha e um e-mail de recuperação!");
                 return;
             }
 
@@ -586,33 +585,59 @@
 
             const emailVirtual = formatarEmailUsuario(userRaw);
 
-            auth.createUserWithEmailAndPassword(emailVirtual, senha).then((cred) => {
-                db.ref('usuarios/' + cred.user.uid).set({
-                    username: userRaw,
-                    emailRecuperacao: emailRec || null
-                });
-                alert("Conta criada com sucesso!");
-            }).catch((err) => {
-                if (err.code === "auth/email-already-in-use") {
+            // Mapeia o nome de usuário para o e-mail real de recuperação
+            const userKey = userRaw.trim().toLowerCase().replace(/[^a-z0-9]/g, "");
+
+            db.ref('mapa_recuperacao/' + userKey).once('value').then((snapshot) => {
+                if (snapshot.exists()) {
                     alert("Este nome de usuário já está sendo utilizado.");
-                } else {
-                    alert("Erro ao cadastrar: " + err.message);
+                    return;
                 }
+
+                auth.createUserWithEmailAndPassword(emailVirtual, senha).then((cred) => {
+                    db.ref('usuarios/' + cred.user.uid).set({
+                        username: userRaw,
+                        emailRecuperacao: emailRec
+                    });
+
+                    // Cria um índice rápido para buscas de recuperação
+                    db.ref('mapa_recuperacao/' + userKey).set({
+                        emailReal: emailRec
+                    });
+
+                    alert("Conta criada com sucesso!");
+                }).catch((err) => {
+                    alert("Erro ao cadastrar: " + err.message);
+                });
             });
         }
 
+        // FUNÇÃO DE RECUPERAÇÃO CORRIGIDA
         function recuperarSenha() {
-            const emailRec = document.getElementById('rec-email').value.trim();
-            if (!emailRec) {
-                alert("Digite o e-mail de recuperação!");
+            const userRaw = document.getElementById('rec-username').value.trim();
+            if (!userRaw) {
+                alert("Digite seu nome de usuário!");
                 return;
             }
 
-            auth.sendPasswordResetEmail(emailRec).then(() => {
-                alert("Se o e-mail estiver cadastrado, o link para redefinir a senha foi enviado!");
-                alternarTelaAuth('login');
-            }).catch((err) => {
-                alert("Erro ao enviar e-mail: " + err.message);
+            const userKey = userRaw.toLowerCase().replace(/[^a-z0-9]/g, "");
+
+            // Busca o e-mail real vinculado ao nome de usuário
+            db.ref('mapa_recuperacao/' + userKey).once('value').then((snapshot) => {
+                if (!snapshot.exists()) {
+                    alert("Nome de usuário não encontrado!");
+                    return;
+                }
+
+                const emailReal = snapshot.val().emailReal;
+
+                // Envia o e-mail de redefinição diretamente para o Gmail/E-mail Real informado no cadastro
+                auth.sendPasswordResetEmail(emailReal).then(() => {
+                    alert(`Um link de redefinição de senha foi enviado com sucesso para o e-mail registrado (${emailReal})!`);
+                    alternarTelaAuth('login');
+                }).catch((err) => {
+                    alert("Erro ao enviar o e-mail de redefinição: " + err.message);
+                });
             });
         }
 
