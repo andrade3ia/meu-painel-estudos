@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Meu Painel de Estudos</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #121214;
+            color: #e1e1e6;
+            max-width: 980px;
+            margin: 40px auto;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #00b37e;
+        }
+
+        .card {
+            background-color: #202024;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 24px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        h2 {
+            margin-top: 0;
+            color: #8257e5;
+            font-size: 1.2rem;
+        }
+
+        /* Painel de Resumo (Cards) */
+        .grid-resumo {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .card-estatistica {
+            background-color: #121214;
+            border: 1px solid #323238;
+            border-radius: 6px;
+            padding: 12px;
+            text-align: center;
+        }
+
+        .card-estatistica span {
+            display: block;
+            font-size: 0.8rem;
+            color: #a8a8b3;
+            margin-bottom: 5px;
+        }
+
+        .card-estatistica strong {
+            font-size: 1.3rem;
+            color: #e1e1e6;
+        }
+
+        .card-estatistica strong.verde { color: #00b37e; }
+        .card-estatistica strong.vermelho { color: #f75a68; }
+
+        /* Cronômetro */
+        #tempo {
+            font-size: 3.5rem;
+            text-align: center;
+            margin: 15px 0;
+            font-family: monospace;
+            color: #00b37e;
+        }
+
+        .acoes-cronometro {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-weight: bold;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            background-color: #8257e5;
+            color: white;
+        }
+
+        button:hover {
+            background-color: #996dff;
+        }
+
+        .btn-limpar {
+            background-color: #e55757;
+            margin-top: 15px;
+        }
+
+        .btn-limpar:hover {
+            background-color: #ff6d6d;
+        }
+
+        .linha-inputs {
+            display: flex;
+            gap: 15px;
+        }
+
+        .campo {
+            flex: 1;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            margin-bottom: 15px;
+            background-color: #121214;
+            border: 1px solid #323238;
+            border-radius: 4px;
+            color: white;
+            box-sizing: border-box;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #323238;
+            font-size: 0.88rem;
+        }
+
+        th {
+            color: #8257e5;
+        }
+
+        .texto-acertos { color: #00b37e; font-weight: bold; }
+        .texto-erros { color: #f75a68; font-weight: bold; }
+
+        /* Pastas de Matérias */
+        .lista-planejamento {
+            margin-top: 15px;
+            border-top: 1px solid #323238;
+            padding-top: 10px;
+        }
+
+        .pasta-materia {
+            background-color: #121214;
+            border: 1px solid #323238;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            overflow: hidden;
+        }
+
+        .cabecalho-pasta {
+            background-color: #29292e;
+            padding: 12px 15px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: bold;
+            color: #00b37e;
+            user-select: none;
+        }
+
+        .cabecalho-pasta:hover {
+            background-color: #323238;
+        }
+
+        .conteudo-pasta {
+            padding: 10px 15px;
+            display: none;
+            background-color: #121214;
+        }
+
+        .conteudo-pasta.aberta {
+            display: block;
+        }
+
+        .item-topico {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px dashed #29292e;
+        }
+
+        .item-topico:last-child {
+            border-bottom: none;
+        }
+
+        .btn-excluir-materia {
+            padding: 4px 8px;
+            font-size: 0.75rem;
+            background: #e55757;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Meu Painel de Estudos</h1>
+
+    <!-- Resumo Acumulado -->
+    <div class="card">
+        <h2>Resumo Geral Acumulado</h2>
+        <div class="grid-resumo">
+            <div class="card-estatistica">
+                <span>Total de Horas</span>
+                <strong id="resumo-tempo">00:00:00</strong>
+            </div>
+            <div class="card-estatistica">
+                <span>Questões Feitas</span>
+                <strong id="resumo-questoes">0</strong>
+            </div>
+            <div class="card-estatistica">
+                <span>Total Acertos</span>
+                <strong id="resumo-acertos" class="verde">0</strong>
+            </div>
+            <div class="card-estatistica">
+                <span>Total Erros</span>
+                <strong id="resumo-erros" class="vermelho">0</strong>
+            </div>
+            <div class="card-estatistica">
+                <span>Porcentagem Total</span>
+                <strong id="resumo-porcentagem" class="verde">0%</strong>
+            </div>
+        </div>
+    </div>
+
+    <!-- Planejamento com Pastas -->
+    <div class="card">
+        <h2>1. Planejamento de Matérias e Tópicos</h2>
+        <p style="font-size: 0.9rem; color: #a8a8b3;">Cadastre suas disciplinas. Cada matéria terá uma pasta própria contendo seus tópicos.</p>
+        
+        <div class="linha-inputs">
+            <div class="campo">
+                <label>Disciplina:</label>
+                <input type="text" id="plan-disciplina" placeholder="Ex: Direito Constitucional">
+            </div>
+            <div class="campo">
+                <label>Tópico / Assunto:</label>
+                <input type="text" id="plan-topico" placeholder="Ex: Controle de Constitucionalidade">
+            </div>
+        </div>
+        <button onclick="adicionarPlanejamento()">Adicionar ao Planejamento</button>
+
+        <div class="lista-planejamento" id="container-planejamento">
+            <!-- Pastas de matérias e tópicos aparecem aqui -->
+        </div>
+    </div>
+
+    <!-- Cronômetro -->
+    <div class="card">
+        <h2>2. Cronômetro de Estudo</h2>
+        <div id="tempo">00:00:00</div>
+        <div class="acoes-cronometro">
+            <button onclick="iniciarCronometro()">Iniciar</button>
+            <button onclick="pausarCronometro()">Pausar</button>
+            <button onclick="finalizarSessao()">Finalizar Sessão</button>
+        </div>
+    </div>
+
+    <!-- Registrar Sessão -->
+    <div class="card">
+        <h2>3. Registrar Sessão</h2>
+        
+        <label>Disciplina:</label>
+        <select id="select-disciplina" onchange="atualizarTopicosSelect()">
+            <option value="">Selecione uma disciplina cadastrada...</option>
+        </select>
+
+        <label>Tópico / Assunto:</label>
+        <select id="select-topico">
+            <option value="">Selecione primeiro uma disciplina...</option>
+        </select>
+
+        <div class="linha-inputs">
+            <div class="campo">
+                <label>Tipo de Estudo:</label>
+                <select id="select-tipo">
+                    <option value="Teoria">Teoria</option>
+                    <option value="Questões">Questões</option>
+                    <option value="Revisão">Revisão</option>
+                </select>
+            </div>
+            <div class="campo">
+                <label>Material Utilizado:</label>
+                <select id="select-material" onchange="alternarCamposMaterial()">
+                    <option value="Nenhum">Nenhum / Outro</option>
+                    <option value="PDF">PDF</option>
+                    <option value="Videoaula">Videoaula</option>
+                    <option value="Questoes">Base/Plataforma de Questões</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Campos dinâmicos do Material -->
+        <div id="campo-pdf" style="display: none;">
+            <label>Quantidade de Páginas Lidas:</label>
+            <input type="number" id="input-paginas" placeholder="Ex: 25" min="0">
+        </div>
+
+        <div id="campo-video" style="display: none;">
+            <label>Número da Aula / Bloco:</label>
+            <input type="text" id="input-video" placeholder="Ex: Aula 03 (Blocos 1 e 2)">
+        </div>
+
+        <div id="campo-questoes" style="display: none;">
+            <label>Fonte / Plataforma das Questões:</label>
+            <input type="text" id="input-fonte-questoes" placeholder="Ex: QConcursos, TEC, Caderno de Erros">
+        </div>
+
+        <div class="linha-inputs">
+            <div class="campo">
+                <label>Qtd. de Questões:</label>
+                <input type="number" id="input-questoes" placeholder="Ex: 20" min="0" value="0">
+            </div>
+            <div class="campo">
+                <label>Qtd. de Acertos:</label>
+                <input type="number" id="input-acertos" placeholder="Ex: 17" min="0" value="0">
+            </div>
+        </div>
+    </div>
+
+    <!-- Histórico -->
+    <div class="card">
+        <h2>Histórico de Estudos</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Data / Hora</th>
+                    <th>Disciplina</th>
+                    <th>Tópico</th>
+                    <th>Tipo</th>
+                    <th>Material</th>
+                    <th>Tempo</th>
+                    <th>Acertos</th>
+                    <th>Erros</th>
+                    <th>Total</th>
+                    <th>%</th>
+                </tr>
+            </thead>
+            <tbody id="tabela-historico">
+            </tbody>
+        </table>
+        <button class="btn-limpar" onclick="limparHistorico()">Limpar Histórico</button>
+    </div>
+
+    <!-- Lógica JavaScript -->
+    <script>
+        let segundos = 0;
+        let timer = null;
+        let historico = JSON.parse(localStorage.getItem("minhasSessoes")) || [];
+        let planejamento = JSON.parse(localStorage.getItem("meuPlanejamento")) || [];
+
+        renderizarPlanejamento();
+        atualizarDisciplinasSelect();
+        renderizarTabela();
+
+        // Alterna os campos dinâmicos conforme o tipo de material selecionado
+        function alternarCamposMaterial() {
+            let material = document.getElementById("select-material").value;
+            let campoPDF = document.getElementById("campo-pdf");
+            let campoVideo = document.getElementById("campo-video");
+            let campoQuestoes = document.getElementById("campo-questoes");
+
+            campoPDF.style.display = material === "PDF" ? "block" : "none";
+            campoVideo.style.display = material === "Videoaula" ? "block" : "none";
+            campoQuestoes.style.display = material === "Questoes" ? "block" : "none";
+        }
+
+        // ----------------- LÓGICA DO PLANEJAMENTO (PASTAS) -----------------
+        function adicionarPlanejamento() {
+            let discInput = document.getElementById("plan-disciplina").value.trim();
+            let topicoInput = document.getElementById("plan-topico").value.trim();
+
+            if (discInput === "" || topicoInput === "") {
+                alert("Preencha a disciplina e o tópico para cadastrar!");
+                return;
+            }
+
+            let itemExistente = planejamento.find(item => item.disciplina.toLowerCase() === discInput.toLowerCase());
+
+            if (itemExistente) {
+                if (!itemExistente.topicos.includes(topicoInput)) {
+                    itemExistente.topicos.push(topicoInput);
+                }
+            } else {
+                planejamento.push({
+                    disciplina: discInput,
+                    topicos: [topicoInput]
+                });
+            }
+
+            localStorage.setItem("meuPlanejamento", JSON.stringify(planejamento));
+
+            document.getElementById("plan-topico").value = "";
+            renderizarPlanejamento();
+            atualizarDisciplinasSelect();
+        }
+
+        function renderizarPlanejamento() {
+            let container = document.getElementById("container-planejamento");
+            container.innerHTML = "";
+
+            if (planejamento.length === 0) {
+                container.innerHTML = "<p style='font-size:0.85rem; color:#888;'>Nenhuma matéria ou tópico planejado ainda.</p>";
+                return;
+            }
+
+            planejamento.forEach((item, indexDisc) => {
+                let divPasta = document.createElement("div");
+                divPasta.className = "pasta-materia";
+
+                let topicosHTML = item.topicos.map((topico, indexTop) => `
+                    <div class="item-topico">
+                        <span>• ${topico}</span>
+                        <button class="btn-excluir-materia" onclick="removerTopico(${indexDisc}, ${indexTop})">Excluir Tópico</button>
+                    </div>
+                `).join("");
+
+                divPasta.innerHTML = `
+                    <div class="cabecalho-pasta" onclick="alternarPasta('pasta-${indexDisc}')">
+                        <span>📁 ${item.disciplina} <small style="color:#a8a8b3; font-weight:normal;">(${item.topicos.length} tópico(s))</small></span>
+                        <span>▼</span>
+                    </div>
+                    <div class="conteudo-pasta" id="pasta-${indexDisc}">
+                        ${topicosHTML}
+                        <button class="btn-excluir-materia" style="margin-top:10px; width:100%;" onclick="removerMateria(${indexDisc})">Excluir Matéria Completa</button>
+                    </div>
+                `;
+
+                container.appendChild(divPasta);
+            });
+        }
+
+        function alternarPasta(idPasta) {
+            let elemento = document.getElementById(idPasta);
+            elemento.classList.toggle("aberta");
+        }
+
+        function removerTopico(indexDisc, indexTop) {
+            planejamento[indexDisc].topicos.splice(indexTop, 1);
+            if (planejamento[indexDisc].topicos.length === 0) {
+                planejamento.splice(indexDisc, 1);
+            }
+            localStorage.setItem("meuPlanejamento", JSON.stringify(planejamento));
+            renderizarPlanejamento();
+            atualizarDisciplinasSelect();
+        }
+
+        function removerMateria(indexDisc) {
+            if (confirm("Deseja realmente excluir toda essa matéria e seus tópicos do planejamento?")) {
+                planejamento.splice(indexDisc, 1);
+                localStorage.setItem("meuPlanejamento", JSON.stringify(planejamento));
+                renderizarPlanejamento();
+                atualizarDisciplinasSelect();
+            }
+        }
+
+        function atualizarDisciplinasSelect() {
+            let selectDisc = document.getElementById("select-disciplina");
+            selectDisc.innerHTML = '<option value="">Selecione uma disciplina cadastrada...</option>';
+
+            planejamento.forEach((item) => {
+                let opt = document.createElement("option");
+                opt.value = item.disciplina;
+                opt.innerText = item.disciplina;
+                selectDisc.appendChild(opt);
+            });
+
+            atualizarTopicosSelect();
+        }
+
+        function atualizarTopicosSelect() {
+            let discSelecionada = document.getElementById("select-disciplina").value;
+            let selectTopico = document.getElementById("select-topico");
+            selectTopico.innerHTML = '<option value="">Selecione um tópico...</option>';
+
+            let itemEncontrado = planejamento.find(item => item.disciplina === discSelecionada);
+
+            if (itemEncontrado) {
+                itemEncontrado.topicos.forEach(topico => {
+                    let opt = document.createElement("option");
+                    opt.value = topico;
+                    opt.innerText = topico;
+                    selectTopico.appendChild(opt);
+                });
+            }
+        }
+
+        // ----------------- LÓGICA DO CRONÔMETRO E HISTÓRICO -----------------
+        function formatarTempo(seg) {
+            let hrs = Math.floor(seg / 3600);
+            let mins = Math.floor((seg % 3600) / 60);
+            let secs = seg % 60;
+
+            let hStr = hrs < 10 ? "0" + hrs : hrs;
+            let mStr = mins < 10 ? "0" + mins : mins;
+            let sStr = secs < 10 ? "0" + secs : secs;
+
+            return `${hStr}:${mStr}:${sStr}`;
+        }
+
+        function iniciarCronometro() {
+            if (timer !== null) return;
+            timer = setInterval(() => {
+                segundos++;
+                document.getElementById("tempo").innerText = formatarTempo(segundos);
+            }, 1000);
+        }
+
+        function pausarCronometro() {
+            clearInterval(timer);
+            timer = null;
+        }
+
+        function finalizarSessao() {
+            pausarCronometro();
+
+            let disciplina = document.getElementById("select-disciplina").value;
+            let assunto = document.getElementById("select-topico").value;
+            let tipo = document.getElementById("select-tipo").value;
+            let material = document.getElementById("select-material").value;
+            let questoes = parseInt(document.getElementById("input-questoes").value) || 0;
+            let acertos = parseInt(document.getElementById("input-acertos").value) || 0;
+            let tempoFormatado = formatarTempo(segundos);
+
+            if (disciplina === "" || assunto === "") {
+                alert("Por favor, selecione uma disciplina e um tópico antes de finalizar!");
+                return;
+            }
+
+            if (segundos === 0) {
+                alert("O tempo estudado precisa ser maior que zero!");
+                return;
+            }
+
+            if (acertos > questoes) {
+                alert("O número de acertos não pode ser maior que o número de questões!");
+                return;
+            }
+
+            // Tratamento do detalhe do material
+            let detalheMaterial = "-";
+            if (material === "PDF") {
+                let paginas = document.getElementById("input-paginas").value;
+                detalheMaterial = paginas ? `PDF (${paginas} pág)` : "PDF";
+            } else if (material === "Videoaula") {
+                let videoInfo = document.getElementById("input-video").value;
+                detalheMaterial = videoInfo ? `Vídeo (${videoInfo})` : "Videoaula";
+            } else if (material === "Questoes") {
+                let fonte = document.getElementById("input-fonte-questoes").value;
+                detalheMaterial = fonte ? `Questões (${fonte})` : "Questões";
+            }
+
+            // Captura da Data e Hora Atuais
+            let agora = new Date();
+            let dataHora = agora.toLocaleDateString("pt-BR") + " " + agora.toLocaleTimeString("pt-BR", { hour: '2-digit', minute: '2-digit' });
+
+            let erros = questoes - acertos;
+            let porcentagem = questoes > 0 ? Math.round((acertos / questoes) * 100) : 0;
+
+            let novaSessao = {
+                dataHora: dataHora,
+                disciplina: disciplina,
+                assunto: assunto,
+                tipo: tipo,
+                material: detalheMaterial,
+                tempoSegundos: segundos,
+                tempo: tempoFormatado,
+                questoes: questoes,
+                acertos: acertos,
+                erros: erros,
+                porcentagem: porcentagem
+            };
+
+            historico.unshift(novaSessao);
+            localStorage.setItem("minhasSessoes", JSON.stringify(historico));
+
+            renderizarTabela();
+
+            // Resetar formulário
+            segundos = 0;
+            document.getElementById("tempo").innerText = "00:00:00";
+            document.getElementById("input-questoes").value = "0";
+            document.getElementById("input-acertos").value = "0";
+            document.getElementById("input-paginas").value = "";
+            document.getElementById("input-video").value = "";
+            document.getElementById("input-fonte-questoes").value = "";
+            document.getElementById("select-material").value = "Nenhum";
+            alternarCamposMaterial();
+        }
+
+        function renderizarTabela() {
+            let tabela = document.getElementById("tabela-historico");
+            tabela.innerHTML = "";
+
+            let totalSegundos = 0;
+            let totalQuestoes = 0;
+            let totalAcertos = 0;
+            let totalErros = 0;
+
+            historico.forEach((sessao) => {
+                totalSegundos += sessao.tempoSegundos || 0;
+                totalQuestoes += sessao.questoes || 0;
+                totalAcertos += sessao.acertos || 0;
+                totalErros += sessao.erros || 0;
+
+                let txtAcertos = sessao.questoes > 0 ? sessao.acertos : "-";
+                let txtErros = sessao.questoes > 0 ? sessao.erros : "-";
+                let txtQuestoes = sessao.questoes > 0 ? sessao.questoes : "-";
+                let txtPorcentagem = sessao.questoes > 0 ? `${sessao.porcentagem}%` : "-";
+
+                let linha = `
+                    <tr>
+                        <td><small>${sessao.dataHora || '-'}</small></td>
+                        <td>${sessao.disciplina}</td>
+                        <td>${sessao.assunto}</td>
+                        <td>${sessao.tipo}</td>
+                        <td>${sessao.material || '-'}</td>
+                        <td>${sessao.tempo}</td>
+                        <td class="texto-acertos">${txtAcertos}</td>
+                        <td class="texto-erros">${txtErros}</td>
+                        <td>${txtQuestoes}</td>
+                        <td class="texto-acertos">${txtPorcentagem}</td>
+                    </tr>
+                `;
+                tabela.innerHTML += linha;
+            });
+
+            let porcentagemGeral = totalQuestoes > 0 ? Math.round((totalAcertos / totalQuestoes) * 100) : 0;
+
+            document.getElementById("resumo-tempo").innerText = formatarTempo(totalSegundos);
+            document.getElementById("resumo-questoes").innerText = totalQuestoes;
+            document.getElementById("resumo-acertos").innerText = totalAcertos;
+            document.getElementById("resumo-erros").innerText = totalErros;
+            document.getElementById("resumo-porcentagem").innerText = `${porcentagemGeral}%`;
+        }
+
+        function limparHistorico() {
+            if (confirm("Tem certeza que deseja apagar todo o histórico de estudos?")) {
+                historico = [];
+                localStorage.removeItem("minhasSessoes");
+                renderizarTabela();
+            }
+        }
+    </script>
+</body>
+</html>
