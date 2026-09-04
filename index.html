@@ -608,34 +608,27 @@
             const emailVirtual = formatarEmailUsuario(userRaw);
             const userKey = userRaw.toLowerCase().replace(/[^a-z0-9]/g, "");
 
-            db.ref('mapa_recuperacao/' + userKey).once('value').then((snapshot) => {
-                if (snapshot.exists()) {
-                    alert("Este nome de usuário já está sendo utilizado.");
-                    btn.disabled = false;
-                    btn.innerText = "Cadastrar";
-                    return;
-                }
-
-                auth.createUserWithEmailAndPassword(emailVirtual, senha).then((cred) => {
-                    db.ref('usuarios/' + cred.user.uid).set({
-                        username: userRaw,
-                        emailRecuperacao: emailRec
-                    });
-
-                    db.ref('mapa_recuperacao/' + userKey).set({
-                        emailReal: emailRec
-                    });
-
-                    alert("Conta criada com sucesso!");
-                    btn.disabled = false;
-                    btn.innerText = "Cadastrar";
-                }).catch((err) => {
-                    alert("Erro ao cadastrar: " + err.message);
-                    btn.disabled = false;
-                    btn.innerText = "Cadastrar";
+            // 1. Cria a conta de autenticação primeiro
+            auth.createUserWithEmailAndPassword(emailVirtual, senha).then((cred) => {
+                // 2. Com o usuário logado, salva os dados no banco
+                db.ref('usuarios/' + cred.user.uid).set({
+                    username: userRaw,
+                    emailRecuperacao: emailRec
                 });
+
+                db.ref('mapa_recuperacao/' + userKey).set({
+                    emailReal: emailRec
+                });
+
+                alert("Conta criada com sucesso!");
+                btn.disabled = false;
+                btn.innerText = "Cadastrar";
             }).catch((err) => {
-                alert("Erro ao conectar ao servidor. Verifique sua conexão!");
+                if (err.code === 'auth/email-already-in-use') {
+                    alert("Este nome de usuário já está sendo utilizado.");
+                } else {
+                    alert("Erro ao cadastrar: " + err.message);
+                }
                 btn.disabled = false;
                 btn.innerText = "Cadastrar";
             });
