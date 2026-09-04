@@ -280,7 +280,6 @@
             text-align: center;
         }
 
-        /* Painel de Log do Sistema */
         #system-log {
             display: none;
             background-color: #18181b;
@@ -540,11 +539,6 @@
             logElement.innerText = "";
         }
 
-        function formatarEmailUsuario(username) {
-            const cleanUser = username.trim().toLowerCase().replace(/[^a-z0-9]/g, "");
-            return `${cleanUser}@meupainel.local`;
-        }
-
         function alternarTelaAuth(tela) {
             limparLogErro();
             document.getElementById('form-login').style.display = tela === 'login' ? 'block' : 'none';
@@ -559,7 +553,7 @@
                 refUser.child('username').once('value').then((snapshot) => {
                     const nomeExibicao = snapshot.val() || user.email.split('@')[0];
                     document.getElementById('user-display').innerText = nomeExibicao;
-                }).catch((err) => {
+                }).catch(() => {
                     document.getElementById('user-display').innerText = user.email.split('@')[0];
                 });
 
@@ -587,7 +581,8 @@
             }
         });
 
-        function fazerLogin() {
+        // Função de Login Multidomínio com suporte legado
+        async function fazerLogin() {
             limparLogErro();
             const btn = document.getElementById('btn-login-trigger');
             const userRaw = document.getElementById('login-username').value.trim();
@@ -599,18 +594,38 @@
             }
 
             btn.disabled = true;
-            btn.innerText = "Entrando...";
+            btn.innerText = "Autenticando...";
 
-            const emailVirtual = formatarEmailUsuario(userRaw);
-            auth.signInWithEmailAndPassword(emailVirtual, senha).then(() => {
-                btn.disabled = false;
-                btn.innerText = "Entrar";
-            }).catch((err) => {
-                exibirLogErro(`[${err.code}] ${err.message}`);
-                alert("Falha no login. Verifique as credenciais ou a caixa de aviso abaixo.");
-                btn.disabled = false;
-                btn.innerText = "Entrar";
-            });
+            const cleanUser = userRaw.toLowerCase().replace(/[^a-z0-9]/g, "");
+            
+            // Lista de sufixos possíveis registrados no Firebase
+            const dominiosTestar = [
+                `${cleanUser}@meupainel.local`,
+                `${cleanUser}@estudante.app`,
+                `${cleanUser}@estudante.local`,
+                userRaw // Permite caso o usuário digite o e-mail completo
+            ];
+
+            let autenticado = false;
+            let ultimoErro = null;
+
+            for (const email of dominiosTestar) {
+                try {
+                    await auth.signInWithEmailAndPassword(email, senha);
+                    autenticado = true;
+                    break;
+                } catch (err) {
+                    ultimoErro = err;
+                }
+            }
+
+            btn.disabled = false;
+            btn.innerText = "Entrar";
+
+            if (!autenticado && ultimoErro) {
+                exibirLogErro(`[${ultimoErro.code}] ${ultimoErro.message}`);
+                alert("Usuário ou senha incorretos.");
+            }
         }
 
         function fazerCadastro() {
@@ -633,8 +648,8 @@
             btn.disabled = true;
             btn.innerText = "Criando conta...";
 
-            const emailVirtual = formatarEmailUsuario(userRaw);
-            const userKey = userRaw.toLowerCase().replace(/[^a-z0-9]/g, "");
+            const cleanUser = userRaw.toLowerCase().replace(/[^a-z0-9]/g, "");
+            const emailVirtual = `${cleanUser}@meupainel.local`;
 
             auth.createUserWithEmailAndPassword(emailVirtual, senha).then((cred) => {
                 db.ref('usuarios/' + cred.user.uid).set({
@@ -642,7 +657,7 @@
                     emailRecuperacao: emailRec
                 });
 
-                db.ref('mapa_recuperacao/' + userKey).set({
+                db.ref('mapa_recuperacao/' + cleanUser).set({
                     emailReal: emailRec
                 });
 
@@ -651,7 +666,11 @@
                 btn.innerText = "Cadastrar";
             }).catch((err) => {
                 exibirLogErro(`[${err.code}] ${err.message}`);
-                alert("Erro ao cadastrar. Veja a mensagem técnica abaixo.");
+                if (err.code === 'auth/email-already-in-use') {
+                    alert("Este nome de usuário já está cadastrado.");
+                } else {
+                    alert("Erro ao cadastrar. Veja a mensagem técnica abaixo.");
+                }
                 btn.disabled = false;
                 btn.innerText = "Cadastrar";
             });
