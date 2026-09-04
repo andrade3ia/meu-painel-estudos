@@ -17,14 +17,7 @@
         h1 {
             text-align: center;
             color: #00b37e;
-            margin-bottom: 5px;
-        }
-
-        .status-sync {
-            text-align: center;
-            font-size: 0.8rem;
-            color: #00b37e;
-            margin-bottom: 25px;
+            margin-bottom: 4px;
         }
 
         .card {
@@ -41,7 +34,40 @@
             font-size: 1.2rem;
         }
 
-        /* Painel de Resumo (Cards) */
+        /* Auth Container */
+        .auth-container {
+            max-width: 400px;
+            margin: 50px auto;
+        }
+
+        .user-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 10px 15px;
+            background-color: #202024;
+            border-radius: 6px;
+            border: 1px solid #323238;
+        }
+
+        .btn-logout {
+            background-color: #e55757;
+            padding: 6px 12px;
+            font-size: 0.85rem;
+        }
+
+        .link-toggle {
+            display: block;
+            text-align: center;
+            margin-top: 15px;
+            color: #8257e5;
+            cursor: pointer;
+            font-size: 0.9rem;
+            text-decoration: underline;
+        }
+
+        /* Resumo Cards */
         .grid-resumo {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
@@ -216,161 +242,204 @@
     <!-- SDKs do Firebase -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 </head>
 <body>
 
     <h1>Meu Painel de Estudos</h1>
-    <div class="status-sync">⚡ Sincronização em Tempo Real Ativa</div>
 
-    <!-- Resumo Acumulado -->
-    <div class="card">
-        <h2>Resumo Geral Acumulado</h2>
-        <div class="grid-resumo">
-            <div class="card-estatistica">
-                <span>Total de Horas</span>
-                <strong id="resumo-tempo">00:00:00</strong>
-            </div>
-            <div class="card-estatistica">
-                <span>Questões Feitas</span>
-                <strong id="resumo-questoes">0</strong>
-            </div>
-            <div class="card-estatistica">
-                <span>Total Acertos</span>
-                <strong id="resumo-acertos" class="verde">0</strong>
-            </div>
-            <div class="card-estatistica">
-                <span>Total Erros</span>
-                <strong id="resumo-erros" class="vermelho">0</strong>
-            </div>
-            <div class="card-estatistica">
-                <span>Porcentagem Total</span>
-                <strong id="resumo-porcentagem" class="verde">0%</strong>
-            </div>
-        </div>
-    </div>
-
-    <!-- Planejamento com Pastas -->
-    <div class="card">
-        <h2>1. Planejamento de Matérias e Tópicos</h2>
-        <p style="font-size: 0.9rem; color: #a8a8b3;">Cadastre suas disciplinas. Cada matéria terá uma pasta própria contendo seus tópicos.</p>
+    <!-- TELA DE AUTENTICAÇÃO -->
+    <div id="secao-auth" class="card auth-container">
         
-        <div class="linha-inputs">
-            <div class="campo">
-                <label>Disciplina:</label>
-                <input type="text" id="plan-disciplina" placeholder="Ex: Direito Constitucional">
-            </div>
-            <div class="campo">
-                <label>Tópico / Assunto:</label>
-                <input type="text" id="plan-topico" placeholder="Ex: Controle de Constitucionalidade">
-            </div>
+        <!-- Formulário de Login -->
+        <div id="form-login">
+            <h2 style="text-align: center;">Acessar Painel</h2>
+            <input type="text" id="login-username" placeholder="Nome de Usuário" required>
+            <input type="password" id="login-senha" placeholder="Senha" required>
+            <button onclick="fazerLogin()" style="width: 100%;">Entrar</button>
+            
+            <span class="link-toggle" onclick="alternarTelaAuth('cadastro')">Não tem conta? Cadastre-se</span>
+            <span class="link-toggle" onclick="alternarTelaAuth('recuperar')" style="color: #a8a8b3; font-size: 0.8rem;">Esqueci minha senha</span>
         </div>
-        <button onclick="adicionarPlanejamento()">Adicionar ao Planejamento</button>
 
-        <div class="lista-planejamento" id="container-planejamento">
-            <!-- Pastas de matérias e tópicos aparecem aqui -->
+        <!-- Formulário de Cadastro -->
+        <div id="form-cadastro" style="display: none;">
+            <h2 style="text-align: center;">Criar Conta</h2>
+            <input type="text" id="cad-username" placeholder="Escolha um Nome de Usuário" required>
+            <input type="password" id="cad-senha" placeholder="Senha (mínimo 6 caracteres)" required>
+            <input type="email" id="cad-email-recuperacao" placeholder="E-mail de Recuperação (Opcional)">
+            <button onclick="fazerCadastro()" style="width: 100%;">Cadastrar</button>
+            <span class="link-toggle" onclick="alternarTelaAuth('login')">Já tem conta? Faça Login</span>
         </div>
+
+        <!-- Formulário de Recuperação -->
+        <div id="form-recuperar" style="display: none;">
+            <h2 style="text-align: center;">Recuperar Senha</h2>
+            <p style="font-size: 0.85rem; color: #a8a8b3;">Informe o e-mail cadastrado na recuperação para receber o link.</p>
+            <input type="email" id="rec-email" placeholder="Seu E-mail de Recuperação" required>
+            <button onclick="recuperarSenha()" style="width: 100%;">Enviar Link de Recuperação</button>
+            <span class="link-toggle" onclick="alternarTelaAuth('login')">Voltar ao Login</span>
+        </div>
+
     </div>
 
-    <!-- Cronômetro -->
-    <div class="card">
-        <h2>2. Cronômetro de Estudo</h2>
-        <div id="tempo">00:00:00</div>
-        <div class="acoes-cronometro">
-            <button onclick="iniciarCronometro()">Iniciar</button>
-            <button onclick="pausarCronometro()">Pausar</button>
-            <button onclick="finalizarSessao()">Finalizar Sessão</button>
-        </div>
-    </div>
-
-    <!-- Registrar Sessão -->
-    <div class="card">
-        <h2>3. Registrar Sessão</h2>
+    <!-- PAINEL PRINCIPAL -->
+    <div id="secao-painel" style="display: none;">
         
-        <label>Disciplina:</label>
-        <select id="select-disciplina" onchange="atualizarTopicosSelect()">
-            <option value="">Selecione uma disciplina cadastrada...</option>
-        </select>
-
-        <label>Tópico / Assunto:</label>
-        <select id="select-topico">
-            <option value="">Selecione primeiro uma disciplina...</option>
-        </select>
-
-        <div class="linha-inputs">
-            <div class="campo">
-                <label>Tipo de Estudo:</label>
-                <select id="select-tipo">
-                    <option value="Teoria">Teoria</option>
-                    <option value="Questões">Questões</option>
-                    <option value="Revisão">Revisão</option>
-                </select>
-            </div>
-            <div class="campo">
-                <label>Material Utilizado:</label>
-                <select id="select-material" onchange="alternarCamposMaterial()">
-                    <option value="Nenhum">Nenhum / Outro</option>
-                    <option value="PDF">PDF</option>
-                    <option value="Videoaula">Videoaula</option>
-                    <option value="Questoes">Base/Plataforma de Questões</option>
-                </select>
-            </div>
+        <div class="user-header">
+            <span>👤 Conectado como: <strong id="user-display" style="color:#00b37e;"></strong></span>
+            <button class="btn-logout" onclick="fazerLogout()">Sair</button>
         </div>
 
-        <!-- Campos dinâmicos do Material -->
-        <div id="campo-pdf" style="display: none;">
-            <label>Quantidade de Páginas Lidas:</label>
-            <input type="number" id="input-paginas" placeholder="Ex: 25" min="0">
-        </div>
-
-        <div id="campo-video" style="display: none;">
-            <label>Número da Aula / Bloco:</label>
-            <input type="text" id="input-video" placeholder="Ex: Aula 03 (Blocos 1 e 2)">
-        </div>
-
-        <div id="campo-questoes" style="display: none;">
-            <label>Fonte / Plataforma das Questões:</label>
-            <input type="text" id="input-fonte-questoes" placeholder="Ex: QConcursos, TEC, Caderno de Erros">
-        </div>
-
-        <div class="linha-inputs">
-            <div class="campo">
-                <label>Qtd. de Questões:</label>
-                <input type="number" id="input-questoes" placeholder="Ex: 20" min="0" value="0">
-            </div>
-            <div class="campo">
-                <label>Qtd. de Acertos:</label>
-                <input type="number" id="input-acertos" placeholder="Ex: 17" min="0" value="0">
+        <!-- Resumo Acumulado -->
+        <div class="card">
+            <h2>Resumo Geral Acumulado</h2>
+            <div class="grid-resumo">
+                <div class="card-estatistica">
+                    <span>Total de Horas</span>
+                    <strong id="resumo-tempo">00:00:00</strong>
+                </div>
+                <div class="card-estatistica">
+                    <span>Questões Feitas</span>
+                    <strong id="resumo-questoes">0</strong>
+                </div>
+                <div class="card-estatistica">
+                    <span>Total Acertos</span>
+                    <strong id="resumo-acertos" class="verde">0</strong>
+                </div>
+                <div class="card-estatistica">
+                    <span>Total Erros</span>
+                    <strong id="resumo-erros" class="vermelho">0</strong>
+                </div>
+                <div class="card-estatistica">
+                    <span>Porcentagem Total</span>
+                    <strong id="resumo-porcentagem" class="verde">0%</strong>
+                </div>
             </div>
         </div>
+
+        <!-- Planejamento com Pastas -->
+        <div class="card">
+            <h2>1. Planejamento de Matérias e Tópicos</h2>
+            <p style="font-size: 0.9rem; color: #a8a8b3;">Cadastre suas disciplinas. Cada matéria terá uma pasta própria contendo seus tópicos.</p>
+            
+            <div class="linha-inputs">
+                <div class="campo">
+                    <label>Disciplina:</label>
+                    <input type="text" id="plan-disciplina" placeholder="Ex: Direito Constitucional">
+                </div>
+                <div class="campo">
+                    <label>Tópico / Assunto:</label>
+                    <input type="text" id="plan-topico" placeholder="Ex: Controle de Constitucionalidade">
+                </div>
+            </div>
+            <button onclick="adicionarPlanejamento()">Adicionar ao Planejamento</button>
+
+            <div class="lista-planejamento" id="container-planejamento">
+            </div>
+        </div>
+
+        <!-- Cronômetro -->
+        <div class="card">
+            <h2>2. Cronômetro de Estudo</h2>
+            <div id="tempo">00:00:00</div>
+            <div class="acoes-cronometro">
+                <button onclick="iniciarCronometro()">Iniciar</button>
+                <button onclick="pausarCronometro()">Pausar</button>
+                <button onclick="finalizarSessao()">Finalizar Sessão</button>
+            </div>
+        </div>
+
+        <!-- Registrar Sessão -->
+        <div class="card">
+            <h2>3. Registrar Sessão</h2>
+            
+            <label>Disciplina:</label>
+            <select id="select-disciplina" onchange="atualizarTopicosSelect()">
+                <option value="">Selecione uma disciplina cadastrada...</option>
+            </select>
+
+            <label>Tópico / Assunto:</label>
+            <select id="select-topico">
+                <option value="">Selecione primeiro uma disciplina...</option>
+            </select>
+
+            <div class="linha-inputs">
+                <div class="campo">
+                    <label>Tipo de Estudo:</label>
+                    <select id="select-tipo">
+                        <option value="Teoria">Teoria</option>
+                        <option value="Questões">Questões</option>
+                        <option value="Revisão">Revisão</option>
+                    </select>
+                </div>
+                <div class="campo">
+                    <label>Material Utilizado:</label>
+                    <select id="select-material" onchange="alternarCamposMaterial()">
+                        <option value="Nenhum">Nenhum / Outro</option>
+                        <option value="PDF">PDF</option>
+                        <option value="Videoaula">Videoaula</option>
+                        <option value="Questoes">Base/Plataforma de Questões</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Campos dinâmicos do Material -->
+            <div id="campo-pdf" style="display: none;">
+                <label>Quantidade de Páginas Lidas:</label>
+                <input type="number" id="input-paginas" placeholder="Ex: 25" min="0">
+            </div>
+
+            <div id="campo-video" style="display: none;">
+                <label>Número da Aula / Bloco:</label>
+                <input type="text" id="input-video" placeholder="Ex: Aula 03 (Blocos 1 e 2)">
+            </div>
+
+            <div id="campo-questoes" style="display: none;">
+                <label>Fonte / Plataforma das Questões:</label>
+                <input type="text" id="input-fonte-questoes" placeholder="Ex: QConcursos, TEC, Caderno de Erros">
+            </div>
+
+            <div class="linha-inputs">
+                <div class="campo">
+                    <label>Qtd. de Questões:</label>
+                    <input type="number" id="input-questoes" placeholder="Ex: 20" min="0" value="0">
+                </div>
+                <div class="campo">
+                    <label>Qtd. de Acertos:</label>
+                    <input type="number" id="input-acertos" placeholder="Ex: 17" min="0" value="0">
+                </div>
+            </div>
+        </div>
+
+        <!-- Histórico -->
+        <div class="card">
+            <h2>Histórico de Estudos</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Data / Hora</th>
+                        <th>Disciplina</th>
+                        <th>Tópico</th>
+                        <th>Tipo</th>
+                        <th>Material</th>
+                        <th>Tempo</th>
+                        <th>Acertos</th>
+                        <th>Erros</th>
+                        <th>Total</th>
+                        <th>%</th>
+                    </tr>
+                </thead>
+                <tbody id="tabela-historico">
+                </tbody>
+            </table>
+            <button class="btn-limpar" onclick="limparHistorico()">Limpar Histórico</button>
+        </div>
+
     </div>
 
-    <!-- Histórico -->
-    <div class="card">
-        <h2>Histórico de Estudos</h2>
-        <table>
-            <thead>
-                <tr>
-                    <th>Data / Hora</th>
-                    <th>Disciplina</th>
-                    <th>Tópico</th>
-                    <th>Tipo</th>
-                    <th>Material</th>
-                    <th>Tempo</th>
-                    <th>Acertos</th>
-                    <th>Erros</th>
-                    <th>Total</th>
-                    <th>%</th>
-                </tr>
-            </thead>
-            <tbody id="tabela-historico">
-            </tbody>
-        </table>
-        <button class="btn-limpar" onclick="limparHistorico()">Limpar Histórico</button>
-    </div>
-
-    <!-- Lógica JavaScript + Firebase Integration -->
+    <!-- Lógica JavaScript -->
     <script>
-        // Configurações do Firebase do Usuário
         const firebaseConfig = {
             apiKey: "AIzaSyCIPK3YBKulMbjJzm_UahdtQrNjgqLmYho",
             authDomain: "plataforma-de-estudos-98ec8.firebaseapp.com",
@@ -381,43 +450,137 @@
             appId: "1:237117351737:web:32a01ded955abc3d302ae8"
         };
 
-        // Inicializar Firebase
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
+        const auth = firebase.auth();
 
+        let refUser = null;
         let segundos = 0;
         let timer = null;
         let historico = [];
         let planejamento = [];
 
-        // ESCUTAR MUDANÇAS EM TEMPO REAL NO FIREBASE
-
-        // Escutar Planejamento
-        db.ref('planejamento').on('value', (snapshot) => {
-            planejamento = snapshot.val() || [];
-            renderizarPlanejamento();
-            atualizarDisciplinasSelect();
-        });
-
-        // Escutar Histórico
-        db.ref('historico').on('value', (snapshot) => {
-            historico = snapshot.val() || [];
-            renderizarTabela();
-        });
-
-        // Alterna os campos dinâmicos conforme o tipo de material selecionado
-        function alternarCamposMaterial() {
-            let material = document.getElementById("select-material").value;
-            let campoPDF = document.getElementById("campo-pdf");
-            let campoVideo = document.getElementById("campo-video");
-            let campoQuestoes = document.getElementById("campo-questoes");
-
-            campoPDF.style.display = material === "PDF" ? "block" : "none";
-            campoVideo.style.display = material === "Videoaula" ? "block" : "none";
-            campoQuestoes.style.display = material === "Questoes" ? "block" : "none";
+        // Converte o nome de usuário em um e-mail válido internamente
+        function formatarEmailUsuario(username) {
+            const cleanUser = username.trim().toLowerCase().replace(/[^a-z0-9]/g, "");
+            return `${cleanUser}@estudante.app`;
         }
 
-        // ----------------- LÓGICA DO PLANEJAMENTO (PASTAS) -----------------
+        // Alternar telas de autenticação
+        function alternarTelaAuth(tela) {
+            document.getElementById('form-login').style.display = tela === 'login' ? 'block' : 'none';
+            document.getElementById('form-cadastro').style.display = tela === 'cadastro' ? 'block' : 'none';
+            document.getElementById('form-recuperar').style.display = tela === 'recuperar' ? 'block' : 'none';
+        }
+
+        // ESCUTAR MUDANÇA DE AUTENTICAÇÃO
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                // Pega o nome do usuário salvo
+                db.ref('usuarios/' + user.uid + '/username').once('value').then((snapshot) => {
+                    const nomeExibicao = snapshot.val() || user.email.split('@')[0];
+                    document.getElementById('user-display').innerText = nomeExibicao;
+                });
+
+                document.getElementById('secao-auth').style.display = 'none';
+                document.getElementById('secao-painel').style.display = 'block';
+
+                refUser = db.ref('usuarios/' + user.uid);
+
+                refUser.child('planejamento').on('value', (snapshot) => {
+                    planejamento = snapshot.val() || [];
+                    renderizarPlanejamento();
+                    atualizarDisciplinasSelect();
+                });
+
+                refUser.child('historico').on('value', (snapshot) => {
+                    historico = snapshot.val() || [];
+                    renderizarTabela();
+                });
+
+            } else {
+                refUser = null;
+                document.getElementById('secao-auth').style.display = 'block';
+                document.getElementById('secao-painel').style.display = 'none';
+            }
+        });
+
+        // AÇÕES DE AUTH
+        function fazerLogin() {
+            const userRaw = document.getElementById('login-username').value;
+            const senha = document.getElementById('login-senha').value;
+
+            if (!userRaw || !senha) {
+                alert("Preencha o nome de usuário e a senha!");
+                return;
+            }
+
+            const emailVirtual = formatarEmailUsuario(userRaw);
+            auth.signInWithEmailAndPassword(emailVirtual, senha).catch((err) => {
+                alert("Usuário ou senha incorretos!");
+            });
+        }
+
+        function fazerCadastro() {
+            const userRaw = document.getElementById('cad-username').value;
+            const senha = document.getElementById('cad-senha').value;
+            const emailRec = document.getElementById('cad-email-recuperacao').value.trim();
+
+            if (!userRaw || !senha) {
+                alert("Preencha o nome de usuário e a senha!");
+                return;
+            }
+
+            if (senha.length < 6) {
+                alert("A senha precisa ter pelo menos 6 caracteres!");
+                return;
+            }
+
+            const emailVirtual = formatarEmailUsuario(userRaw);
+
+            auth.createUserWithEmailAndPassword(emailVirtual, senha).then((cred) => {
+                // Salva o nome de usuário puro e o e-mail de recuperação opcional
+                db.ref('usuarios/' + cred.user.uid).set({
+                    username: userRaw,
+                    emailRecuperacao: emailRec || null
+                });
+                alert("Conta criada com sucesso!");
+            }).catch((err) => {
+                if (err.code === "auth/email-already-in-use") {
+                    alert("Este nome de usuário já está sendo utilizado por outra pessoa.");
+                } else {
+                    alert("Erro ao cadastrar: " + err.message);
+                }
+            });
+        }
+
+        function recuperarSenha() {
+            const emailRec = document.getElementById('rec-email').value.trim();
+            if (!emailRec) {
+                alert("Digite o e-mail de recuperação!");
+                return;
+            }
+
+            auth.sendPasswordResetEmail(emailRec).then(() => {
+                alert("Se o e-mail estiver cadastrado, o link para redefinir a senha foi enviado!");
+                alternarTelaAuth('login');
+            }).catch((err) => {
+                alert("Erro ao enviar e-mail: " + err.message);
+            });
+        }
+
+        function fazerLogout() {
+            auth.signOut();
+        }
+
+        function alternarCamposMaterial() {
+            let material = document.getElementById("select-material").value;
+            document.getElementById("campo-pdf").style.display = material === "PDF" ? "block" : "none";
+            document.getElementById("campo-video").style.display = material === "Videoaula" ? "block" : "none";
+            document.getElementById("campo-questoes").style.display = material === "Questoes" ? "block" : "none";
+        }
+
+        // PLANEJAMENTO
         function adicionarPlanejamento() {
             let discInput = document.getElementById("plan-disciplina").value.trim();
             let topicoInput = document.getElementById("plan-topico").value.trim();
@@ -440,9 +603,7 @@
                 });
             }
 
-            // Salvar no Firebase
-            db.ref('planejamento').set(planejamento);
-
+            refUser.child('planejamento').set(planejamento);
             document.getElementById("plan-topico").value = "";
         }
 
@@ -482,8 +643,7 @@
         }
 
         function alternarPasta(idPasta) {
-            let elemento = document.getElementById(idPasta);
-            elemento.classList.toggle("aberta");
+            document.getElementById(idPasta).classList.toggle("aberta");
         }
 
         function removerTopico(indexDisc, indexTop) {
@@ -491,13 +651,13 @@
             if (planejamento[indexDisc].topicos.length === 0) {
                 planejamento.splice(indexDisc, 1);
             }
-            db.ref('planejamento').set(planejamento);
+            refUser.child('planejamento').set(planejamento);
         }
 
         function removerMateria(indexDisc) {
-            if (confirm("Deseja realmente excluir toda essa matéria e seus tópicos do planejamento?")) {
+            if (confirm("Deseja realmente excluir toda essa matéria?")) {
                 planejamento.splice(indexDisc, 1);
-                db.ref('planejamento').set(planejamento);
+                refUser.child('planejamento').set(planejamento);
             }
         }
 
@@ -532,17 +692,12 @@
             }
         }
 
-        // ----------------- LÓGICA DO CRONÔMETRO E HISTÓRICO -----------------
+        // CRONÔMETRO E HISTÓRICO
         function formatarTempo(seg) {
             let hrs = Math.floor(seg / 3600);
             let mins = Math.floor((seg % 3600) / 60);
             let secs = seg % 60;
-
-            let hStr = hrs < 10 ? "0" + hrs : hrs;
-            let mStr = mins < 10 ? "0" + mins : mins;
-            let sStr = secs < 10 ? "0" + secs : secs;
-
-            return `${hStr}:${mStr}:${sStr}`;
+            return `${hrs < 10 ? "0"+hrs : hrs}:${mins < 10 ? "0"+mins : mins}:${secs < 10 ? "0"+secs : secs}`;
         }
 
         function iniciarCronometro() {
@@ -584,7 +739,6 @@
                 return;
             }
 
-            // Tratamento do detalhe do material
             let detalheMaterial = "-";
             if (material === "PDF") {
                 let paginas = document.getElementById("input-paginas").value;
@@ -597,7 +751,6 @@
                 detalheMaterial = fonte ? `Questões (${fonte})` : "Questões";
             }
 
-            // Captura da Data e Hora Atuais
             let agora = new Date();
             let dataHora = agora.toLocaleDateString("pt-BR") + " " + agora.toLocaleTimeString("pt-BR", { hour: '2-digit', minute: '2-digit' });
 
@@ -619,11 +772,8 @@
             };
 
             historico.unshift(novaSessao);
+            refUser.child('historico').set(historico);
 
-            // Salvar no Firebase
-            db.ref('historico').set(historico);
-
-            // Resetar formulário
             segundos = 0;
             document.getElementById("tempo").innerText = "00:00:00";
             document.getElementById("input-questoes").value = "0";
@@ -682,9 +832,9 @@
         }
 
         function limparHistorico() {
-            if (confirm("Tem certeza que deseja apagar todo o histórico de estudos?")) {
+            if (confirm("Tem certeza que deseja apagar todo o seu histórico de estudos?")) {
                 historico = [];
-                db.ref('historico').remove();
+                refUser.child('historico').remove();
             }
         }
     </script>
