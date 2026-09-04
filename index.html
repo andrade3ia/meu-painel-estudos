@@ -279,6 +279,19 @@
             margin-top: 10px;
             text-align: center;
         }
+
+        /* Painel de Log do Sistema */
+        #system-log {
+            display: none;
+            background-color: #18181b;
+            border: 1px solid #f75a68;
+            color: #f75a68;
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            margin-top: 15px;
+            word-break: break-all;
+        }
     </style>
 
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -317,6 +330,8 @@
             <button type="button" onclick="recuperarSenha()">Enviar Link de Recuperação</button>
             <span class="link-toggle" onclick="alternarTelaAuth('login')">Voltar ao Login</span>
         </div>
+
+        <div id="system-log"></div>
     </div>
 
     <!-- PAINEL PRINCIPAL -->
@@ -513,12 +528,25 @@
         let historico = [];
         let planejamento = [];
 
+        function exibirLogErro(mensagem) {
+            const logElement = document.getElementById('system-log');
+            logElement.style.display = 'block';
+            logElement.innerText = "⚠️ Log Técnico: " + mensagem;
+        }
+
+        function limparLogErro() {
+            const logElement = document.getElementById('system-log');
+            logElement.style.display = 'none';
+            logElement.innerText = "";
+        }
+
         function formatarEmailUsuario(username) {
             const cleanUser = username.trim().toLowerCase().replace(/[^a-z0-9]/g, "");
             return `${cleanUser}@meupainel.local`;
         }
 
         function alternarTelaAuth(tela) {
+            limparLogErro();
             document.getElementById('form-login').style.display = tela === 'login' ? 'block' : 'none';
             document.getElementById('form-cadastro').style.display = tela === 'cadastro' ? 'block' : 'none';
             document.getElementById('form-recuperar').style.display = tela === 'recuperar' ? 'block' : 'none';
@@ -531,7 +559,7 @@
                 refUser.child('username').once('value').then((snapshot) => {
                     const nomeExibicao = snapshot.val() || user.email.split('@')[0];
                     document.getElementById('user-display').innerText = nomeExibicao;
-                }).catch(() => {
+                }).catch((err) => {
                     document.getElementById('user-display').innerText = user.email.split('@')[0];
                 });
 
@@ -560,6 +588,7 @@
         });
 
         function fazerLogin() {
+            limparLogErro();
             const btn = document.getElementById('btn-login-trigger');
             const userRaw = document.getElementById('login-username').value.trim();
             const senha = document.getElementById('login-senha').value.trim();
@@ -577,13 +606,15 @@
                 btn.disabled = false;
                 btn.innerText = "Entrar";
             }).catch((err) => {
-                alert("Erro ao acessar: Usuário ou senha incorretos.");
+                exibirLogErro(`[${err.code}] ${err.message}`);
+                alert("Falha no login. Verifique as credenciais ou a caixa de aviso abaixo.");
                 btn.disabled = false;
                 btn.innerText = "Entrar";
             });
         }
 
         function fazerCadastro() {
+            limparLogErro();
             const btn = document.getElementById('btn-cadastrar-trigger');
             const userRaw = document.getElementById('cad-username').value.trim();
             const senha = document.getElementById('cad-senha').value.trim();
@@ -619,17 +650,15 @@
                 btn.disabled = false;
                 btn.innerText = "Cadastrar";
             }).catch((err) => {
-                if (err.code === 'auth/email-already-in-use') {
-                    alert("Este nome de usuário já está cadastrado.");
-                } else {
-                    alert("Erro ao cadastrar: " + err.message);
-                }
+                exibirLogErro(`[${err.code}] ${err.message}`);
+                alert("Erro ao cadastrar. Veja a mensagem técnica abaixo.");
                 btn.disabled = false;
                 btn.innerText = "Cadastrar";
             });
         }
 
         function recuperarSenha() {
+            limparLogErro();
             const userRaw = document.getElementById('rec-username').value.trim();
             if (!userRaw) {
                 alert("Digite seu nome de usuário!");
@@ -649,10 +678,12 @@
                     alert(`O e-mail de redefinição foi enviado para: ${emailReal}`);
                     alternarTelaAuth('login');
                 }).catch((err) => {
-                    alert("Erro ao enviar e-mail: " + err.message);
+                    exibirLogErro(`[${err.code}] ${err.message}`);
+                    alert("Erro ao enviar e-mail de redefinição.");
                 });
-            }).catch(() => {
-                alert("Erro de conexão ao verificar o usuário.");
+            }).catch((err) => {
+                exibirLogErro(`[Database Error] ${err.message}`);
+                alert("Erro ao conectar com o banco de dados.");
             });
         }
 
