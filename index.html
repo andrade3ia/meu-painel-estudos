@@ -500,17 +500,101 @@
             }
         });
 
-        async function fazerLogin() { 
-            const userRaw = document.getElementById('login-username').value.trim(); const senha = document.getElementById('login-senha').value.trim();
-            if (!userRaw || !senha) return alert("Preencha tudo!");
-            const cleanUser = userRaw.toLowerCase().replace(/[^a-z0-9]/g, "");
-            try { await auth.signInWithEmailAndPassword(`${cleanUser}@meupainel.local`, senha); } 
-            catch { alert("Usuário ou senha incorretos."); }
+       // === FUNÇÕES DE LOG E TELA ===
+        function exibirLogErro(mensagem) {
+            const logElement = document.getElementById('system-log');
+            logElement.style.display = 'block'; 
+            logElement.innerText = "⚠️ Log Técnico: " + mensagem;
         }
-        function fazerLogout() { auth.signOut(); alternarTelaPrincipal('home'); }
-        function alternarTelaAuth(t) {
-            document.getElementById('form-login').style.display = t==='login'?'block':'none';
-            document.getElementById('form-cadastro').style.display = t==='cadastro'?'block':'none';
+
+        function limparLogErro() {
+            const logElement = document.getElementById('system-log');
+            logElement.style.display = 'none'; 
+            logElement.innerText = "";
+        }
+
+        function alternarTelaAuth(tela) {
+            limparLogErro();
+            document.getElementById('form-login').style.display = tela === 'login' ? 'block' : 'none';
+            document.getElementById('form-cadastro').style.display = tela === 'cadastro' ? 'block' : 'none';
+        }
+
+        // === AUTENTICAÇÃO CORRIGIDA (IGUAL AO SEU ORIGINAL) ===
+        async function fazerLogin() { 
+            limparLogErro();
+            const btn = document.getElementById('btn-login-trigger');
+            const userRaw = document.getElementById('login-username').value.trim(); 
+            const senha = document.getElementById('login-senha').value.trim();
+            
+            if (!userRaw || !senha) {
+                alert("Preencha o nome de usuário e a senha!"); 
+                return; 
+            }
+            
+            btn.disabled = true; 
+            btn.innerText = "Autenticando...";
+            
+            const cleanUser = userRaw.toLowerCase().replace(/[^a-z0-9]/g, "");
+            
+            // Loop original que garante compatibilidade com as suas contas já existentes
+            const dominiosTestar = [
+                `${cleanUser}@meupainel.local`,
+                `${cleanUser}@estudante.app`,
+                `${cleanUser}@estudante.local`,
+                userRaw
+            ];
+            
+            let autenticado = false; 
+            let ultimoErro = null;
+            
+            for (const email of dominiosTestar) {
+                try { 
+                    await auth.signInWithEmailAndPassword(email, senha); 
+                    autenticado = true; 
+                    break; 
+                } catch (err) { 
+                    ultimoErro = err; 
+                }
+            }
+            
+            btn.disabled = false; 
+            btn.innerText = "Entrar";
+            
+            if (!autenticado && ultimoErro) { 
+                exibirLogErro(`[${ultimoErro.code}] ${ultimoErro.message}`); 
+                alert("Usuário ou senha incorretos."); 
+            }
+        }
+
+        function fazerCadastro() { 
+            limparLogErro();
+            const btn = document.getElementById('btn-cadastrar-trigger');
+            const userRaw = document.getElementById('cad-username').value.trim(); 
+            const senha = document.getElementById('cad-senha').value.trim(); 
+            const emailRec = document.getElementById('cad-email-recuperacao').value.trim();
+            
+            if (!userRaw || !senha || !emailRec) { alert("Preencha TODOS os campos!"); return; }
+            if (senha.length < 6) { alert("A senha precisa ter no mínimo 6 caracteres."); return; }
+            
+            btn.disabled = true; 
+            btn.innerText = "Criando conta...";
+            
+            const cleanUser = userRaw.toLowerCase().replace(/[^a-z0-9]/g, ""); 
+            const emailVirtual = `${cleanUser}@meupainel.local`;
+            
+            auth.createUserWithEmailAndPassword(emailVirtual, senha).then((cred) => {
+                db.ref('usuarios/' + cred.user.uid).set({ username: userRaw, emailRecuperacao: emailRec });
+                db.ref('mapa_recuperacao/' + cleanUser).set({ emailReal: emailRec });
+                alert("Conta criada com sucesso!"); 
+                btn.disabled = false; 
+                btn.innerText = "Cadastrar";
+                alternarTelaAuth('login');
+            }).catch((err) => { 
+                exibirLogErro(`[${err.code}] ${err.message}`); 
+                alert("Erro ao cadastrar."); 
+                btn.disabled = false; 
+                btn.innerText = "Cadastrar"; 
+            });
         }
 
         // === META DIÁRIA (EDITÁVEL) ===
