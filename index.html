@@ -245,13 +245,81 @@
         
         <button class="btn-logout" onclick="// === AUTENTICAÇÃO E CONTROLE DE ESTADO CORRIGIDOS ===
         // === AUTENTICAÇÃO E CONTROLE DE ESTADO CORRIGIDOS ===
+        // Variáveis de controle de referência para limpeza
+        let activeUserRef = null;
+        let planejamentoRef = null;
+        let historicoRef = null;
+        let metaRef = null;
+
+        // === AUTENTICAÇÃO E CONTROLE DE ESTADO BLINDADO ===
         auth.onAuthStateChanged((user) => {
             if (user) {
-                refUser = db.ref('usuarios/' + user.uid);
-                refUser.child('username').once('value').then(snap => {
+                activeUserRef = db.ref('usuarios/' + user.uid);
+                refUser = activeUserRef;
+
+                activeUserRef.child('username').once('value').then(snap => {
                     document.getElementById('user-display').innerText = snap.val() || user.email.split('@')[0];
                 });
 
+                document.getElementById('secao-auth').style.display = 'none';
+                document.getElementById('secao-painel').style.display = 'block';
+                document.getElementById('sidebar-menu').style.display = 'flex';
+                alternarTelaPrincipal('home');
+
+                // Atribui e salva as referências para poder desligá-las no logout
+                planejamentoRef = activeUserRef.child('planejamento');
+                historicoRef = activeUserRef.child('historico');
+                metaRef = activeUserRef.child('metaHoras');
+
+                planejamentoRef.on('value', snap => {
+                    planejamento = snap.val() || [];
+                    renderizarPlanejamento();
+                    atualizarDisciplinasSelect();
+                    if (historico.length > 0) renderizarGraficoBarras();
+                });
+
+                historicoRef.on('value', snap => {
+                    historico = snap.val() || [];
+                    renderizarTabela(); 
+                });
+
+                metaRef.on('value', snap => {
+                    if (snap.exists()) {
+                        metaHorasGlobais = parseFloat(snap.val());
+                        document.getElementById('input-meta-horas').value = metaHorasGlobais;
+                        atualizarProgressoXP();
+                    }
+                });
+
+            } else {
+                // 🛑 DESLIGA OS OUVINTES DO FIREBASE ANTES DE SAIR (Evita travamento)
+                if (planejamentoRef) planejamentoRef.off();
+                if (historicoRef) historicoRef.off();
+                if (metaRef) metaRef.off();
+
+                activeUserRef = null;
+                planejamentoRef = null;
+                historicoRef = null;
+                metaRef = null;
+                refUser = null;
+                
+                historico = [];
+                planejamento = [];
+                
+                // Reseta a interface para a tela de login limpa
+                document.getElementById('secao-auth').style.display = 'block';
+                document.getElementById('secao-painel').style.display = 'none';
+                document.getElementById('sidebar-menu').style.display = 'none';
+                alternarTelaAuth('login');
+            }
+        });
+
+        // Função de Logout limpa
+        function fazerLogout() {
+            auth.signOut().catch((error) => {
+                exibirLogErro(`Erro ao sair: ${error.message}`);
+            });
+        }
                 document.getElementById('secao-auth').style.display = 'none';
                 document.getElementById('secao-painel').style.display = 'block';
                 document.getElementById('sidebar-menu').style.display = 'flex';
