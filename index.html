@@ -315,9 +315,24 @@
         });
 
         // Função de Logout limpa
+       // === FUNÇÃO DE LOGOUT BLINDADA E DEFINITIVA ===
         function fazerLogout() {
-            auth.signOut().catch((error) => {
-                exibirLogErro(`Erro ao sair: ${error.message}`);
+            // 1. Para o cronômetro caso estivesse rodando ao sair
+            if (typeof pausarCronometro === 'function') {
+                pausarCronometro();
+            }
+            
+            // 2. Limpa variáveis locais imediatamente
+            segundos = 0;
+            historico = [];
+            planejamento = [];
+
+            // 3. Executa o signOut do Firebase e força a limpeza total da aplicação recarregando a página
+            auth.signOut().then(() => {
+                window.location.reload();
+            }).catch((error) => {
+                // Mesmo se houver falha de rede ao deslogar, força o recarregamento para liberar a tela
+                window.location.reload();
             });
         }
                 document.getElementById('secao-auth').style.display = 'none';
