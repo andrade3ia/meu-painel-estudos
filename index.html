@@ -55,7 +55,7 @@
             overflow: hidden;
         }
 
-        /* --- NOVO: ESTRUTURA DE SIDEBAR E CONTEÚDO --- */
+        /* --- ESTRUTURA DE SIDEBAR E CONTEÚDO --- */
         .sidebar {
             width: 260px;
             background-color: var(--bg-card);
@@ -135,7 +135,7 @@
             .btn-logout { width: 100%; }
         }
 
-        /* --- ESTILOS ORIGINAIS ADAPTADOS --- */
+        /* --- ESTILOS GERAIS --- */
         .card {
             background-color: var(--bg-card);
             border-radius: 8px;
@@ -193,11 +193,10 @@
         th, td { padding: 10px; text-align: left; border-bottom: 1px solid var(--border-color); font-size: 0.88rem; }
         th { color: var(--brand-purple); }
 
-        /* --- NOVO: ESTILO DAS PASTAS COM CORES REAIS --- */
         .lista-planejamento { margin-top: 15px; }
         .pasta-materia {
             background-color: var(--bg-input); border: 1px solid var(--border-color); border-radius: 6px; margin-bottom: 10px; overflow: hidden;
-            border-left-width: 6px; /* Borda grossa colorida */
+            border-left-width: 6px;
         }
         .cabecalho-pasta {
             background-color: var(--bg-header); padding: 12px 15px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-weight: bold;
@@ -220,7 +219,6 @@
         .progress-bar-fill { height: 100%; background: linear-gradient(90deg, var(--brand-green), #4ade80); width: 0%; transition: width 0.8s ease-in-out; }
         #xp-text { font-size: 0.85rem; color: var(--text-muted); margin: 0; font-weight: bold; text-align: center; }
         
-        /* Ajuste pro input de meta */
         .input-meta { width: 60px; padding: 6px; margin: 0 5px; display: inline-block; text-align: center; font-weight: bold; color: var(--brand-green); border-color: var(--brand-green); }
     </style>
 
@@ -243,160 +241,15 @@
         <button id="nav-btn-home" class="nav-btn active" onclick="alternarTelaPrincipal('home')">📊 Painel & Histórico</button>
         <button id="nav-btn-materias" class="nav-btn" onclick="alternarTelaPrincipal('materias')">📚 Minhas Matérias</button>
         
-        <button class="btn-logout" onclick="// === AUTENTICAÇÃO E CONTROLE DE ESTADO CORRIGIDOS ===
-        // === AUTENTICAÇÃO E CONTROLE DE ESTADO CORRIGIDOS ===
-        // Variáveis de controle de referência para limpeza
-        let activeUserRef = null;
-        let planejamentoRef = null;
-        let historicoRef = null;
-        let metaRef = null;
-
-        // === AUTENTICAÇÃO E CONTROLE DE ESTADO BLINDADO ===
-        auth.onAuthStateChanged((user) => {
-            if (user) {
-                activeUserRef = db.ref('usuarios/' + user.uid);
-                refUser = activeUserRef;
-
-                activeUserRef.child('username').once('value').then(snap => {
-                    document.getElementById('user-display').innerText = snap.val() || user.email.split('@')[0];
-                });
-
-                document.getElementById('secao-auth').style.display = 'none';
-                document.getElementById('secao-painel').style.display = 'block';
-                document.getElementById('sidebar-menu').style.display = 'flex';
-                alternarTelaPrincipal('home');
-
-                // Atribui e salva as referências para poder desligá-las no logout
-                planejamentoRef = activeUserRef.child('planejamento');
-                historicoRef = activeUserRef.child('historico');
-                metaRef = activeUserRef.child('metaHoras');
-
-                planejamentoRef.on('value', snap => {
-                    planejamento = snap.val() || [];
-                    renderizarPlanejamento();
-                    atualizarDisciplinasSelect();
-                    if (historico.length > 0) renderizarGraficoBarras();
-                });
-
-                historicoRef.on('value', snap => {
-                    historico = snap.val() || [];
-                    renderizarTabela(); 
-                });
-
-                metaRef.on('value', snap => {
-                    if (snap.exists()) {
-                        metaHorasGlobais = parseFloat(snap.val());
-                        document.getElementById('input-meta-horas').value = metaHorasGlobais;
-                        atualizarProgressoXP();
-                    }
-                });
-
-            } else {
-                // 🛑 DESLIGA OS OUVINTES DO FIREBASE ANTES DE SAIR (Evita travamento)
-                if (planejamentoRef) planejamentoRef.off();
-                if (historicoRef) historicoRef.off();
-                if (metaRef) metaRef.off();
-
-                activeUserRef = null;
-                planejamentoRef = null;
-                historicoRef = null;
-                metaRef = null;
-                refUser = null;
-                
-                historico = [];
-                planejamento = [];
-                
-                // Reseta a interface para a tela de login limpa
-                document.getElementById('secao-auth').style.display = 'block';
-                document.getElementById('secao-painel').style.display = 'none';
-                document.getElementById('sidebar-menu').style.display = 'none';
-                alternarTelaAuth('login');
-            }
-        });
-
-        // Função de Logout limpa
-       // === FUNÇÃO DE LOGOUT BLINDADA E DEFINITIVA ===
-        function fazerLogout() {
-            // 1. Para o cronômetro caso estivesse rodando ao sair
-            if (typeof pausarCronometro === 'function') {
-                pausarCronometro();
-            }
-            
-            // 2. Limpa variáveis locais imediatamente
-            segundos = 0;
-            historico = [];
-            planejamento = [];
-
-            // 3. Executa o signOut do Firebase e força a limpeza total da aplicação recarregando a página
-            auth.signOut().then(() => {
-                window.location.reload();
-            }).catch((error) => {
-                // Mesmo se houver falha de rede ao deslogar, força o recarregamento para liberar a tela
-                window.location.reload();
-            });
-        }
-                document.getElementById('secao-auth').style.display = 'none';
-                document.getElementById('secao-painel').style.display = 'block';
-                document.getElementById('sidebar-menu').style.display = 'flex';
-                alternarTelaPrincipal('home');
-            } else {
-                refUser = null;
-                historico = [];
-                planejamento = [];
-                
-                // Força a exibição correta da tela de login e esconde o painel/sidebar
-                document.getElementById('secao-auth').style.display = 'block';
-                document.getElementById('secao-painel').style.display = 'none';
-                document.getElementById('sidebar-menu').style.display = 'none';
-                alternarTelaAuth('login');
-            }
-        });
-
-        // Função de Logout blindada com tratamento de promessa
-        function fazerLogout() {
-            auth.signOut().then(() => {
-                historico = [];
-                planejamento = [];
-                alternarTelaAuth('login');
-            }).catch((error) => {
-                exibirLogErro(`Erro ao sair: ${error.message}`);
-            });
-        }
-
-                document.getElementById('secao-auth').style.display = 'none';
-                document.getElementById('secao-painel').style.display = 'block';
-                document.getElementById('sidebar-menu').style.display = 'flex';
-                alternarTelaPrincipal('home');
-            } else {
-                refUser = null;
-                historico = [];
-                planejamento = [];
-                
-                // Força a exibição correta da tela de login e esconde o painel/sidebar
-                document.getElementById('secao-auth').style.display = 'block';
-                document.getElementById('secao-painel').style.display = 'none';
-                document.getElementById('sidebar-menu').style.display = 'none';
-                alternarTelaAuth('login');
-            }
-        });
-
-        // Função de Logout blindada com tratamento de promessa
-        function fazerLogout() {
-            auth.signOut().then(() => {
-                historico = [];
-                planejamento = [];
-                alternarTelaAuth('login');
-            }).catch((error) => {
-                exibirLogErro(`Erro ao sair: ${error.message}`);
-            });
-        }">Sair da Conta</button>
+        <!-- O BOTÃO DE SAIR AGORA CHAMA A FUNÇÃO CORRETAMENTE -->
+        <button class="btn-logout" onclick="fazerLogout()">Sair da Conta</button>
     </aside>
 
     <!-- CONTEÚDO PRINCIPAL -->
     <main class="main-content">
         
         <!-- SEÇÃO DE LOGIN -->
-        <div id="secao-auth" class="card auth-container">
+        <div id="secao-auth" class="card auth-container" style="display: block;">
             <h1 style="color: var(--brand-green); text-align: center; margin-bottom: 20px;">Meu Painel</h1>
             <div id="form-login">
                 <h2 style="text-align: center;">Acessar</h2>
@@ -405,7 +258,7 @@
                 <button type="button" id="btn-login-trigger" onclick="fazerLogin()">Entrar</button>
                 <span class="link-toggle" onclick="alternarTelaAuth('cadastro')">Não tem conta? Cadastre-se</span>
             </div>
-            <!-- (Formulários de cadastro e recuperação mantidos ocultos por padrão) -->
+            
             <div id="form-cadastro" style="display: none;">
                 <h2 style="text-align: center;">Criar Conta</h2>
                 <input type="text" id="cad-username" placeholder="Nome de Usuário">
@@ -458,7 +311,7 @@
                     </div>
                 </div>
 
-                <!-- NOVO: Gráfico de Barras -->
+                <!-- Gráfico de Barras -->
                 <div class="card">
                     <h2>Tempo por Matéria</h2>
                     <div style="position: relative; width: 100%; height: 300px; margin: 0 auto;">
@@ -582,20 +435,21 @@
         const db = firebase.database();
         const auth = firebase.auth();
 
+        // Configuração para NÃO salvar o login permanentemente (exige login ao fechar/abrir a guia)
+        auth.setPersistence(firebase.auth.Auth.Persistence.SESSION)
+            .catch((error) => console.error("Erro ao configurar persistência:", error));
+
         let refUser = null;
         let segundos = 0;
         let timer = null;
         let historico = [];
         let planejamento = [];
         let chartInstance = null;
-        
-        // NOVO: Variável da Meta
         let metaHorasGlobais = 4;
         
-        // Paleta oficial de 10 cores (para repetição automática)
         const PALETA_CORES = ['#4ade80', '#3b82f6', '#555555', '#ef4444', '#a855f7', '#eab308', '#f97316', '#8b5a2b', '#ec4899', '#9ca3af'];
 
-        // === MENU LATERAL (NAVEGAÇÃO) ===
+        // === NAVEGAÇÃO ===
         function alternarTelaPrincipal(tela) {
             document.getElementById('nav-btn-home').classList.toggle('active', tela === 'home');
             document.getElementById('nav-btn-materias').classList.toggle('active', tela === 'materias');
@@ -613,23 +467,20 @@
 
                 document.getElementById('secao-auth').style.display = 'none';
                 document.getElementById('secao-painel').style.display = 'block';
-                document.getElementById('sidebar-menu').style.display = 'flex'; // Mostra sidebar
+                document.getElementById('sidebar-menu').style.display = 'flex';
 
-                // Carrega Planejamento
                 refUser.child('planejamento').on('value', snap => {
                     planejamento = snap.val() || [];
                     renderizarPlanejamento();
                     atualizarDisciplinasSelect();
-                    if (historico.length > 0) renderizarGraficoBarras(); // Atualiza cores do gráfico
+                    if (historico.length > 0) renderizarGraficoBarras();
                 });
 
-                // Carrega Histórico
                 refUser.child('historico').on('value', snap => {
                     historico = snap.val() || [];
                     renderizarTabela(); 
                 });
 
-                // Carrega Meta Diária do Usuário
                 refUser.child('metaHoras').on('value', snap => {
                     if (snap.exists()) {
                         metaHorasGlobais = parseFloat(snap.val());
@@ -637,16 +488,27 @@
                         atualizarProgressoXP();
                     }
                 });
-
             } else {
                 refUser = null;
                 document.getElementById('secao-auth').style.display = 'block';
                 document.getElementById('secao-painel').style.display = 'none';
-                document.getElementById('sidebar-menu').style.display = 'none'; // Esconde sidebar
+                document.getElementById('sidebar-menu').style.display = 'none';
+                alternarTelaAuth('login');
             }
         });
 
-       // === FUNÇÕES DE LOG E TELA ===
+        // === LOGOUT CORRIGIDO ===
+        function fazerLogout() {
+            if (typeof pausarCronometro === 'function') pausarCronometro();
+            auth.signOut().then(() => {
+                // A página será recarregada para garantir que toda a sessão foi limpa e volte pra tela de login
+                window.location.reload();
+            }).catch((error) => {
+                exibirLogErro(`Erro ao sair: ${error.message}`);
+            });
+        }
+
+        // === FUNÇÕES DE LOG E TELA ===
         function exibirLogErro(mensagem) {
             const logElement = document.getElementById('system-log');
             logElement.style.display = 'block'; 
@@ -665,7 +527,6 @@
             document.getElementById('form-cadastro').style.display = tela === 'cadastro' ? 'block' : 'none';
         }
 
-        // === AUTENTICAÇÃO CORRIGIDA (IGUAL AO SEU ORIGINAL) ===
         async function fazerLogin() { 
             limparLogErro();
             const btn = document.getElementById('btn-login-trigger');
@@ -681,8 +542,6 @@
             btn.innerText = "Autenticando...";
             
             const cleanUser = userRaw.toLowerCase().replace(/[^a-z0-9]/g, "");
-            
-            // Loop original que garante compatibilidade com as suas contas já existentes
             const dominiosTestar = [
                 `${cleanUser}@meupainel.local`,
                 `${cleanUser}@estudante.app`,
@@ -777,7 +636,7 @@
             }
         }
 
-        // === PLANEJAMENTO (SEM PASTA AMARELA) ===
+        // === PLANEJAMENTO ===
         function alternarModoPlanejamento(m) {
             document.getElementById('modo-planejamento-manual').style.display = m==='manual'?'block':'none';
             document.getElementById('modo-planejamento-ia').style.display = m==='ia'?'block':'none';
@@ -794,7 +653,7 @@
             let item = planejamento.find(i => i.disciplina.toLowerCase() === disc.toLowerCase());
             if (item) { 
                 if (!item.topicos.includes(topico)) item.topicos.push(topico); 
-                item.cor = cor; // Atualiza a cor
+                item.cor = cor;
             } else { 
                 planejamento.push({ disciplina: disc, topicos: [topico], cor: cor }); 
             }
@@ -810,17 +669,14 @@
                 let div = document.createElement("div"); 
                 div.className = "pasta-materia";
                 
-                // Pega a cor salva ou repete a paleta usando o index
                 let cor = item.cor || PALETA_CORES[index % PALETA_CORES.length];
                 
-                // Salva a cor de volta no objeto se foi gerada agora (para o gráfico puxar certo)
                 if (!item.cor) { item.cor = cor; refUser.child('planejamento').set(planejamento); }
 
                 div.style.borderLeftColor = cor;
 
                 let topicos = item.topicos.map((t, i) => `<div class="item-topico"><span>• ${t}</span><button class="btn-excluir-materia" onclick="removerTopico(${index}, ${i})">X</button></div>`).join("");
                 
-                // Novo visual do cabeçalho com bloco de cor em vez de emoji
                 div.innerHTML = `
                     <div class="cabecalho-pasta" onclick="document.getElementById('pasta-${index}').classList.toggle('aberta')">
                         <div style="display:flex; align-items:center; gap: 10px;">
@@ -834,6 +690,7 @@
                 container.appendChild(div);
             });
         }
+        
         function removerTopico(iD, iT) { planejamento[iD].topicos.splice(iT, 1); if(planejamento[iD].topicos.length===0) planejamento.splice(iD, 1); refUser.child('planejamento').set(planejamento); }
         function removerMateria(iD) { if (confirm("Excluir matéria?")) { planejamento.splice(iD, 1); refUser.child('planejamento').set(planejamento); } }
 
@@ -907,7 +764,7 @@
             renderizarGraficoBarras();
         }
 
-        // === NOVO: GRÁFICO DE BARRAS COM CORES EXATAS DAS MATÉRIAS ===
+        // === GRÁFICO DE BARRAS ===
         function renderizarGraficoBarras() {
             if (historico.length === 0) return;
 
@@ -920,7 +777,6 @@
             let labels = Object.keys(tempoPorMateria);
             let dadosEmHoras = labels.map(l => (tempoPorMateria[l] / 3600).toFixed(2));
 
-            // Busca a cor exata que a matéria tem no planejamento
             let coresDasBarras = labels.map(label => {
                 let m = planejamento.find(plan => plan.disciplina === label);
                 return (m && m.cor) ? m.cor : '#00b37e'; 
@@ -933,13 +789,13 @@
             if (chartInstance) chartInstance.destroy();
 
             chartInstance = new Chart(ctx, {
-                type: 'bar', // Mudou de radar para barras
+                type: 'bar',
                 data: {
                     labels: labels,
                     datasets: [{
                         label: 'Horas Totais',
                         data: dadosEmHoras,
-                        backgroundColor: coresDasBarras, // Aplica a cor respectiva em cada barra
+                        backgroundColor: coresDasBarras,
                         borderRadius: 4
                     }]
                 },
@@ -950,7 +806,7 @@
                         y: { beginAtZero: true, grid: { color: gridColor }, ticks: { color: textColor } },
                         x: { grid: { display: false }, ticks: { color: textColor } }
                     },
-                    plugins: { legend: { display: false } } // Esconde a legenda extra
+                    plugins: { legend: { display: false } }
                 }
             });
         }
