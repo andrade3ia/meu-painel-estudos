@@ -244,12 +244,41 @@
         <button id="nav-btn-materias" class="nav-btn" onclick="alternarTelaPrincipal('materias')">📚 Minhas Matérias</button>
         
         <button class="btn-logout" onclick="// === AUTENTICAÇÃO E CONTROLE DE ESTADO CORRIGIDOS ===
+        // === AUTENTICAÇÃO E CONTROLE DE ESTADO CORRIGIDOS ===
         auth.onAuthStateChanged((user) => {
             if (user) {
                 refUser = db.ref('usuarios/' + user.uid);
                 refUser.child('username').once('value').then(snap => {
                     document.getElementById('user-display').innerText = snap.val() || user.email.split('@')[0];
                 });
+
+                document.getElementById('secao-auth').style.display = 'none';
+                document.getElementById('secao-painel').style.display = 'block';
+                document.getElementById('sidebar-menu').style.display = 'flex';
+                alternarTelaPrincipal('home');
+            } else {
+                refUser = null;
+                historico = [];
+                planejamento = [];
+                
+                // Força a exibição correta da tela de login e esconde o painel/sidebar
+                document.getElementById('secao-auth').style.display = 'block';
+                document.getElementById('secao-painel').style.display = 'none';
+                document.getElementById('sidebar-menu').style.display = 'none';
+                alternarTelaAuth('login');
+            }
+        });
+
+        // Função de Logout blindada com tratamento de promessa
+        function fazerLogout() {
+            auth.signOut().then(() => {
+                historico = [];
+                planejamento = [];
+                alternarTelaAuth('login');
+            }).catch((error) => {
+                exibirLogErro(`Erro ao sair: ${error.message}`);
+            });
+        }
 
                 document.getElementById('secao-auth').style.display = 'none';
                 document.getElementById('secao-painel').style.display = 'block';
