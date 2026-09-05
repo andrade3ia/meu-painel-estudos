@@ -388,6 +388,15 @@
             databaseURL: "https://plataforma-de-estudos-98ec8-default-rtdb.firebaseio.com", projectId: "plataforma-de-estudos-98ec8"
         };
         firebase.initializeApp(firebaseConfig);
+        // 1. Importa a ferramenta de segurança do Firebase
+import { initializeAppCheck, ReCaptchaEnterpriseProvider } from "firebase/app-check";
+
+// 2. Ativa o cadeado invisível no seu site
+initializeAppCheck(app, {
+  provider: new ReCaptchaEnterpriseProvider('COLE_SUA_CHAVE_AQUI'),
+  isTokenAutoRefreshEnabled: true // Mantém a segurança ativa o tempo todo!
+});
+
         const db = firebase.database(); const auth = firebase.auth();
 
         // GLOBAIS
