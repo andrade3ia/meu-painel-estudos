@@ -711,86 +711,86 @@
             document.getElementById("campo-questoes").style.display = m==="Questoes"?"block":"none";
         }
         
-// === MODO IA: PROCESSAR EDITAL (CORRIGIDO PARA MODO JSON) ===
+// === MODO IA: PROCESSAMENTO CORRIGIDO (MODELO LATEST) ===
         async function processarEditalComIA() {
             const apiKey = document.getElementById('ia-api-key').value.trim();
             const editalTexto = document.getElementById('ia-edital-texto').value.trim();
             const loading = document.getElementById('ia-loading');
             const btn = document.querySelector('.btn-ia');
+            const logBox = document.getElementById('system-log'); 
 
-            if (!apiKey) return alert("Por favor, insira sua Chave de API do Gemini.");
-            if (!editalTexto) return alert("Cole o texto do edital para ser analisado.");
+            logBox.style.display = 'none';
+            logBox.innerHTML = '';
+
+            if (!apiKey) return alert("Insira a Chave de API.");
+            if (!editalTexto) return alert("Cole o edital.");
 
             btn.disabled = true;
             loading.style.display = 'block';
+            loading.innerText = "⏳ Conectando ao Gemini...";
 
-            // Prompt focado no formato exato
-            const prompt = `Extraia as disciplinas e seus respectivos tópicos de estudo do edital abaixo.
-            O formato de saída deve ser EXATAMENTE um array JSON puro.
-            Exemplo de estrutura esperada:
-            [
-              {"disciplina": "Português", "topicos": ["Crase", "Ortografia"]},
-              {"disciplina": "Matemática", "topicos": ["Fração", "Geometria"]}
-            ]
-            Edital:
-            ${editalTexto}`;
+            const prompt = `Retorne EXATAMENTE um array JSON com disciplinas e topicos, baseado no edital a seguir. Exemplo: [{"disciplina": "Matemática", "topicos": ["Fração"]}]\n\nEdital:\n${editalTexto}`;
 
             try {
-                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+                // CORREÇÃO AQUI: Usando "gemini-1.5-flash-latest" ao invés de apenas "gemini-1.5-flash"
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         contents: [{ parts: [{ text: prompt }] }],
-                        generationConfig: {
-                            // ISSO OBRIGA O GEMINI A RETORNAR APENAS DADOS (JSON), EVITANDO ERROS!
-                            response_mime_type: "application/json" 
-                        }
+                        generationConfig: { response_mime_type: "application/json" }
                     })
                 });
 
-                // Se a API recusar a chave, pegamos o erro exato
                 if (!response.ok) {
-                    const errData = await response.json();
-                    throw new Error(errData.error.message || "Falha na comunicação com o Gemini.");
+                    const errData = await response.text(); 
+                    throw new Error(`Código ${response.status}: ${errData}`);
                 }
 
+                loading.innerText = "⏳ Montando seu planejamento...";
                 const data = await response.json();
-                const textoResposta = data.candidates[0].content.parts[0].text;
+                
+                if (!data.candidates || data.candidates.length === 0) {
+                    throw new Error("A API respondeu, mas não enviou dados.");
+                }
 
-                // Transforma o texto devolvido pela IA em estrutura pro seu site
+                const textoResposta = data.candidates[0].content.parts[0].text;
                 const materiasExtraidas = JSON.parse(textoResposta);
 
-                // Adiciona as matérias novas no planejamento existente
                 materiasExtraidas.forEach(novaMat => {
                     let itemExistente = planejamento.find(i => i.disciplina.toLowerCase() === novaMat.disciplina.toLowerCase());
                     if (itemExistente) {
-                        // Se a disciplina já existe, só adiciona tópicos novos
                         novaMat.topicos.forEach(t => {
                             if (!itemExistente.topicos.includes(t)) itemExistente.topicos.push(t);
                         });
                     } else {
-                        // Se for matéria nova, dá uma cor do nosso padrão e adiciona
                         novaMat.cor = PALETA_CORES[planejamento.length % PALETA_CORES.length];
                         planejamento.push(novaMat);
                     }
                 });
 
-                // Salva no banco e atualiza a tela
                 refUser.child('planejamento').set(planejamento);
                 renderizarPlanejamento();
                 atualizarDisciplinasSelect();
 
-                alert("✅ Edital processado e adicionado ao seu planejamento com sucesso!");
-                document.getElementById('ia-edital-texto').value = ''; // Limpa a caixa
+                alert("✅ Edital processado com sucesso!");
+                document.getElementById('ia-edital-texto').value = ''; 
 
             } catch (error) {
-                console.error("Erro detalhado da IA:", error);
-                // Agora o alerta mostra o motivo real da falha (ex: API key inválida, texto muito longo, etc)
-                alert("Erro ao processar: " + error.message);
+                console.error("ERRO COMPLETO:", error);
+                logBox.style.display = 'block';
+                
+                if (error.message.includes('is not found')) {
+                    logBox.innerHTML = `<strong>Erro de Versão do Modelo:</strong> O Google recusou o nome do modelo. Verifique se a sua conta tem permissão para a API Gemini 1.5.`;
+                } else {
+                    logBox.innerHTML = `<strong>Detalhe do Erro:</strong> ${error.message}`;
+                }
+
+                alert("Falha ao processar. Veja a caixa vermelha de erro.");
             } finally {
-                // Restaura o botão
                 btn.disabled = false;
                 loading.style.display = 'none';
+                loading.innerText = "⏳ Analisando edital...";
             }
         }
         
