@@ -5,11 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Meu Painel de Estudos</title>
     
-    <!-- 1. ADICIONADO: Chart.js para o Gráfico Radar -->
+    <!-- Biblioteca Chart.js para o Gráfico Radar -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <style>
-        /* 2. ADICIONADO: Variáveis CSS para Tema Escuro (Seu Original) e Claro */
+        /* Variáveis CSS para Tema Escuro e Claro */
         :root {
             --bg-body: #f4f5f6;
             --bg-card: #ffffff;
@@ -154,7 +154,7 @@
             background-color: var(--bg-input); border: 1px solid var(--border-color); border-radius: 6px; margin-bottom: 10px; overflow: hidden;
         }
         .cabecalho-pasta {
-            background-color: var(--bg-header); padding: 12px 15px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-weight: bold; color: var(--brand-green);
+            background-color: var(--bg-header); padding: 12px 15px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-weight: bold;
         }
         .conteudo-pasta { padding: 10px 15px; display: none; background-color: var(--bg-input); }
         .conteudo-pasta.aberta { display: block; }
@@ -164,7 +164,7 @@
         .status-loading { color: var(--brand-green); font-weight: bold; display: none; margin-top: 10px; text-align: center; }
         #system-log { display: none; background-color: var(--bg-log); border: 1px solid var(--brand-red); color: var(--brand-red); padding: 10px; border-radius: 6px; font-size: 0.8rem; margin-top: 15px; word-break: break-all; }
 
-        /* 3. ADICIONADO: Estilos da Gamificação e Botão Tema */
+        /* Estilos da Gamificação e Botão Tema */
         .btn-theme-float {
             position: fixed; bottom: 20px; right: 20px; background-color: var(--bg-card); color: var(--text-main);
             border: 2px solid var(--brand-purple); border-radius: 50%; width: 50px; height: 50px; font-size: 24px;
@@ -187,9 +187,8 @@
 
     <h1>Meu Painel de Estudos</h1>
 
-    <!-- AUTENTICAÇÃO (Intacta) -->
+    <!-- AUTENTICAÇÃO -->
     <div id="secao-auth" class="card auth-container">
-        <!-- ... Conteúdo do formulário de login (mantive idêntico ao seu) ... -->
         <div id="form-login">
             <h2 style="text-align: center;">Acessar Painel</h2>
             <input type="text" id="login-username" placeholder="Nome de Usuário" autocapitalize="none" autocorrect="off">
@@ -224,7 +223,7 @@
             <button class="btn-logout" onclick="fazerLogout()">Sair</button>
         </div>
 
-        <!-- 4. ADICIONADO: Gamificação (XP Diário) -->
+        <!-- Gamificação (XP Diário) -->
         <div class="card">
             <h2>🎯 Meta Diária (4 Horas)</h2>
             <div class="progress-bar-bg">
@@ -245,7 +244,7 @@
             </div>
         </div>
 
-        <!-- 5. ADICIONADO: Gráfico Radar -->
+        <!-- Gráfico Radar -->
         <div class="card">
             <h2>Radar de Foco nas Matérias</h2>
             <p style="font-size: 0.8rem; color: var(--text-muted); text-align: center; margin-bottom: 10px;">Distribuição total de tempo estudado por disciplina.</p>
@@ -254,7 +253,7 @@
             </div>
         </div>
 
-        <!-- Planejamento com IA (Intacto) -->
+        <!-- Planejamento com IA e Manual com Cores -->
         <div class="card">
             <h2>1. Planejamento de Matérias e Tópicos</h2>
             <div class="abas-container">
@@ -262,32 +261,29 @@
                 <button class="aba-btn" id="aba-ia-btn" onclick="alternarModoPlanejamento('ia')">🤖 Edital com IA</button>
             </div>
             <div id="modo-planejamento-manual">
-               <div class="linha-inputs">
-    <div class="campo">
-        <label>Disciplina:</label>
-        <input type="text" id="plan-disciplina" placeholder="Ex: Direito Constitucional">
-    </div>
-    <div class="campo">
-        <label>Tópico / Assunto:</label>
-        <input type="text" id="plan-topico" placeholder="Ex: Controle de Constitucionalidade">
-    </div>
-    <!-- NOVO: Campo de Cor -->
-    <div class="campo">
-        <label>Cor da Matéria:</label>
-        <select id="plan-cor">
-            <option value="#4ade80">🟢 Verde Claro</option>
-            <option value="#3b82f6">🔵 Azul</option>
-            <option value="var(--text-main)">⚫ Preto (Adapta no Dark Mode)</option>
-            <option value="#ef4444">🔴 Vermelho</option>
-            <option value="#a855f7">🟣 Roxo</option>
-            <option value="#eab308">🟡 Amarelo</option>
-            <option value="#f97316">🟠 Laranja</option>
-            <option value="#8b5a2b">🟤 Marrom</option>
-            <option value="#ec4899">🌸 Rosa</option>
-            <option value="#9ca3af">⚪ Cinza</option>
-        </select>
-    </div>
-</div>
+                <div class="linha-inputs">
+                    <div class="campo"><label>Disciplina:</label><input type="text" id="plan-disciplina" placeholder="Ex: Direito Constitucional"></div>
+                    <div class="campo"><label>Tópico / Assunto:</label><input type="text" id="plan-topico" placeholder="Ex: Controle de Constitucionalidade"></div>
+                    
+                    <!-- NOVO: Seletor de Cores -->
+                    <div class="campo">
+                        <label>Cor da Matéria:</label>
+                        <select id="plan-cor">
+                            <option value="#4ade80">🟢 Verde Claro</option>
+                            <option value="#3b82f6">🔵 Azul</option>
+                            <option value="var(--text-main)">⚫ Preto (Adapta)</option>
+                            <option value="#ef4444">🔴 Vermelho</option>
+                            <option value="#a855f7">🟣 Roxo</option>
+                            <option value="#eab308">🟡 Amarelo</option>
+                            <option value="#f97316">🟠 Laranja</option>
+                            <option value="#8b5a2b">🟤 Marrom</option>
+                            <option value="#ec4899">🌸 Rosa</option>
+                            <option value="#9ca3af">⚪ Cinza</option>
+                        </select>
+                    </div>
+                </div>
+                <button type="button" onclick="adicionarPlanejamento()">Adicionar ao Planejamento</button>
+            </div>
             <div id="modo-planejamento-ia" style="display: none;">
                 <p style="font-size: 0.85rem; color: var(--text-muted);">Insira a sua chave do Gemini e cole o edital.</p>
                 <label>Chave de API do Gemini:</label>
@@ -300,7 +296,7 @@
             <div class="lista-planejamento" id="container-planejamento"></div>
         </div>
 
-        <!-- Cronômetro (Intacto) -->
+        <!-- Cronômetro -->
         <div class="card">
             <h2>2. Cronômetro de Estudo</h2>
             <div id="tempo">00:00:00</div>
@@ -311,10 +307,9 @@
             </div>
         </div>
 
-        <!-- Registrar Sessão (Intacto) -->
+        <!-- Registrar Sessão -->
         <div class="card">
             <h2>3. Registrar Sessão</h2>
-            <!-- Todos os selects e inputs mantidos exatamente iguais -->
             <label>Disciplina:</label>
             <select id="select-disciplina" onchange="atualizarTopicosSelect()"><option value="">Selecione uma disciplina...</option></select>
             <label>Tópico / Assunto:</label>
@@ -340,7 +335,7 @@
             </div>
         </div>
 
-        <!-- Histórico (Intacto) -->
+        <!-- Histórico -->
         <div class="card">
             <h2>Histórico de Estudos</h2>
             <div class="tabela-wrapper">
@@ -359,16 +354,13 @@
     </div>
 
     <script>
-        // === 6. ADICIONADO: LÓGICA DO TEMA (DARK/LIGHT) ===
+        // Lógica do Tema (Dark/Light)
         const themeBtn = document.getElementById('btn-theme-toggle');
-        
-        // Define Dark Mode como padrão inicial caso não haja salvo
         let currentTheme = localStorage.getItem('site-theme');
         if (!currentTheme) {
             currentTheme = 'dark';
             localStorage.setItem('site-theme', 'dark');
         }
-        
         document.documentElement.setAttribute('data-theme', currentTheme);
         themeBtn.innerText = currentTheme === 'dark' ? '☀️' : '🌙';
 
@@ -377,8 +369,6 @@
             document.documentElement.setAttribute('data-theme', currentTheme);
             localStorage.setItem('site-theme', currentTheme);
             themeBtn.innerText = currentTheme === 'dark' ? '☀️' : '🌙';
-            
-            // Re-renderiza o gráfico para atualizar a cor da fonte
             if (historico.length > 0) renderizarRadarChart(); 
         });
 
@@ -402,23 +392,17 @@
         let timer = null;
         let historico = [];
         let planejamento = [];
-        
-        // Variável Global para o Gráfico Radar
         let radarChartInstance = null;
 
-        // Funções Originais de Auth
+        // Funções de Autenticação
         function exibirLogErro(mensagem) {
             const logElement = document.getElementById('system-log');
-            logElement.style.display = 'block';
-            logElement.innerText = "⚠️ Log Técnico: " + mensagem;
+            logElement.style.display = 'block'; logElement.innerText = "⚠️ Log Técnico: " + mensagem;
         }
-
         function limparLogErro() {
             const logElement = document.getElementById('system-log');
-            logElement.style.display = 'none';
-            logElement.innerText = "";
+            logElement.style.display = 'none'; logElement.innerText = "";
         }
-
         function alternarTelaAuth(tela) {
             limparLogErro();
             document.getElementById('form-login').style.display = tela === 'login' ? 'block' : 'none';
@@ -432,7 +416,6 @@
                 refUser.child('username').once('value').then((snapshot) => {
                     document.getElementById('user-display').innerText = snapshot.val() || user.email.split('@')[0];
                 });
-
                 document.getElementById('secao-auth').style.display = 'none';
                 document.getElementById('secao-painel').style.display = 'block';
 
@@ -444,12 +427,11 @@
 
                 refUser.child('historico').on('value', (snapshot) => {
                     historico = snapshot.val() || [];
-                    renderizarTabela(); // Esta função agora também chama o gráfico e o XP!
+                    renderizarTabela(); 
                 });
 
                 const keySalva = localStorage.getItem('gemini_user_api_key');
                 if (keySalva) document.getElementById('ia-api-key').value = keySalva;
-
             } else {
                 refUser = null;
                 document.getElementById('secao-auth').style.display = 'block';
@@ -457,8 +439,7 @@
             }
         });
 
-        // (Suas funções de login, cadastro, rec. senha, IA, etc. mantidas idênticas...)
-        async function fazerLogin() { /* ... */ 
+        async function fazerLogin() { 
             limparLogErro(); const btn = document.getElementById('btn-login-trigger'); const userRaw = document.getElementById('login-username').value.trim(); const senha = document.getElementById('login-senha').value.trim();
             if (!userRaw || !senha) { alert("Preencha o nome de usuário e a senha!"); return; }
             btn.disabled = true; btn.innerText = "Autenticando...";
@@ -471,9 +452,10 @@
             btn.disabled = false; btn.innerText = "Entrar";
             if (!autenticado && ultimoErro) { exibirLogErro(`[${ultimoErro.code}] ${ultimoErro.message}`); alert("Usuário ou senha incorretos."); }
         }
-        function fazerCadastro() { /* ... */ 
+
+        function fazerCadastro() { 
             limparLogErro(); const btn = document.getElementById('btn-cadastrar-trigger'); const userRaw = document.getElementById('cad-username').value.trim(); const senha = document.getElementById('cad-senha').value.trim(); const emailRec = document.getElementById('cad-email-recuperacao').value.trim();
-            if (!userRaw || !senha || !emailRec) { alert("Preencha TODOS os campos (Usuário, Senha e E-mail)!"); return; }
+            if (!userRaw || !senha || !emailRec) { alert("Preencha TODOS os campos!"); return; }
             if (senha.length < 6) { alert("A senha precisa ter no mínimo 6 caracteres."); return; }
             btn.disabled = true; btn.innerText = "Criando conta...";
             const cleanUser = userRaw.toLowerCase().replace(/[^a-z0-9]/g, ""); const emailVirtual = `${cleanUser}@meupainel.local`;
@@ -483,7 +465,8 @@
                 alert("Conta criada com sucesso!"); btn.disabled = false; btn.innerText = "Cadastrar";
             }).catch((err) => { exibirLogErro(`[${err.code}] ${err.message}`); alert("Erro ao cadastrar."); btn.disabled = false; btn.innerText = "Cadastrar"; });
         }
-        function recuperarSenha() { /* ... */ 
+
+        function recuperarSenha() { 
             limparLogErro(); const userRaw = document.getElementById('rec-username').value.trim();
             if (!userRaw) { alert("Digite seu nome de usuário!"); return; }
             const userKey = userRaw.toLowerCase().replace(/[^a-z0-9]/g, "");
@@ -494,13 +477,15 @@
             });
         }
         function fazerLogout() { auth.signOut(); }
+
+        // Funções de Planejamento e IA
         function alternarModoPlanejamento(modo) {
             const btnManual = document.getElementById('aba-manual-btn'); const btnIA = document.getElementById('aba-ia-btn'); const divManual = document.getElementById('modo-planejamento-manual'); const divIA = document.getElementById('modo-planejamento-ia');
             if (modo === 'manual') { btnManual.classList.add('ativa'); btnIA.classList.remove('ativa'); divManual.style.display = 'block'; divIA.style.display = 'none'; } 
             else { btnIA.classList.add('ativa'); btnManual.classList.remove('ativa'); divIA.style.display = 'block'; divManual.style.display = 'none'; }
         }
+
         async function processarEditalComIA() {
-            // (Função original Gemini mantida intacta)
             const userApiKey = document.getElementById('ia-api-key').value.trim(); const textoEdital = document.getElementById('ia-edital-texto').value.trim();
             if (!userApiKey || !textoEdital) { alert("Preencha a chave e o edital!"); return; }
             localStorage.setItem('gemini_user_api_key', userApiKey);
@@ -508,6 +493,10 @@
             const TAMANHO_BLOCO = 8000; const blocos = [];
             for (let i = 0; i < textoEdital.length; i += TAMANHO_BLOCO) blocos.push(textoEdital.substring(i, i + TAMANHO_BLOCO));
             let totalProcessados = 0; let ultimoErroMsg = "";
+            
+            // Cores disponíveis para sorteio
+            const paletaCores = ['#4ade80', '#3b82f6', 'var(--text-main)', '#ef4444', '#a855f7', '#eab308', '#f97316', '#8b5a2b', '#ec4899', '#9ca3af'];
+
             for (let idx = 0; idx < blocos.length; idx++) {
                 statusDiv.innerText = `⏳ Analisando parte ${idx + 1} de ${blocos.length}...`;
                 const prompt = `Você é um assistente especialista em concursos públicos. Analise o trecho a seguir do edital e extraia as disciplinas e seus respectivos tópicos. Retorne RIGOROSAMENTE e EXCLUSIVAMENTE um array JSON com a seguinte estrutura: [{"disciplina": "Nome", "topicos": ["Tópico 1"]}] Trecho: ${blocos[idx]}`;
@@ -518,236 +507,4 @@
                     const resJson = await response.json();
                     if (resJson.error) { ultimoErroMsg = resJson.error.message; continue; }
                     if (resJson.candidates && resJson.candidates[0]?.content?.parts[0]?.text) {
-                        let respostaTexto = resJson.candidates[0].content.parts[0].text.replace(/```json/g, '').replace(/```/g, '').trim();
-                        const novasMaterias = JSON.parse(respostaTexto);
-                        if (Array.isArray(novasMaterias)) {
-                            novasMaterias.forEach(itemNova => {
-                                if (itemNova.disciplina && Array.isArray(itemNova.topicos)) {
-                                    let itemExistente = planejamento.find(item => item.disciplina.toLowerCase() === itemNova.disciplina.toLowerCase());
-                                    if (itemExistente) { itemNova.topicos.forEach(top => { if (!itemExistente.topicos.includes(top)) itemExistente.topicos.push(top); }); } 
-                                    else { planejamento.push(itemNova); }
-                                    totalProcessados++;
-                                }
-                            });
-                            refUser.child('planejamento').set(planejamento);
-                        }
-                    }
-                } catch (err) { ultimoErroMsg = err.message; }
-            }
-            statusDiv.style.display = 'none';
-            if (totalProcessados > 0) { alert("Processamento concluído!"); document.getElementById('ia-edital-texto').value = ''; alternarModoPlanejamento('manual'); } 
-            else { alert("Erro da API: " + ultimoErroMsg); }
-        }
-        function alternarCamposMaterial() {
-            let material = document.getElementById("select-material").value;
-            document.getElementById("campo-pdf").style.display = material === "PDF" ? "block" : "none";
-            document.getElementById("campo-video").style.display = material === "Videoaula" ? "block" : "none";
-            document.getElementById("campo-questoes").style.display = material === "Questoes" ? "block" : "none";
-        }
-        function adicionarPlanejamento() {
-            let discInput = document.getElementById("plan-disciplina").value.trim(); let topicoInput = document.getElementById("plan-topico").value.trim();
-            if (!discInput || !topicoInput) { alert("Preencha a disciplina e o tópico!"); return; }
-            let itemExistente = planejamento.find(item => item.disciplina.toLowerCase() === discInput.toLowerCase());
-            if (itemExistente) { if (!itemExistente.topicos.includes(topicoInput)) itemExistente.topicos.push(topicoInput); } 
-            else { planejamento.push({ disciplina: discInput, topicos: [topicoInput] }); }
-            refUser.child('planejamento').set(planejamento); document.getElementById("plan-topico").value = "";
-        }
-        function renderizarPlanejamento() {
-            let container = document.getElementById("container-planejamento"); container.innerHTML = "";
-            if (planejamento.length === 0) { container.innerHTML = "<p style='font-size:0.85rem; color:var(--text-muted);'>Nenhuma matéria cadastrada.</p>"; return; }
-            planejamento.forEach((item, indexDisc) => {
-                let divPasta = document.createElement("div"); divPasta.className = "pasta-materia";
-                let topicosHTML = item.topicos.map((topico, indexTop) => `
-                    <div class="item-topico"><span>• ${topico}</span><button type="button" class="btn-excluir-materia" onclick="removerTopico(${indexDisc}, ${indexTop})">Excluir</button></div>
-                `).join("");
-                divPasta.innerHTML = `
-                    <div class="cabecalho-pasta" onclick="alternarPasta('pasta-${indexDisc}')">
-                        <span>📁 ${item.disciplina} <small style="color:var(--text-muted); font-weight:normal;">(${item.topicos.length})</small></span><span>▼</span>
-                    </div>
-                    <div class="conteudo-pasta" id="pasta-${indexDisc}">${topicosHTML}<button type="button" class="btn-excluir-materia" style="margin-top:10px; width:100%;" onclick="removerMateria(${indexDisc})">Excluir Matéria</button></div>
-                `;
-                container.appendChild(divPasta);
-            });
-        }
-        function alternarPasta(idPasta) { document.getElementById(idPasta).classList.toggle("aberta"); }
-        function removerTopico(indexDisc, indexTop) { planejamento[indexDisc].topicos.splice(indexTop, 1); if (planejamento[indexDisc].topicos.length === 0) planejamento.splice(indexDisc, 1); refUser.child('planejamento').set(planejamento); }
-        function removerMateria(indexDisc) { if (confirm("Deseja excluir toda essa matéria?")) { planejamento.splice(indexDisc, 1); refUser.child('planejamento').set(planejamento); } }
-        function atualizarDisciplinasSelect() {
-            let selectDisc = document.getElementById("select-disciplina"); selectDisc.innerHTML = '<option value="">Selecione uma disciplina...</option>';
-            planejamento.forEach((item) => { let opt = document.createElement("option"); opt.value = item.disciplina; opt.innerText = item.disciplina; selectDisc.appendChild(opt); });
-            atualizarTopicosSelect();
-        }
-        function atualizarTopicosSelect() {
-            let discSelecionada = document.getElementById("select-disciplina").value; let selectTopico = document.getElementById("select-topico");
-            selectTopico.innerHTML = '<option value="">Selecione um tópico...</option>';
-            let itemEncontrado = planejamento.find(item => item.disciplina === discSelecionada);
-            if (itemEncontrado) { itemEncontrado.topicos.forEach(topico => { let opt = document.createElement("option"); opt.value = topico; opt.innerText = topico; selectTopico.appendChild(opt); }); }
-        }
-        function formatarTempo(seg) {
-            let hrs = Math.floor(seg / 3600); let mins = Math.floor((seg % 3600) / 60); let secs = seg % 60;
-            return `${hrs < 10 ? "0"+hrs : hrs}:${mins < 10 ? "0"+mins : mins}:${secs < 10 ? "0"+secs : secs}`;
-        }
-        function iniciarCronometro() { if (timer !== null) return; timer = setInterval(() => { segundos++; document.getElementById("tempo").innerText = formatarTempo(segundos); }, 1000); }
-        function pausarCronometro() { clearInterval(timer); timer = null; }
-        
-        function finalizarSessao() {
-            pausarCronometro();
-            let disciplina = document.getElementById("select-disciplina").value; let assunto = document.getElementById("select-topico").value;
-            let tipo = document.getElementById("select-tipo").value; let material = document.getElementById("select-material").value;
-            let questoes = parseInt(document.getElementById("input-questoes").value) || 0; let acertos = parseInt(document.getElementById("input-acertos").value) || 0;
-            if (!disciplina || !assunto) { alert("Selecione uma disciplina e um tópico!"); return; }
-            if (segundos === 0) { alert("O tempo estudado precisa ser maior que zero!"); return; }
-            if (acertos > questoes) { alert("Acertos não podem ser maiores que questões!"); return; }
-
-            let detalheMaterial = "-";
-            if (material === "PDF") detalheMaterial = `PDF (${document.getElementById("input-paginas").value} pág)`;
-            else if (material === "Videoaula") detalheMaterial = `Vídeo (${document.getElementById("input-video").value})`;
-            else if (material === "Questoes") detalheMaterial = `Questões (${document.getElementById("input-fonte-questoes").value})`;
-
-            let agora = new Date();
-            let dataHora = agora.toLocaleDateString("pt-BR") + " " + agora.toLocaleTimeString("pt-BR", { hour: '2-digit', minute: '2-digit' });
-            let erros = questoes - acertos; let porcentagem = questoes > 0 ? Math.round((acertos / questoes) * 100) : 0;
-
-            let novaSessao = {
-                dataHora: dataHora, disciplina: disciplina, assunto: assunto, tipo: tipo, material: detalheMaterial,
-                tempoSegundos: segundos, tempo: formatarTempo(segundos), questoes: questoes, acertos: acertos, erros: erros, porcentagem: porcentagem
-            };
-
-            historico.unshift(novaSessao);
-            refUser.child('historico').set(historico);
-
-            segundos = 0; document.getElementById("tempo").innerText = "00:00:00"; document.getElementById("input-questoes").value = "0"; document.getElementById("input-acertos").value = "0";
-            document.getElementById("input-paginas").value = ""; document.getElementById("input-video").value = ""; document.getElementById("input-fonte-questoes").value = "";
-            document.getElementById("select-material").value = "Nenhum"; alternarCamposMaterial();
-        }
-
-        // ==========================================
-        // 7. FUNÇÃO DE RENDERIZAÇÃO MELHORADA
-        // ==========================================
-        function renderizarTabela() {
-            let tabela = document.getElementById("tabela-historico");
-            tabela.innerHTML = "";
-            let totalSegundos = 0; let totalQuestoes = 0; let totalAcertos = 0; let totalErros = 0;
-
-            historico.forEach((sessao) => {
-                totalSegundos += sessao.tempoSegundos || 0; totalQuestoes += sessao.questoes || 0;
-                totalAcertos += sessao.acertos || 0; totalErros += sessao.erros || 0;
-
-                let linha = `
-                    <tr>
-                        <td><small>${sessao.dataHora || '-'}</small></td><td>${sessao.disciplina}</td><td>${sessao.assunto}</td>
-                        <td>${sessao.tipo}</td><td>${sessao.material || '-'}</td><td>${sessao.tempo}</td>
-                        <td class="texto-acertos">${sessao.questoes > 0 ? sessao.acertos : "-"}</td>
-                        <td class="texto-erros">${sessao.questoes > 0 ? sessao.erros : "-"}</td>
-                        <td>${sessao.questoes > 0 ? sessao.questoes : "-"}</td>
-                        <td class="texto-acertos">${sessao.questoes > 0 ? `${sessao.porcentagem}%` : "-"}</td>
-                    </tr>
-                `;
-                tabela.innerHTML += linha;
-            });
-
-            document.getElementById("resumo-tempo").innerText = formatarTempo(totalSegundos);
-            document.getElementById("resumo-questoes").innerText = totalQuestoes;
-            document.getElementById("resumo-acertos").innerText = totalAcertos;
-            document.getElementById("resumo-erros").innerText = totalErros;
-            document.getElementById("resumo-porcentagem").innerText = totalQuestoes > 0 ? `${Math.round((totalAcertos / totalQuestoes) * 100)}%` : "0%";
-
-            // CHAMA AS NOVAS FUNÇÕES SEMPRE QUE O HISTÓRICO ATUALIZAR
-            atualizarProgressoXP();
-            renderizarRadarChart();
-        }
-
-        // === 8. LÓGICA DA BARRA DE XP ===
-        function atualizarProgressoXP() {
-            const dataHoje = new Date().toLocaleDateString("pt-BR");
-            
-            // Soma o tempo apenas das sessões de hoje
-            let segundosHoje = historico
-                .filter(sessao => sessao.dataHora && sessao.dataHora.startsWith(dataHoje))
-                .reduce((acc, sessao) => acc + (sessao.tempoSegundos || 0), 0);
-
-            const metaDiariaSegundos = 4 * 60 * 60; // 4 Horas em Segundos
-            let porcentagem = (segundosHoje / metaDiariaSegundos) * 100;
-            if (porcentagem > 100) porcentagem = 100;
-
-            document.getElementById('xp-bar').style.width = `${porcentagem}%`;
-            
-            const xpText = document.getElementById('xp-text');
-            if (porcentagem === 0) {
-                xpText.innerText = "0% Concluído (Vamos começar!)";
-                xpText.style.color = "var(--text-muted)";
-            } else if (porcentagem < 100) {
-                xpText.innerText = `🔥 ${Math.floor(porcentagem)}% Concluído (${formatarTempo(segundosHoje)} estudados hoje)`;
-                xpText.style.color = "var(--text-main)";
-            } else {
-                xpText.innerText = `🏆 Meta Batida! Você estudou ${formatarTempo(segundosHoje)} hoje!`;
-                xpText.style.color = "var(--brand-green)";
-            }
-        }
-
-        // === 9. LÓGICA DO GRÁFICO RADAR ===
-        function renderizarRadarChart() {
-            if (historico.length === 0) return;
-
-            // 1. Agrupar tempo por disciplina
-            let tempoPorMateria = {};
-            historico.forEach(sessao => {
-                if (!tempoPorMateria[sessao.disciplina]) {
-                    tempoPorMateria[sessao.disciplina] = 0;
-                }
-                tempoPorMateria[sessao.disciplina] += (sessao.tempoSegundos || 0);
-            });
-
-            // 2. Separar em labels (nomes) e data (horas)
-            let labels = Object.keys(tempoPorMateria);
-            let dadosEmHoras = labels.map(label => (tempoPorMateria[label] / 3600).toFixed(2));
-
-            // Cores baseadas no tema atual
-            const textColor = getComputedStyle(document.documentElement).getPropertyValue('--text-main').trim();
-            const gridColor = getComputedStyle(document.documentElement).getPropertyValue('--border-color').trim();
-
-            const ctx = document.getElementById('graficoRadar').getContext('2d');
-            
-            // Destruir gráfico anterior para evitar sobreposição
-            if (radarChartInstance) radarChartInstance.destroy();
-
-            radarChartInstance = new Chart(ctx, {
-                type: 'radar',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'Horas Estudadas (Total)',
-                        data: dadosEmHoras,
-                        backgroundColor: 'rgba(0, 179, 126, 0.2)', // brand-green com opacidade
-                        borderColor: '#00b37e',
-                        pointBackgroundColor: '#8257e5', // brand-purple
-                        borderWidth: 2
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    scales: {
-                        r: {
-                            angleLines: { color: gridColor },
-                            grid: { color: gridColor },
-                            pointLabels: { color: textColor, font: { size: 12 } },
-                            ticks: { display: false } // Oculta os números no eixo para ficar mais limpo
-                        }
-                    },
-                    plugins: {
-                        legend: { labels: { color: textColor } }
-                    }
-                }
-            });
-        }
-
-        function limparHistorico() {
-            if (confirm("Deseja apagar todo o seu histórico de estudos?")) {
-                historico = []; refUser.child('historico').remove();
-                if (radarChartInstance) radarChartInstance.destroy();
-                atualizarProgressoXP();
-            }
-        }
-    </script>
-</body>
-</html>
+                        let respostaTexto = resJson.candidates[0].content.parts[0].text.replace(/```json/g, '').replace(/
