@@ -262,12 +262,32 @@
                 <button class="aba-btn" id="aba-ia-btn" onclick="alternarModoPlanejamento('ia')">🤖 Edital com IA</button>
             </div>
             <div id="modo-planejamento-manual">
-                <div class="linha-inputs">
-                    <div class="campo"><label>Disciplina:</label><input type="text" id="plan-disciplina" placeholder="Ex: Direito Constitucional"></div>
-                    <div class="campo"><label>Tópico / Assunto:</label><input type="text" id="plan-topico" placeholder="Ex: Controle de Constitucionalidade"></div>
-                </div>
-                <button type="button" onclick="adicionarPlanejamento()">Adicionar ao Planejamento</button>
-            </div>
+               <div class="linha-inputs">
+    <div class="campo">
+        <label>Disciplina:</label>
+        <input type="text" id="plan-disciplina" placeholder="Ex: Direito Constitucional">
+    </div>
+    <div class="campo">
+        <label>Tópico / Assunto:</label>
+        <input type="text" id="plan-topico" placeholder="Ex: Controle de Constitucionalidade">
+    </div>
+    <!-- NOVO: Campo de Cor -->
+    <div class="campo">
+        <label>Cor da Matéria:</label>
+        <select id="plan-cor">
+            <option value="#4ade80">🟢 Verde Claro</option>
+            <option value="#3b82f6">🔵 Azul</option>
+            <option value="var(--text-main)">⚫ Preto (Adapta no Dark Mode)</option>
+            <option value="#ef4444">🔴 Vermelho</option>
+            <option value="#a855f7">🟣 Roxo</option>
+            <option value="#eab308">🟡 Amarelo</option>
+            <option value="#f97316">🟠 Laranja</option>
+            <option value="#8b5a2b">🟤 Marrom</option>
+            <option value="#ec4899">🌸 Rosa</option>
+            <option value="#9ca3af">⚪ Cinza</option>
+        </select>
+    </div>
+</div>
             <div id="modo-planejamento-ia" style="display: none;">
                 <p style="font-size: 0.85rem; color: var(--text-muted);">Insira a sua chave do Gemini e cole o edital.</p>
                 <label>Chave de API do Gemini:</label>
