@@ -711,7 +711,7 @@
             document.getElementById("campo-questoes").style.display = m==="Questoes"?"block":"none";
         }
         
-// === MODO IA: PROCESSAR EDITAL ===
+// === MODO IA: PROCESSAR EDITAL (CORRIGIDO PARA MODO JSON) ===
         async function processarEditalComIA() {
             const apiKey = document.getElementById('ia-api-key').value.trim();
             const editalTexto = document.getElementById('ia-edital-texto').value.trim();
@@ -724,34 +724,40 @@
             btn.disabled = true;
             loading.style.display = 'block';
 
-            // Comando (Prompt) rigoroso para a IA devolver apenas os dados puros
-            const prompt = `Analise o seguinte trecho de edital de concurso e extraia as disciplinas e seus respectivos tópicos de estudo.
-            Retorne EXATAMENTE um array JSON puro, sem formatação markdown, neste formato exato:
+            // Prompt focado no formato exato
+            const prompt = `Extraia as disciplinas e seus respectivos tópicos de estudo do edital abaixo.
+            O formato de saída deve ser EXATAMENTE um array JSON puro.
+            Exemplo de estrutura esperada:
             [
-              {"disciplina": "Nome da Disciplina", "topicos": ["Topico 1", "Topico 2"]}
+              {"disciplina": "Português", "topicos": ["Crase", "Ortografia"]},
+              {"disciplina": "Matemática", "topicos": ["Fração", "Geometria"]}
             ]
             Edital:
             ${editalTexto}`;
 
             try {
-                // Faz a requisição direto para a API oficial do Gemini Flash
                 const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        contents: [{ parts: [{ text: prompt }] }]
+                        contents: [{ parts: [{ text: prompt }] }],
+                        generationConfig: {
+                            // ISSO OBRIGA O GEMINI A RETORNAR APENAS DADOS (JSON), EVITANDO ERROS!
+                            response_mime_type: "application/json" 
+                        }
                     })
                 });
 
-                if (!response.ok) throw new Error("Erro na API. Verifique se sua chave está correta.");
+                // Se a API recusar a chave, pegamos o erro exato
+                if (!response.ok) {
+                    const errData = await response.json();
+                    throw new Error(errData.error.message || "Falha na comunicação com o Gemini.");
+                }
 
                 const data = await response.json();
-                let textoResposta = data.candidates[0].content.parts[0].text;
+                const textoResposta = data.candidates[0].content.parts[0].text;
 
-                // Limpa marcações markdown que a IA possa colocar (ex: ```json ... ```)
-                textoResposta = textoResposta.replace(/```json/g, '').replace(/```/g, '').trim();
-
-                // Converte o texto para objeto Javascript
+                // Transforma o texto devolvido pela IA em estrutura pro seu site
                 const materiasExtraidas = JSON.parse(textoResposta);
 
                 // Adiciona as matérias novas no planejamento existente
@@ -769,23 +775,25 @@
                     }
                 });
 
-                // Salva tudo no banco de dados e atualiza a tela
+                // Salva no banco e atualiza a tela
                 refUser.child('planejamento').set(planejamento);
                 renderizarPlanejamento();
                 atualizarDisciplinasSelect();
 
-                alert("Edital processado e adicionado ao seu planejamento com sucesso!");
-                document.getElementById('ia-edital-texto').value = ''; // Limpa a caixa de texto
+                alert("✅ Edital processado e adicionado ao seu planejamento com sucesso!");
+                document.getElementById('ia-edital-texto').value = ''; // Limpa a caixa
 
             } catch (error) {
-                console.error(error);
-                alert("Ocorreu um erro ao processar o edital. Verifique se sua chave de API é válida e se o texto está legível.");
+                console.error("Erro detalhado da IA:", error);
+                // Agora o alerta mostra o motivo real da falha (ex: API key inválida, texto muito longo, etc)
+                alert("Erro ao processar: " + error.message);
             } finally {
-                // Restaura o botão e esconde o "carregando"
+                // Restaura o botão
                 btn.disabled = false;
                 loading.style.display = 'none';
             }
         }
+        
         // === CRONÔMETRO E REGISTRO ===
         function formatarTempo(s) {
             let h = Math.floor(s/3600); let m = Math.floor((s%3600)/60); let sc = s%60;
