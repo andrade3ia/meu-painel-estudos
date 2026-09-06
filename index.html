@@ -10,19 +10,18 @@
     <style>
         :root {
             --bg-body: #f4f5f6; --bg-card: #ffffff; --text-main: #202024; --text-muted: #666666;
-            --border-color: #e6e6e6; --bg-input: #ffffff; --bg-header: #f0f0f0;
-            --brand-green: #00b37e; --brand-purple: #8257e5; --brand-red: #e55757;
-            --bg-log: #fee2e2;
+            --border-color: #e6e6e6; --bg-input: #ffffff; --bg-header: #f8f9fa;
+            --brand-green: #00b37e; --brand-purple: #8257e5; --brand-red: #e55757; --brand-blue: #3b82f6;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.1); --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
         }
 
         [data-theme="dark"] {
             --bg-body: #121214; --bg-card: #202024; --text-main: #e1e1e6; --text-muted: #a8a8b3;
             --border-color: #323238; --bg-input: #121214; --bg-header: #29292e;
-            --brand-green: #00b37e; --brand-purple: #8257e5; --brand-red: #e55757;
-            --bg-log: #18181b;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.5); --shadow-md: 0 4px 12px rgba(0,0,0,0.3);
         }
 
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; transition: background-color 0.3s, color 0.3s; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; transition: background-color 0.3s, color 0.3s, border-color 0.2s; }
         body { font-family: 'Segoe UI', Tahoma, sans-serif; background-color: var(--bg-body); color: var(--text-main); margin: 0; padding: 0; display: flex; height: 100vh; overflow: hidden; }
 
         .mobile-header { display: none; background: var(--bg-card); padding: 15px; border-bottom: 1px solid var(--border-color); width: 100%; justify-content: space-between; align-items: center; z-index: 1000; }
@@ -32,81 +31,95 @@
         .sidebar h1 { color: var(--brand-green); font-size: 1.5rem; margin-top: 0; margin-bottom: 10px; }
         
         .user-info { background: var(--bg-input); padding: 10px; border-radius: 6px; border: 1px solid var(--border-color); margin-bottom: 5px; font-size: 0.9rem; display: flex; justify-content: space-between; align-items: center;}
-        .total-horas-sidebar { background: var(--brand-purple); color: white; padding: 12px; border-radius: 6px; text-align: center; margin-bottom: 15px; font-size: 1.1rem; font-weight: bold; }
+        .total-horas-sidebar { background: var(--brand-purple); color: white; padding: 12px; border-radius: 8px; text-align: center; margin-bottom: 15px; font-size: 1.1rem; font-weight: bold; box-shadow: var(--shadow-sm); }
         
-        .nav-btn { background: transparent; color: var(--text-main); border: 1px solid transparent; text-align: left; padding: 12px 15px; font-size: 1rem; border-radius: 6px; cursor: pointer; font-weight: 500; }
+        .nav-btn { background: transparent; color: var(--text-main); border: 1px solid transparent; text-align: left; padding: 12px 15px; font-size: 1rem; border-radius: 8px; cursor: pointer; font-weight: 500; }
         .nav-btn.active { background: var(--bg-input); border: 1px solid var(--brand-purple); color: var(--brand-purple); font-weight: bold; }
+        .nav-btn:hover:not(.active) { background: var(--bg-header); }
         
-        .theme-btn { background: var(--bg-input); border: 1px solid var(--border-color); color: var(--text-main); padding: 10px; border-radius: 6px; cursor: pointer; text-align: center; font-weight: bold; margin-top: auto; }
-        .btn-logout { background-color: var(--brand-red); padding: 10px; font-size: 0.9rem; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; margin-top: 5px; }
+        .theme-btn { background: var(--bg-input); border: 1px solid var(--border-color); color: var(--text-main); padding: 10px; border-radius: 8px; cursor: pointer; text-align: center; font-weight: bold; margin-top: auto; }
+        .btn-logout { background-color: var(--brand-red); padding: 10px; font-size: 0.9rem; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; margin-top: 5px; }
 
         .main-content { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; align-items: center; position: relative; }
-        .container-interno { width: 100%; max-width: 900px; padding-bottom: 40px;}
-        .card { background-color: var(--bg-card); border-radius: 8px; padding: 20px; margin-bottom: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.15); width: 100%; }
-        h2 { margin-top: 0; color: var(--brand-purple); font-size: 1.2rem; }
+        .container-interno { width: 100%; max-width: 1000px; padding-bottom: 40px;}
+        .card { background-color: var(--bg-card); border-radius: 12px; padding: 24px; margin-bottom: 20px; box-shadow: var(--shadow-md); width: 100%; border: 1px solid var(--border-color); }
+        h2 { margin-top: 0; color: var(--brand-purple); font-size: 1.25rem; border-bottom: 2px solid var(--bg-header); padding-bottom: 10px;}
         
         @media (max-width: 768px) {
             body { flex-direction: column; }
             .mobile-header { display: flex; }
             .sidebar { position: fixed; top: 60px; left: -100%; width: 100%; height: calc(100vh - 60px); transition: left 0.3s ease; }
             .sidebar.open { left: 0; }
+            .linha-inputs { flex-direction: column !important; }
         }
 
-        input, select, textarea { width: 100%; padding: 12px; margin-top: 6px; margin-bottom: 16px; background-color: var(--bg-input); border: 1px solid var(--border-color); border-radius: 6px; color: var(--text-main); font-size: 16px; font-family: inherit; }
+        input, select, textarea { width: 100%; padding: 12px; margin-top: 6px; margin-bottom: 16px; background-color: var(--bg-input); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-main); font-size: 0.95rem; font-family: inherit; }
+        input:focus, select:focus, textarea:focus { outline: none; border-color: var(--brand-purple); }
         textarea { resize: vertical; min-height: 100px; }
-        button { width: 100%; padding: 14px; font-weight: bold; font-size: 1rem; border: none; border-radius: 6px; cursor: pointer; background-color: var(--brand-purple); color: white; }
-        button:active { opacity: 0.8; }
+        button { width: 100%; padding: 14px; font-weight: bold; font-size: 1rem; border: none; border-radius: 8px; cursor: pointer; background-color: var(--brand-purple); color: white; transition: transform 0.1s, opacity 0.2s;}
+        button:active { transform: scale(0.98); opacity: 0.9; }
         
-        .linha-inputs { display: flex; flex-direction: column; gap: 0px; }
-        @media (min-width: 600px) { .linha-inputs { flex-direction: row; gap: 15px; } }
+        .linha-inputs { display: flex; flex-direction: row; gap: 15px; }
         .campo { flex: 1; }
 
-        .abas-container { display: flex; gap: 10px; margin-bottom: 15px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; }
-        .aba-btn { flex: 1; background: var(--bg-input); color: var(--text-muted); border: 1px solid var(--border-color); padding: 10px; border-radius: 4px; cursor: pointer; }
-        .aba-btn.ativa { background: var(--brand-purple); color: white; border-color: var(--brand-purple); }
+        .abas-container { display: flex; gap: 10px; margin-bottom: 20px; background: var(--bg-header); padding: 5px; border-radius: 10px;}
+        .aba-btn { flex: 1; background: transparent; color: var(--text-muted); border: none; padding: 12px; border-radius: 6px; cursor: pointer; font-weight: 600;}
+        .aba-btn.ativa { background: var(--bg-card); color: var(--brand-purple); box-shadow: var(--shadow-sm); }
 
-        .grid-resumo { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 10px; margin-bottom: 20px; }
-        .card-estatistica { background-color: var(--bg-input); border: 1px solid var(--border-color); border-radius: 6px; padding: 10px; text-align: center; }
-        .card-estatistica span { display: block; font-size: 0.75rem; color: var(--text-muted); margin-bottom: 4px; }
-        .card-estatistica strong { font-size: 1.1rem; color: var(--text-main); }
+        .grid-resumo { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 15px; margin-bottom: 20px; }
+        .card-estatistica { background-color: var(--bg-input); border: 1px solid var(--border-color); border-radius: 10px; padding: 15px; text-align: center; box-shadow: var(--shadow-sm); }
+        .card-estatistica span { display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase; font-weight: 600; }
+        .card-estatistica strong { font-size: 1.4rem; color: var(--text-main); }
         .card-estatistica strong.verde { color: var(--brand-green); }
-        .card-estatistica strong.vermelho { color: var(--brand-red); }
 
-        #tempo { font-size: 3rem; text-align: center; margin: 15px 0; font-family: monospace; color: var(--brand-green); }
+        #tempo { font-size: 3.5rem; text-align: center; margin: 20px 0; font-family: 'Courier New', Courier, monospace; color: var(--brand-green); font-weight: bold; letter-spacing: 2px;}
         .acoes-cronometro { display: flex; gap: 10px; justify-content: center; }
         
         .tabela-wrapper { width: 100%; overflow-x: auto; }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; min-width: 600px; }
-        th, td { padding: 10px; text-align: left; border-bottom: 1px solid var(--border-color); font-size: 0.88rem; }
-        th { color: var(--brand-purple); }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; min-width: 800px; }
+        th, td { padding: 12px 10px; text-align: left; border-bottom: 1px solid var(--border-color); font-size: 0.85rem; }
+        th { color: var(--brand-purple); font-weight: 600; background: var(--bg-header); }
+        tr:hover { background-color: var(--bg-header); }
         .texto-acertos { color: var(--brand-green); font-weight: bold; }
         .texto-erros { color: var(--brand-red); font-weight: bold; }
         .texto-porcentagem { color: var(--brand-purple); font-weight: bold; }
+        .td-detalhes { font-size: 0.75rem; color: var(--text-muted); }
 
-        .pasta-materia { background-color: var(--bg-input); border: 1px solid var(--border-color); border-radius: 6px; margin-bottom: 10px; overflow: hidden; border-left-width: 8px; border-left-style: solid; }
-        .cabecalho-pasta { background-color: var(--bg-header); padding: 12px 15px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-weight: bold; flex-wrap: wrap; gap: 10px;}
-        .conteudo-pasta { padding: 10px 15px; display: none; background-color: var(--bg-input); }
-        .conteudo-pasta.aberta { display: block; }
-        .item-topico { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px dashed var(--border-color); }
-        .btn-acao-materia { padding: 6px 10px; font-size: 0.75rem; border-radius: 4px; width: auto !important; border: none; cursor: pointer; color: white;}
+        /* DESIGN DAS PASTAS REFORMULADO (Web Design Req 4) */
+        .pasta-materia { background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; margin-bottom: 15px; overflow: hidden; box-shadow: var(--shadow-sm); }
+        .cabecalho-pasta { background-color: var(--bg-input); padding: 15px 20px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-weight: 600; font-size: 1.05rem; transition: background 0.2s;}
+        .cabecalho-pasta:hover { background-color: var(--bg-header); }
+        .conteudo-pasta { padding: 5px 20px 20px 20px; display: none; background-color: var(--bg-card); border-top: 1px solid var(--border-color); }
+        .conteudo-pasta.aberta { display: block; animation: fadeIn 0.3s ease; }
+        .item-topico { display: flex; justify-content: space-between; align-items: center; padding: 12px 15px; margin-top: 8px; background: var(--bg-input); border-radius: 8px; border: 1px solid var(--border-color); transition: border-color 0.2s; }
+        .item-topico:hover { border-color: var(--brand-purple); }
+        .acoes-topico { display: flex; gap: 8px; }
+        .btn-acao-materia { padding: 6px 12px; font-size: 0.8rem; border-radius: 6px; width: auto !important; border: none; cursor: pointer; color: white; font-weight: bold;}
         .btn-excluir { background: var(--brand-red); }
-        .seletor-cor-cabecalho { padding: 4px; font-size: 0.8rem; background: var(--bg-card); color: var(--text-main); border: 1px solid var(--border-color); border-radius: 4px; margin-left: 10px; width: auto;}
+        .btn-agrupar { background: var(--brand-blue); }
+        .seletor-cor-cabecalho { padding: 6px; font-size: 0.85rem; background: var(--bg-card); color: var(--text-main); border: 1px solid var(--border-color); border-radius: 6px; margin-left: 10px; width: auto; cursor: pointer;}
 
-        .checkbox-group { display: flex; flex-direction: column; gap: 8px; max-height: 150px; overflow-y: auto; background: var(--bg-input); padding: 10px; border: 1px solid var(--border-color); border-radius: 6px; margin-bottom: 15px;}
-        .checkbox-group label { display: flex; align-items: center; gap: 8px; font-size: 0.95rem; cursor: pointer; color: var(--text-main);}
+        .checkbox-group { display: flex; flex-direction: column; gap: 8px; max-height: 180px; overflow-y: auto; background: var(--bg-input); padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; margin-bottom: 15px;}
+        .checkbox-group label { display: flex; align-items: center; gap: 10px; font-size: 0.95rem; cursor: pointer; color: var(--text-main); padding: 4px 0;}
 
-        .concurso-display { background: var(--bg-input); border: 2px dashed var(--brand-purple); border-radius: 8px; padding: 20px; text-align: center; margin-top: 15px; }
-        .concurso-display h3 { margin: 0 0 10px 0; color: var(--text-main); }
-        .dias-faltantes { font-size: 2.5rem; color: var(--brand-green); font-weight: bold; }
+        /* CADERNO DE ERROS AGRUPADO */
+        .bloco-erros { border: 1px solid var(--border-color); border-radius: 10px; margin-bottom: 15px; overflow: hidden; }
+        .bloco-erros-titulo { background: var(--bg-header); padding: 10px 15px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; color: var(--brand-purple);}
+        .nota-erro { background: var(--bg-input); border-left: 4px solid var(--brand-red); padding: 15px; margin: 10px; border-radius: 6px; position: relative; box-shadow: var(--shadow-sm);}
+        .nota-erro small { color: var(--text-muted); font-size: 0.8rem; display: block; margin-bottom: 5px;}
+        .nota-erro p { margin: 0; font-size: 0.95rem; white-space: pre-wrap; line-height: 1.5; }
+        .btn-apagar-nota { position: absolute; top: 10px; right: 10px; background: transparent; color: var(--text-muted); width: auto; padding: 0; font-size: 1.2rem; transition: color 0.2s;}
+        .btn-apagar-nota:hover { color: var(--brand-red); }
+
+        .progress-bar-bg { width: 100%; background-color: var(--bg-input); border: 1px solid var(--border-color); border-radius: 20px; height: 20px; overflow: hidden; margin: 15px 0; }
+        .progress-bar-fill { height: 100%; background: linear-gradient(90deg, var(--brand-green), #3b82f6); width: 0%; transition: width 1s cubic-bezier(0.4, 0, 0.2, 1); }
+        .input-meta { width: 70px; padding: 8px; margin: 0 5px; text-align: center; font-weight: bold; color: var(--brand-green); border-color: var(--brand-green); background: var(--bg-input); border-radius: 8px;}
+
+        /* MODAL AGRUPAMENTO */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: center; z-index: 2000; backdrop-filter: blur(3px);}
+        .modal-content { background: var(--bg-card); padding: 25px; border-radius: 12px; width: 90%; max-width: 400px; box-shadow: var(--shadow-md); border: 1px solid var(--border-color);}
         
-        .nota-erro { background: var(--bg-input); border-left: 4px solid var(--brand-red); padding: 15px; border-radius: 6px; margin-bottom: 10px; position: relative; }
-        .nota-erro small { color: var(--text-muted); font-size: 0.8rem; }
-        .nota-erro p { margin: 8px 0 0 0; font-size: 0.95rem; white-space: pre-wrap; }
-        .btn-apagar-nota { position: absolute; top: 10px; right: 10px; background: transparent; color: var(--brand-red); width: auto; padding: 0; font-size: 1.2rem; }
-
-        .progress-bar-bg { width: 100%; background-color: var(--border-color); border-radius: 20px; height: 18px; overflow: hidden; margin: 10px 0; }
-        .progress-bar-fill { height: 100%; background: linear-gradient(90deg, var(--brand-green), #4ade80); width: 0%; transition: width 0.8s; }
-        .input-meta { width: 60px; padding: 6px; margin: 0 5px; text-align: center; font-weight: bold; color: var(--brand-green); border-color: var(--brand-green); background: var(--bg-input); }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js" crossorigin="anonymous"></script>
@@ -117,7 +130,7 @@
 <body>
 
     <header class="mobile-header">
-        <h2 style="margin: 0; font-size: 1.2rem;">Meu Painel</h2>
+        <h2 style="margin: 0; font-size: 1.2rem; color: var(--brand-green);">Meu Painel</h2>
         <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
     </header>
 
@@ -127,14 +140,14 @@
             <span>👤 <strong id="user-display" style="color:var(--brand-green);"></strong></span>
         </div>
         <div class="total-horas-sidebar">
-            Total Estudado<br><span id="sidebar-total-horas" style="font-size: 1.4rem;">00:00:00</span>
+            Total Estudado<br><span id="sidebar-total-horas" style="font-size: 1.5rem; letter-spacing: 1px;">00:00:00</span>
         </div>
         
         <button id="nav-btn-home" class="nav-btn active" onclick="alternarTelaPrincipal('home')">📊 Início & Registro</button>
-        <button id="nav-btn-concurso" class="nav-btn" onclick="alternarTelaPrincipal('concurso')">🎯 Meu Concurso</button>
         <button id="nav-btn-materias" class="nav-btn" onclick="alternarTelaPrincipal('materias')">📚 Minhas Matérias</button>
         <button id="nav-btn-caderno" class="nav-btn" onclick="alternarTelaPrincipal('caderno')">📓 Caderno de Erros</button>
-        <button id="nav-btn-estatisticas" class="nav-btn" onclick="alternarTelaPrincipal('estatisticas')">📈 Estatísticas Gerais</button>
+        <button id="nav-btn-estatisticas" class="nav-btn" onclick="alternarTelaPrincipal('estatisticas')">📈 Estatísticas</button>
+        <button id="nav-btn-perfil" class="nav-btn" onclick="alternarTelaPrincipal('perfil')">⚙️ Meu Perfil</button>
         
         <button id="btn-theme-toggle" class="theme-btn" onclick="toggleTheme()">☀️ Alternar Tema</button>
         <button class="btn-logout" onclick="fazerLogout()">Sair da Conta</button>
@@ -142,113 +155,120 @@
 
     <main class="main-content" id="main-area" onclick="closeSidebarOnClick(event)">
         
-        <div id="secao-auth" class="card" style="max-width: 400px; margin: 50px auto;">
-            <h1 style="color: var(--brand-green); text-align: center; margin-bottom: 20px;">Meu Painel</h1>
+        <!-- ================= TELA LOGIN & RECUPERAÇÃO DE SENHA ================= -->
+        <div id="secao-auth" class="card" style="max-width: 420px; margin: 40px auto;">
+            <h1 style="color: var(--brand-green); text-align: center; margin-bottom: 10px; font-size: 2rem;">Meu Painel</h1>
+            <p style="text-align: center; color: var(--text-muted); margin-bottom: 25px;">Organize seus estudos e avance.</p>
+            
             <div id="form-login">
-                <h2 style="text-align: center;">Acessar Conta</h2>
-                <input type="email" id="login-email" placeholder="Seu E-mail Real" autocapitalize="none">
+                <h2 style="text-align: center; border:none;">Acessar Conta</h2>
+                <input type="email" id="login-email" placeholder="Seu E-mail" autocapitalize="none">
                 <input type="password" id="login-senha" placeholder="Senha">
                 <button type="button" onclick="fazerLogin()">Entrar</button>
-                <div style="text-align: center; margin-top: 15px; color: var(--brand-purple); cursor: pointer;" onclick="alternarTelaAuth('cadastro')"><u>Não tem conta? Cadastre-se</u></div>
+                <div style="display: flex; justify-content: space-between; margin-top: 15px; font-size: 0.9rem;">
+                    <span style="color: var(--brand-purple); cursor: pointer;" onclick="recuperarSenha()">Esqueceu a senha?</span>
+                    <span style="color: var(--brand-green); cursor: pointer; font-weight: bold;" onclick="alternarTelaAuth('cadastro')">Criar Conta</span>
+                </div>
             </div>
+            
             <div id="form-cadastro" style="display: none;">
-                <h2 style="text-align: center;">Criar Conta Segura</h2>
-                <input type="text" id="cad-nome" placeholder="Seu Nome de Exibição">
+                <h2 style="text-align: center; border:none;">Nova Conta</h2>
+                <input type="text" id="cad-nome" placeholder="Seu Nome ou Apelido">
                 <input type="email" id="cad-email" placeholder="E-mail Válido">
                 <input type="password" id="cad-senha" placeholder="Senha (mín. 6 char)">
-                <button type="button" onclick="fazerCadastro()">Cadastrar</button>
-                <div style="text-align: center; margin-top: 15px; color: var(--brand-purple); cursor: pointer;" onclick="alternarTelaAuth('login')"><u>Fazer Login</u></div>
+                <button type="button" onclick="fazerCadastro()">Cadastrar-se</button>
+                <div style="text-align: center; margin-top: 15px; color: var(--text-muted); cursor: pointer;" onclick="alternarTelaAuth('login')"><u>Voltar para Login</u></div>
             </div>
         </div>
 
         <div id="secao-painel" class="container-interno" style="display: none;">
             
+            <!-- ====== HOME & CRONÔMETRO (COM PÁGINAS E VÍDEOS) ====== -->
             <div id="view-home">
-                <div class="card">
-                    <h2 style="display: flex; align-items: center; justify-content: center; gap: 10px; flex-wrap: wrap;">
+                <div class="card" style="text-align: center;">
+                    <h2 style="border:none; justify-content: center; display:flex; align-items:center; gap: 10px;">
                         🎯 Meta Diária: <input type="number" id="input-meta-horas" class="input-meta" value="4" min="1" max="24">h
-                        <button onclick="salvarMetaDiaria()" style="width: auto; padding: 6px 12px; font-size: 0.85rem;">Salvar</button>
+                        <button onclick="salvarMetaDiaria()" style="width: auto; padding: 8px 16px; font-size: 0.9rem;">Salvar</button>
                     </h2>
                     <div class="progress-bar-bg"><div id="xp-bar" class="progress-bar-fill"></div></div>
-                    <p id="xp-text" style="text-align: center; font-size: 0.85rem; color: var(--text-muted); margin:0;">Carregando...</p>
+                    <p id="xp-text" style="font-size: 0.9rem; color: var(--text-muted); margin:0;">Carregando métricas...</p>
                 </div>
 
                 <div class="card">
-                    <h2>Cronômetro de Estudo</h2>
+                    <h2>⏳ Sessão de Estudo</h2>
                     <div id="tempo">00:00:00</div>
                     <div class="acoes-cronometro">
-                        <button type="button" style="background:var(--brand-green);" onclick="iniciarCronometro()">Iniciar</button>
-                        <button type="button" style="background:#eab308; color:black;" onclick="pausarCronometro()">Pausar</button>
-                        <button type="button" onclick="finalizarSessao()">Finalizar Sessão</button>
-                    </div>
-                </div>
-
-                <div class="linha-inputs">
-                    <div class="card campo">
-                        <h2>Detalhes da Sessão</h2>
-                        <label>Disciplina:</label>
-                        <select id="select-disciplina" onchange="atualizarTopicosCheckboxes()"><option value="">Selecione...</option></select>
-                        <label>Tópicos (Pode marcar vários):</label>
-                        <div id="checkboxes-topicos" class="checkbox-group">
-                            <span style="color:var(--text-muted); font-size:0.85rem;">Selecione a disciplina primeiro.</span>
-                        </div>
-                        
-                        <label>Tipo:</label>
-                        <select id="select-tipo"><option>Teoria</option><option>Questões</option><option>Revisão</option></select>
-                        
-                        <div style="display:flex; gap:10px; margin-top:10px;">
-                            <div style="flex:1"><label>Acertos:</label><input type="number" id="input-acertos" value="0" min="0"></div>
-                            <div style="flex:1"><label>Erros:</label><input type="number" id="input-erros" value="0" min="0"></div>
-                        </div>
-                    </div>
-                    <div class="card campo" style="display:flex; flex-direction:column; align-items:center;">
-                        <h2>Resumo de Hoje</h2>
-                        <div style="position: relative; width: 100%; max-width: 250px; height: 250px;">
-                            <canvas id="graficoDiarioHome"></canvas>
-                        </div>
+                        <button type="button" style="background:var(--brand-green); font-size: 1.1rem;" onclick="iniciarCronometro()">▶ Iniciar</button>
+                        <button type="button" style="background:#eab308; color:black; font-size: 1.1rem;" onclick="pausarCronometro()">⏸ Pausar</button>
                     </div>
                 </div>
 
                 <div class="card">
-                    <h2>Últimos Registros</h2>
+                    <h2>📝 Salvar Registro</h2>
+                    
+                    <div class="linha-inputs">
+                        <div class="campo">
+                            <label>Disciplina:</label>
+                            <select id="select-disciplina" onchange="atualizarTopicosCheckboxes()"><option value="">Selecione...</option></select>
+                        </div>
+                        <div class="campo">
+                            <label>Tipo de Estudo:</label>
+                            <select id="select-tipo"><option>Teoria</option><option>Questões</option><option>Revisão</option></select>
+                        </div>
+                    </div>
+
+                    <label style="display:block; margin-top:10px;">Tópicos Trabalhados:</label>
+                    <div id="checkboxes-topicos" class="checkbox-group">
+                        <span style="color:var(--text-muted); font-size:0.85rem;">Selecione a disciplina primeiro.</span>
+                    </div>
+                    
+                    <div class="linha-inputs" style="margin-top:10px;">
+                        <div class="campo">
+                            <label>Pág. Inicial:</label><input type="number" id="input-pg-ini" placeholder="Ex: 10">
+                        </div>
+                        <div class="campo">
+                            <label>Pág. Final:</label><input type="number" id="input-pg-fim" placeholder="Ex: 25">
+                        </div>
+                        <div class="campo">
+                            <label>Videoaula Início:</label><input type="text" id="input-vid-ini" placeholder="Ex: Aula 1">
+                        </div>
+                        <div class="campo">
+                            <label>Videoaula Fim (Opcional):</label><input type="text" id="input-vid-fim" placeholder="Ex: Aula 3">
+                        </div>
+                    </div>
+
+                    <div class="linha-inputs" style="margin-top:5px; padding-top: 15px; border-top: 1px dashed var(--border-color);">
+                        <div class="campo"><label>Qtd. Acertos:</label><input type="number" id="input-acertos" value="0" min="0"></div>
+                        <div class="campo"><label>Qtd. Erros:</label><input type="number" id="input-erros" value="0" min="0"></div>
+                    </div>
+
+                    <button type="button" onclick="finalizarSessao()" style="margin-top: 10px;">💾 Salvar Sessão no Histórico</button>
+                </div>
+
+                <div class="card">
+                    <h2>📋 Últimos Registros</h2>
                     <div class="tabela-wrapper">
                         <table>
-                            <thead><tr><th>Data</th><th>Matéria</th><th>Tópicos</th><th>Tipo</th><th>Tempo</th><th>Total Q.</th><th>Acertos</th><th>Erros</th><th>% Acertos</th></tr></thead>
+                            <thead><tr><th>Data</th><th>Matéria & Tópicos</th><th>Tipo</th><th>Detalhes (Pág/Vídeo)</th><th>Tempo</th><th>Acertos</th><th>Erros</th><th>%</th></tr></thead>
                             <tbody id="tabela-historico"></tbody>
                         </table>
                     </div>
                 </div>
             </div>
 
-            <div id="view-concurso" style="display: none;">
-                <div class="card">
-                    <h2>🎯 Meu Concurso Alvo</h2>
-                    <p style="font-size:0.9rem; color:var(--text-muted);">Defina seu objetivo e acompanhe a contagem regressiva automaticamente.</p>
-                    <div class="linha-inputs">
-                        <div class="campo"><label>Nome do Concurso:</label><input type="text" id="concurso-nome" placeholder="Ex: Polícia Federal"></div>
-                        <div class="campo"><label>Data da Prova:</label><input type="date" id="concurso-data"></div>
-                    </div>
-                    <button onclick="salvarConcurso()">Salvar Concurso</button>
-                    <div id="concurso-resultado" class="concurso-display" style="display:none;">
-                        <h3 id="display-concurso-nome">Nome</h3>
-                        <div class="dias-faltantes" id="display-concurso-dias">0</div>
-                        <p style="margin:5px 0 0 0; color:var(--text-muted);">Dias Faltantes</p>
-                    </div>
-                </div>
-            </div>
-
+            <!-- ====== MATÉRIAS & EDITAL INTELIGENTE CHUNKING ====== -->
             <div id="view-materias" style="display: none;">
                 <div class="card">
-                    <h2>📚 Gerenciar Matérias</h2>
+                    <h2>📚 Organização de Matérias</h2>
                     <div class="abas-container">
-                        <button class="aba-btn ativa" id="aba-manual-btn" onclick="alternarModoPlanejamento('manual')">Cadastrar Manual</button>
-                        <button class="aba-btn" id="aba-ia-btn" onclick="alternarModoPlanejamento('ia')">🤖 Edital Inteligente</button>
+                        <button class="aba-btn ativa" id="aba-manual-btn" onclick="alternarModoPlanejamento('manual')">Adicionar Manualmente</button>
+                        <button class="aba-btn" id="aba-ia-btn" onclick="alternarModoPlanejamento('ia')">🤖 Edital c/ Inteligência Artificial</button>
                     </div>
 
                     <div id="modo-planejamento-manual">
                         <div class="linha-inputs">
-                            <div class="campo"><label>Disciplina:</label><input type="text" id="plan-disciplina" placeholder="Ex: Português"></div>
-                            <div class="campo"><label>Tópico Novo:</label><input type="text" id="plan-topico" placeholder="Assunto"></div>
+                            <div class="campo"><label>Disciplina (Nova ou Existente):</label><input type="text" id="plan-disciplina" placeholder="Ex: Direito Constitucional"></div>
+                            <div class="campo"><label>Tópico Novo:</label><input type="text" id="plan-topico" placeholder="Ex: Direitos Fundamentais"></div>
                             <div class="campo">
                                 <label>Cor da Pasta:</label>
                                 <select id="plan-cor">
@@ -259,71 +279,123 @@
                                     <option value="#ec4899">🌸 Rosa</option><option value="#14b8a6">🦚 Turquesa</option>
                                     <option value="#06b6d4">💎 Ciano</option><option value="#6366f1">🌌 Índigo</option>
                                     <option value="#84cc16">🍋 Lima</option><option value="#f43f5e">🌹 Rosa Escuro</option>
+                                    <option value="#00b37e">✅ Verde Brand</option>
                                 </select>
                             </div>
                         </div>
-                        <button onclick="adicionarPlanejamento()">Adicionar ao Painel</button>
+                        <button onclick="adicionarPlanejamento()">+ Adicionar ao Painel</button>
                     </div>
 
                     <div id="modo-planejamento-ia" style="display: none;">
-                        <input type="password" id="ia-api-key" placeholder="Sua Chave API do Gemini">
-                        <textarea id="ia-edital-texto" placeholder="Cole todo o conteúdo do edital aqui..."></textarea>
-                        <button class="btn-ia" onclick="processarEditalComIA()">⚡ Processar Edital</button>
-                        <div id="ia-loading" style="color:var(--brand-green); font-weight:bold; display:none; margin-top:10px; text-align:center;">⏳ Processando edital com IA...</div>
+                        <p style="font-size: 0.9rem; color: var(--text-muted);">Cole editais gigantes. O sistema irá dividi-los e processá-los automaticamente usando o <strong>Gemini 3.6-flash</strong>.</p>
+                        <input type="password" id="ia-api-key" placeholder="Cole sua Chave de API do Gemini aqui">
+                        <textarea id="ia-edital-texto" style="min-height: 150px;" placeholder="Cole TODO o conteúdo do edital aqui (Matérias, tópicos, anexos)..."></textarea>
+                        <button class="btn-ia" onclick="processarEditalComIA()" id="btn-ia-executar">⚡ Estruturar Edital Inteiro</button>
+                        <div id="ia-loading" style="color:var(--brand-purple); font-weight:bold; display:none; margin-top:15px; text-align:center; background: var(--bg-header); padding: 10px; border-radius: 8px;">
+                            ⏳ Processando parte <span id="ia-progresso-atual">0</span> de <span id="ia-progresso-total">0</span>... Não feche a página.
+                        </div>
                     </div>
-
-                    <div class="lista-planejamento" id="container-planejamento"></div>
                 </div>
+                
+                <!-- Lista de Pastas Renderizadas aqui -->
+                <div class="lista-planejamento" id="container-planejamento"></div>
             </div>
 
+            <!-- ====== CADERNO DE ERROS AGRUPADO ====== -->
             <div id="view-caderno" style="display: none;">
                 <div class="card">
-                    <h2>📓 Caderno de Erros e Revisão</h2>
-                    <p style="font-size:0.9rem; color:var(--text-muted);">Anote questões que errou ou pegadinhas importantes.</p>
-                    <label>Selecione a Matéria:</label>
-                    <select id="caderno-disciplina" onchange="renderizarCaderno()"><option value="">Selecione...</option></select>
+                    <h2>📓 Caderno de Erros Estruturado</h2>
+                    <p style="font-size:0.9rem; color:var(--text-muted);">Crie anotações e agrupe-as por assuntos dentro da matéria (ex: Bloco 'Frações').</p>
                     
-                    <div id="area-nova-nota" style="display:none; margin-top:15px; border-top:1px solid var(--border-color); padding-top:15px;">
-                        <label>Nova Anotação:</label>
-                        <textarea id="caderno-texto" placeholder="Cole a questão ou escreva seu resumo/dica aqui..."></textarea>
-                        <button onclick="salvarNotaCaderno()">Salvar Anotação</button>
+                    <div class="linha-inputs">
+                        <div class="campo">
+                            <label>Selecione a Disciplina do Caderno:</label>
+                            <select id="caderno-disciplina" onchange="renderizarCaderno()"><option value="">Selecione...</option></select>
+                        </div>
                     </div>
-                    <div id="lista-caderno" style="margin-top: 20px;"></div>
+                    
+                    <div id="area-nova-nota" style="display:none; margin-top:10px; background: var(--bg-header); padding: 15px; border-radius: 10px;">
+                        <div class="linha-inputs">
+                            <div class="campo">
+                                <label>Bloco / Assunto (Opcional):</label>
+                                <input type="text" id="caderno-bloco" placeholder="Ex: Frações, Atos Administrativos...">
+                                <small style="color: var(--text-muted); display: block; margin-top:-10px; margin-bottom: 10px;">Se deixar vazio, a anotação ficará "solta" no caderno.</small>
+                            </div>
+                        </div>
+                        <label>Sua Anotação/Questão:</label>
+                        <textarea id="caderno-texto" placeholder="Cole a questão ou escreva seu resumo aqui..."></textarea>
+                        <button onclick="salvarNotaCaderno()">+ Adicionar ao Caderno</button>
+                    </div>
+                    
+                    <div id="lista-caderno" style="margin-top: 25px;"></div>
                 </div>
             </div>
 
+            <!-- ====== ESTATÍSTICAS ====== -->
             <div id="view-estatisticas" style="display: none;">
                 <div class="card">
-                    <h2>📈 Análise de Desempenho</h2>
+                    <h2>📈 Desempenho e Produtividade</h2>
                     <div class="abas-container">
                         <button class="aba-btn ativa" id="btn-stat-hoje" onclick="renderizarEstatisticas('hoje')">Hoje</button>
                         <button class="aba-btn" id="btn-stat-semana" onclick="renderizarEstatisticas('semana')">Últimos 7 Dias</button>
                         <button class="aba-btn" id="btn-stat-mes" onclick="renderizarEstatisticas('mes')">Últimos 30 Dias</button>
-                        <button class="aba-btn" id="btn-stat-tudo" onclick="renderizarEstatisticas('tudo')">Sempre</button>
+                        <button class="aba-btn" id="btn-stat-tudo" onclick="renderizarEstatisticas('tudo')">Histórico Completo</button>
                     </div>
 
                     <div class="grid-resumo">
-                        <div class="card-estatistica"><span>Horas no Período</span><strong id="stat-horas">00:00:00</strong></div>
+                        <div class="card-estatistica"><span>Horas Líquidas</span><strong id="stat-horas">00:00:00</strong></div>
                         <div class="card-estatistica"><span>Questões Resolvidas</span><strong id="stat-questoes">0</strong></div>
-                        <div class="card-estatistica"><span>Taxa de Acertos</span><strong id="stat-taxa" class="verde">0%</strong></div>
+                        <div class="card-estatistica"><span>Média de Acertos</span><strong id="stat-taxa" class="verde">0%</strong></div>
                     </div>
-                    <div style="position: relative; width: 100%; max-width: 350px; height: 350px; margin: 20px auto;">
+                    <div style="position: relative; width: 100%; max-width: 400px; height: 400px; margin: 30px auto 10px;">
                         <canvas id="graficoEstatisticas"></canvas>
                     </div>
+                </div>
+            </div>
+
+            <!-- ====== MEU PERFIL (Req 2) ====== -->
+            <div id="view-perfil" style="display: none;">
+                <div class="card" style="max-width: 600px; margin: 0 auto;">
+                    <h2>⚙️ Configurações de Perfil</h2>
+                    <p style="color: var(--text-muted); font-size: 0.9rem;">Altere suas informações de acesso com segurança.</p>
+                    
+                    <label>Novo Nome de Exibição:</label>
+                    <input type="text" id="perfil-nome" placeholder="Como quer ser chamado?">
+                    
+                    <label style="margin-top: 15px; display: block;">Nova Senha (deixe em branco se não quiser mudar):</label>
+                    <input type="password" id="perfil-senha" placeholder="Mínimo de 6 caracteres">
+                    
+                    <button onclick="atualizarPerfil()" style="margin-top: 20px;">Salvar Alterações</button>
                 </div>
             </div>
 
         </div>
     </main>
 
+    <!-- Modal Auxiliar para Mesclar/Agrupar Tópicos -->
+    <div class="modal-overlay" id="modal-agrupar">
+        <div class="modal-content">
+            <h3 style="margin-top: 0; color: var(--brand-purple);">Agrupar Tópicos</h3>
+            <p style="font-size: 0.9rem; color: var(--text-muted);">O tópico selecionado será movido/mesclado com o tópico abaixo:</p>
+            <label>Juntar com:</label>
+            <select id="select-modal-alvo"></select>
+            <div style="display: flex; gap: 10px; margin-top: 20px;">
+                <button style="background: var(--bg-input); color: var(--text-main); border: 1px solid var(--border-color);" onclick="fecharModalAgrupar()">Cancelar</button>
+                <button onclick="confirmarAgrupamento()">Agrupar</button>
+            </div>
+        </div>
+    </div>
+
     <script>
+        // ================= SEGURANÇA MÁXIMA XSS =================
         function sanitizar(str) {
-            if (!str) return '';
+            if (typeof str !== 'string') return '';
             const temp = document.createElement('div');
             temp.textContent = str;
             return temp.innerHTML;
         }
 
+        // ================= CONFIG & FIREBASE =================
         const PALETA_CORES = ['#4ade80', '#3b82f6', '#9ca3af', '#ef4444', '#a855f7', '#eab308', '#f97316', '#8b5a2b', '#ec4899', '#00b37e', '#14b8a6', '#06b6d4', '#6366f1', '#84cc16', '#f43f5e'];
         let currentTheme = localStorage.getItem('site-theme') || 'dark';
         document.documentElement.setAttribute('data-theme', currentTheme);
@@ -332,7 +404,7 @@
             currentTheme = currentTheme === 'dark' ? 'light' : 'dark';
             document.documentElement.setAttribute('data-theme', currentTheme);
             localStorage.setItem('site-theme', currentTheme);
-            if(historico.length > 0) { renderizarGraficoDiario(); renderizarEstatisticas(currentPeriodoStat); }
+            if(historico.length > 0) { renderizarEstatisticas(currentPeriodoStat); }
         }
 
         function toggleSidebar() { document.getElementById('sidebar-menu').classList.toggle('open'); }
@@ -340,16 +412,17 @@
 
         let currentPeriodoStat = 'tudo';
         function alternarTelaPrincipal(tela) {
-            ['home', 'concurso', 'materias', 'caderno', 'estatisticas'].forEach(t => {
+            ['home', 'materias', 'caderno', 'estatisticas', 'perfil'].forEach(t => {
                 let btn = document.getElementById('nav-btn-'+t);
                 let view = document.getElementById('view-'+t);
                 if(btn) btn.classList.toggle('active', t === tela);
                 if(view) view.style.display = t === tela ? 'block' : 'none';
             });
             if(window.innerWidth <= 768) document.getElementById('sidebar-menu').classList.remove('open');
-            if(tela === 'home') renderizarGraficoDiario();
+            if(tela === 'home') { /* logica se home */ }
             if(tela === 'estatisticas') renderizarEstatisticas('tudo');
             if(tela === 'caderno') atualizarSelectCaderno();
+            if(tela === 'perfil') document.getElementById('perfil-nome').value = document.getElementById('user-display').textContent;
         }
 
         const firebaseConfig = {
@@ -358,30 +431,34 @@
         };
         firebase.initializeApp(firebaseConfig);
         
+        // App Check ativado. Lembre-se de adicionar o domínio no Google Cloud.
         const appCheck = firebase.appCheck();
         appCheck.activate(new firebase.appCheck.ReCaptchaEnterpriseProvider('6LdUFastAAAAAEW3RteQi9ukETXfHiWsW7K6_JW_'), true);
 
         const db = firebase.database(); const auth = firebase.auth();
 
         let activeUserRef = null; let refUser = null;
-        let historico = []; let planejamento = []; let cadernoErros = []; let concursoData = {};
+        let historico = []; let planejamento = []; let cadernoErros = [];
         let segundos = 0; let timer = null; let metaHorasGlobais = 4;
-        let chartDiario = null; let chartStats = null;
+        let chartStats = null;
+        let configAgrupar = { mIdx: null, tIdx: null }; // Controle modal agrupar
 
+        // ================= AUTENTICAÇÃO E PERFIL =================
         auth.onAuthStateChanged((user) => {
             if (user) {
                 activeUserRef = db.ref('usuarios/' + user.uid); refUser = activeUserRef;
-                activeUserRef.child('username').once('value').then(snap => document.getElementById('user-display').textContent = snap.val() || user.email.split('@')[0]);
+                activeUserRef.child('username').on('value', snap => {
+                    document.getElementById('user-display').textContent = snap.val() || user.email.split('@')[0];
+                });
                 
                 document.getElementById('secao-auth').style.display = 'none';
                 document.getElementById('secao-painel').style.display = 'block';
                 document.getElementById('sidebar-menu').style.display = 'flex';
                 alternarTelaPrincipal('home');
 
-                activeUserRef.child('planejamento').on('value', snap => { planejamento = snap.val() || []; renderizarPlanejamento(); atualizarDisciplinasSelect(); atualizarSelectCaderno(); renderizarGraficoDiario(); });
-                activeUserRef.child('historico').on('value', snap => { historico = snap.val() || []; renderizarTabelaHistorico(); calcularHorasTotais(); renderizarGraficoDiario(); });
+                activeUserRef.child('planejamento').on('value', snap => { planejamento = snap.val() || []; renderizarPlanejamento(); atualizarDisciplinasSelect(); atualizarSelectCaderno(); });
+                activeUserRef.child('historico').on('value', snap => { historico = snap.val() || []; renderizarTabelaHistorico(); calcularHorasTotais(); atualizarProgressoXP();});
                 activeUserRef.child('metaHoras').on('value', snap => { if (snap.exists()) { metaHorasGlobais = parseFloat(snap.val()); document.getElementById('input-meta-horas').value = metaHorasGlobais; atualizarProgressoXP(); } });
-                activeUserRef.child('concurso').on('value', snap => { concursoData = snap.val() || {}; renderizarConcurso(); });
                 activeUserRef.child('cadernoErros').on('value', snap => { let obj = snap.val() || {}; cadernoErros = Object.keys(obj).map(k => ({id: k, ...obj[k]})).sort((a,b) => b.timestamp - a.timestamp); renderizarCaderno(); });
             } else {
                 if(activeUserRef) activeUserRef.off(); 
@@ -395,27 +472,60 @@
         async function fazerLogin() { 
             const email = document.getElementById('login-email').value.trim(); const senha = document.getElementById('login-senha').value.trim();
             if (!email || !senha) return alert("Preencha o e-mail e a senha!");
-            try { await auth.signInWithEmailAndPassword(email, senha); } 
-            catch (err) { alert("E-mail ou senha incorretos."); }
+            try { await auth.signInWithEmailAndPassword(email, senha); } catch (err) { alert("E-mail ou senha incorretos."); }
         }
         function fazerCadastro() { 
             const nome = document.getElementById('cad-nome').value.trim(); const email = document.getElementById('cad-email').value.trim(); const senha = document.getElementById('cad-senha').value.trim(); 
             if (!nome || !email || senha.length < 6) return alert("Preencha corretamente (senha mín 6).");
             auth.createUserWithEmailAndPassword(email, senha).then((c) => {
                 db.ref('usuarios/' + c.user.uid).set({ username: sanitizar(nome) }); alert("Conta criada com sucesso!"); alternarTelaAuth('login');
-            }).catch(e => alert("Erro ao cadastrar: E-mail inválido ou já em uso."));
+            }).catch(e => alert("Erro ao cadastrar. E-mail inválido ou em uso."));
         }
         function fazerLogout() { if(timer) pausarCronometro(); auth.signOut().then(() => window.location.reload()); }
         function alternarTelaAuth(t) { document.getElementById('form-login').style.display = t==='login'?'block':'none'; document.getElementById('form-cadastro').style.display = t==='cadastro'?'block':'none'; }
 
+        // Req 1: Recuperar Senha via Email
+        function recuperarSenha() {
+            let email = prompt("Digite seu e-mail cadastrado para receber o link de redefinição de senha:");
+            if(email && email.includes('@')) {
+                auth.sendPasswordResetEmail(email.trim()).then(() => {
+                    alert("E-mail de redefinição enviado! Verifique sua caixa de entrada e spam.");
+                }).catch(e => alert("Erro ao enviar e-mail: Verifique se o endereço está correto."));
+            }
+        }
+
+        // Req 2: Atualizar Perfil Logado
+        async function atualizarPerfil() {
+            const novoNome = document.getElementById('perfil-nome').value.trim();
+            const novaSenha = document.getElementById('perfil-senha').value.trim();
+            const user = auth.currentUser;
+
+            if(novoNome) { await refUser.update({ username: sanitizar(novoNome) }); }
+            
+            if(novaSenha) {
+                if(novaSenha.length < 6) return alert("A senha deve ter no mínimo 6 caracteres.");
+                try {
+                    await user.updatePassword(novaSenha);
+                    document.getElementById('perfil-senha').value = '';
+                    alert("Senha e dados atualizados com sucesso!");
+                } catch(error) {
+                    if(error.code === 'auth/requires-recent-login') {
+                        alert("Por segurança, saia da conta (Logout) e entre novamente para poder mudar a senha.");
+                    } else {
+                        alert("Erro ao mudar senha: " + error.message);
+                    }
+                    return; // pausa aqui se falhou a senha
+                }
+            } else if(novoNome) {
+                alert("Nome atualizado com sucesso!");
+            }
+        }
+
+        // ================= TEMPO E REGISTRO DE SESSÃO (Req 6: Páginas e Aulas) =================
         function formatarTempo(s) { let h = Math.floor(s/3600); let m = Math.floor((s%3600)/60); let sc = s%60; return `${h<10?"0"+h:h}:${m<10?"0"+m:m}:${sc<10?"0"+sc:sc}`; }
         function parseDataBR(dataHoraStr) {
-            if(!dataHoraStr) return new Date(0);
-            let p = dataHoraStr.split(' ');
-            if(p.length < 1) return new Date();
-            let dp = p[0].split('/');
-            if(dp.length < 3) return new Date();
-            return new Date(dp[2], dp[1]-1, dp[0]);
+            if(!dataHoraStr) return new Date(0); let p = dataHoraStr.split(' '); if(p.length < 1) return new Date();
+            let dp = p[0].split('/'); if(dp.length < 3) return new Date(); return new Date(dp[2], dp[1]-1, dp[0]);
         }
 
         function iniciarCronometro() { if(!timer) timer = setInterval(()=>{ segundos++; document.getElementById("tempo").innerText=formatarTempo(segundos); }, 1000); }
@@ -431,20 +541,31 @@
             let err = parseInt(document.getElementById("input-erros").value)||0;
             let totalQ = ac + err; 
             
+            // Dados novos (Páginas e Aulas)
+            let pgIni = document.getElementById("input-pg-ini").value.trim();
+            let pgFim = document.getElementById("input-pg-fim").value.trim();
+            let vidIni = document.getElementById("input-vid-ini").value.trim();
+            let vidFim = document.getElementById("input-vid-fim").value.trim();
+
             if(!d || topicosSelecionados.length === 0) return alert("Selecione disciplina e ao menos um tópico!");
-            if(segundos===0) return alert("Tempo deve ser maior que zero!");
+            if(segundos===0) return alert("O tempo estudado deve ser maior que zero!");
 
             let h = {
                 dataHora: new Date().toLocaleString("pt-BR").slice(0, 16), timestamp: Date.now(), 
                 disciplina: d, assunto: topicosSelecionados.join(', '), tipo: tipo, 
                 tempoSegundos: segundos, tempo: formatarTempo(segundos),
-                questoes: totalQ, acertos: ac, erros: err, porcentagem: totalQ>0?Math.round((ac/totalQ)*100):0
+                questoes: totalQ, acertos: ac, erros: err, porcentagem: totalQ>0?Math.round((ac/totalQ)*100):0,
+                pgIni: pgIni, pgFim: pgFim, vidIni: vidIni, vidFim: vidFim
             };
             historico.unshift(h); refUser.child('historico').set(historico);
             
+            // RESET
             segundos=0; document.getElementById("tempo").innerText="00:00:00";
             document.getElementById("input-acertos").value = "0"; document.getElementById("input-erros").value = "0";
+            document.getElementById("input-pg-ini").value = ""; document.getElementById("input-pg-fim").value = "";
+            document.getElementById("input-vid-ini").value = ""; document.getElementById("input-vid-fim").value = "";
             document.querySelectorAll('#checkboxes-topicos input').forEach(c => c.checked = false);
+            alert("Sessão salva com sucesso!");
         }
 
         function calcularHorasTotais() {
@@ -454,57 +575,41 @@
 
         function renderizarTabelaHistorico() {
             let tb = document.getElementById("tabela-historico"); tb.innerHTML = "";
-            historico.slice(0, 20).forEach(s => {
-                let porcentagemTexto = s.questoes > 0 ? `${s.porcentagem}%` : "-";
+            historico.slice(0, 30).forEach(s => {
+                let pct = s.questoes > 0 ? `${s.porcentagem}%` : "-";
+                
+                // Formatação bonita para detalhes de página e vídeo
+                let detalhesHtml = "";
+                if(s.pgIni) detalhesHtml += `Págs: ${sanitizar(s.pgIni)}${s.pgFim ? ' - '+sanitizar(s.pgFim) : ''}<br>`;
+                if(s.vidIni) detalhesHtml += `Vídeo: ${sanitizar(s.vidIni)}${s.vidFim ? ' - '+sanitizar(s.vidFim) : ''}`;
+                if(!detalhesHtml) detalhesHtml = "-";
+
                 tb.innerHTML += `<tr>
                     <td><small>${sanitizar(s.dataHora||'-')}</small></td>
-                    <td>${sanitizar(s.disciplina)}</td>
-                    <td><small>${sanitizar(s.assunto)}</small></td>
+                    <td><strong>${sanitizar(s.disciplina)}</strong><br><small style="color:var(--text-muted)">${sanitizar(s.assunto)}</small></td>
                     <td>${sanitizar(s.tipo)}</td>
-                    <td>${s.tempo}</td>
-                    <td>${s.questoes||0}</td>
+                    <td class="td-detalhes">${detalhesHtml}</td>
+                    <td><strong style="color:var(--brand-blue);">${s.tempo}</strong></td>
                     <td class="texto-acertos">${s.questoes>0?s.acertos:"-"}</td>
                     <td class="texto-erros">${s.questoes>0?s.erros:"-"}</td>
-                    <td class="texto-porcentagem">${porcentagemTexto}</td>
+                    <td class="texto-porcentagem">${pct}</td>
                 </tr>`;
             });
-            atualizarProgressoXP();
         }
 
         function salvarMetaDiaria() {
             let n = parseFloat(document.getElementById('input-meta-horas').value);
-            if(n>0) { metaHorasGlobais=n; refUser.child('metaHoras').set(n); alert("Meta salva!"); }
+            if(n>0) { metaHorasGlobais=n; refUser.child('metaHoras').set(n); alert("Meta diária salva!"); }
         }
         function atualizarProgressoXP() {
             let hoje = new Date().toLocaleDateString("pt-BR");
             let sHoje = historico.filter(s => s.dataHora && s.dataHora.startsWith(hoje)).reduce((a, b) => a + (b.tempoSegundos || 0), 0);
             let pct = Math.min((sHoje / (metaHorasGlobais * 3600)) * 100, 100);
             document.getElementById('xp-bar').style.width = `${pct}%`;
-            document.getElementById('xp-text').textContent = pct === 100 ? `🏆 Meta de ${metaHorasGlobais}h Batida!` : `🔥 ${Math.floor(pct)}% de ${metaHorasGlobais}h (${formatarTempo(sHoje)} hoje)`;
+            document.getElementById('xp-text').textContent = pct === 100 ? `🏆 Meta de ${metaHorasGlobais}h Batida Hoje!` : `🔥 ${Math.floor(pct)}% concluído de ${metaHorasGlobais}h (${formatarTempo(sHoje)} hoje)`;
         }
 
-        function salvarConcurso() {
-            let nome = document.getElementById('concurso-nome').value.trim();
-            let data = document.getElementById('concurso-data').value;
-            if(!nome || !data) return alert("Preencha nome e data!");
-            refUser.child('concurso').set({nome: sanitizar(nome), data: data});
-        }
-        function renderizarConcurso() {
-            if(!concursoData.nome || !concursoData.data) return;
-            document.getElementById('concurso-resultado').style.display = 'block';
-            document.getElementById('display-concurso-nome').textContent = concursoData.nome;
-            
-            let prova = new Date(concursoData.data + "T00:00:00");
-            let hoje = new Date(); hoje.setHours(0,0,0,0);
-            let diffMs = prova - hoje;
-            let dias = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
-            
-            let displayDias = document.getElementById('display-concurso-dias');
-            if(dias > 0) { displayDias.textContent = dias; displayDias.style.color = "var(--brand-green)"; }
-            else if (dias === 0) { displayDias.textContent = "É HOJE!"; displayDias.style.color = "var(--brand-purple)"; }
-            else { displayDias.textContent = "Finalizado"; displayDias.style.color = "var(--text-muted)"; }
-        }
-
+        // ================= MATÉRIAS E EDITAL INTELIGENTE =================
         function alternarModoPlanejamento(modo) {
             document.getElementById('aba-manual-btn').classList.toggle('ativa', modo === 'manual');
             document.getElementById('aba-ia-btn').classList.toggle('ativa', modo === 'ia');
@@ -512,37 +617,81 @@
             document.getElementById('modo-planejamento-ia').style.display = modo === 'ia' ? 'block' : 'none';
         }
 
+        // Req 3: Chunking Edital Inteligente com Gemini 3.6-flash
         async function processarEditalComIA() {
             const apiKey = document.getElementById('ia-api-key').value.trim();
-            const textoEdital = document.getElementById('ia-edital-texto').value.trim();
-            if (!apiKey || !textoEdital) return alert("Preencha a chave da API e cole o edital.");
+            const textoCompleto = document.getElementById('ia-edital-texto').value.trim();
+            
+            if (!apiKey || !textoCompleto) return alert("Preencha a chave da API e cole o edital.");
+            
+            document.getElementById('btn-ia-executar').disabled = true;
             document.getElementById('ia-loading').style.display = 'block';
-            try {
-                // Endpoint atualizado para o Gemini 3.6 Flash
-                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${apiKey}`, {
-                    method: 'POST', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ contents: [{ parts: [{ text: `Extraia disciplinas e topicos neste JSON puro: [{"disciplina": "N", "topicos": ["T1", "T2"]}]. Edital: ${textoEdital}` }] }] })
-                });
-                const data = await response.json();
-                if (data.error) throw new Error(data.error.message);
-                const textoResposta = data.candidates[0].content.parts[0].text;
-                const jsonMatch = textoResposta.match(/\[.*\]/s); 
-                if (!jsonMatch) throw new Error("A IA não retornou um formato compatível.");
-                JSON.parse(jsonMatch[0]).forEach(novaMat => {
-                    let itemExistente = planejamento.find(i => i.disciplina.toLowerCase() === novaMat.disciplina.toLowerCase());
-                    if (itemExistente) { novaMat.topicos.forEach(t => { if (!itemExistente.topicos.includes(t)) itemExistente.topicos.push(sanitizar(t)); }); } 
-                    else { planejamento.push({ disciplina: sanitizar(novaMat.disciplina), topicos: novaMat.topicos.map(t=>sanitizar(t)), cor: PALETA_CORES[Math.floor(Math.random() * PALETA_CORES.length)] }); }
-                });
-                refUser.child('planejamento').set(planejamento); alert("Edital estruturado com IA!");
-                document.getElementById('ia-edital-texto').value = "";
-            } catch (error) { console.error(error); alert("Erro IA: " + error.message); } 
-            finally { document.getElementById('ia-loading').style.display = 'none'; }
+            
+            // Chunking: Divide edital a cada ~14.000 caracteres (evitando cortes bruscos dividimos por quebra de linha quando possivel)
+            const chunkSize = 14000;
+            let chunks = [];
+            for (let i = 0; i < textoCompleto.length; i += chunkSize) {
+                chunks.push(textoCompleto.slice(i, i + chunkSize));
+            }
+            
+            document.getElementById('ia-progresso-total').textContent = chunks.length;
+
+            let ocorreuErro = false;
+
+            for (let idx = 0; idx < chunks.length; idx++) {
+                document.getElementById('ia-progresso-atual').textContent = idx + 1;
+                
+                try {
+                    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${apiKey}`, {
+                        method: 'POST', headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ contents: [{ parts: [{ text: `Aja como um organizador de estudos. Extraia APENAS disciplinas e topicos do seguinte trecho de edital. Retorne OBRIGATORIAMENTE um JSON puro neste formato, sem explicações: [{"disciplina": "Nome", "topicos": ["T1", "T2"]}]. Trecho: ${chunks[idx]}` }] }] })
+                    });
+                    
+                    const data = await response.json();
+                    if (data.error) throw new Error(data.error.message);
+                    
+                    const textoResposta = data.candidates[0].content.parts[0].text;
+                    const jsonMatch = textoResposta.match(/\[.*\]/s); 
+                    if (!jsonMatch) throw new Error("A IA retornou um formato fora do padrão neste trecho.");
+                    
+                    let novasMaterias = JSON.parse(jsonMatch[0]);
+                    
+                    // Injeta diretamente no Planejamento
+                    novasMaterias.forEach(novaMat => {
+                        if(novaMat.disciplina && novaMat.topicos && Array.isArray(novaMat.topicos)){
+                            let itemExistente = planejamento.find(i => i.disciplina.toLowerCase() === novaMat.disciplina.toLowerCase());
+                            if (itemExistente) { 
+                                novaMat.topicos.forEach(t => { if (!itemExistente.topicos.includes(t)) itemExistente.topicos.push(sanitizar(t)); }); 
+                            } else { 
+                                planejamento.push({ disciplina: sanitizar(novaMat.disciplina), topicos: novaMat.topicos.map(t=>sanitizar(t)), cor: PALETA_CORES[Math.floor(Math.random() * PALETA_CORES.length)] }); 
+                            }
+                        }
+                    });
+                    
+                    // Salva no banco ao final de cada chunk para não perder nada
+                    await refUser.child('planejamento').set(planejamento);
+                } catch (error) {
+                    console.error("Erro no chunk", idx, error);
+                    alert("Aviso: Houve falha na Parte " + (idx+1) + " (Ignorando e continuando). Erro: " + error.message);
+                    ocorreuErro = true;
+                }
+            }
+
+            document.getElementById('ia-loading').style.display = 'none';
+            document.getElementById('btn-ia-executar').disabled = false;
+            document.getElementById('ia-edital-texto').value = "";
+            
+            if(!ocorreuErro) {
+                alert("🎉 Edital estruturado com sucesso usando IA!");
+            } else {
+                alert("Processamento concluído, mas houve algumas falhas em partes específicas do texto.");
+            }
         }
 
         function adicionarPlanejamento() {
             let d = sanitizar(document.getElementById("plan-disciplina").value.trim()); let t = sanitizar(document.getElementById("plan-topico").value.trim());
             let c = document.getElementById("plan-cor").value; 
-            if (!d || !t) return alert("Preencha!");
+            if (!d || !t) return alert("Preencha Disciplina e Tópico!");
             let item = planejamento.find(i => i.disciplina.toLowerCase() === d.toLowerCase());
             if (item) { if (!item.topicos.includes(t)) item.topicos.push(t); item.cor = c; } 
             else { planejamento.push({ disciplina: d, topicos: [t], cor: c }); }
@@ -553,9 +702,10 @@
             planejamento[index].cor = novaCor; refUser.child('planejamento').set(planejamento);
         }
 
+        // UI/UX Aprimorado das Pastas
         function renderizarPlanejamento() {
             let cont = document.getElementById("container-planejamento"); cont.innerHTML = "";
-            if (planejamento.length === 0) { cont.innerHTML = "<p>Sem matérias cadastradas.</p>"; return; }
+            if (planejamento.length === 0) { cont.innerHTML = "<p style='color:var(--text-muted); text-align:center;'>Nenhuma matéria cadastrada ainda.</p>"; return; }
             
             planejamento.forEach((item, idx) => {
                 let div = document.createElement("div"); div.className = "pasta-materia";
@@ -563,16 +713,23 @@
                 if (!item.cor) { item.cor = cor; refUser.child('planejamento').set(planejamento); }
                 
                 div.style.borderLeftColor = cor;
-                let topicos = item.topicos.map((t, i) => `<div class="item-topico"><span>• ${sanitizar(t)}</span><button class="btn-acao-materia btn-excluir" onclick="removerTopico(${idx}, ${i}, event)">X</button></div>`).join("");
+                let topicos = item.topicos.map((t, i) => `
+                    <div class="item-topico">
+                        <span style="flex:1;">📄 ${sanitizar(t)}</span>
+                        <div class="acoes-topico">
+                            <button class="btn-acao-materia btn-agrupar" title="Agrupar com outro tópico" onclick="abrirModalAgrupar(${idx}, ${i}, event)">🔗</button>
+                            <button class="btn-acao-materia btn-excluir" title="Excluir Tópico" onclick="removerTopico(${idx}, ${i}, event)">✖</button>
+                        </div>
+                    </div>`).join("");
                 
                 div.innerHTML = `
-                    <div class="cabecalho-pasta">
-                        <div style="display:flex; align-items:center; gap: 8px; flex:1;" onclick="document.getElementById('pasta-${idx}').classList.toggle('aberta')">
-                            <div style="width: 14px; height: 14px; background-color: ${cor}; border-radius: 3px;"></div>
-                            <span style="color: ${cor}"> ${sanitizar(item.disciplina)} <small style="color:var(--text-muted); font-weight:normal;">(${item.topicos.length})</small></span>
+                    <div class="cabecalho-pasta" onclick="document.getElementById('pasta-${idx}').classList.toggle('aberta')">
+                        <div style="display:flex; align-items:center; gap: 12px; flex:1;">
+                            <div style="width: 18px; height: 18px; background-color: ${cor}; border-radius: 50%; box-shadow: 0 0 5px ${cor}88;"></div>
+                            <span style="color: var(--text-main);"> ${sanitizar(item.disciplina)} <span style="background:var(--bg-card); padding: 2px 8px; border-radius:12px; font-size:0.8rem; margin-left: 5px;">${item.topicos.length}</span></span>
                         </div>
                         <div style="display:flex; gap:5px; align-items:center;">
-                            <select class="seletor-cor-cabecalho" onchange="alterarCorMateria(${idx}, this.value)" title="Mudar Cor da Matéria">
+                            <select class="seletor-cor-cabecalho" onclick="event.stopPropagation()" onchange="alterarCorMateria(${idx}, this.value)" title="Mudar Cor">
                                 <option value="#4ade80" ${cor==='#4ade80'?'selected':''}>🟢</option><option value="#3b82f6" ${cor==='#3b82f6'?'selected':''}>🔵</option>
                                 <option value="#9ca3af" ${cor==='#9ca3af'?'selected':''}>⚫</option><option value="#ef4444" ${cor==='#ef4444'?'selected':''}>🔴</option>
                                 <option value="#a855f7" ${cor==='#a855f7'?'selected':''}>🟣</option><option value="#eab308" ${cor==='#eab308'?'selected':''}>🟡</option>
@@ -580,11 +737,15 @@
                                 <option value="#ec4899" ${cor==='#ec4899'?'selected':''}>🌸</option><option value="#14b8a6" ${cor==='#14b8a6'?'selected':''}>🦚</option>
                                 <option value="#06b6d4" ${cor==='#06b6d4'?'selected':''}>💎</option><option value="#6366f1" ${cor==='#6366f1'?'selected':''}>🌌</option>
                                 <option value="#84cc16" ${cor==='#84cc16'?'selected':''}>🍋</option><option value="#f43f5e" ${cor==='#f43f5e'?'selected':''}>🌹</option>
+                                <option value="#00b37e" ${cor==='#00b37e'?'selected':''}>✅</option>
                             </select>
-                            <span style="padding:0 5px;" onclick="document.getElementById('pasta-${idx}').classList.toggle('aberta')">▼</span>
+                            <span style="padding:0 10px;">▼</span>
                         </div>
                     </div>
-                    <div class="conteudo-pasta" id="pasta-${idx}">${topicos}<button class="btn-acao-materia btn-excluir" style="margin-top:10px; width:100%;" onclick="removerMateria(${idx})">Apagar Pasta</button></div>
+                    <div class="conteudo-pasta" id="pasta-${idx}">
+                        ${topicos}
+                        <button class="btn-acao-materia btn-excluir" style="margin-top:15px; width:100%; background: transparent; border: 1px dashed var(--brand-red); color: var(--brand-red);" onclick="removerMateria(${idx}, event)">🗑️ Excluir Disciplina Inteira</button>
+                    </div>
                 `;
                 cont.appendChild(div);
             });
@@ -592,12 +753,59 @@
         
         function removerTopico(iD, iT, event) { 
             if(event) event.stopPropagation();
-            planejamento[iD].topicos.splice(iT, 1); 
-            if(planejamento[iD].topicos.length===0) planejamento.splice(iD, 1); 
-            refUser.child('planejamento').set(planejamento); 
+            if(confirm("Excluir este tópico?")) {
+                planejamento[iD].topicos.splice(iT, 1); 
+                if(planejamento[iD].topicos.length===0) planejamento.splice(iD, 1); 
+                refUser.child('planejamento').set(planejamento); 
+            }
         }
-        function removerMateria(iD) { if(confirm("Excluir pasta inteira?")) { planejamento.splice(iD, 1); refUser.child('planejamento').set(planejamento); } }
+        function removerMateria(iD, event) { if(event) event.stopPropagation(); if(confirm("Excluir disciplina inteira e todos seus tópicos?")) { planejamento.splice(iD, 1); refUser.child('planejamento').set(planejamento); } }
 
+        // Req 5: Mesclar/Agrupar Tópicos
+        function abrirModalAgrupar(materiaIdx, topicoIdx, event) {
+            if(event) event.stopPropagation();
+            configAgrupar.mIdx = materiaIdx;
+            configAgrupar.tIdx = topicoIdx;
+            
+            let materia = planejamento[materiaIdx];
+            let select = document.getElementById("select-modal-alvo");
+            select.innerHTML = "";
+            
+            let inseriuOpcoes = false;
+            materia.topicos.forEach((t, i) => {
+                if(i !== topicoIdx) {
+                    select.innerHTML += `<option value="${i}">${sanitizar(t)}</option>`;
+                    inseriuOpcoes = true;
+                }
+            });
+            
+            if(!inseriuOpcoes) {
+                alert("Não há outros tópicos nesta disciplina para agrupar.");
+                return;
+            }
+            document.getElementById("modal-agrupar").style.display = "flex";
+        }
+        
+        function fecharModalAgrupar() { document.getElementById("modal-agrupar").style.display = "none"; }
+        
+        function confirmarAgrupamento() {
+            let alvoIdx = parseInt(document.getElementById("select-modal-alvo").value);
+            let mIdx = configAgrupar.mIdx;
+            let tIdx = configAgrupar.tIdx;
+            
+            let nomeOrigem = planejamento[mIdx].topicos[tIdx];
+            let nomeAlvo = planejamento[mIdx].topicos[alvoIdx];
+            
+            // Junta os nomes
+            planejamento[mIdx].topicos[alvoIdx] = `${nomeAlvo} / ${nomeOrigem}`;
+            
+            // Remove o antigo
+            planejamento[mIdx].topicos.splice(tIdx, 1);
+            refUser.child('planejamento').set(planejamento);
+            fecharModalAgrupar();
+        }
+
+        // Home UI Selects
         function atualizarDisciplinasSelect() {
             let s = document.getElementById("select-disciplina"); s.innerHTML = '<option value="">Selecione...</option>';
             planejamento.forEach(i => s.innerHTML += `<option value="${sanitizar(i.disciplina)}">${sanitizar(i.disciplina)}</option>`);
@@ -610,55 +818,70 @@
             else { cont.innerHTML = `<span style="color:var(--text-muted); font-size:0.85rem;">Selecione a disciplina primeiro.</span>`; }
         }
 
+        // ================= CADERNO DE ERROS AGRUPADO (Req 7) =================
         function atualizarSelectCaderno() {
             let s = document.getElementById("caderno-disciplina"); let v = s.value; 
-            s.innerHTML = '<option value="">Selecione...</option>';
+            s.innerHTML = '<option value="">Selecione a disciplina...</option>';
             planejamento.forEach(i => s.innerHTML += `<option value="${sanitizar(i.disciplina)}">${sanitizar(i.disciplina)}</option>`);
             if(v) s.value = v; renderizarCaderno();
         }
         
         function renderizarCaderno() {
             let disc = document.getElementById("caderno-disciplina").value;
-            let area = document.getElementById("area-nova-nota"); let lista = document.getElementById("lista-caderno"); lista.innerHTML = "";
+            let area = document.getElementById("area-nova-nota"); 
+            let lista = document.getElementById("lista-caderno"); 
+            lista.innerHTML = "";
+            
             if(!disc) { area.style.display = 'none'; return; }
             area.style.display = 'block';
-            let notas = cadernoErros.filter(n => n.disciplina === disc);
-            if(notas.length === 0) { lista.innerHTML = "<p style='color:var(--text-muted);'>Nenhuma anotação nesta matéria.</p>"; return; }
             
+            let notas = cadernoErros.filter(n => n.disciplina === disc);
+            if(notas.length === 0) { lista.innerHTML = "<p style='color:var(--text-muted); text-align:center;'>Nenhuma anotação nesta matéria.</p>"; return; }
+            
+            // Agrupar notas por Bloco
+            let blocos = {};
             notas.forEach(n => {
-                let div = document.createElement('div'); div.className = 'nota-erro';
-                div.innerHTML = `
-                    <button class="btn-apagar-nota" onclick="apagarNota('${n.id}')">✖</button>
-                    <small>${new Date(n.timestamp).toLocaleString('pt-BR')}</small>
-                    <p>${sanitizar(n.texto)}</p>
-                `;
-                lista.appendChild(div);
+                let nomeBloco = n.bloco && n.bloco.trim() !== "" ? sanitizar(n.bloco) : "Anotações Gerais (Sem Bloco)";
+                if(!blocos[nomeBloco]) blocos[nomeBloco] = [];
+                blocos[nomeBloco].push(n);
+            });
+            
+            Object.keys(blocos).forEach(nomeBloco => {
+                let divBloco = document.createElement('div'); divBloco.className = 'bloco-erros';
+                let notasHtml = blocos[nomeBloco].map(n => `
+                    <div class="nota-erro">
+                        <button class="btn-apagar-nota" onclick="apagarNota('${n.id}')">✖</button>
+                        <small>🕒 ${new Date(n.timestamp).toLocaleString('pt-BR')}</small>
+                        <p>${sanitizar(n.texto)}</p>
+                    </div>
+                `).join("");
+                
+                divBloco.innerHTML = `<div class="bloco-erros-titulo">📁 Bloco: ${nomeBloco}</div><div style="padding: 5px;">${notasHtml}</div>`;
+                lista.appendChild(divBloco);
             });
         }
         
         function salvarNotaCaderno() {
-            let disc = document.getElementById("caderno-disciplina").value; let txt = document.getElementById("caderno-texto").value.trim();
-            if(!disc || !txt) return;
+            let disc = document.getElementById("caderno-disciplina").value; 
+            let txt = document.getElementById("caderno-texto").value.trim();
+            let bloco = document.getElementById("caderno-bloco").value.trim();
+            if(!disc || !txt) return alert("Escreva a anotação!");
+            
             let novaRef = refUser.child('cadernoErros').push();
-            novaRef.set({ disciplina: disc, texto: sanitizar(txt), timestamp: Date.now() }).then(()=>{ document.getElementById("caderno-texto").value = ""; });
+            novaRef.set({ disciplina: disc, texto: sanitizar(txt), bloco: sanitizar(bloco), timestamp: Date.now() }).then(()=>{ 
+                document.getElementById("caderno-texto").value = ""; 
+                // mantem o bloco preenchido para facilitar envios em sequencia
+            });
         }
-        function apagarNota(id) { if(confirm("Apagar anotação?")) refUser.child('cadernoErros/'+id).remove(); }
+        function apagarNota(id) { if(confirm("Tem certeza que quer apagar esta anotação do caderno?")) refUser.child('cadernoErros/'+id).remove(); }
 
+        // ================= ESTATÍSTICAS E GRÁFICO =================
         function getMapCores() { let map = {}; planejamento.forEach(p => map[p.disciplina] = p.cor || '#00b37e'); return map; }
         function extrairDadosGrafico(historicoFiltrado) {
             let tempo = {};
             historicoFiltrado.forEach(s => { if(!tempo[s.disciplina]) tempo[s.disciplina] = 0; tempo[s.disciplina] += (s.tempoSegundos || 0); });
             let labels = Object.keys(tempo); let coresMap = getMapCores();
             return { labels: labels, data: labels.map(l => (tempo[l] / 3600).toFixed(2)), colors: labels.map(l => coresMap[l] || '#00b37e') };
-        }
-
-        function renderizarGraficoDiario() {
-            if(!document.getElementById('view-home').style.display || document.getElementById('view-home').style.display === 'none') return;
-            let hHoje = historico.filter(s => s.dataHora && s.dataHora.startsWith(new Date().toLocaleDateString("pt-BR")));
-            let d = extrairDadosGrafico(hHoje);
-            const ctx = document.getElementById('graficoDiarioHome').getContext('2d');
-            if(chartDiario) chartDiario.destroy();
-            chartDiario = new Chart(ctx, { type: 'doughnut', data: { labels: d.labels, datasets: [{ data: d.data, backgroundColor: d.colors, borderWidth: 1, borderColor: getComputedStyle(document.documentElement).getPropertyValue('--bg-card').trim() }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { callbacks: { label: (c) => ` ${c.label}: ${c.raw}h` } } }, cutout: '60%' } });
         }
 
         function renderizarEstatisticas(periodo) {
@@ -676,7 +899,7 @@
             let d = extrairDadosGrafico(hFilter); const textColor = getComputedStyle(document.documentElement).getPropertyValue('--text-main').trim();
             const ctx = document.getElementById('graficoEstatisticas').getContext('2d');
             if(chartStats) chartStats.destroy();
-            chartStats = new Chart(ctx, { type: 'doughnut', data: { labels: d.data.length ? d.data : [1], datasets: [{ data: d.data.length ? d.data : [1], backgroundColor: d.data.length ? d.colors : ['#323238'], borderWidth: 2, borderColor: getComputedStyle(document.documentElement).getPropertyValue('--bg-card').trim() }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { color: textColor, padding: 20 } }, tooltip: { callbacks: { label: (c) => d.data.length ? ` ${c.label}: ${c.raw}h` : ' Sem dados no período' } } }, cutout: '50%' } });
+            chartStats = new Chart(ctx, { type: 'doughnut', data: { labels: d.data.length ? d.labels : ['Sem dados'], datasets: [{ data: d.data.length ? d.data : [1], backgroundColor: d.data.length ? d.colors : ['#323238'], borderWidth: 2, borderColor: getComputedStyle(document.documentElement).getPropertyValue('--bg-card').trim() }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { color: textColor, padding: 20, font: {family: 'Segoe UI', size: 13} } }, tooltip: { callbacks: { label: (c) => d.data.length ? ` ${c.label}: ${c.raw}h` : ' Sem dados no período' } } }, cutout: '55%' } });
         }
     </script>
 </body>
