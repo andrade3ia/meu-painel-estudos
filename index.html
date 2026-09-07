@@ -685,6 +685,21 @@
         alert("Por favor, selecione um arquivo válido.");
         return;
     }
+            function atualizarSelectsPdf() {
+    let lDiv = document.getElementById('lista-meus-pdfs'); 
+    let sChat = document.getElementById('select-pdf-chat'); 
+    let sFc = document.getElementById('select-pdf-fc');
+    
+    lDiv.innerHTML = ''; 
+    sChat.innerHTML = '<option value="">Conhecimento Geral da IA</option>'; 
+    sFc.innerHTML = '<option value="">Selecione o Material</option>';
+    
+    meusPdfs.forEach(p => {
+        lDiv.innerHTML += `<div style="padding:6px; background:var(--bg-input); border-radius:4px; margin-top:4px;">📄 ${sanitizeText(p.nome)}</div>`;
+        sChat.innerHTML += `<option value="${p.id}">${sanitizeText(p.nome)}</option>`; 
+        sFc.innerHTML += `<option value="${p.id}">${sanitizeText(p.nome)}</option>`;
+    });
+}
 
     const btn = event.currentTarget;
     const textoOriginalBtn = btn.textContent;
