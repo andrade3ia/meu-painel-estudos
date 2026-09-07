@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PRUMA IA | Painel de Estudos de Alta Performance</title>
+    <title>PRUMA | Painel de Estudos</title>
     
     <!-- Bibliotecas Essenciais -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js" crossorigin="anonymous"></script>
@@ -11,70 +11,73 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js" crossorigin="anonymous"></script>
 
     <style>
+        /* 10 Opções de Cores e Temas Nativos (Clean, Equilibrado, Profissional) */
         :root {
-            --bg-body: #0f172a; --bg-card: #1e293b; --text-main: #f1f5f9; --text-muted: #94a3b8;
-            --border-color: #334155; --bg-input: #0f172a; --bg-header: #334155;
-            --brand-green: #10b981; --brand-purple: #6366f1; --brand-red: #ef4444; --brand-blue: #3b82f6;
-            --brand-pruma: linear-gradient(135deg, #6366f1, #a855f7);
-            --shadow-sm: 0 2px 4px rgba(0,0,0,0.3); --shadow-md: 0 10px 15px -3px rgba(0,0,0,0.5);
+            --bg-body: #12161f; --bg-card: #1b2230; --text-main: #f3f4f6; --text-muted: #9ca3af;
+            --border-color: #2a3447; --bg-input: #12161f; --bg-header: #222b3d;
+            --brand-green: #059669; --brand-purple: #4f46e5; --brand-red: #dc2626; --brand-blue: #2563eb;
+            --accent: #4f46e5; --shadow-sm: 0 1px 3px rgba(0,0,0,0.2); --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.3);
         }
         [data-theme="light"] {
-            --bg-body: #f8fafc; --bg-card: #ffffff; --text-main: #1e293b; --text-muted: #64748b;
-            --border-color: #e2e8f0; --bg-input: #f1f5f9; --bg-header: #e2e8f0;
-            --shadow-sm: 0 2px 4px rgba(0,0,0,0.05); --shadow-md: 0 10px 15px -3px rgba(0,0,0,0.1);
+            --bg-body: #f4f6f9; --bg-card: #ffffff; --text-main: #1f2937; --text-muted: #6b7280;
+            --border-color: #e5e7eb; --bg-input: #f9fafb; --bg-header: #f3f4f6;
+            --shadow-sm: 0 1px 2px rgba(0,0,0,0.05); --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1);
         }
 
         * { box-sizing: border-box; transition: background-color 0.2s, color 0.2s, border-color 0.2s; }
-        body { font-family: 'Inter', system-ui, sans-serif; background-color: var(--bg-body); color: var(--text-main); margin: 0; display: flex; height: 100vh; overflow: hidden; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: var(--bg-body); color: var(--text-main); margin: 0; display: flex; height: 100vh; overflow: hidden; }
 
-        .mobile-header { display: none; background: var(--bg-card); padding: 15px 20px; border-bottom: 1px solid var(--border-color); width: 100%; justify-content: space-between; align-items: center; z-index: 1000; }
-        .sidebar { width: 280px; background-color: var(--bg-card); border-right: 1px solid var(--border-color); display: flex; flex-direction: column; padding: 20px; gap: 8px; z-index: 900; overflow-y: auto; }
-        .sidebar h1 { background: var(--brand-pruma); -webkit-background-clip: text; color: transparent; font-size: 1.8rem; margin: 0 0 10px 0; font-weight: 900; text-align: center; }
+        .mobile-header { display: none; background: var(--bg-card); padding: 12px 16px; border-bottom: 1px solid var(--border-color); width: 100%; justify-content: space-between; align-items: center; z-index: 1000; }
+        .sidebar { width: 260px; background-color: var(--bg-card); border-right: 1px solid var(--border-color); display: flex; flex-direction: column; padding: 15px; gap: 6px; z-index: 900; overflow-y: auto; }
+        .sidebar h1 { font-size: 1.5rem; margin: 0 0 2px 0; font-weight: 800; text-align: center; color: var(--accent); }
+        .sidebar p.sub { font-size: 0.75rem; text-align: center; color: var(--text-muted); margin: 0 0 15px 0; letter-spacing: 0.5px; }
         
-        .user-info { background: var(--bg-input); padding: 10px; border-radius: 10px; border: 1px solid var(--border-color); display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
-        .user-info img { width: 32px; height: 32px; border-radius: 50%; }
-
-        .total-horas-sidebar { background: var(--brand-pruma); color: white; padding: 12px; border-radius: 10px; text-align: center; margin-bottom: 10px; font-weight: bold; font-size: 0.9rem; }
-        .total-horas-sidebar span { font-size: 1.3rem; display: block; font-family: monospace; margin-top: 2px; }
+        .total-horas-sidebar { background: var(--accent); color: white; padding: 10px; border-radius: 8px; text-align: center; margin-bottom: 8px; font-weight: bold; font-size: 0.85rem; }
+        .total-horas-sidebar span { font-size: 1.1rem; display: block; font-family: monospace; margin-top: 2px; }
         
-        .nav-btn { background: transparent; color: var(--text-main); border: 1px solid transparent; text-align: left; padding: 12px 14px; font-size: 0.9rem; border-radius: 10px; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 10px;}
-        .nav-btn.active { background: var(--bg-input); border: 1px solid var(--brand-purple); color: var(--brand-purple); }
-        .nav-btn.pruma-tab { border: 1px solid var(--brand-purple); background: rgba(99, 102, 241, 0.15); margin-top: 5px; }
-        .nav-btn.pruma-tab.active { background: var(--brand-pruma); color: white; }
+        .nav-btn { background: transparent; color: var(--text-main); border: 1px solid transparent; text-align: left; padding: 10px 12px; font-size: 0.85rem; border-radius: 8px; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 8px;}
+        .nav-btn.active { background: var(--bg-input); border: 1px solid var(--accent); color: var(--accent); }
+        .nav-btn.pruma-tab { border: 1px dashed var(--accent); margin-top: 5px; }
 
-        .main-content { flex: 1; padding: 30px; overflow-y: auto; }
-        .container-interno { max-width: 900px; margin: 0 auto; padding-bottom: 50px; }
-        .card { background-color: var(--bg-card); border-radius: 16px; padding: 25px; margin-bottom: 20px; box-shadow: var(--shadow-md); border: 1px solid var(--border-color); }
-        h2 { margin-top: 0; color: var(--brand-purple); font-size: 1.25rem; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; }
+        .main-content { flex: 1; padding: 25px; overflow-y: auto; }
+        .container-interno { max-width: 950px; margin: 0 auto; padding-bottom: 40px; }
+        .card { background-color: var(--bg-card); border-radius: 12px; padding: 20px; margin-bottom: 15px; box-shadow: var(--shadow-md); border: 1px solid var(--border-color); }
+        h2 { margin-top: 0; color: var(--accent); font-size: 1.15rem; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; }
 
-        input, select, textarea { width: 100%; padding: 12px; margin-top: 6px; margin-bottom: 15px; background-color: var(--bg-input); border: 1px solid var(--border-color); border-radius: 10px; color: var(--text-main); font-size: 0.95rem; }
-        button { width: 100%; padding: 13px; font-weight: 700; border: none; border-radius: 10px; cursor: pointer; background: var(--brand-purple); color: white; }
+        input, select, textarea { width: 100%; padding: 10px; margin-top: 4px; margin-bottom: 12px; background-color: var(--bg-input); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-main); font-size: 0.9rem; }
+        button { width: 100%; padding: 11px; font-weight: 700; border: none; border-radius: 8px; cursor: pointer; background: var(--accent); color: white; font-size: 0.9rem; }
         button:active { filter: brightness(0.9); }
 
-        .pruma-sub-abas { display: flex; gap: 8px; margin-bottom: 20px; background: var(--bg-input); padding: 5px; border-radius: 10px; overflow-x: auto; }
-        .sub-aba-btn { flex: 1; background: transparent; color: var(--text-muted); border: none; padding: 10px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.85rem; white-space: nowrap; }
-        .sub-aba-btn.ativa { background: var(--bg-card); color: var(--brand-purple); box-shadow: var(--shadow-sm); }
+        /* Cores de Tema / Personalização */
+        .color-palette { display: flex; gap: 5px; margin-bottom: 15px; flex-wrap: wrap; }
+        .color-dot { width: 22px; height: 22px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; }
+        .color-dot.selected { border-color: white; transform: scale(1.1); }
 
-        .chat-box { border: 1px solid var(--border-color); border-radius: 12px; height: 350px; overflow-y: auto; padding: 15px; background: var(--bg-input); display: flex; flex-direction: column; gap: 12px; margin-bottom: 15px; }
-        .msg { padding: 12px 16px; border-radius: 12px; max-width: 85%; line-height: 1.5; font-size: 0.95rem; }
-        .msg-u { background: var(--brand-purple); color: white; align-self: flex-end; }
+        /* Componentes Específicos */
+        .pruma-sub-abas { display: flex; gap: 6px; margin-bottom: 15px; background: var(--bg-input); padding: 4px; border-radius: 8px; overflow-x: auto; }
+        .sub-aba-btn { flex: 1; background: transparent; color: var(--text-muted); border: none; padding: 8px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.8rem; white-space: nowrap; }
+        .sub-aba-btn.ativa { background: var(--bg-card); color: var(--accent); box-shadow: var(--shadow-sm); }
+
+        .chat-box { border: 1px solid var(--border-color); border-radius: 8px; height: 320px; overflow-y: auto; padding: 12px; background: var(--bg-input); display: flex; flex-direction: column; gap: 10px; margin-bottom: 10px; }
+        .msg { padding: 10px 14px; border-radius: 8px; max-width: 85%; line-height: 1.4; font-size: 0.9rem; word-break: break-word; }
+        .msg-u { background: var(--accent); color: white; align-self: flex-end; }
         .msg-a { background: var(--bg-card); border: 1px solid var(--border-color); align-self: flex-start; }
         
-        .pasta { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; margin-bottom: 12px; }
-        .pasta-header { background: var(--bg-input); padding: 14px 18px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-weight: bold; border-radius: 12px; }
-        .pasta-body { padding: 15px; display: none; border-top: 1px solid var(--border-color); }
+        .pasta { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 10px; margin-bottom: 10px; }
+        .pasta-header { background: var(--bg-input); padding: 12px 15px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-weight: bold; border-radius: 10px; font-size: 0.95rem; }
+        .pasta-body { padding: 12px; display: none; border-top: 1px solid var(--border-color); }
         .pasta-body.aberta { display: block; }
-        .topico-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; margin-top: 6px; background: var(--bg-input); border-radius: 8px; border: 1px solid var(--border-color); }
+        .topico-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 10px; margin-top: 5px; background: var(--bg-input); border-radius: 6px; border: 1px solid var(--border-color); font-size: 0.9rem; }
 
         @media(max-width: 768px) {
             body { flex-direction: column; }
             .mobile-header { display: flex; }
-            .sidebar { position: fixed; top: 60px; left: -100%; width: 100%; height: calc(100vh - 60px); transition: left 0.3s; }
+            .sidebar { position: fixed; top: 55px; left: -100%; width: 100%; height: calc(100vh - 55px); transition: left 0.3s; }
             .sidebar.open { left: 0; }
         }
     </style>
 
-    <!-- Firebase SDKs -->
+    <!-- Firebase SDKs Compat -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
@@ -83,76 +86,114 @@
 <body>
 
     <header class="mobile-header">
-        <h2 style="margin:0; border:none; color:var(--text-main);">PRUMA IA</h2>
-        <button style="width:auto; padding:5px 10px; background:transparent; color:var(--text-main); font-size:1.5rem;" onclick="document.getElementById('sidebar-menu').classList.toggle('open')">☰</button>
+        <h2 style="margin:0; border:none; font-size:1rem; color:var(--text-main);">PRUMA</h2>
+        <button style="width:auto; padding:4px 8px; background:transparent; color:var(--text-main); font-size:1.3rem;" onclick="document.getElementById('sidebar-menu').classList.toggle('open')">☰</button>
     </header>
 
     <aside id="sidebar-menu" class="sidebar">
         <h1>PRUMA</h1>
-        <div class="user-info" id="box-user" style="display:none;">
-            <img id="u-img" src="" alt="">
-            <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"><strong id="u-name"></strong></span>
-        </div>
+        <p class="sub">PAINEL DE ESTUDOS</p>
         
         <div class="total-horas-sidebar">
             Total Líquido<span id="sidebar-total-horas">00:00:00</span>
         </div>
         
-        <button class="nav-btn active" onclick="irTela('home', event)">📊 Início & Cronômetro</button>
-        <button class="nav-btn" onclick="irTela('materias', event)">📚 Edital & Matérias</button>
+        <button class="nav-btn active" onclick="irTela('home', event)">📊 Início & Registros</button>
+        <button class="nav-btn" onclick="irTela('materias', event)">📚 Matérias</button>
+        <button class="nav-btn" onclick="irTela('concursos', event)">🎯 Concursos</button>
         <button class="nav-btn" onclick="irTela('caderno', event)">📓 Caderno de Erros</button>
         <button class="nav-btn" onclick="irTela('estatisticas', event)">📈 Desempenho</button>
-        <button class="nav-btn pruma-tab" onclick="irTela('pruma', event)">✨ Ecossistema PRUMA IA</button>
+        <button class="nav-btn pruma-tab" onclick="irTela('pruma', event)">✨ PRUMA IA</button>
+        <button class="nav-btn" onclick="irTela('conta', event)">👤 Minha Conta</button>
         
-        <button style="background:var(--bg-input); border:1px solid var(--border-color); color:var(--text-main); margin-top:auto;" onclick="alternarTema()">☀️ / 🌙 Tema</button>
-        <button style="background:var(--brand-red); margin-top:5px; font-size:0.85rem;" id="btn-sair" onclick="firebase.auth().signOut()" style="display:none;">Sair</button>
+        <div style="margin-top:auto; display:flex; gap:5px;">
+            <button style="background:var(--bg-input); border:1px solid var(--border-color); color:var(--text-main); font-size:0.8rem;" onclick="alternarTema()">☀️/🌙</button>
+            <button style="background:var(--bg-input); border:1px solid var(--border-color); color:var(--text-main); font-size:0.8rem;" onclick="abrirConfigApi()">⚙️ API Key</button>
+        </div>
     </aside>
 
     <main class="main-content" onclick="if(window.innerWidth<=768) document.getElementById('sidebar-menu').classList.remove('open')">
         
         <!-- TELA LOGIN -->
-        <div id="tela-login" class="card" style="max-width:380px; margin:80px auto; text-align:center;">
-            <h1 style="background:var(--brand-pruma); -webkit-background-clip:text; color:transparent; font-size:2.2rem; margin-bottom:5px;">PRUMA IA</h1>
-            <p style="color:var(--text-muted); margin-bottom:25px;">Plataforma de Estudos & Inteligência Artificial</p>
-            <button style="background:white; color:#333; border:1px solid #ccc; display:flex; align-items:center; justify-content:center; gap:10px; font-weight:bold;" onclick="firebase.auth().signInWithPopup(new firebase.auth.GoogleAuthProvider())">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" width="18" alt=""> Entrar com Google
+        <div id="tela-login" class="card" style="max-width:360px; margin:70px auto; text-align:center;">
+            <h1 style="color:var(--accent); font-size:2rem; margin-bottom:2px;">PRUMA</h1>
+            <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:20px; letter-spacing:1px;">PAINEL DE ESTUDOS</p>
+            <button style="background:white; color:#333; border:1px solid #ccc; display:flex; align-items:center; justify-content:center; gap:8px; font-weight:600;" onclick="firebase.auth().signInWithPopup(new firebase.auth.GoogleAuthProvider())">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" width="16" alt=""> Entrar com Google
             </button>
         </div>
 
-        <!-- PAINEL PRINCIPAL -->
+        <!-- PAINEL COMPLETO -->
         <div id="tela-painel" class="container-interno" style="display:none;">
             
-            <!-- HOME / CRONÔMETRO -->
+            <!-- HOME / RESUMO GERAL -->
             <div id="view-home">
                 <div class="card" style="text-align: center;">
                     <h2>⏳ Cronômetro de Estudos</h2>
-                    <div id="cronometro-visor" style="font-size: 3.2rem; color: var(--brand-green); font-weight: 800; font-family: monospace; margin: 15px 0;">00:00:00</div>
-                    <div style="display:flex; justify-content:center; gap:10px;">
-                        <button style="background:var(--brand-green); width:auto; padding: 10px 20px;" onclick="iniciarCronometro()">▶ Iniciar</button>
-                        <button style="background:#eab308; width:auto; padding: 10px 20px;" onclick="pausarCronometro()">⏸ Pausar</button>
-                        <button style="background:var(--brand-red); width:auto; padding: 10px 20px;" onclick="salvarSessaoCronometro()">💾 Salvar Sessão</button>
+                    <div id="cronometro-visor" style="font-size: 2.8rem; color: var(--brand-green); font-weight: 800; font-family: monospace; margin: 10px 0;">00:00:00</div>
+                    <div style="display:flex; justify-content:center; gap:8px;">
+                        <button style="background:var(--brand-green); width:auto; padding: 8px 16px; font-size:0.85rem;" onclick="iniciarCronometro()">▶ Iniciar</button>
+                        <button style="background:#eab308; width:auto; padding: 8px 16px; font-size:0.85rem;" onclick="pausarCronometro()">⏸ Pausar</button>
+                        <button style="background:var(--accent); width:auto; padding: 8px 16px; font-size:0.85rem;" onclick="salvarSessaoCronometro()">💾 Salvar Sessão</button>
                     </div>
+                </div>
+
+                <div class="card">
+                    <h2>📊 Resumo Geral do Dia</h2>
+                    <p style="font-size:0.85rem; color:var(--text-muted);">Acompanhe seu ritmo e histórico recente de foco.</p>
+                    <div id="resumo-geral-stats" style="display:flex; justify-content:space-around; text-align:center; padding:10px 0;">
+                        <div><strong style="font-size:1.2rem; color:var(--accent);" id="stat-tempo-hoje">0h 00m</strong><br><small style="color:var(--text-muted);">Hoje</small></div>
+                        <div><strong style="font-size:1.2rem; color:var(--brand-green);" id="stat-sessoes">0</strong><br><small style="color:var(--text-muted);">Sessões Salvas</small></div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h2>📋 Últimos Registros</h2>
+                    <div id="lista-ultimos-registros" style="font-size:0.9rem; color:var(--text-muted);">Nenhuma sessão registrada ainda.</div>
                 </div>
             </div>
 
-            <!-- MATÉRIAS / EDITAL -->
+            <!-- MATÉRIAS & EDITAL INTELIGENTE -->
             <div id="view-materias" style="display:none;">
                 <div class="card">
-                    <h2>📚 Gerenciador de Edital & Matérias</h2>
-                    <input type="text" id="inp-disc" placeholder="Disciplina (Ex: Direito Administrativo)">
-                    <input type="text" id="inp-top" placeholder="Tópico do Edital (Ex: Atos Administrativos)">
+                    <h2>📚 Matérias & Organização</h2>
+                    <input type="text" id="inp-disc" placeholder="Disciplina (Ex: Direito Constitucional)">
+                    <input type="text" id="inp-top" placeholder="Tópico (Ex: Direitos Fundamentais)">
                     <button onclick="adicionarTopico()">Adicionar Tópico</button>
                 </div>
+
+                <div class="card">
+                    <h2>⚡ Edital Inteligente (Processador em Lotes)</h2>
+                    <p style="font-size:0.85rem; color:var(--text-muted);">Cole um edital longo. O sistema quebra em partes automaticamente sem interromper para processar via Gemini 3.6 Flash.</p>
+                    <textarea id="edital-gigante" placeholder="Cole o texto gigante do edital aqui..." rows="4"></textarea>
+                    <input type="text" id="edital-disc-alvo" placeholder="Disciplina de destino para este edital">
+                    <button onclick="processarEditalInteligente()">Dividir e Processar via IA (Flash)</button>
+                </div>
+
                 <div id="lista-materias-div"></div>
+            </div>
+
+            <!-- CONCURSOS -->
+            <div id="view-concursos" style="display:none;">
+                <div class="card">
+                    <h2>🎯 Meus Concursos & Metas</h2>
+                    <input type="text" id="conc-nome" placeholder="Nome do Concurso (Ex: TRT Analista)">
+                    <input type="date" id="conc-data">
+                    <label style="font-size:0.85rem; color:var(--text-muted);">Foto de Motivação (Contracheque / Cargo):</label>
+                    <input type="file" id="conc-foto-file" accept="image/*">
+                    <button onclick="salvarConcurso()">Adicionar Concurso</button>
+                </div>
+                <div id="lista-concursos-div"></div>
             </div>
 
             <!-- CADERNO DE ERROS -->
             <div id="view-caderno" style="display:none;">
                 <div class="card">
                     <h2>📓 Caderno de Erros</h2>
-                    <input type="text" id="err-disc" placeholder="Disciplina da Questão Errada">
-                    <textarea id="err-desc" placeholder="Qual foi o erro e por que você errou?" rows="3"></textarea>
-                    <button onclick="salvarErro()">Salvar no Caderno de Erros</button>
+                    <input type="text" id="err-disc" placeholder="Matéria / Disciplina">
+                    <input type="text" id="err-assunto" placeholder="Assunto Específico">
+                    <textarea id="err-desc" placeholder="Qual foi o erro cometido?" rows="2"></textarea>
+                    <button onclick="salvarErro()">Adicionar Erro</button>
                 </div>
                 <div id="lista-erros-div"></div>
             </div>
@@ -160,75 +201,108 @@
             <!-- ESTATÍSTICAS -->
             <div id="view-estatisticas" style="display:none;">
                 <div class="card">
-                    <h2>📈 Gráfico de Desempenho</h2>
-                    <canvas id="graficoEstudos" style="max-height: 250px;"></canvas>
+                    <h2>📈 Desempenho</h2>
+                    <div style="display:flex; gap:8px; margin-bottom:15px;">
+                        <button style="width:auto; padding:6px 12px; font-size:0.8rem;" onclick="mudarPeriodoGrafico('hoje', this)">Hoje</button>
+                        <button style="width:auto; padding:6px 12px; font-size:0.8rem;" onclick="mudarPeriodoGrafico('7d', this)">7 Dias</button>
+                        <button style="width:auto; padding:6px 12px; font-size:0.8rem;" onclick="mudarPeriodoGrafico('30d', this)">30 Dias</button>
+                        <button style="width:auto; padding:6px 12px; font-size:0.8rem;" onclick="mudarPeriodoGrafico('sempre', this)" class="sub-aba-btn ativa">Sempre</button>
+                    </div>
+                    <div style="max-width:280px; margin:0 auto;"><canvas id="graficoRosca"></canvas></div>
                 </div>
             </div>
 
             <!-- PRUMA IA -->
             <div id="view-pruma" style="display:none;">
                 <div class="card">
-                    <h2>✨ PRUMA IA — Central de Inteligência</h2>
+                    <h2>✨ PRUMA IA</h2>
+                    <p style="font-size:0.85rem; color:var(--text-muted);">Mentoria inteligente atrelada aos seus materiais.</p>
                     
-                    <div style="background:var(--bg-input); padding:12px; border-radius:10px; border:1px solid var(--border-color); margin-bottom:15px;">
-                        <span style="font-size:0.85rem; font-weight:bold; color:var(--brand-purple);">Configuração da API Gemini (Opcional):</span>
-                        <input type="password" id="user-api-key" placeholder="Deixe em branco para usar o padrão ou insira sua chave" style="margin-bottom:0; font-size:0.8rem;">
-                    </div>
-
                     <div class="pruma-sub-abas">
-                        <button class="sub-aba-btn ativa" onclick="mudarSubIa('tutor', this)">💬 Tutor & Dúvidas</button>
-                        <button class="sub-aba-btn" onclick="mudarSubIa('flashcards', this)">⚡ Gerador de Flashcards</button>
-                        <button class="sub-aba-btn" onclick="mudarSubIa('simulador', this)">🎯 Simulador de Erros</button>
-                        <button class="sub-aba-btn" onclick="mudarSubIa('arquivos', this)">📁 Meus PDFs</button>
+                        <button class="sub-aba-btn ativa" onclick="mudarSubIa('tutor', this)">💬 Tutor & Chat</button>
+                        <button class="sub-aba-btn" onclick="mudarSubIa('flashcards', this)">⚡ Flashcards</button>
+                        <button class="sub-aba-btn" onclick="mudarSubIa('caderno', this)">🎯 Caderno de Erros</button>
+                        <button class="sub-aba-btn" onclick="mudarSubIa('arquivos', this)">📁 Arquivos</button>
                     </div>
 
                     <!-- Sub-IA: Tutor -->
                     <div id="subia-tutor">
-                        <label style="font-size:0.85rem;">Selecionar apostila para consulta:</label>
+                        <label style="font-size:0.8rem;">Contexto (Material opcional):</label>
                         <select id="select-pdf-chat"><option value="">Nenhum (Conhecimento geral)</option></select>
+                        
                         <div class="chat-box" id="box-chat">
-                            <div class="msg msg-a"><strong>PRUMA:</strong> Olá! Mentora pronta. Como posso ajudar?</div>
+                            <div class="msg msg-a"><strong>PRUMA:</strong> Como posso ajudar você, caro estudante?</div>
                         </div>
-                        <div style="display:flex; gap:10px;">
-                            <input type="text" id="inp-chat" placeholder="Tire uma dúvida..." style="margin:0;" onkeypress="if(event.key==='Enter') executarPrumaIA('tutor')">
-                            <button onclick="executarPrumaIA('tutor')" style="width:90px;">Perguntar</button>
+                        
+                        <div style="display:flex; gap:6px; margin-bottom:8px;">
+                            <button style="width:auto; padding:6px 10px; font-size:0.75rem; background:var(--bg-input); border:1px solid var(--border-color); color:var(--text-main);" onclick="refazerUltimaPergunta()">🔄 Refazer Última Pergunta</button>
+                        </div>
+
+                        <div style="display:flex; gap:8px;">
+                            <input type="text" id="inp-chat" placeholder="Digite sua dúvida ou cole uma questão..." style="margin:0;" onkeypress="if(event.key==='Enter') executarPrumaIA('tutor')">
+                            <button onclick="executarPrumaIA('tutor')" style="width:85px;">Enviar</button>
                         </div>
                     </div>
 
                     <!-- Sub-IA: Flashcards -->
                     <div id="subia-flashcards" style="display:none;">
-                        <p style="font-size:0.9rem; color:var(--text-muted);">Gere flashcards baseados nos seus PDFs.</p>
-                        <select id="select-pdf-fc"><option value="">Selecione o PDF</option></select>
-                        <input type="text" id="fc-tema" placeholder="Assunto específico (Opcional)">
+                        <select id="select-pdf-fc"><option value="">Selecione o PDF/Texto</option></select>
+                        <input type="text" id="fc-tema" placeholder="Tema específico (Opcional)">
                         <button onclick="executarPrumaIA('flashcards')">Gerar Flashcards</button>
-                        <div class="chat-box" id="box-fc" style="margin-top:15px; display:none;"></div>
+                        <div class="chat-box" id="box-fc" style="margin-top:10px; display:none;"></div>
                     </div>
 
-                    <!-- Sub-IA: Simulador -->
-                    <div id="subia-simulador" style="display:none;">
-                        <p style="font-size:0.9rem; color:var(--text-muted);">Simulado inédito baseado nos seus erros salvos.</p>
-                        <button onclick="executarPrumaIA('simulador')">Criar Simulado Personalizado</button>
-                        <div class="chat-box" id="box-sim" style="margin-top:15px; display:none;"></div>
+                    <!-- Sub-IA: Caderno de Erros -->
+                    <div id="subia-caderno" style="display:none;">
+                        <button onclick="executarPrumaIA('simulador')">Gerar Questões Baseadas nos Meus Erros</button>
+                        <div class="chat-box" id="box-sim" style="margin-top:10px; display:none;"></div>
                     </div>
 
                     <!-- Sub-IA: Arquivos -->
                     <div id="subia-arquivos" style="display:none;">
-                        <label>Fazer Upload de Apostila (PDF):</label>
-                        <input type="file" id="up-pdf" accept="application/pdf">
-                        <button onclick="enviarPdfNuvem()">Fazer Upload Seguro</button>
-                        <div id="lista-meus-pdfs" style="margin-top:15px;"></div>
+                        <label>Enviar Texto, PDF ou Material de Estudo:</label>
+                        <input type="file" id="up-pdf" accept=".pdf,.txt">
+                        <button onclick="enviarPdfNuvem()">Enviar Material Seguro</button>
+                        <div id="lista-meus-pdfs" style="margin-top:10px; font-size:0.85rem;"></div>
                     </div>
 
+                </div>
+            </div>
+
+            <!-- MINHA CONTA -->
+            <div id="view-conta" style="display:none;">
+                <div class="card">
+                    <h2>👤 Minha Conta</h2>
+                    <p style="font-size:0.9rem;"><strong>E-mail:</strong> <span id="conta-email">Carregando...</span></p>
+                    <p style="font-size:0.9rem;"><strong>Data de Registro:</strong> <span id="conta-data">Carregando...</span></p>
+                    
+                    <div style="margin:15px 0;">
+                        <label style="font-size:0.85rem; font-weight:bold;">Paleta de Cores (10 Opções):</label>
+                        <div class="color-palette" id="paleta-cores"></div>
+                    </div>
+
+                    <button class="nav-btn" style="background:var(--brand-red); color:white; justify-content:center; margin-top:15px;" onclick="fazerLogout()">Sair da Conta</button>
                 </div>
             </div>
 
         </div>
     </main>
 
+    <!-- Modal Configuração API Key Pessoal -->
+    <div id="modal-apikey" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); display:none; justify-content:center; align-items:center; z-index:2000;">
+        <div class="card" style="width:90%; max-width:380px;">
+            <h2>🔑 Chave Gemini Pessoal</h2>
+            <p style="font-size:0.8rem; color:var(--text-muted);">Sua chave é salva exclusivamente no seu navegador (LocalStorage) e usada apenas para suas requisições.</p>
+            <input type="password" id="input-apikey-user" placeholder="Cole sua chave API aqui">
+            <button onclick="salvarApiKeyUser()">Salvar Chave</button>
+            <button style="background:transparent; color:var(--text-muted); margin-top:5px;" onclick="document.getElementById('modal-apikey').style.display='none'">Fechar</button>
+        </div>
+    </div>
+
     <script>
-        // ================= CONFIGURAÇÃO DO ADMIN =================
-        const ADMIN_UID = "COLE_SEU_UID_AQUI"; // Cole seu UID exato do Firebase Auth aqui
-        // ========================================================
+        // ================= CONFIGURAÇÃO DE SEGURANÇA E ADMIN =================
+        const ADMIN_UID = "COLE_SEU_UID_DE_ADMIN_AQUI"; // Substitua pelo UID exato do seu perfil
+        // =====================================================================
 
         const firebaseConfig = {
             apiKey: "AIzaSyCIPK3YBKulMbjJzm_UahdtQrNjgqLmYho",
@@ -247,39 +321,47 @@
         let meusPdfs = [];
         let meuCadernoErros = [];
         let planejamentoEdital = [];
+        let meusConcursos = [];
+        let sessoesHistorico = [];
         let pastasAbertas = new Set();
-        let chartInstance = null;
+        let chartRoscaInstance = null;
 
         let segundosEstudo = 0;
         let cronometroInterval = null;
+        let historicoChatMemoria = []; // Últimas 10 perguntas e respostas
+
+        const paletaCoresList = [
+            '#4f46e5', '#2563eb', '#059669', '#dc2626', '#d97706', 
+            '#7c3aed', '#db2777', '#0891b2', '#475569', '#111827'
+        ];
 
         function sanitize(str) { return typeof str === 'string' ? DOMPurify.sanitize(str) : ''; }
 
+        // Auth Listener
         firebase.auth().onAuthStateChanged(user => {
             if(user) {
                 userAtual = user;
                 refDb = db.ref('usuarios/' + user.uid);
                 refStore = storage.ref('usuarios/' + user.uid + '/materiais');
                 
-                document.getElementById('u-name').textContent = user.displayName || user.email.split('@')[0];
-                document.getElementById('u-img').src = user.photoURL || 'https://via.placeholder.com/32';
-                document.getElementById('box-user').style.display = 'flex';
-                document.getElementById('btn-sair').style.display = 'block';
+                document.getElementById('conta-email').textContent = user.email;
+                document.getElementById('conta-data').textContent = new Date(user.metadata.creationTime).toLocaleDateString();
                 document.getElementById('tela-login').style.display = 'none';
                 document.getElementById('tela-painel').style.display = 'block';
 
                 carregarDadosDoBanco();
+                carregarApiKeySalva();
+                renderizarPaletaCores();
                 irTela('home', { currentTarget: document.querySelector('.nav-btn') });
             } else {
                 userAtual = null;
                 document.getElementById('tela-login').style.display = 'block';
                 document.getElementById('tela-painel').style.display = 'none';
-                document.getElementById('box-user').style.display = 'none';
             }
         });
 
         function irTela(t, e) {
-            ['home', 'materias', 'caderno', 'estatisticas', 'pruma'].forEach(v => {
+            ['home', 'materias', 'concursos', 'caderno', 'estatisticas', 'pruma', 'conta'].forEach(v => {
                 let el = document.getElementById('view-' + v);
                 if(el) el.style.display = (v === t) ? 'block' : 'none';
             });
@@ -287,15 +369,16 @@
             if(e && e.currentTarget) e.currentTarget.classList.add('active');
             if(window.innerWidth <= 768) document.getElementById('sidebar-menu').classList.remove('open');
             
-            if(t === 'estatisticas') renderizarGrafico();
+            if(t === 'estatisticas') renderizarGraficoRosca('sempre');
         }
 
         function mudarSubIa(sub, btn) {
-            ['tutor', 'flashcards', 'simulador', 'arquivos'].forEach(s => {
-                document.getElementById('subia-' + s).style.display = (s === sub) ? 'block' : 'none';
+            ['tutor', 'flashcards', 'caderno', 'arquivos'].forEach(s => {
+                let el = document.getElementById('subia-' + s);
+                if(el) el.style.display = (s === sub) ? 'block' : 'none';
             });
             document.querySelectorAll('.sub-aba-btn').forEach(b => b.classList.remove('ativa'));
-            btn.classList.add('ativa');
+            if(btn) btn.classList.add('ativa');
         }
 
         function alternarTema() {
@@ -303,6 +386,46 @@
             html.setAttribute('data-theme', html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
         }
 
+        function abrirConfigApi() {
+            document.getElementById('modal-apikey').style.display = 'flex';
+        }
+
+        function salvarApiKeyUser() {
+            let k = document.getElementById('input-apikey-user').value.trim();
+            if(k) {
+                localStorage.setItem('pruma_user_apikey', k);
+                alert("Chave API salva com segurança no seu navegador!");
+                document.getElementById('modal-apikey').style.display = 'none';
+            }
+        }
+
+        function carregarApiKeySalva() {
+            let k = localStorage.getItem('pruma_user_apikey');
+            if(k) document.getElementById('input-apikey-user').value = k;
+        }
+
+        function renderizarPaletaCores() {
+            let div = document.getElementById('paleta-cores');
+            div.innerHTML = '';
+            paletaCoresList.forEach(cor => {
+                let dot = document.createElement('div');
+                dot.className = 'color-dot';
+                dot.style.backgroundColor = cor;
+                dot.onclick = () => {
+                    document.documentElement.style.setProperty('--accent', cor);
+                    localStorage.setItem('pruma_cor_tema', cor);
+                };
+                div.appendChild(dot);
+            });
+            let salva = localStorage.getItem('pruma_cor_tema');
+            if(salva) document.documentElement.style.setProperty('--accent', salva);
+        }
+
+        function fazerLogout() {
+            firebase.auth().signOut();
+        }
+
+        // ================= CRONÔMETRO E SESSÕES =================
         function iniciarCronometro() {
             if(!cronometroInterval) {
                 cronometroInterval = setInterval(() => {
@@ -326,7 +449,11 @@
         function salvarSessaoCronometro() {
             pausarCronometro();
             if(segundosEstudo > 0) {
-                refDb.child('historico_sessoes').push({ segundos: segundosEstudo, data: new Date().toLocaleDateString() });
+                refDb.child('historico_sessoes').push({
+                    segundos: segundosEstudo,
+                    data: new Date().toLocaleDateString(),
+                    timestamp: Date.now()
+                });
                 alert("Sessão salva com sucesso!");
                 segundosEstudo = 0;
                 atualizarVisorCronometro();
@@ -335,6 +462,7 @@
             }
         }
 
+        // ================= CARREGAMENTO DE DADOS DO FIREBASE =================
         function carregarDadosDoBanco() {
             refDb.child('planejamento').on('value', snap => {
                 planejamentoEdital = snap.val() || [];
@@ -344,13 +472,43 @@
                 meuCadernoErros = snap.val() || [];
                 renderizarCaderno();
             });
+            refDb.child('concursos').on('value', snap => {
+                meusConcursos = snap.val() || [];
+                renderizarConcursos();
+            });
             refDb.child('pdfs').on('value', snap => {
                 let obj = snap.val() || {};
                 meusPdfs = Object.keys(obj).map(k => ({id: k, ...obj[k]}));
                 atualizarSelectsPdf();
             });
+            refDb.child('historico_sessoes').on('value', snap => {
+                let obj = snap.val() || {};
+                sessoesHistorico = Object.keys(obj).map(k => obj[k]);
+                atualizarResumoGeral();
+            });
         }
 
+        function atualizarResumoGeral() {
+            let totalSeg = sessoesHistorico.reduce((acc, cur) => acc + cur.segundos, 0);
+            let h = Math.floor(totalSeg / 3600);
+            let m = Math.floor((totalSeg % 3600) / 60);
+            document.getElementById('stat-tempo-hoje').textContent = `${h}h ${m}m`;
+            document.getElementById('stat-sessoes').textContent = sessoesHistorico.length;
+
+            let listaDiv = document.getElementById('lista-ultimos-registros');
+            listaDiv.innerHTML = '';
+            let ultimos = sessoesHistorico.slice(-5).reverse();
+            if(ultimos.length === 0) {
+                listaDiv.innerHTML = "Nenhuma sessão registrada ainda.";
+                return;
+            }
+            ultimos.forEach(s => {
+                let min = Math.floor(s.segundos / 60);
+                listaDiv.innerHTML += `<div style="padding:6px 0; border-bottom:1px solid var(--border-color);">⏱️ Foco de <strong>${min} minutos</strong> registrado em ${s.data}</div>`;
+            });
+        }
+
+        // ================= MATÉRIAS E EDITAL INTELIGENTE =================
         function adicionarTopico() {
             let d = sanitize(document.getElementById('inp-disc').value.trim());
             let t = sanitize(document.getElementById('inp-top').value.trim());
@@ -367,6 +525,45 @@
             document.getElementById('inp-top').value = '';
         }
 
+        async function processarEditalInteligente() {
+            let texto = document.getElementById('edital-gigante').value.trim();
+            let disc = sanitize(document.getElementById('edital-disc-alvo').value.trim());
+            if(!texto || !disc) return alert("Insira o texto e a disciplina alvo.");
+
+            // Lógica de chunking (quebra em lotes para evitar estouro de token ou travamento)
+            const tamanhoBloco = 4000;
+            let blocos = [];
+            for (let i = 0; i < texto.length; i += tamanhoBloco) {
+                blocos.push(texto.substring(i, i + tamanhoBloco));
+            }
+
+            alert(`Edital dividido em ${blocos.length} partes. Processando via Gemini 3.6 Flash...`);
+
+            try {
+                let topicosExtraidos = [];
+                for(let bloco of blocos) {
+                    let prompt = `Extraia e liste de forma limpa e direta os tópicos de estudo deste edital, um por linha:\n${bloco}`;
+                    let resposta = await chamarApiGeminiEspecifica(prompt, "gemini-3.6-flash");
+                    let linhas = resposta.split('\n').map(l => l.replace(/^[-*•]\s*/, '').trim()).filter(l => l.length > 3);
+                    topicosExtraidos.push(...linhas);
+                }
+
+                let idx = planejamentoEdital.findIndex(x => x.disciplina.toLowerCase() === disc.toLowerCase());
+                if(idx !== -1) {
+                    planejamentoEdital[idx].topicos.push(...topicosExtraidos);
+                    pastasAbertas.add(idx);
+                } else {
+                    planejamentoEdital.push({disciplina: disc, topicos: topicosExtraidos});
+                    pastasAbertas.add(planejamentoEdital.length - 1);
+                }
+                refDb.child('planejamento').set(planejamentoEdital);
+                document.getElementById('edital-gigante').value = '';
+                alert("Edital processado e adicionado com sucesso!");
+            } catch(e) {
+                alert("Erro ao processar edital: " + e.message);
+            }
+        }
+
         function renderizarEdital() {
             let div = document.getElementById('lista-materias-div');
             div.innerHTML = '';
@@ -375,7 +572,10 @@
                 let topicosHtml = item.topicos.map((top, iT) => `
                     <div class="topico-item">
                         <span>📄 ${sanitize(top)}</span>
-                        <button style="width:auto; padding:5px 10px; background:var(--brand-red); font-size:0.75rem;" onclick="removerTopico(${idx}, ${iT}, event)">✖</button>
+                        <div style="display:flex; gap:5px;">
+                            <button style="width:auto; padding:4px 8px; background:var(--accent); font-size:0.7rem;" onclick="moverTopico(${idx}, ${iT}, event)">➔</button>
+                            <button style="width:auto; padding:4px 8px; background:var(--brand-red); font-size:0.7rem;" onclick="removerTopico(${idx}, ${iT}, event)">✖</button>
+                        </div>
                     </div>`).join('');
 
                 div.innerHTML += `
@@ -407,59 +607,151 @@
             }
         }
 
+        function moverTopico(idD, idT, e) {
+            e.stopPropagation();
+            let destino = prompt("Digite o nome da disciplina de destino:");
+            if(!destino) return;
+            let topicoMovido = planejamentoEdital[idD].topicos.splice(idT, 1)[0];
+            
+            if(planejamentoEdital[idD].topicos.length === 0) {
+                planejamentoEdital.splice(idD, 1);
+                pastasAbertas.delete(idD);
+            }
+
+            let idxDest = planejamentoEdital.findIndex(x => x.disciplina.toLowerCase() === destino.toLowerCase());
+            if(idxDest !== -1) {
+                planejamentoEdital[idxDest].topicos.push(topicoMovido);
+                pastasAbertas.add(idxDest);
+            } else {
+                planejamentoEdital.push({disciplina: destino, topicos: [topicoMovido]});
+                pastasAbertas.add(planejamentoEdital.length - 1);
+            }
+            refDb.child('planejamento').set(planejamentoEdital);
+        }
+
+        // ================= CONCURSOS =================
+        async function salvarConcurso() {
+            let nome = sanitize(document.getElementById('conc-nome').value.trim());
+            let data = document.getElementById('conc-data').value;
+            let fileInput = document.getElementById('conc-foto-file').files[0];
+            if(!nome || !data) return alert("Preencha o nome e a data.");
+
+            let fotoUrl = "";
+            if(fileInput) {
+                let refF = refStore.child('concursos/' + fileInput.name);
+                await refF.put(fileInput);
+                fotoUrl = await refF.getDownloadURL();
+            }
+
+            meusConcursos.push({nome, data, fotoUrl});
+            refDb.child('concursos').set(meusConcursos);
+            document.getElementById('conc-nome').value = '';
+            document.getElementById('conc-data').value = '';
+            alert("Concurso adicionado!");
+        }
+
+        function renderizarConcursos() {
+            let div = document.getElementById('lista-concursos-div');
+            div.innerHTML = '';
+            meusConcursos.forEach((c) => {
+                let diffDias = Math.ceil((new Date(c.data) - new Date()) / (1000 * 60 * 60 * 24));
+                div.innerHTML += `
+                    <div class="card" style="margin-top:10px;">
+                        <strong>🎯 ${sanitize(c.nome)}</strong><br>
+                        <span style="color:var(--brand-green); font-weight:bold;">Faltam ${diffDias} dias</span> (${c.data})
+                        ${c.fotoUrl ? `<br><img src="${c.fotoUrl}" style="max-width:100%; border-radius:6px; margin-top:8px;">` : ''}
+                    </div>`;
+            });
+        }
+
+        // ================= CADERNO DE ERROS =================
         function salvarErro() {
             let d = sanitize(document.getElementById('err-disc').value.trim());
+            let assunto = sanitize(document.getElementById('err-assunto').value.trim());
             let desc = sanitize(document.getElementById('err-desc').value.trim());
             if(!d || !desc) return;
-            meuCadernoErros.push({disciplina: d, descricao: desc, data: new Date().toLocaleDateString()});
+            meuCadernoErros.push({disciplina: d, assunto: assunto || 'Geral', descricao: desc, data: new Date().toLocaleDateString()});
             refDb.child('caderno_erros').set(meuCadernoErros);
             document.getElementById('err-desc').value = '';
+            document.getElementById('err-assunto').value = '';
             alert("Erro salvo!");
         }
 
         function renderizarCaderno() {
             let div = document.getElementById('lista-erros-div');
             div.innerHTML = '';
-            meuCadernoErros.forEach((e) => {
-                div.innerHTML += `<div class="card" style="margin-top:10px; padding:15px;"><strong>[${sanitize(e.disciplina)}]</strong> - ${sanitize(e.descricao)} <br><small style="color:var(--text-muted);">${e.data}</small></div>`;
+            let agrupado = {};
+            meuCadernoErros.forEach(e => {
+                if(!agrupado[e.disciplina]) agrupado[e.disciplina] = {};
+                if(!agrupado[e.disciplina][e.assunto]) agrupado[e.disciplina][e.assunto] = [];
+                agrupado[e.disciplina][e.assunto].push(e.descricao);
             });
+
+            for(let disc in agrupado) {
+                let htmlAssuntos = "";
+                for(let assunto in agrupado[disc]) {
+                    let notas = agrupado[disc][assunto].map(n => `<div style="padding:6px; background:var(--bg-input); margin-top:4px; border-radius:6px;">• ${sanitize(n)}</div>`).join('');
+                    htmlAssuntos += `<div style="margin-top:8px; font-weight:bold; font-size:0.9rem;">📌 ${sanitize(assunto)}</div>${notas}`;
+                }
+                div.innerHTML += `
+                    <div class="pasta">
+                        <div class="pasta-header">📁 ${sanitize(disc)}</div>
+                        <div class="pasta-body aberta">${htmlAssuntos}</div>
+                    </div>`;
+            }
         }
 
-        function renderizarGrafico() {
-            const ctx = document.getElementById('graficoEstudos').getContext('2d');
-            if(chartInstance) chartInstance.destroy();
-            chartInstance = new Chart(ctx, {
-                type: 'bar',
+        // ================= ESTATÍSTICAS E GRÁFICO ROSCA =================
+        function mudarPeriodoGrafico(periodo, btn) {
+            document.querySelectorAll('#view-estatisticas button').forEach(b => b.classList.remove('ativa'));
+            btn.classList.add('ativa');
+            renderizarGraficoRosca(periodo);
+        }
+
+        function renderizarGraficoRosca(periodo) {
+            const ctx = document.getElementById('graficoRosca').getContext('2d');
+            if(chartRoscaInstance) chartRoscaInstance.destroy();
+
+            chartRoscaInstance = new Chart(ctx, {
+                type: 'doughnut',
                 data: {
-                    labels: ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'],
-                    datasets: [{ label: 'Horas', data: [2, 4, 3, 5, 4, 6, 2], backgroundColor: '#6366f1', borderRadius: 8 }]
+                    labels: ['Estudo Líquido', 'Descanso / Pendente'],
+                    datasets: [{
+                        data: [sessoesHistorico.length > 0 ? 75 : 10, 25],
+                        backgroundColor: ['var(--accent)', 'var(--border-color)']
+                    }]
                 },
                 options: { responsive: true, maintainAspectRatio: false }
             });
         }
 
+        // ================= UPLOAD DE ARQUIVOS E RAG =================
         async function enviarPdfNuvem() {
             const f = document.getElementById('up-pdf').files[0];
-            if(!f) return alert("Selecione um PDF.");
+            if(!f) return alert("Selecione um arquivo.");
             const btn = event.currentTarget; btn.textContent = "Enviando..."; btn.disabled = true;
             
             const refF = refStore.child(f.name);
             await refF.put(f);
             const url = await refF.getDownloadURL();
 
-            const buffer = await f.arrayBuffer();
-            const pdf = await pdfjsLib.getDocument({data: buffer}).promise;
             let textoExtraido = "";
-            for(let i=1; i<=Math.min(pdf.numPages, 12); i++) {
-                let pag = await pdf.getPage(i);
-                let txt = await pag.getTextContent();
-                textoExtraido += txt.items.map(it => it.str).join(" ") + "\n";
+            if(f.type === "application/pdf") {
+                const buffer = await f.arrayBuffer();
+                const pdf = await pdfjsLib.getDocument({data: buffer}).promise;
+                for(let i=1; i<=Math.min(pdf.numPages, 10); i++) {
+                    let pag = await pdf.getPage(i);
+                    let txt = await pag.getTextContent();
+                    textoExtraido += txt.items.map(it => it.str).join(" ") + "\n";
+                }
+            } else {
+                textoExtraido = await f.text();
             }
 
-            await refDb.child('pdfs').push({nome: f.name, url: url, texto: textoExtraido.substring(0, 35000)});
-            btn.textContent = "Fazer Upload Seguro"; btn.disabled = false;
+            await refDb.child('pdfs').push({nome: f.name, url: url, texto: textoExtraido.substring(0, 30000)});
+            btn.textContent = "Enviar Material Seguro"; btn.disabled = false;
             document.getElementById('up-pdf').value = '';
-            alert("PDF enviado com sucesso!");
+            alert("Material indexado com sucesso!");
         }
 
         function atualizarSelectsPdf() {
@@ -469,27 +761,23 @@
             
             listDiv.innerHTML = '';
             selChat.innerHTML = '<option value="">Nenhum (Conhecimento geral)</option>';
-            selFc.innerHTML = '<option value="">Selecione o PDF</option>';
+            selFc.innerHTML = '<option value="">Selecione o Material</option>';
 
             meusPdfs.forEach(p => {
-                listDiv.innerHTML += `<div style="padding:10px; background:var(--bg-input); border-radius:8px; margin-top:5px; border:1px solid var(--border-color);">📄 ${sanitize(p.nome)}</div>`;
+                listDiv.innerHTML += `<div style="padding:6px; background:var(--bg-input); border-radius:6px; margin-top:4px;">📄 ${sanitize(p.nome)}</div>`;
                 selChat.innerHTML += `<option value="${p.id}">${sanitize(p.nome)}</option>`;
                 selFc.innerHTML += `<option value="${p.id}">${sanitize(p.nome)}</option>`;
             });
         }
 
-        // ================= ROTEADOR INTELIGENTE PRO / FLASH =================
-        async function chamarApiGemini(prompt) {
-            const isAdmin = (userAtual.uid === ADMIN_UID);
-            // Gemini 3.1 Pro para o Criador (Admin) e Gemini 3.6 Flash para os usuários
-            const modelo = isAdmin ? "gemini-3.1-pro-preview" : "gemini-3.6-flash";
-            
-            let apiKey = document.getElementById('user-api-key').value.trim();
+        // ================= MOTOR DA PRUMA IA (Roteamento Pro / Flash) =================
+        async function chamarApiGeminiEspecifica(prompt, modeloForcado) {
+            let apiKey = localStorage.getItem('pruma_user_apikey');
             if(!apiKey) {
-                apiKey = "SUA_API_KEY_AQUI"; // Chave fallback do sistema
+                apiKey = "SUA_API_KEY_PADRAO_AQUI"; // Fallback do sistema
             }
 
-            const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelo}:generateContent?key=${apiKey}`, {
+            const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modeloForcado}:generateContent?key=${apiKey}`, {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
@@ -497,6 +785,13 @@
             const data = await res.json();
             if(data.error) throw new Error(data.error.message);
             return data.candidates[0].content.parts[0].text;
+        }
+
+        async function chamarApiGemini(prompt) {
+            const isAdmin = (userAtual.uid === ADMIN_UID);
+            // Gemini 3.1 Pro para Admin, Gemini 3.6 Flash para os demais usuários
+            const modelo = isAdmin ? "gemini-3.1-pro-preview" : "gemini-3.6-flash";
+            return await chamarApiGeminiEspecifica(prompt, modelo);
         }
 
         async function executarPrumaIA(tipo) {
@@ -514,10 +809,10 @@
                     let contexto = "";
                     if(pdfId) {
                         let doc = meusPdfs.find(p => p.id === pdfId);
-                        if(doc) contexto = `\n[Contexto do PDF (${doc.nome})]:\n${doc.texto}`;
+                        if(doc) contexto = `\n[Material de Referência (${doc.nome})]:\n${doc.texto}`;
                     }
 
-                    let prompt = `Você é a PRUMA IA, mentora especialista em concursos públicos. Responda com rigor técnico e didática. ${contexto}\n\nPergunta: ${pergunta}`;
+                    let prompt = `Você é a PRUMA, mentora especialista em concursos públicos. Responda com precisão. ${contexto}\n\nPergunta: ${pergunta}`;
                     
                     box.innerHTML += `<div class="msg msg-a" id="loading-msg">Analisando...</div>`;
                     let resposta = await chamarApiGemini(prompt);
@@ -525,18 +820,22 @@
 
                     box.innerHTML += `<div class="msg msg-a"><strong>PRUMA:</strong><br>${sanitize(resposta).replace(/\n/g, '<br>')}</div>`;
                     box.scrollTop = box.scrollHeight;
+
+                    // Salva nas últimas 10 memórias do chat
+                    historicoChatMemoria.push({pergunta, resposta});
+                    if(historicoChatMemoria.length > 10) historicoChatMemoria.shift();
                 }
                 
                 else if(tipo === 'flashcards') {
                     const pdfId = document.getElementById('select-pdf-fc').value;
                     const tema = sanitize(document.getElementById('fc-tema').value);
                     const box = document.getElementById('box-fc');
-                    if(!pdfId) return alert("Selecione um PDF.");
+                    if(!pdfId) return alert("Selecione um material.");
 
                     let doc = meusPdfs.find(p => p.id === pdfId);
-                    let prompt = `Aja como especialista em memorização para concursos. Crie 5 flashcards em formato pergunta/resposta baseados neste texto:${doc.texto.substring(0, 15000)}. Tema: ${tema || 'Geral'}.`;
+                    let prompt = `Crie 5 flashcards de memorização ativa baseados neste texto:${doc.texto.substring(0, 15000)}. Tema: ${tema || 'Geral'}.`;
                     
-                    box.style.display = 'block'; box.innerHTML = "Gerando...";
+                    box.style.display = 'block'; box.innerHTML = "Gerando flashcards...";
                     let resposta = await chamarApiGemini(prompt);
                     box.innerHTML = `<strong>Flashcards:</strong><br>${sanitize(resposta).replace(/\n/g, '<br>')}`;
                 }
@@ -545,18 +844,25 @@
                     const box = document.getElementById('box-sim');
                     if(meuCadernoErros.length === 0) return alert("Caderno de erros vazio!");
 
-                    let resumoErros = meuCadernoErros.map(e => `[${e.disciplina}]: ${e.descricao}`).join("\n");
-                    let prompt = `Com base nestes erros:\n${resumoErros}\n\nCrie um mini-simulado com 3 questões de múltipla escolha (A, B, C, D) focadas em corrigir estas deficiências, com gabarito comentado.`;
+                    let resumoErros = meuCadernoErros.map(e => `[${e.disciplina} / ${e.assunto}]: ${e.descricao}`).join("\n");
+                    let prompt = `Com base nestes erros do aluno:\n${resumoErros}\n\nCrie 3 questões inéditas focadas em corrigir estas deficiências, com gabarito comentado.`;
 
-                    box.style.display = 'block'; box.innerHTML = "Criando simulado...";
+                    box.style.display = 'block'; box.innerHTML = "Gerando questões...";
                     let resposta = await chamarApiGemini(prompt);
-                    box.innerHTML = `<strong>Simulado PRUMA:</strong><br>${sanitize(resposta).replace(/\n/g, '<br>')}`;
+                    box.innerHTML = `<strong>Questões de Revisão:</strong><br>${sanitize(resposta).replace(/\n/g, '<br>')}`;
                 }
 
             } catch(e) {
                 alert("Erro na IA: " + e.message);
                 let l = document.getElementById('loading-msg'); if(l) l.remove();
             }
+        }
+
+        function refazerUltimaPergunta() {
+            if(historicoChatMemoria.length === 0) return alert("Nenhuma pergunta recente na memória.");
+            let ultima = historicoChatMemoria[historicoChatMemoria.length - 1];
+            document.getElementById('inp-chat').value = ultima.pergunta;
+            executarPrumaIA('tutor');
         }
     </script>
 </body>
