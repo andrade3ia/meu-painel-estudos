@@ -486,7 +486,7 @@
                 document.getElementById('tela-login').style.display = 'none'; document.getElementById('tela-painel').style.display = 'block';
                 
                 // Set Badge do Modelo IA
-                document.getElementById('badge-modelo-ia').textContent = (user.uid === ADMIN_UID) ? "Modelo: 3.1 PRO" : "Modelo: 3.6 FLASH";
+                document.getElementById('badge-modelo-ia').const modeloStr = (userAtual.uid === ADMIN_UID) ? "gemini-3.1-pro-preview" : "gemini-3.6-flash";
                 document.getElementById('badge-modelo-ia').className = "badge " + ((user.uid === ADMIN_UID) ? "primary" : "success");
 
                 carregarDadosDoBanco(); carregarApiKeySalva(); irTela('home');
