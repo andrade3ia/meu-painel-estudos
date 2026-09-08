@@ -5,13 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>PRUMA | Alto Rendimento</title>
     
-    <!-- Dependências Seguras -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js" crossorigin="anonymous"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
-    <!-- CSS: UI/UX SOFT, VIBRANT & INTUITIVE -->
     <style>
         :root {
             --bg-body: #f8fafc; --bg-card: #ffffff; --text-main: #1e293b; --text-muted: #64748b;
@@ -34,10 +32,8 @@
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 10px; }
 
-        /* Header Mobile */
         .mobile-header { display: none; background: rgba(var(--bg-card), 0.8); backdrop-filter: blur(10px); padding: 12px 20px; border-bottom: 1px solid var(--border-color); width: 100%; justify-content: space-between; align-items: center; z-index: 1000; }
         
-        /* Sidebar */
         .sidebar { width: 260px; background-color: var(--bg-card); border-right: 1px solid var(--border-color); display: flex; flex-direction: column; padding: 24px 16px; gap: 8px; z-index: 900; overflow-y: auto; }
         .sidebar-logo { display: flex; align-items: center; gap: 10px; margin-bottom: 24px; padding-left: 10px; }
         .sidebar-logo h1 { font-size: 1.5rem; margin: 0; font-weight: 800; color: var(--text-main); letter-spacing: -0.5px; }
@@ -47,11 +43,9 @@
         .nav-btn:hover { background: var(--bg-hover); color: var(--text-main); }
         .nav-btn.active { background: var(--brand-primary); color: white; box-shadow: 0 4px 6px rgba(99, 102, 241, 0.2); }
 
-        /* Content Area */
         .main-content { flex: 1; padding: 30px; overflow-y: auto; scroll-behavior: smooth; }
         .container-interno { max-width: 900px; margin: 0 auto; padding-bottom: 60px; }
         
-        /* Cards & Typography */
         .card { background-color: var(--bg-card); border-radius: var(--radius-md); padding: 24px; margin-bottom: 24px; border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); }
         .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 24px; }
         .stat-card { background: var(--bg-input); padding: 16px; border-radius: var(--radius-md); border: 1px solid var(--border-color); text-align: center; }
@@ -60,7 +54,6 @@
 
         h2 { margin: 0 0 16px 0; color: var(--text-main); font-size: 1.25rem; font-weight: 700; display: flex; align-items: center; gap: 8px; }
         
-        /* Inputs & Buttons */
         input, select, textarea { width: 100%; padding: 12px 14px; margin-bottom: 12px; background-color: var(--bg-input); border: 1px solid var(--border-color); border-radius: var(--radius-sm); color: var(--text-main); font-size: 0.95rem; outline: none; }
         input:focus, select:focus, textarea:focus { border-color: var(--brand-primary); box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1); }
         
@@ -70,7 +63,6 @@
         button.btn-outline:hover { background: var(--bg-hover); }
         button.btn-danger { background: var(--brand-danger); color: white; border: none; padding: 6px 12px; border-radius: var(--radius-sm); cursor: pointer; font-size: 0.8rem; font-weight: 600; }
 
-        /* Dynamic Lists & Tags */
         .badge { padding: 4px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: 700; background: var(--bg-input); color: var(--text-muted); }
         .badge.success { background: rgba(16, 185, 129, 0.1); color: var(--brand-success); }
         .badge.danger { background: rgba(239, 68, 68, 0.1); color: var(--brand-danger); }
@@ -79,23 +71,19 @@
         .list-item { padding: 16px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
         .list-item:last-child { border-bottom: none; padding-bottom: 0; }
 
-        /* Sub-abas */
         .pruma-sub-abas { display: flex; gap: 8px; margin-bottom: 20px; overflow-x: auto; background: var(--bg-input); padding: 6px; border-radius: var(--radius-md); }
         .sub-aba-btn { flex: 1; background: transparent; color: var(--text-muted); border: none; padding: 10px; border-radius: var(--radius-sm); cursor: pointer; font-weight: 600; font-size: 0.9rem; white-space: nowrap; }
         .sub-aba-btn.ativa { background: var(--bg-card); color: var(--brand-primary); box-shadow: var(--shadow-sm); }
 
-        /* PRUMA Chat */
         .chat-box { border: 1px solid var(--border-color); border-radius: var(--radius-md); height: 450px; overflow-y: auto; padding: 20px; background: var(--bg-body); display: flex; flex-direction: column; gap: 16px; margin-bottom: 16px; }
         .msg { padding: 14px 18px; border-radius: var(--radius-md); max-width: 85%; line-height: 1.5; font-size: 0.95rem; word-break: break-word; }
         .msg-u { background: var(--brand-primary); color: white; align-self: flex-end; border-bottom-right-radius: 4px; }
         .msg-a { background: var(--bg-card); border: 1px solid var(--border-color); align-self: flex-start; color: var(--text-main); border-bottom-left-radius: 4px; box-shadow: var(--shadow-sm); }
         
-        /* Modal */
         .modal { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); display:none; justify-content:center; align-items:center; z-index:2000; backdrop-filter: blur(4px); padding: 20px; }
         .modal-content { background:var(--bg-card); padding:32px; border-radius:var(--radius-lg); width:100%; max-width:550px; max-height:90vh; overflow-y:auto; box-shadow: var(--shadow-md); position: relative; }
         .modal-close { position: absolute; top: 16px; right: 16px; background: transparent; border: none; font-size: 1.2rem; cursor: pointer; color: var(--text-muted); }
 
-        /* Toast Notifications */
         #toast-container { position: fixed; bottom: 20px; right: 20px; display: flex; flex-direction: column; gap: 10px; z-index: 9999; }
         .toast { background: var(--bg-card); color: var(--text-main); padding: 16px 24px; border-radius: var(--radius-sm); box-shadow: var(--shadow-md); border-left: 4px solid var(--brand-primary); font-weight: 600; animation: slideIn 0.3s ease-out; }
         @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
@@ -110,7 +98,6 @@
         }
     </style>
 
-    <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
@@ -118,7 +105,6 @@
 </head>
 <body>
 
-    <!-- Header Mobile -->
     <header class="mobile-header">
         <h2 style="margin:0; font-size:1.3rem; font-weight:800; color:var(--text-main);">PRUMA <span style="color:var(--brand-primary)">IA</span></h2>
         <div style="display: flex; gap: 12px;">
@@ -127,7 +113,6 @@
         </div>
     </header>
 
-    <!-- Sidebar -->
     <aside id="sidebar-menu" class="sidebar">
         <div class="sidebar-logo">
             <h1>PRUMA <span>IA</span></h1>
@@ -149,7 +134,6 @@
 
     <main class="main-content" onclick="if(window.innerWidth<=768) document.getElementById('sidebar-menu').classList.remove('open')">
         
-        <!-- Tela de Login -->
         <div id="tela-login" class="card" style="max-width:400px; margin:80px auto; text-align:center;">
             <h1 style="color:var(--text-main); font-size:2rem; margin:0 0 10px 0; font-weight:800;">PRUMA <span style="color:var(--brand-primary)">IA</span></h1>
             <p style="color:var(--text-muted); margin-bottom:30px;">Faça login para acessar o ecossistema de alto rendimento.</p>
@@ -160,7 +144,6 @@
 
         <div id="tela-painel" class="container-interno" style="display:none;">
             
-            <!-- VIEW: INÍCIO E REGISTROS -->
             <div id="view-home">
                 <h2>Resumo do Dia (Hoje)</h2>
                 <div class="stats-grid">
@@ -176,7 +159,6 @@
                         <button class="btn-outline" onclick="pausarCronometro()">⏸ Pausar</button>
                     </div>
 
-                    <!-- Formulário Inteligente de Registro -->
                     <div id="form-sessao" style="display:none; margin-top:30px; text-align:left; background:var(--bg-card); padding:24px; border-radius:var(--radius-md); border:1px solid var(--border-color); box-shadow:var(--shadow-md);">
                         <h3 style="margin-top:0; border-bottom:1px solid var(--border-color); padding-bottom:12px; display:flex; justify-content:space-between;">
                             Salvar Sessão 
@@ -238,7 +220,6 @@
                 </div>
             </div>
 
-            <!-- VIEW: MINHAS PROVAS -->
             <div id="view-provas" style="display:none;">
                 <div class="card">
                     <h2>Criar Nova Meta / Prova</h2>
@@ -253,7 +234,6 @@
                 <div id="lista-concursos-div" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap:16px;"></div>
             </div>
 
-            <!-- VIEW: EDITAL INTELIGENTE -->
             <div id="view-edital" style="display:none;">
                 <div class="card">
                     <h2>Edital Inteligente (Mapeamento)</h2>
@@ -274,7 +254,6 @@
                 </div>
             </div>
 
-            <!-- VIEW: CADERNO DE ERROS -->
             <div id="view-caderno" style="display:none;">
                 <div class="card">
                     <h2>Adicionar ao Caderno</h2>
@@ -291,7 +270,6 @@
                 </div>
             </div>
 
-            <!-- VIEW: ESTATÍSTICAS -->
             <div id="view-estatisticas" style="display:none;">
                 <div class="card">
                     <h2>Métricas de Estudo</h2>
@@ -326,7 +304,6 @@
                 </div>
             </div>
 
-            <!-- VIEW: PRUMA IA MULTI-FONTES -->
             <div id="view-pruma" style="display:none;">
                 <div class="card" style="border: 1px solid var(--brand-primary); padding:0; overflow:hidden;">
                     <div style="background:var(--brand-primary); padding:16px 24px;">
@@ -344,7 +321,6 @@
                             <button class="sub-aba-btn" onclick="mudarSubIa('arquivos', this)">📁 Gerenciar Fontes</button>
                         </div>
 
-                        <!-- CHAT -->
                         <div id="subia-tutor">
                             <div style="background:var(--bg-input); padding:16px; border-radius:var(--radius-sm); margin-bottom:16px; border:1px solid var(--border-color);">
                                 <strong style="font-size:0.9rem;">Fontes Habilitadas para esta Sessão:</strong>
@@ -364,7 +340,6 @@
                             </div>
                         </div>
 
-                        <!-- SIMULADOR -->
                         <div id="subia-simulador" style="display:none;">
                             <p style="color:var(--text-muted); font-size:0.95rem;">A PRUMA gera questões inéditas focadas nos seus pontos fracos e fontes selecionadas.</p>
                             <div id="checkboxes-pdfs-sim" style="background:var(--bg-input); padding:10px; border-radius:var(--radius-sm); margin-bottom:16px; max-height:100px; overflow-y:auto;"></div>
@@ -372,7 +347,6 @@
                             <div class="chat-box" id="box-sim" style="margin-top:16px; display:none;"></div>
                         </div>
 
-                        <!-- FLASHCARDS -->
                         <div id="subia-flashcards" style="display:none;">
                             <div style="display:flex; gap:12px; margin-bottom:12px;">
                                 <select id="fc-mat" style="flex:1;" onchange="atualizarTopicosFc()"><option value="">Selecionar Matéria Alvo</option></select>
@@ -387,7 +361,6 @@
                             <div class="chat-box" id="box-fc" style="margin-top:16px; display:none; background:transparent; border:none; padding:0; height:auto; overflow:visible;"></div>
                         </div>
 
-                        <!-- FONTES -->
                         <div id="subia-arquivos" style="display:none;">
                             <div style="display:flex; gap:20px; flex-wrap:wrap;">
                                 <div style="flex:1; min-width:250px; background:var(--bg-input); padding:20px; border-radius:var(--radius-sm);">
@@ -411,12 +384,10 @@
         </div>
     </main>
 
-    <!-- MODAL IMAGEM MOTIVACIONAL -->
     <div id="modal-imagem" class="modal" onclick="this.style.display='none'">
         <img id="img-modal-expand" src="" style="max-width:90%; max-height:90vh; border-radius:12px; box-shadow:0 10px 25px rgba(0,0,0,0.5); margin:auto; display:block;">
     </div>
 
-    <!-- MODAL API KEY (SessionStorage) -->
     <div id="modal-apikey" class="modal">
         <div class="modal-content">
             <button class="modal-close" onclick="document.getElementById('modal-apikey').style.display='none'">✖</button>
@@ -427,7 +398,6 @@
         </div>
     </div>
     
-    <!-- MODAL ADD MATERIA MANUAL -->
     <div id="modal-add-materia" class="modal">
         <div class="modal-content">
             <button class="modal-close" onclick="document.getElementById('modal-add-materia').style.display='none'">✖</button>
@@ -440,11 +410,9 @@
         </div>
     </div>
 
-    <!-- TOAST CONTAINER -->
     <div id="toast-container"></div>
 
     <script>
-        // CONFIGURAÇÃO FIREBASE (Substitua as chaves)
         const ADMIN_UID = "COLE_SEU_UID_DE_ADMIN_AQUI"; 
         
         const firebaseConfig = {
@@ -455,15 +423,14 @@
             storageBucket: "plataforma-de-estudos-98ec8.firebasestorage.app"
         };
         firebase.initializeApp(firebaseConfig);
-        const db = firebase.database(); const storage = firebase.storage();
+        const db = firebase.database(); 
+        const storage = firebase.storage();
 
-        // ESTADO GLOBAL
         let userAtual = null, refDb = null, refStore = null;
         let planejamentoEdital = [], meusConcursos = [], meuCadernoErros = [], sessoesHistorico = [], meusPdfs = [];
         let segundosEstudo = 0, cronometroInterval = null, chartRoscaInstance = null;
         const paletaCoresList = ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#3b82f6', '#14b8a6', '#64748b'];
 
-        // UTILITÁRIOS
         function sanitizeText(str) { return typeof str === 'string' ? DOMPurify.sanitize(str) : ''; }
         function showToast(msg) {
             const toast = document.createElement('div'); toast.className = 'toast'; toast.textContent = msg;
@@ -471,59 +438,92 @@
             setTimeout(() => { toast.remove(); }, 3000);
         }
 
-        // TEMA
         function alternarTema() { 
-            let html = document.documentElement; let novoTema = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-            html.setAttribute('data-theme', novoTema); localStorage.setItem('pruma_tema', novoTema);
+            let html = document.documentElement; 
+            let novoTema = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+            html.setAttribute('data-theme', novoTema); 
+            localStorage.setItem('pruma_tema', novoTema);
             if(document.getElementById('view-estatisticas').style.display === 'block') renderizarDashboardEstatisticas();
         }
-        if(localStorage.getItem('pruma_tema')==='dark') document.documentElement.setAttribute('data-theme', 'dark');
+        if(localStorage.getItem('pruma_tema') === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
 
-        // AUTENTICAÇÃO
         firebase.auth().onAuthStateChanged(user => {
             if(user) {
-                userAtual = user; refDb = db.ref('usuarios/' + user.uid); refStore = storage.ref('usuarios/' + user.uid + '/materiais');
-                document.getElementById('tela-login').style.display = 'none'; document.getElementById('tela-painel').style.display = 'block';
+                userAtual = user; 
+                refDb = db.ref('usuarios/' + user.uid); 
+                refStore = storage.ref('usuarios/' + user.uid + '/materiais');
+                document.getElementById('tela-login').style.display = 'none'; 
+                document.getElementById('tela-painel').style.display = 'block';
                 
-                // Set Badge do Modelo IA
                 document.getElementById('badge-modelo-ia').textContent = (user.uid === ADMIN_UID) ? "Modelo: 3.1 PRO" : "Modelo: 3.6 FLASH";
                 document.getElementById('badge-modelo-ia').className = "badge " + ((user.uid === ADMIN_UID) ? "primary" : "success");
 
-                carregarDadosDoBanco(); carregarApiKeySalva(); irTela('home');
+                carregarDadosDoBanco(); 
+                carregarApiKeySalva(); 
+                irTela('home');
             } else {
-                userAtual = null; document.getElementById('tela-login').style.display = 'block'; document.getElementById('tela-painel').style.display = 'none';
+                userAtual = null; 
+                document.getElementById('tela-login').style.display = 'block'; 
+                document.getElementById('tela-painel').style.display = 'none';
             }
         });
 
         function irTela(t, e) {
             ['home', 'provas', 'edital', 'caderno', 'estatisticas', 'pruma'].forEach(v => {
-                let el = document.getElementById('view-' + v); if(el) el.style.display = (v === t) ? 'block' : 'none';
+                let el = document.getElementById('view-' + v); 
+                if(el) el.style.display = (v === t) ? 'block' : 'none';
             });
             document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
             if(e && e.currentTarget) e.currentTarget.classList.add('active');
             if(window.innerWidth <= 768) document.getElementById('sidebar-menu').classList.remove('open');
             if(t === 'estatisticas') renderizarDashboardEstatisticas();
         }
+
         function mudarSubIa(sub, btn) {
             ['tutor', 'simulador', 'flashcards', 'arquivos'].forEach(s => {
-                let el = document.getElementById('subia-' + s); if(el) el.style.display = (s === sub) ? 'block' : 'none';
+                let el = document.getElementById('subia-' + s); 
+                if(el) el.style.display = (s === sub) ? 'block' : 'none';
             });
-            document.querySelectorAll('.sub-aba-btn').forEach(b => b.classList.remove('ativa')); if(btn) btn.classList.add('ativa');
+            document.querySelectorAll('.sub-aba-btn').forEach(b => b.classList.remove('ativa')); 
+            if(btn) btn.classList.add('ativa');
         }
 
-        // API KEY SESSÃO
         function salvarApiKeyUser() {
             let k = document.getElementById('input-apikey-user').value.trim();
-            if(k) { sessionStorage.setItem('pruma_user_apikey', k); showToast("API Key salva na sessão!"); document.getElementById('modal-apikey').style.display = 'none'; }
+            if(k) { 
+                sessionStorage.setItem('pruma_user_apikey', k); 
+                showToast("API Key salva na sessão!"); 
+                document.getElementById('modal-apikey').style.display = 'none'; 
+            }
         }
-        function carregarApiKeySalva() { let k = sessionStorage.getItem('pruma_user_apikey'); if(k) document.getElementById('input-apikey-user').value = k; }
+        function carregarApiKeySalva() { 
+            let k = sessionStorage.getItem('pruma_user_apikey'); 
+            if(k) document.getElementById('input-apikey-user').value = k; 
+        }
 
-        // SESSÃO E REGISTROS
-        function iniciarCronometro() { document.getElementById('form-sessao').style.display = 'none'; if(!cronometroInterval) { cronometroInterval = setInterval(() => { segundosEstudo++; atualizarVisorCronometro(); }, 1000); } }
-        function pausarCronometro() { clearInterval(cronometroInterval); cronometroInterval = null; if(segundosEstudo > 0) { document.getElementById('form-sessao').style.display = 'block'; } }
+        function iniciarCronometro() { 
+            document.getElementById('form-sessao').style.display = 'none'; 
+            if(!cronometroInterval) { 
+                cronometroInterval = setInterval(() => { 
+                    segundosEstudo++; 
+                    atualizarVisorCronometro(); 
+                }, 1000); 
+            } 
+        }
+        function pausarCronometro() { 
+            clearInterval(cronometroInterval); 
+            cronometroInterval = null; 
+            if(segundosEstudo > 0) { 
+                document.getElementById('form-sessao').style.display = 'block'; 
+            } 
+        }
         function atualizarVisorCronometro() {
-            let h = Math.floor(segundosEstudo / 3600).toString().padStart(2, '0'); let m = Math.floor((segundosEstudo % 3600) / 60).toString().padStart(2, '0'); let s = (segundosEstudo % 60).toString().padStart(2, '0');
-            let tempoStr = `${h}:${m}:${s}`; document.getElementById('cronometro-visor').textContent = tempoStr; document.getElementById('sidebar-total-horas').textContent = tempoStr;
+            let h = Math.floor(segundosEstudo / 3600).toString().padStart(2, '0'); 
+            let m = Math.floor((segundosEstudo % 3600) / 60).toString().padStart(2, '0'); 
+            let s = (segundosEstudo % 60).toString().padStart(2, '0');
+            let tempoStr = `${h}:${m}:${s}`; 
+            document.getElementById('cronometro-visor').textContent = tempoStr; 
+            document.getElementById('sidebar-total-horas').textContent = tempoStr;
         }
         
         function toggleCamposDetalhes() {
@@ -532,66 +532,101 @@
             document.getElementById('campos-video').style.display = (mat === 'Vídeo Aula') ? 'flex' : 'none';
         }
 
-        document.getElementById('ses-mat').addEventListener('change', function() {
-            document.getElementById('ses-mat-nova').style.display = (this.value === 'NOVA') ? 'block' : 'none';
-        });
-        document.getElementById('ses-top').addEventListener('change', function() {
-            document.getElementById('ses-top-novo').style.display = (this.value === 'NOVO') ? 'block' : 'none';
+        document.addEventListener('DOMContentLoaded', () => {
+            const sesMatEl = document.getElementById('ses-mat');
+            if(sesMatEl) {
+                sesMatEl.addEventListener('change', function() {
+                    document.getElementById('ses-mat-nova').style.display = (this.value === 'NOVA') ? 'block' : 'none';
+                });
+            }
+            const sesTopEl = document.getElementById('ses-top');
+            if(sesTopEl) {
+                sesTopEl.addEventListener('change', function() {
+                    document.getElementById('ses-top-novo').style.display = (this.value === 'NOVO') ? 'block' : 'none';
+                });
+            }
         });
 
         function confirmarSalvarSessao() {
             let acertos = parseInt(document.getElementById('ses-acertos').value) || 0;
             let erros = parseInt(document.getElementById('ses-erros').value) || 0;
-            let matSel = document.getElementById('ses-mat').value; let matFinal = matSel === 'NOVA' ? document.getElementById('ses-mat-nova').value : matSel;
-            let topSel = document.getElementById('ses-top').value; let topFinal = topSel === 'NOVO' ? document.getElementById('ses-top-novo').value : topSel;
+            let matSel = document.getElementById('ses-mat').value; 
+            let matFinal = matSel === 'NOVA' ? document.getElementById('ses-mat-nova').value : matSel;
+            let topSel = document.getElementById('ses-top').value; 
+            let topFinal = topSel === 'NOVO' ? document.getElementById('ses-top-novo').value : topSel;
             
             if(!matFinal) return alert("Selecione ou digite uma matéria.");
 
             let registro = {
                 id: Date.now().toString(),
                 segundos: segundosEstudo,
-                materia: sanitizeText(matFinal), topico: sanitizeText(topFinal),
+                materia: sanitizeText(matFinal), 
+                topico: sanitizeText(topFinal),
                 tipoEstudo: document.getElementById('ses-tipo-estudo').value,
                 tipoMaterial: document.getElementById('ses-tipo-mat').value,
-                acertos: acertos, erros: erros, totalQuestoes: acertos + erros,
+                acertos: acertos, 
+                erros: erros, 
+                totalQuestoes: acertos + erros,
                 obs: sanitizeText(document.getElementById('ses-obs').value),
-                dataHora: new Date().toLocaleString('pt-BR'), timestamp: Date.now()
+                dataHora: new Date().toLocaleString('pt-BR'), 
+                timestamp: Date.now()
             };
 
             if(registro.tipoMaterial === 'PDF') {
-                registro.pIni = parseInt(document.getElementById('ses-pdf-ini').value)||0; registro.pFim = parseInt(document.getElementById('ses-pdf-fim').value)||0;
+                registro.pIni = parseInt(document.getElementById('ses-pdf-ini').value)||0; 
+                registro.pFim = parseInt(document.getElementById('ses-pdf-fim').value)||0;
                 registro.paginas = Math.max(0, registro.pFim - registro.pIni + 1);
             } else if(registro.tipoMaterial === 'Vídeo Aula') {
-                registro.vIni = parseInt(document.getElementById('ses-vid-ini').value)||0; registro.vFim = parseInt(document.getElementById('ses-vid-fim').value)||0;
+                registro.vIni = parseInt(document.getElementById('ses-vid-ini').value)||0; 
+                registro.vFim = parseInt(document.getElementById('ses-vid-fim').value)||0;
                 registro.videos = Math.max(0, registro.vFim - registro.vIni + 1);
             }
             
-            sessoesHistorico.push(registro); refDb.child('historico_sessoes').set(sessoesHistorico);
+            sessoesHistorico.push(registro); 
+            refDb.child('historico_sessoes').set(sessoesHistorico);
             
-            // Auto-salvar no edital se for matéria nova
             if(matSel === 'NOVA' || topSel === 'NOVO') {
                 let idx = planejamentoEdital.findIndex(x => x.disciplina === matFinal);
-                if(idx !== -1) { if(topFinal && !planejamentoEdital[idx].topicos.includes(topFinal)) planejamentoEdital[idx].topicos.push(topFinal); } 
-                else { planejamentoEdital.push({disciplina: matFinal, topicos: topFinal ? [topFinal] : []}); }
+                if(idx !== -1) { 
+                    if(topFinal && !planejamentoEdital[idx].topicos.includes(topFinal)) {
+                        planejamentoEdital[idx].topicos.push(topFinal);
+                    }
+                } else { 
+                    planejamentoEdital.push({disciplina: matFinal, topicos: topFinal ? [topFinal] : []}); 
+                }
                 refDb.child('planejamento').set(planejamentoEdital);
             }
 
-            showToast("Registro Salvo!"); segundosEstudo = 0; atualizarVisorCronometro(); document.getElementById('form-sessao').style.display = 'none';
+            showToast("Registro Salvo!"); 
+            segundosEstudo = 0; 
+            atualizarVisorCronometro(); 
+            document.getElementById('form-sessao').style.display = 'none';
         }
 
         function excluirRegistroSessao(id) {
-            if(confirm("Excluir este registro?")) { sessoesHistorico = sessoesHistorico.filter(s => s.id !== id); refDb.child('historico_sessoes').set(sessoesHistorico); }
+            if(confirm("Excluir este registro?")) { 
+                sessoesHistorico = sessoesHistorico.filter(s => s.id !== id); 
+                refDb.child('historico_sessoes').set(sessoesHistorico); 
+            }
         }
 
         function renderizarRegistrosIniciais() {
-            let div = document.getElementById('lista-ultimos-registros'); div.innerHTML = '';
-            let hojeQs = 0, hojeAcertos = 0, hojeSegs = 0; let agora = Date.now();
+            let div = document.getElementById('lista-ultimos-registros'); 
+            div.innerHTML = '';
+            let hojeQs = 0, hojeAcertos = 0, hojeSegs = 0; 
+            let agora = Date.now();
             
             let ultimos = [...sessoesHistorico].reverse().slice(0, 15);
-            if(ultimos.length === 0) { div.innerHTML = "<p>Nenhum registro.</p>"; }
+            if(ultimos.length === 0) { 
+                div.innerHTML = "<p>Nenhum registro.</p>"; 
+            }
 
             sessoesHistorico.forEach(s => {
-                if((agora - s.timestamp) <= 86400000) { hojeQs += (s.totalQuestoes||0); hojeAcertos += (s.acertos||0); hojeSegs += s.segundos; }
+                if((agora - s.timestamp) <= 86400000) { 
+                    hojeQs += (s.totalQuestoes||0); 
+                    hojeAcertos += (s.acertos||0); 
+                    hojeSegs += s.segundos; 
+                }
             });
 
             document.getElementById('stat-hj-tempo').textContent = `${Math.floor(hojeSegs/3600)}h ${Math.floor((hojeSegs%3600)/60)}m`;
@@ -625,25 +660,45 @@
             });
         }
 
-        // MINHAS PROVAS
         async function salvarConcurso() {
-            let nome = sanitizeText(document.getElementById('conc-nome').value.trim()), data = document.getElementById('conc-data').value, file = document.getElementById('conc-foto-file').files[0];
+            let nome = sanitizeText(document.getElementById('conc-nome').value.trim());
+            let data = document.getElementById('conc-data').value;
+            let file = document.getElementById('conc-foto-file').files[0];
             if(!nome || !data) return alert("Preencha nome e data.");
-            let id = Date.now().toString(); let fotoUrl = ""; 
-            if(file) { let refF = refStore.child('provas/'+id); await refF.put(file); fotoUrl = await refF.getDownloadURL(); }
-            meusConcursos.push({id, nome, data, fotoUrl}); refDb.child('concursos').set(meusConcursos); showToast("Prova Criada!");
+            let id = Date.now().toString(); 
+            let fotoUrl = ""; 
+            if(file) { 
+                let refF = refStore.child('provas/'+id); 
+                await refF.put(file); 
+                fotoUrl = await refF.getDownloadURL(); 
+            }
+            meusConcursos.push({id, nome, data, fotoUrl}); 
+            refDb.child('concursos').set(meusConcursos); 
+            showToast("Prova Criada!");
         }
-        function excluirProva(id) { if(confirm("Excluir esta prova? Todo o edital vinculado a ela não será apagado, mas perderá o vínculo.")) { meusConcursos = meusConcursos.filter(c => c.id !== id); refDb.child('concursos').set(meusConcursos); } }
-        function expandirImg(url) { document.getElementById('img-modal-expand').src = url; document.getElementById('modal-imagem').style.display = 'flex'; }
+        function excluirProva(id) { 
+            if(confirm("Excluir esta prova?")) { 
+                meusConcursos = meusConcursos.filter(c => c.id !== id); 
+                refDb.child('concursos').set(meusConcursos); 
+            } 
+        }
+        function expandirImg(url) { 
+            document.getElementById('img-modal-expand').src = url; 
+            document.getElementById('modal-imagem').style.display = 'flex'; 
+        }
         
         function renderizarConcursos() {
-            let div = document.getElementById('lista-concursos-div'); div.innerHTML = '';
-            let sEdital = document.getElementById('edital-prova-select'); let sMatModal = document.getElementById('modal-mat-prova');
-            sEdital.innerHTML = '<option value="">Nenhuma (Edital Geral)</option>'; sMatModal.innerHTML = '<option value="">Geral</option>';
+            let div = document.getElementById('lista-concursos-div'); 
+            div.innerHTML = '';
+            let sEdital = document.getElementById('edital-prova-select'); 
+            let sMatModal = document.getElementById('modal-mat-prova');
+            sEdital.innerHTML = '<option value="">Nenhuma (Edital Geral)</option>'; 
+            sMatModal.innerHTML = '<option value="">Geral</option>';
             
             meusConcursos.forEach(c => {
                 let dias = Math.ceil((new Date(c.data) - new Date()) / (1000 * 60 * 60 * 24));
-                sEdital.innerHTML += `<option value="${c.id}">${sanitizeText(c.nome)}</option>`; sMatModal.innerHTML += `<option value="${c.id}">${sanitizeText(c.nome)}</option>`;
+                sEdital.innerHTML += `<option value="${c.id}">${sanitizeText(c.nome)}</option>`; 
+                sMatModal.innerHTML += `<option value="${c.id}">${sanitizeText(c.nome)}</option>`;
                 
                 div.innerHTML += `
                 <div class="card" style="padding:0; overflow:hidden; display:flex; flex-direction:column;">
@@ -658,41 +713,74 @@
             });
         }
 
-        // EDITAL & MATÉRIAS
         async function processarEditalAutomatico(btn) {
-            const apiKey = sessionStorage.getItem('pruma_user_apikey'); if(!apiKey) return alert("Configure a API Key da IA primeiro.");
-            let texto = document.getElementById('edital-gigante').value.trim(); let pId = document.getElementById('edital-prova-select').value;
+            const apiKey = sessionStorage.getItem('pruma_user_apikey'); 
+            if(!apiKey) return alert("Configure a API Key da IA primeiro.");
+            let texto = document.getElementById('edital-gigante').value.trim(); 
+            let pId = document.getElementById('edital-prova-select').value;
             if(!texto) return alert("Cole o texto do edital.");
-            const txOriginal = btn.textContent; btn.disabled = true; btn.textContent = "Analisando com IA...";
+            const txOriginal = btn.textContent; 
+            btn.disabled = true; 
+            btn.textContent = "Analisando com IA...";
             let prompt = `Organize o edital em JSON puro (array de objetos): [{"disciplina": "Nome", "topicos": ["T1", "T2"]}]. Sem markdown extra. Texto:\n${texto.substring(0,25000)}`;
             try {
-                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({contents:[{parts:[{text:prompt}]}]}) });
-                const data = await res.json(); if(data.error) throw new Error(data.error.message);
+                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, { 
+                    method:'POST', 
+                    headers:{'Content-Type':'application/json'}, 
+                    body:JSON.stringify({contents:[{parts:[{text:prompt}]}]}) 
+                });
+                const data = await res.json(); 
+                if(data.error) throw new Error(data.error.message);
                 let respostaTxt = data.candidates[0].content.parts[0].text;
                 let editalExtraido = JSON.parse(respostaTxt.match(/\[.*\]/s)[0]);
                 
                 editalExtraido.forEach(nova => {
-                    let obj = { disciplina: nova.disciplina, topicos: nova.topicos }; if(pId) obj.provaId = pId;
+                    let obj = { disciplina: nova.disciplina, topicos: nova.topicos }; 
+                    if(pId) obj.provaId = pId;
                     let idx = planejamentoEdital.findIndex(x => x.disciplina === nova.disciplina && x.provaId === pId);
-                    if(idx !== -1) { obj.topicos.forEach(t => { if(!planejamentoEdital[idx].topicos.includes(t)) planejamentoEdital[idx].topicos.push(t); }); } else { planejamentoEdital.push(obj); }
+                    if(idx !== -1) { 
+                        obj.topicos.forEach(t => { 
+                            if(!planejamentoEdital[idx].topicos.includes(t)) planejamentoEdital[idx].topicos.push(t); 
+                        }); 
+                    } else { 
+                        planejamentoEdital.push(obj); 
+                    }
                 });
-                refDb.child('planejamento').set(planejamentoEdital); document.getElementById('edital-gigante').value = ''; showToast("Edital Mapeado!");
-            } catch(e) { alert("Falha: " + e.message); } finally { btn.disabled = false; btn.textContent = txOriginal; }
+                refDb.child('planejamento').set(planejamentoEdital); 
+                document.getElementById('edital-gigante').value = ''; 
+                showToast("Edital Mapeado!");
+            } catch(e) { 
+                alert("Falha: " + e.message); 
+            } finally { 
+                btn.disabled = false; 
+                btn.textContent = txOriginal; 
+            }
         }
         
         function adicionarMateriaManual() {
-            let pId = document.getElementById('modal-mat-prova').value, m = sanitizeText(document.getElementById('modal-mat-nome').value.trim()), t = sanitizeText(document.getElementById('modal-mat-topico').value.trim());
+            let pId = document.getElementById('modal-mat-prova').value;
+            let m = sanitizeText(document.getElementById('modal-mat-nome').value.trim());
+            let t = sanitizeText(document.getElementById('modal-mat-topico').value.trim());
             if(!m) return;
             let idx = planejamentoEdital.findIndex(x => x.disciplina === m && x.provaId === pId);
-            if(idx !== -1) { if(t) planejamentoEdital[idx].topicos.push(t); } else { planejamentoEdital.push({provaId: pId, disciplina: m, topicos: t ? [t] : []}); }
-            refDb.child('planejamento').set(planejamentoEdital); document.getElementById('modal-add-materia').style.display='none';
+            if(idx !== -1) { 
+                if(t) planejamentoEdital[idx].topicos.push(t); 
+            } else { 
+                planejamentoEdital.push({provaId: pId, disciplina: m, topicos: t ? [t] : []}); 
+            }
+            refDb.child('planejamento').set(planejamentoEdital); 
+            document.getElementById('modal-add-materia').style.display='none';
         }
 
         function renderizarEdital() {
-            let div = document.getElementById('lista-materias-div'); div.innerHTML = '';
-            // Agrupar por Prova
+            let div = document.getElementById('lista-materias-div'); 
+            div.innerHTML = '';
             let grupos = { 'geral': [] };
-            planejamentoEdital.forEach((item, idx) => { let pId = item.provaId || 'geral'; if(!grupos[pId]) grupos[pId] = []; grupos[pId].push({...item, originalIdx: idx}); });
+            planejamentoEdital.forEach((item, idx) => { 
+                let pId = item.provaId || 'geral'; 
+                if(!grupos[pId]) grupos[pId] = []; 
+                grupos[pId].push({...item, originalIdx: idx}); 
+            });
             
             for(let pId in grupos) {
                 if(grupos[pId].length === 0) continue;
@@ -706,53 +794,109 @@
             }
             atualizarSelectsFormularios();
         }
-        function removerTopico(idD, idT, e) { e.stopPropagation(); if(confirm("Excluir tópico?")) { planejamentoEdital[idD].topicos.splice(idT, 1); if(planejamentoEdital[idD].topicos.length === 0) planejamentoEdital.splice(idD, 1); refDb.child('planejamento').set(planejamentoEdital); } }
+        function removerTopico(idD, idT, e) { 
+            e.stopPropagation(); 
+            if(confirm("Excluir tópico?")) { 
+                planejamentoEdital[idD].topicos.splice(idT, 1); 
+                if(planejamentoEdital[idD].topicos.length === 0) planejamentoEdital.splice(idD, 1); 
+                refDb.child('planejamento').set(planejamentoEdital); 
+            } 
+        }
 
         function atualizarSelectsFormularios() {
-            let sMat = document.getElementById('ses-mat'), fcMat = document.getElementById('fc-mat'), errMat = document.getElementById('err-disc');
+            let sMat = document.getElementById('ses-mat');
+            let fcMat = document.getElementById('fc-mat');
+            let errMat = document.getElementById('err-disc');
+            if(!sMat || !fcMat || !errMat) return;
+            
             let materiasUnicas = [...new Set(planejamentoEdital.map(x => x.disciplina))].sort();
             
             let hM = '<option value="">Selecione ou adicione...</option><option value="NOVA">+ Nova Matéria</option>';
-            let hF = '<option value="">Selecionar Matéria Alvo</option>', hE = '<option value="">Selecione a Matéria</option>';
-            materiasUnicas.forEach(m => { let sm = sanitizeText(m); hM+=`<option value="${sm}">${sm}</option>`; hF+=`<option value="${sm}">${sm}</option>`; hE+=`<option value="${sm}">${sm}</option>`; });
+            let hF = '<option value="">Selecionar Matéria Alvo</option>';
+            let hE = '<option value="">Selecione a Matéria</option>';
             
-            sMat.innerHTML = hM; fcMat.innerHTML = hF; errMat.innerHTML = hE;
+            materiasUnicas.forEach(m => { 
+                let sm = sanitizeText(m); 
+                hM += `<option value="${sm}">${sm}</option>`; 
+                hF += `<option value="${sm}">${sm}</option>`; 
+                hE += `<option value="${sm}">${sm}</option>`; 
+            });
+            
+            sMat.innerHTML = hM; 
+            fcMat.innerHTML = hF; 
+            errMat.innerHTML = hE;
         }
         function atualizarTopicosSessao() {
-            let sel = document.getElementById('ses-mat').value, sTop = document.getElementById('ses-top');
+            let sel = document.getElementById('ses-mat').value;
+            let sTop = document.getElementById('ses-top');
             sTop.innerHTML = '<option value="">Selecione o Tópico</option><option value="NOVO">+ Novo Tópico</option>';
-            planejamentoEdital.filter(x => x.disciplina === sel).forEach(x => { x.topicos.forEach(t => { sTop.innerHTML += `<option value="${sanitizeText(t)}">${sanitizeText(t)}</option>`; }); });
+            planejamentoEdital.filter(x => x.disciplina === sel).forEach(x => { 
+                x.topicos.forEach(t => { 
+                    sTop.innerHTML += `<option value="${sanitizeText(t)}">${sanitizeText(t)}</option>`; 
+                }); 
+            });
         }
 
-        // CADERNO DE ERROS
         function atualizarTopicosCaderno() {
-            let sel = document.getElementById('err-disc').value, sTop = document.getElementById('err-assunto'); sTop.innerHTML = '<option value="">Selecione o Tópico</option>';
-            planejamentoEdital.filter(x => x.disciplina === sel).forEach(x => { x.topicos.forEach(t => { sTop.innerHTML += `<option value="${sanitizeText(t)}">${sanitizeText(t)}</option>`; }); });
+            let sel = document.getElementById('err-disc').value;
+            let sTop = document.getElementById('err-assunto');
+            sTop.innerHTML = '<option value="">Selecione o Tópico</option>';
+            planejamentoEdital.filter(x => x.disciplina === sel).forEach(x => { 
+                x.topicos.forEach(t => { 
+                    sTop.innerHTML += `<option value="${sanitizeText(t)}">${sanitizeText(t)}</option>`; 
+                }); 
+            });
         }
         function atualizarTopicosFc() {
-            let sel = document.getElementById('fc-mat').value, sTop = document.getElementById('fc-top'); sTop.innerHTML = '<option value="">Selecione o Tópico</option>';
-            planejamentoEdital.filter(x => x.disciplina === sel).forEach(x => { x.topicos.forEach(t => { sTop.innerHTML += `<option value="${sanitizeText(t)}">${sanitizeText(t)}</option>`; }); });
+            let sel = document.getElementById('fc-mat').value;
+            let sTop = document.getElementById('fc-top');
+            sTop.innerHTML = '<option value="">Selecione o Tópico</option>';
+            planejamentoEdital.filter(x => x.disciplina === sel).forEach(x => { 
+                x.topicos.forEach(t => { 
+                    sTop.innerHTML += `<option value="${sanitizeText(t)}">${sanitizeText(t)}</option>`; 
+                }); 
+            });
         }
         
         function salvarErroManual() {
-            let d = document.getElementById('err-disc').value, a = document.getElementById('err-assunto').value, e = document.getElementById('err-desc').value.trim();
+            let d = document.getElementById('err-disc').value;
+            let a = document.getElementById('err-assunto').value;
+            let e = document.getElementById('err-desc').value.trim();
             if(!d || !e) return alert("Preencha Matéria e Descrição.");
-            meuCadernoErros.push({id: Date.now().toString(), disciplina:d, assunto:a||'Geral', descricao:e}); refDb.child('caderno_erros').set(meuCadernoErros); document.getElementById('err-desc').value = ''; showToast("Salvo no Caderno!");
+            meuCadernoErros.push({id: Date.now().toString(), disciplina: d, assunto: a || 'Geral', descricao: e}); 
+            refDb.child('caderno_erros').set(meuCadernoErros); 
+            document.getElementById('err-desc').value = ''; 
+            showToast("Salvo no Caderno!");
         }
-        function excluirErro(id) { if(confirm("Apagar este erro?")) { meuCadernoErros = meuCadernoErros.filter(e => e.id !== id); refDb.child('caderno_erros').set(meuCadernoErros); } }
+        function excluirErro(id) { 
+            if(confirm("Apagar este erro?")) { 
+                meuCadernoErros = meuCadernoErros.filter(e => e.id !== id); 
+                refDb.child('caderno_erros').set(meuCadernoErros); 
+            } 
+        }
         
         function renderizarCaderno() {
-            let div = document.getElementById('lista-erros-div'); div.innerHTML = ''; let agr = {};
-            meuCadernoErros.forEach(e => { if(!agr[e.disciplina]) agr[e.disciplina]={}; if(!agr[e.disciplina][e.assunto]) agr[e.disciplina][e.assunto]=[]; agr[e.disciplina][e.assunto].push(e); });
+            let div = document.getElementById('lista-erros-div'); 
+            div.innerHTML = ''; 
+            let agr = {};
+            meuCadernoErros.forEach(e => { 
+                if(!agr[e.disciplina]) agr[e.disciplina] = {}; 
+                if(!agr[e.disciplina][e.assunto]) agr[e.disciplina][e.assunto] = []; 
+                agr[e.disciplina][e.assunto].push(e); 
+            });
             for(let d in agr) {
-                let htmlA = ""; for(let a in agr[d]) { htmlA += `<div style="font-weight:700; margin:16px 0 8px 0; font-size:0.95rem; color:var(--brand-primary);">📌 ${sanitizeText(a)}</div>` + agr[d][a].map(n => `<div style="padding:12px; background:var(--bg-input); margin-bottom:8px; border-radius:var(--radius-sm); border:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:flex-start;"><span style="flex:1;">${sanitizeText(n.descricao)}</span><button class="btn-danger" style="margin-left:10px;" onclick="excluirErro('${n.id}')">✖</button></div>`).join(''); }
+                let htmlA = ""; 
+                for(let a in agr[d]) { 
+                    htmlA += `<div style="font-weight:700; margin:16px 0 8px 0; font-size:0.95rem; color:var(--brand-primary);">📌 ${sanitizeText(a)}</div>` + 
+                    agr[d][a].map(n => `<div style="padding:12px; background:var(--bg-input); margin-bottom:8px; border-radius:var(--radius-sm); border:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:flex-start;"><span style="flex:1;">${sanitizeText(n.descricao)}</span><button class="btn-danger" style="margin-left:10px;" onclick="excluirErro('${n.id}')">✖</button></div>`).join(''); 
+                }
                 div.innerHTML += `<div class="card" style="padding:0; margin-bottom:12px;"><div class="pasta-header" onclick="this.nextElementSibling.classList.toggle('aberta')"><span>📁 ${sanitizeText(d)}</span><span>▼</span></div><div class="pasta-body">${htmlA}</div></div>`;
             }
         }
 
-        // ESTATÍSTICAS AVANÇADAS
         function renderizarDashboardEstatisticas() {
-            const periodo = document.getElementById('filtro-periodo').value; const tipoGrafico = document.getElementById('filtro-grafico').value;
+            const periodo = document.getElementById('filtro-periodo').value; 
+            const tipoGrafico = document.getElementById('filtro-grafico').value;
             const ctx = document.getElementById('graficoDinamico').getContext('2d');
             if(chartRoscaInstance) chartRoscaInstance.destroy();
 
@@ -765,24 +909,45 @@
 
             let dadosAgrupados = {};
             sessoesFiltradas.forEach(s => {
-                totHoras += s.segundos; totQts += (s.totalQuestoes||0); totPags += (s.paginas||0); totVids += (s.videos||0);
+                totHoras += s.segundos; 
+                totQts += (s.totalQuestoes||0); 
+                totPags += (s.paginas||0); 
+                totVids += (s.videos||0);
                 dadosAgrupados[s.materia||'Geral'] = (dadosAgrupados[s.materia||'Geral'] || 0) + (s.segundos / 60);
             });
 
             document.getElementById('stat-tot-horas').textContent = `${Math.floor(totHoras/3600)}h ${Math.floor((totHoras%3600)/60)}m`;
-            document.getElementById('stat-tot-qts').textContent = totQts; document.getElementById('stat-tot-pags').textContent = totPags; document.getElementById('stat-tot-vids').textContent = totVids;
+            document.getElementById('stat-tot-qts').textContent = totQts; 
+            document.getElementById('stat-tot-pags').textContent = totPags; 
+            document.getElementById('stat-tot-vids').textContent = totVids;
 
             let isDark = document.documentElement.getAttribute('data-theme') === 'dark';
             let textColor = isDark ? '#f8fafc' : '#1e293b';
 
             chartRoscaInstance = new Chart(ctx, {
                 type: tipoGrafico,
-                data: { labels: Object.keys(dadosAgrupados).length>0 ? Object.keys(dadosAgrupados) : ['Sem dados'], datasets: [{ label: 'Minutos Estudados', data: Object.values(dadosAgrupados).length>0 ? Object.values(dadosAgrupados) : [1], backgroundColor: paletaCoresList, borderWidth: 0, borderRadius: tipoGrafico==='bar'?4:0 }] },
-                options: { responsive: true, maintainAspectRatio: false, color: textColor, plugins: { legend: { position: 'bottom', labels: { color: textColor } } }, scales: tipoGrafico === 'bar' ? { x: { ticks:{color:textColor} }, y: { ticks:{color:textColor} } } : {} }
+                data: { 
+                    labels: Object.keys(dadosAgrupados).length > 0 ? Object.keys(dadosAgrupados) : ['Sem dados'], 
+                    datasets: [{ 
+                        label: 'Minutos Estudados', 
+                        data: Object.values(dadosAgrupados).length > 0 ? Object.values(dadosAgrupados) : [1], 
+                        backgroundColor: paletaCoresList, 
+                        borderWidth: 0, 
+                        borderRadius: tipoGrafico==='bar'?4:0 
+                    }] 
+                },
+                options: { 
+                    responsive: true, 
+                    maintainAspectRatio: false, 
+                    color: textColor, 
+                    plugins: { 
+                        legend: { position: 'bottom', labels: { color: textColor } } 
+                    }, 
+                    scales: tipoGrafico === 'bar' ? { x: { ticks:{color:textColor} }, y: { ticks:{color:textColor} } } : {} 
+                }
             });
         }
 
-        // DADOS E LOAD
         function carregarDadosDoBanco() {
             refDb.child('planejamento').on('value', snap => { planejamentoEdital = snap.val() || []; renderizarEdital(); });
             refDb.child('caderno_erros').on('value', snap => { meuCadernoErros = snap.val() || []; renderizarCaderno(); });
@@ -791,21 +956,34 @@
             refDb.child('historico_sessoes').on('value', snap => { let obj = snap.val() || {}; sessoesHistorico = Object.keys(obj).map(k => obj[k]); renderizarRegistrosIniciais(); if(document.getElementById('view-estatisticas').style.display==='block') renderizarDashboardEstatisticas(); });
         }
 
-        // FONTES E PRUMA IA
         async function enviarPdfNuvem() {
             const f = document.getElementById('up-pdf').files[0]; if(!f) return;
             const btn = event.currentTarget; const tx = btn.textContent;
             try {
                 btn.disabled = true; btn.textContent = "Lendo...";
-                const refF = refStore.child(Date.now()+'_'+f.name); await refF.put(f); const url = await refF.getDownloadURL();
+                const refF = refStore.child(Date.now()+'_'+f.name); 
+                await refF.put(f); 
+                const url = await refF.getDownloadURL();
                 let txt = "";
                 if(f.type === "application/pdf" || f.name.toLowerCase().endsWith('.pdf')) {
-                    const arrayBuffer = await f.arrayBuffer(); const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-                    for(let i = 1; i <= Math.min(pdf.numPages, 15); i++) { const cnt = await (await pdf.getPage(i)).getTextContent(); txt += cnt.items.map(it => it.str).join(" ") + "\n"; }
-                } else { txt = await f.text(); }
+                    const arrayBuffer = await f.arrayBuffer(); 
+                    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+                    for(let i = 1; i <= Math.min(pdf.numPages, 15); i++) { 
+                        const cnt = await (await pdf.getPage(i)).getTextContent(); 
+                        txt += cnt.items.map(it => it.str).join(" ") + "\n"; 
+                    }
+                } else { 
+                    txt = await f.text(); 
+                }
                 await refDb.child('pdfs').push({ nome: f.name, url: url, texto: sanitizeText(txt.substring(0, 35000)), data: new Date().toLocaleDateString(), refPath: refF.fullPath });
-                btn.textContent = "✅ Salvo!"; document.getElementById('up-pdf').value = ''; setTimeout(() => { btn.textContent = tx; btn.disabled = false; }, 2000);
-            } catch (e) { alert("Erro: " + e.message); btn.textContent = tx; btn.disabled = false; }
+                btn.textContent = "✅ Salvo!"; 
+                document.getElementById('up-pdf').value = ''; 
+                setTimeout(() => { btn.textContent = tx; btn.disabled = false; }, 2000);
+            } catch (e) { 
+                alert("Erro: " + e.message); 
+                btn.textContent = tx; 
+                btn.disabled = false; 
+            }
         }
 
         async function adicionarLinkComoFonte() {
@@ -814,8 +992,14 @@
             try {
                 btn.disabled = true; btn.textContent = "Salvando...";
                 await refDb.child('pdfs').push({ nome: "🌐 " + new URL(url).hostname, url: url, texto: "Link referenciado: " + sanitizeText(url), data: new Date().toLocaleDateString() });
-                btn.textContent = "✅ Link Salvo!"; document.getElementById('inp-link-fonte').value = ''; setTimeout(() => { btn.textContent = tx; btn.disabled = false; }, 2000);
-            } catch(e) { alert("Erro: " + e.message); btn.textContent = tx; btn.disabled = false; }
+                btn.textContent = "✅ Link Salvo!"; 
+                document.getElementById('inp-link-fonte').value = ''; 
+                setTimeout(() => { btn.textContent = tx; btn.disabled = false; }, 2000);
+            } catch(e) { 
+                alert("Erro: " + e.message); 
+                btn.textContent = tx; 
+                btn.disabled = false; 
+            }
         }
 
         async function excluirFonte(id, refPath) {
@@ -827,7 +1011,10 @@
 
         function renderizarFontes() {
             let h = ''; let chk = '';
-            if(meusPdfs.length === 0) { h = '<p>Nenhuma fonte.</p>'; chk = '<p style="font-size:0.85rem; color:var(--text-muted);">Nenhuma fonte adicionada. Vá em Gerenciar Fontes.</p>'; }
+            if(meusPdfs.length === 0) { 
+                h = '<p>Nenhuma fonte.</p>'; 
+                chk = '<p style="font-size:0.85rem; color:var(--text-muted);">Nenhuma fonte adicionada.</p>'; 
+            }
             meusPdfs.forEach(p => {
                 h += `<div class="list-item" style="background:var(--bg-card); border:1px solid var(--border-color); border-radius:var(--radius-sm); margin-bottom:8px;">
                         <div><strong style="display:block;">${sanitizeText(p.nome)}</strong><span style="font-size:0.8rem; color:var(--text-muted);">Adicionado em: ${p.data}</span></div>
@@ -836,13 +1023,17 @@
                 chk += `<label style="display:flex; align-items:center; gap:8px; cursor:pointer;"><input type="checkbox" class="check-pdf-fonte" value="${p.id}"> 📄 ${sanitizeText(p.nome)}</label>`;
             });
             document.getElementById('lista-gestao-fontes').innerHTML = h;
-            document.getElementById('checkboxes-pdfs-chat').innerHTML = chk; document.getElementById('checkboxes-pdfs-sim').innerHTML = chk; document.getElementById('checkboxes-pdfs-fc').innerHTML = chk;
+            document.getElementById('checkboxes-pdfs-chat').innerHTML = chk; 
+            document.getElementById('checkboxes-pdfs-sim').innerHTML = chk; 
+            document.getElementById('checkboxes-pdfs-fc').innerHTML = chk;
         }
 
-        // CÉREBRO IA: Função Central
         function extrairContextoSelecionado() {
             let ctx = "";
-            document.querySelectorAll('.check-pdf-fonte:checked').forEach(c => { let pdf = meusPdfs.find(p=>p.id===c.value); if(pdf) ctx += `\n[FONTE: ${pdf.nome}]\n${pdf.texto}\n`; });
+            document.querySelectorAll('.check-pdf-fonte:checked').forEach(c => { 
+                let pdf = meusPdfs.find(p=>p.id===c.value); 
+                if(pdf) ctx += `\n[FONTE: ${pdf.nome}]\n${pdf.texto}\n`; 
+            });
             return ctx;
         }
 
@@ -854,50 +1045,78 @@
         function responderQuestaoPruma(e, c) { e.classList.add(c ? 'acerto' : 'erro'); }
 
         async function executarPrumaIA(tipo) {
-            const apiKey = sessionStorage.getItem('pruma_user_apikey'); if(!apiKey) return alert("Configure a API Key nas configurações.");
-            const modeloStr = (userAtual.uid === ADMIN_UID) ? "gemini-1.5-pro-latest" : "gemini-1.5-flash-latest"; // Usando endpoints válidos da API, refletindo Pro/Flash
+            const apiKey = sessionStorage.getItem('pruma_user_apikey'); 
+            if(!apiKey) return alert("Configure a API Key nas configurações.");
             
-            let prompt = "", box = null, container = null;
+            const modeloStr = (userAtual.uid === ADMIN_UID) ? "gemini-1.5-pro" : "gemini-1.5-flash";
+            
+            let prompt = "", box = null;
             let ctxBase = extrairContextoSelecionado();
             let regra = "Aja como tutora especialista. Use emojis, listas e tabelas se necessário. Faça buscas na web para dados recentes.";
 
             if(tipo === 'tutor') {
-                let p = document.getElementById('inp-chat').value.trim(); if(!p) return; box = document.getElementById('box-chat');
-                box.innerHTML += `<div class="msg msg-u">${sanitizeText(p)}</div>`; document.getElementById('inp-chat').value = ''; box.scrollTop = box.scrollHeight;
-                if(document.getElementById('check-usar-erros-chat').checked && meuCadernoErros.length>0) ctxBase += `\n[MEU CADERNO DE ERROS]:\n${meuCadernoErros.map(e=>e.descricao).join('\n')}`;
+                let p = document.getElementById('inp-chat').value.trim(); 
+                if(!p) return; 
+                box = document.getElementById('box-chat');
+                box.innerHTML += `<div class="msg msg-u">${sanitizeText(p)}</div>`; 
+                document.getElementById('inp-chat').value = ''; 
+                box.scrollTop = box.scrollHeight;
+                if(document.getElementById('check-usar-erros-chat').checked && meuCadernoErros.length>0) {
+                    ctxBase += `\n[MEU CADERNO DE ERROS]:\n${meuCadernoErros.map(e=>e.descricao).join('\n')}`;
+                }
                 prompt = `${regra}\n\n${ctxBase ? "CONTEXTO SELECIONADO:\n"+ctxBase : ""}\n\nPERGUNTA: ${p}`;
             }
             else if(tipo === 'simulador') {
-                box = document.getElementById('box-sim'); box.style.display = 'flex'; box.innerHTML = '';
-                if(meuCadernoErros.length>0) ctxBase += `\n[FOQUE NESTES MEUS ERROS AO CRIAR QUESTÕES]:\n${meuCadernoErros.map(e=>e.descricao).join('\n')}`;
+                box = document.getElementById('box-sim'); 
+                box.style.display = 'flex'; 
+                box.innerHTML = '';
+                if(meuCadernoErros.length>0) {
+                    ctxBase += `\n[FOQUE NESTES MEUS ERROS AO CRIAR QUESTÕES]:\n${meuCadernoErros.map(e=>e.descricao).join('\n')}`;
+                }
                 prompt = `${regra}\n\n${ctxBase}\nCrie 3 questões inéditas difíceis de múltipla escolha (A, B, C, D) no estilo prova, colocando [CORRETA] ao final da alternativa certa.`;
             }
             else if(tipo === 'flashcards') {
-                let p = document.getElementById('fc-prompt').value.trim(); if(!p) return alert("Descreva o tema.");
-                let d = document.getElementById('fc-mat').value, t = document.getElementById('fc-top').value;
+                let p = document.getElementById('fc-prompt').value.trim(); 
+                if(!p) return alert("Descreva o tema.");
+                let d = document.getElementById('fc-mat').value;
+                let t = document.getElementById('fc-top').value;
                 if(!d) return alert("Selecione onde salvar os flashcards.");
-                box = document.getElementById('box-fc'); box.style.display = 'block'; box.innerHTML = '';
+                box = document.getElementById('box-fc'); 
+                box.style.display = 'block'; 
+                box.innerHTML = '';
                 prompt = `${regra}\n\n${ctxBase}\nCrie flashcards sobre: ${p}. Retorne EXATAMENTE UM JSON PURO: [{"f": "Pergunta", "v": "Resposta"}]. Sem crases ou markdown de bloco de código no início ou fim.`;
             }
 
             try {
-                if(tipo !== 'flashcards') { box.innerHTML += `<div class="msg msg-a" id="load-ia">Analisando dados (Modelo: ${userAtual.uid===ADMIN_UID?'Pro':'Flash'})... ⏳</div>`; box.scrollTop = box.scrollHeight; }
-                else { box.innerHTML = "Gerando cartões... ⏳"; }
+                if(tipo !== 'flashcards') { 
+                    box.innerHTML += `<div class="msg msg-a" id="load-ia">Analisando dados... ⏳</div>`; 
+                    box.scrollTop = box.scrollHeight; 
+                } else { 
+                    box.innerHTML = "Gerando cartões... ⏳"; 
+                }
 
                 const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modeloStr}:generateContent?key=${apiKey}`, {
-                    method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({contents:[{parts:[{text:prompt}]}], tools:[{googleSearch:{}}]})
+                    method:'POST', 
+                    headers:{'Content-Type':'application/json'}, 
+                    body:JSON.stringify({
+                        contents:[{parts:[{text:prompt}]}], 
+                        tools:[{googleSearch:{}}]
+                    })
                 });
-                const data = await res.json(); if(data.error) throw new Error(data.error.message);
+                const data = await res.json(); 
+                if(data.error) throw new Error(data.error.message);
                 let txtFinal = data.candidates[0].content.parts[0].text;
 
                 if(tipo === 'flashcards') {
                     let jsonStr = txtFinal.replace(/```json/g, '').replace(/```/g, '').trim();
                     let cards = JSON.parse(jsonStr.match(/\[.*\]/s)[0]);
-                    let d = sanitizeText(document.getElementById('fc-mat').value), t = sanitizeText(document.getElementById('fc-top').value);
+                    let d = sanitizeText(document.getElementById('fc-mat').value);
+                    let t = sanitizeText(document.getElementById('fc-top').value);
                     box.innerHTML = '';
                     cards.forEach(c => {
                         let idBtn = 'fc-btn-' + Date.now() + Math.random();
-                        box.innerHTML += `<div class="card" style="padding:16px; margin-bottom:12px;">
+                        box.innerHTML += `
+                        <div class="card" style="padding:16px; margin-bottom:12px;">
                             <div style="font-weight:700; color:var(--brand-primary); margin-bottom:8px;">FRENTE:</div>
                             <div style="margin-bottom:12px;">${sanitizeText(c.f)}</div>
                             <div style="font-weight:700; color:var(--brand-success); margin-bottom:8px; border-top:1px dashed var(--border-color); padding-top:12px;">VERSO:</div>
@@ -906,21 +1125,27 @@
                         </div>`;
                     });
                 } else {
-                    document.getElementById('load-ia').remove();
-                    box.innerHTML += `<div class="msg msg-a"><strong>PRUMA:</strong><br>${formatarRespostaIA(txtFinal)}</div>`; box.scrollTop = box.scrollHeight;
+                    let loadEl = document.getElementById('load-ia');
+                    if(loadEl) loadEl.remove();
+                    box.innerHTML += `<div class="msg msg-a"><strong>PRUMA:</strong><br>${formatarRespostaIA(txtFinal)}</div>`; 
+                    box.scrollTop = box.scrollHeight;
                 }
             } catch(e) { 
-                if(box && tipo!=='flashcards' && document.getElementById('load-ia')) document.getElementById('load-ia').remove(); 
+                let loadEl = document.getElementById('load-ia');
+                if(loadEl) loadEl.remove(); 
                 if(box) box.innerHTML += `<div class="msg msg-a" style="color:var(--brand-danger);">Erro: ${e.message}</div>`; 
             }
         }
 
         function salvarFcNoCaderno(d, t, desc, btn) {
-            meuCadernoErros.push({id: Date.now().toString(), disciplina:d, assunto:t||'Flashcards IA', descricao:desc});
+            meuCadernoErros.push({id: Date.now().toString(), disciplina: d, assunto: t || 'Flashcards IA', descricao: desc});
             refDb.child('caderno_erros').set(meuCadernoErros);
-            btn.textContent = "✅ Salvo no Caderno!"; btn.disabled = true; btn.style.background = 'var(--brand-success)'; btn.style.color = 'white'; btn.style.borderColor = 'var(--brand-success)';
+            btn.textContent = "✅ Salvo no Caderno!"; 
+            btn.disabled = true; 
+            btn.style.background = 'var(--brand-success)'; 
+            btn.style.color = 'white'; 
+            btn.style.borderColor = 'var(--brand-success)';
         }
-
     </script>
 </body>
 </html>
