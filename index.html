@@ -853,12 +853,12 @@
         }
         function responderQuestaoPruma(e, c) { e.classList.add(c ? 'acerto' : 'erro'); }
 
-        async function executarPrumaIA(tipo) {
+       async function executarPrumaIA(tipo) {
     const apiKey = sessionStorage.getItem('pruma_user_apikey'); 
     if(!apiKey) return alert("Configure a API Key nas configurações.");
     
     // Definição segura dos modelos sem erros de sintaxe
-    const modeloStr = (userAtual.uid === ADMIN_UID) ? "gemini-3.1-pro" : "gemini-3.6-flash";
+    const modeloStr = (userAtual.uid === ADMIN_UID) ? "gemini-1.5-pro" : "gemini-1.5-flash";
     
     let prompt = "", box = null;
     let ctxBase = extrairContextoSelecionado();
