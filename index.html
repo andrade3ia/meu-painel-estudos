@@ -1048,7 +1048,8 @@
             const apiKey = sessionStorage.getItem('pruma_user_apikey'); 
             if(!apiKey) return alert("Configure a API Key nas configurações.");
             
-            const modeloStr = (userAtual.uid === ADMIN_UID) ? "gemini-1.5-pro" : "gemini-1.5-flash";
+            // Modelos solicitados configurados com as chaves oficiais para Admin e Alunos via v1beta
+            const modeloStr = (userAtual.uid === ADMIN_UID) ? "gemini-3.1-pro-preview" : "gemini-3.6-flash";
             
             let prompt = "", box = null;
             let ctxBase = extrairContextoSelecionado();
