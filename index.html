@@ -169,7 +169,7 @@
 
                 <div class="card">
                     <h2>⚡ Edital Inteligente (Automático)</h2>
-                    <p style="font-size:0.85rem; color:var(--text-muted);">A IA lerá o texto e criará as pastas de disciplinas e tópicos sozinha. Não precisa preencher nada além do texto.</p>
+                    <p style="font-size:0.85rem; color:var(--text-muted);">A IA lerá o texto e criará as pastas de disciplinas e tópicos sozinha.</p>
                     <textarea id="edital-gigante" placeholder="Cole o conteúdo do edital aqui..." rows="4"></textarea>
                     <button onclick="processarEditalAutomatico()">Gerar Planejamento (IA)</button>
                 </div>
@@ -203,10 +203,6 @@
             <div id="view-estatisticas" style="display:none;">
                 <div class="card">
                     <h2>📈 Desempenho e Gráficos</h2>
-                    <div style="display:flex; gap:8px; margin-bottom:15px;">
-                        <button style="width:auto; padding:6px 12px; font-size:0.8rem; background:var(--bg-input); color:var(--text-main); border:1px solid var(--border-color);" onclick="mudarPeriodoGrafico('7d')">Últimos 7 Dias</button>
-                        <button style="width:auto; padding:6px 12px; font-size:0.8rem; background:var(--bg-input); color:var(--text-main); border:1px solid var(--border-color);" onclick="mudarPeriodoGrafico('30d')">Últimos 30 Dias</button>
-                    </div>
                     <div style="max-width:300px; margin:0 auto;"><canvas id="graficoRosca"></canvas></div>
                 </div>
             </div>
@@ -214,7 +210,7 @@
             <div id="view-pruma" style="display:none;">
                 <div class="card">
                     <h2>✨ Central PRUMA IA</h2>
-                    <p style="font-size:0.85rem; color:var(--text-muted); margin-top:-5px;">Mentoria objetiva baseada nos seus estudos.</p>
+                    <p style="font-size:0.85rem; color:var(--text-muted); margin-top:-5px;">Mentoria baseada em buscas na web e fontes próprias.</p>
                     
                     <div class="pruma-sub-abas">
                         <button class="sub-aba-btn ativa" onclick="mudarSubIa('tutor', this)">💬 Tutor Chat</button>
@@ -225,37 +221,44 @@
 
                     <div id="subia-tutor">
                         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
-                            <select id="select-pdf-chat" style="width:auto; margin:0; padding:6px; font-size:0.8rem;"><option value="">Conhecimento Geral da IA</option></select>
+                            <select id="select-pdf-chat" style="width:auto; margin:0; padding:6px; font-size:0.8rem;"><option value="">Conhecimento Geral & Web Search</option></select>
                             <button style="width:auto; padding:6px 10px; font-size:0.75rem; background:transparent; border:1px solid var(--border-color); color:var(--text-main);" onclick="document.getElementById('modal-historico-ia').style.display='flex'">Ver Últimas Perguntas</button>
                         </div>
                         
                         <div class="chat-box" id="box-chat">
-                            <div class="msg msg-a"><strong>PRUMA:</strong> Olá! Como posso ajudar você hoje? 🎯</div>
+                            <div class="msg msg-a"><strong>PRUMA:</strong> Olá! Estou com a busca na web ativada. Como posso ajudar em seus estudos hoje? 🎯</div>
                         </div>
 
                         <div style="display:flex; gap:8px;">
-                            <input type="text" id="inp-chat" placeholder="Tire sua dúvida ou peça questões..." style="margin:0;" onkeypress="if(event.key==='Enter') executarPrumaIA('tutor')">
+                            <input type="text" id="inp-chat" placeholder="Tire sua dúvida ou consulte datas e editais..." style="margin:0;" onkeypress="if(event.key==='Enter') executarPrumaIA('tutor')">
                             <button onclick="executarPrumaIA('tutor')" style="width:80px;">Enviar</button>
                         </div>
                     </div>
 
                     <div id="subia-flashcards" style="display:none;">
-                        <select id="select-pdf-fc"><option value="">Selecione o PDF/Texto Base</option></select>
+                        <select id="select-pdf-fc"><option value="">Selecione o PDF/Link Base</option></select>
                         <input type="text" id="fc-tema" placeholder="Qual o tema? (Ex: Atos Administrativos)">
                         <button onclick="executarPrumaIA('flashcards')">Gerar Flashcards</button>
                         <div class="chat-box" id="box-fc" style="margin-top:10px; display:none; height:auto; min-height:150px;"></div>
                     </div>
 
                     <div id="subia-caderno" style="display:none;">
-                        <p style="font-size:0.85rem; color:var(--text-muted);">Gera questões de múltipla escolha interativas baseadas nos seus erros registrados.</p>
+                        <p style="font-size:0.85rem; color:var(--text-muted);">Gera questões interativas baseadas nos seus erros registrados.</p>
                         <button onclick="executarPrumaIA('simulador')">Gerar Questões Inéditas dos Meus Erros</button>
                         <div class="chat-box" id="box-sim" style="margin-top:10px; display:none; height:auto; min-height:200px;"></div>
                     </div>
 
                     <div id="subia-arquivos" style="display:none;">
-                        <label style="font-size:0.85rem;">Adicionar Material de Referência (PDF ou Texto):</label>
+                        <label style="font-size:0.85rem; font-weight:bold;">Adicionar Material Local (PDF ou TXT):</label>
                         <input type="file" id="up-pdf" accept=".pdf,.txt">
                         <button onclick="enviarPdfNuvem()">Fazer Upload para Nuvem PRUMA</button>
+
+                        <hr style="border:0; border-top:1px solid var(--border-color); margin:15px 0;">
+
+                        <label style="font-size:0.85rem; font-weight:bold;">Adicionar Link Seguro como Fonte (Notícia, Edital, Lei):</label>
+                        <input type="url" id="inp-link-fonte" placeholder="https://exemplo.com/edital-ou-noticia" style="margin-top:4px;">
+                        <button onclick="adicionarLinkComoFonte()" style="background:var(--brand-purple);">Adicionar Link à Base PRUMA</button>
+
                         <div id="lista-meus-pdfs" style="margin-top:15px; font-size:0.85rem;"></div>
                     </div>
 
@@ -306,7 +309,7 @@
             authDomain: "plataforma-de-estudos-98ec8.firebaseapp.com",
             databaseURL: "https://plataforma-de-estudos-98ec8-default-rtdb.firebaseio.com",
             projectId: "plataforma-de-estudos-98ec8",
-            storageBucket: "plataforma-de-estudos-98ec8.firebasestorage.app" // Corrigido para o padrão atual do Firebase
+            storageBucket: "plataforma-de-estudos-98ec8.firebasestorage.app"
         };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
@@ -379,7 +382,7 @@
 
         function salvarApiKeyUser() {
             let k = document.getElementById('input-apikey-user').value.trim();
-            if(k) { localStorage.setItem('pruma_user_apikey', k); alert("Chave API salva no navegador!"); document.getElementById('modal-apikey').style.display = 'none'; }
+            if(k) { localStorage.setItem('pruma_user_apikey', k); alert("Chave API salva!"); document.getElementById('modal-apikey').style.display = 'none'; }
         }
         function carregarApiKeySalva() { let k = localStorage.getItem('pruma_user_apikey'); if(k) document.getElementById('input-apikey-user').value = k; }
 
@@ -431,38 +434,31 @@
 
         async function processarEditalAutomatico() {
             let texto = document.getElementById('edital-gigante').value.trim(); if(!texto) return alert("Cole o texto do edital.");
-            const btn = event.currentTarget; btn.disabled = true; btn.textContent = "Analisando com IA (Flash)...";
-            let prompt = `Analise o texto do edital abaixo e organize as matérias e seus tópicos. Retorne EXATAMENTE no formato JSON: [{"disciplina": "Língua Portuguesa", "topicos": ["Compreensão", "Crase"]}]\nTexto:\n${texto.substring(0, 25000)}`;
+            const btn = event.currentTarget; btn.disabled = true; btn.textContent = "Analisando com IA...";
+            let prompt = `Analise o edital e organize em JSON puro: [{"disciplina": "Português", "topicos": ["Crase"]}]\nTexto:\n${texto.substring(0, 25000)}`;
             try {
-                let resposta = await chamarApiGeminiEspecifica(prompt, "gemini-3.6-flash"); let jsonStr = resposta.match(/\[.*\]/s); 
-                if(!jsonStr) throw new Error("A IA não retornou o JSON esperado.");
+                let resposta = await chamarApiGeminiEspecifica(prompt, "gemini-1.5-flash-latest"); let jsonStr = resposta.match(/\[.*\]/s); 
+                if(!jsonStr) throw new Error("A IA não retornou o formato JSON.");
                 let editalExtraido = JSON.parse(jsonStr[0]);
                 editalExtraido.forEach(novaDisc => {
                     let idx = planejamentoEdital.findIndex(x => x.disciplina.toLowerCase() === novaDisc.disciplina.toLowerCase());
                     if(idx !== -1) { planejamentoEdital[idx].topicos.push(...novaDisc.topicos); pastasAbertas.add(idx); } else { planejamentoEdital.push(novaDisc); pastasAbertas.add(planejamentoEdital.length - 1); }
                 });
                 refDb.child('planejamento').set(planejamentoEdital); document.getElementById('edital-gigante').value = ''; alert("Edital gerado!");
-            } catch(e) { alert("Falha ao gerar edital: " + e.message); } finally { btn.disabled = false; btn.textContent = "Gerar Planejamento (IA)"; }
+            } catch(e) { alert("Falha: " + e.message); } finally { btn.disabled = false; btn.textContent = "Gerar Planejamento (IA)"; }
         }
 
         function renderizarEdital() {
             let div = document.getElementById('lista-materias-div'); div.innerHTML = '';
             planejamentoEdital.forEach((item, idx) => {
                 let aberta = pastasAbertas.has(idx);
-                let topicosHtml = item.topicos.map((top, iT) => `<div class="topico-item"><span>📄 ${sanitizeText(top)}</span><div style="display:flex; gap:4px;"><button style="width:auto; padding:4px 8px; font-size:0.75rem;" onclick="moverTopico(${idx}, ${iT}, event)">➔</button><button style="width:auto; padding:4px 8px; font-size:0.75rem; background:var(--brand-red);" onclick="removerTopico(${idx}, ${iT}, event)">✖</button></div></div>`).join('');
+                let topicosHtml = item.topicos.map((top, iT) => `<div class="topico-item"><span>📄 ${sanitizeText(top)}</span><button style="width:auto; padding:4px 8px; font-size:0.75rem; background:var(--brand-red);" onclick="removerTopico(${idx}, ${iT}, event)">✖</button></div>`).join('');
                 div.innerHTML += `<div class="pasta"><div class="pasta-header" onclick="togglePasta(${idx})"><span>📁 ${sanitizeText(item.disciplina)} (${item.topicos.length})</span><span>${aberta ? '▼' : '▶'}</span></div><div class="pasta-body ${aberta ? 'aberta' : ''}">${topicosHtml}</div></div>`;
             });
         }
         function togglePasta(idx) { pastasAbertas.has(idx) ? pastasAbertas.delete(idx) : pastasAbertas.add(idx); renderizarEdital(); }
         function removerTopico(idD, idT, e) {
             e.stopPropagation(); if(confirm("Excluir tópico?")) { planejamentoEdital[idD].topicos.splice(idT, 1); if(planejamentoEdital[idD].topicos.length === 0) { planejamentoEdital.splice(idD, 1); pastasAbertas.delete(idD); } refDb.child('planejamento').set(planejamentoEdital); }
-        }
-        function moverTopico(idD, idT, e) {
-            e.stopPropagation(); let dest = prompt("Disciplina de destino:"); if(!dest) return;
-            let mov = planejamentoEdital[idD].topicos.splice(idT, 1)[0]; if(planejamentoEdital[idD].topicos.length===0){ planejamentoEdital.splice(idD, 1); pastasAbertas.delete(idD); }
-            let iDest = planejamentoEdital.findIndex(x => x.disciplina.toLowerCase() === dest.toLowerCase());
-            if(iDest !== -1) { planejamentoEdital[iDest].topicos.push(mov); pastasAbertas.add(iDest); } else { planejamentoEdital.push({disciplina: dest, topicos: [mov]}); pastasAbertas.add(planejamentoEdital.length - 1); }
-            refDb.child('planejamento').set(planejamentoEdital);
         }
 
         async function salvarConcurso() {
@@ -473,7 +469,7 @@
         }
         function renderizarConcursos() {
             let div = document.getElementById('lista-concursos-div'); div.innerHTML = '';
-            meusConcursos.forEach(c => { let dias = Math.ceil((new Date(c.data) - new Date()) / (1000 * 60 * 60 * 24)); div.innerHTML += `<div class="card" style="margin-top:10px;"><strong>🎯 ${sanitizeText(c.nome)}</strong><br><span style="color:var(--brand-green); font-weight:bold;">Faltam ${dias} dias</span> (${c.data}) ${c.fotoUrl ? `<br><img src="${c.fotoUrl}" style="max-width:100%; border-radius:6px; margin-top:8px;">` : ''}</div>`; });
+            meusConcursos.forEach(c => { let dias = Math.ceil((new Date(c.data) - new Date()) / (1000 * 60 * 60 * 24)); div.innerHTML += `<div class="card" style="margin-top:10px;"><strong>🎯 ${sanitizeText(c.nome)}</strong><br><span style="color:var(--brand-green); font-weight:bold;">Faltam ${dias} dias</span> (${c.data})</div>`; });
         }
         function salvarErro() {
             let d = sanitizeText(document.getElementById('err-disc').value.trim()), a = sanitizeText(document.getElementById('err-assunto').value.trim()), e = sanitizeText(document.getElementById('err-desc').value.trim());
@@ -487,96 +483,79 @@
                 div.innerHTML += `<div class="pasta"><div class="pasta-header">📁 ${sanitizeText(d)}</div><div class="pasta-body aberta">${htmlA}</div></div>`;
             }
         }
-
         function renderizarGraficoRosca() {
             const ctx = document.getElementById('graficoRosca').getContext('2d'); if(chartRoscaInstance) chartRoscaInstance.destroy();
             chartRoscaInstance = new Chart(ctx, { type: 'doughnut', data: { labels: ['Sessões Salvas', 'Descanso'], datasets: [{ data: [sessoesHistorico.length || 1, 5], backgroundColor: ['#2563eb', '#e5e7eb'] }] }, options: { responsive: true, maintainAspectRatio: false } });
         }
 
         async function enviarPdfNuvem() {
-            const fileInput = document.getElementById('up-pdf');
-            const f = fileInput.files[0];
-            if(!f) { alert("Selecione um arquivo válido."); return; }
-
-            const btn = event.currentTarget;
-            const textoOriginalBtn = btn.textContent;
-            
+            const fileInput = document.getElementById('up-pdf'); const f = fileInput.files[0];
+            if(!f) return alert("Selecione um arquivo válido.");
+            const btn = event.currentTarget; const textoOriginalBtn = btn.textContent;
             try {
-                btn.disabled = true;
-                btn.textContent = "1/3 - Enviando arquivo...";
-
-                const refF = refStore.child(f.name);
-                await refF.put(f);
-                const url = await refF.getDownloadURL();
-
+                btn.disabled = true; btn.textContent = "1/3 - Enviando arquivo...";
+                const refF = refStore.child(f.name); await refF.put(f); const url = await refF.getDownloadURL();
                 btn.textContent = "2/3 - Lendo conteúdo...";
                 let textoExtraido = "";
-
                 if(f.type === "application/pdf" || f.name.toLowerCase().endsWith('.pdf')) {
                     const arrayBuffer = await f.arrayBuffer();
-                    const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
-                    const pdf = await loadingTask.promise;
-                    
-                    const maxPaginas = Math.min(pdf.numPages, 15);
-                    for(let i = 1; i <= maxPaginas; i++) {
-                        const pag = await pdf.getPage(i);
-                        const cnt = await pag.getTextContent();
+                    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+                    for(let i = 1; i <= Math.min(pdf.numPages, 15); i++) {
+                        const cnt = await (await pdf.getPage(i)).getTextContent();
                         textoExtraido += cnt.items.map(it => it.str).join(" ") + "\n";
                     }
-                } else {
-                    textoExtraido = await f.text();
-                }
-
-                btn.textContent = "3/3 - Salvando na PRUMA...";
-
-                await refDb.child('pdfs').push({
-                    nome: f.name,
-                    url: url,
-                    texto: textoExtraido.substring(0, 35000), 
-                    data: new Date().toLocaleDateString()
-                });
-
-                btn.textContent = "✅ Upload Concluído!";
-                fileInput.value = '';
+                } else { textoExtraido = await f.text(); }
+                btn.textContent = "3/3 - Salvando...";
+                await refDb.child('pdfs').push({ nome: f.name, url: url, texto: textoExtraido.substring(0, 35000), data: new Date().toLocaleDateString() });
+                btn.textContent = "✅ Upload Concluído!"; fileInput.value = '';
                 setTimeout(() => { btn.textContent = textoOriginalBtn; btn.disabled = false; }, 2000);
+            } catch (e) { alert("Erro: " + e.message); btn.textContent = textoOriginalBtn; btn.disabled = false; }
+        }
 
-            } catch (erro) {
-                console.error("Erro no upload:", erro);
-                alert("Erro ao processar o arquivo: " + erro.message);
-                btn.textContent = textoOriginalBtn;
-                btn.disabled = false;
-            }
+        async function adicionarLinkComoFonte() {
+            let urlInput = document.getElementById('inp-link-fonte'); let url = urlInput.value.trim();
+            if(!url || (!url.startsWith('https://') && !url.startsWith('http://'))) return alert("Insira um link válido iniciado com https://");
+            const btn = event.currentTarget; const textoOriginalBtn = btn.textContent;
+            try {
+                btn.disabled = true; btn.textContent = "Buscando conteúdo... ⏳";
+                let proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
+                let resposta = await fetch(proxyUrl); let dados = await resposta.json();
+                if(!dados.contents) throw new Error("Não foi possível ler o conteúdo da página.");
+                let doc = new DOMParser().parseFromString(dados.contents, 'text/html');
+                doc.querySelectorAll('script, style, nav, footer').forEach(el => el.remove());
+                let textoLimpo = doc.body.textContent.replace(/\s+/g, ' ').trim();
+                if(textoLimpo.length < 50) throw new Error("Pouco conteúdo legível na página.");
+                let nomePagina = new URL(url).hostname + " - " + (doc.title || "Página Web");
+                btn.textContent = "Salvando na base...";
+                await refDb.child('pdfs').push({ nome: "🌐 " + nomePagina.substring(0, 50), url: url, texto: textoLimpo.substring(0, 35000), data: new Date().toLocaleDateString() });
+                btn.textContent = "✅ Link Adicionado!"; urlInput.value = '';
+                setTimeout(() => { btn.textContent = textoOriginalBtn; btn.disabled = false; }, 2000);
+            } catch(e) { alert("Erro ao ler link: " + e.message); btn.textContent = textoOriginalBtn; btn.disabled = false; }
         }
 
         function atualizarSelectsPdf() {
-            let lDiv = document.getElementById('lista-meus-pdfs'); 
-            let sChat = document.getElementById('select-pdf-chat'); 
-            let sFc = document.getElementById('select-pdf-fc');
-            lDiv.innerHTML = ''; sChat.innerHTML = '<option value="">Conhecimento Geral da IA</option>'; sFc.innerHTML = '<option value="">Selecione o Material</option>';
+            let lDiv = document.getElementById('lista-meus-pdfs'); let sChat = document.getElementById('select-pdf-chat'); let sFc = document.getElementById('select-pdf-fc');
+            lDiv.innerHTML = ''; sChat.innerHTML = '<option value="">Conhecimento Geral & Web Search</option>'; sFc.innerHTML = '<option value="">Selecione o Material</option>';
             meusPdfs.forEach(p => {
                 lDiv.innerHTML += `<div style="padding:6px; background:var(--bg-input); border-radius:4px; margin-top:4px;">📄 ${sanitizeText(p.nome)}</div>`;
-                sChat.innerHTML += `<option value="${p.id}">${sanitizeText(p.nome)}</option>`; 
-                sFc.innerHTML += `<option value="${p.id}">${sanitizeText(p.nome)}</option>`;
+                sChat.innerHTML += `<option value="${p.id}">${sanitizeText(p.nome)}</option>`; sFc.innerHTML += `<option value="${p.id}">${sanitizeText(p.nome)}</option>`;
             });
         }
 
         async function chamarApiGeminiEspecifica(prompt, modelo) {
             let apiKey = localStorage.getItem('pruma_user_apikey') || "SUA_API_KEY_AQUI";
+            const corpoRequisicao = { contents: [{ parts: [{ text: prompt }] }], tools: [{ googleSearch: {} }] };
             const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelo}:generateContent?key=${apiKey}`, {
-                method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+                method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(corpoRequisicao)
             });
-            const data = await res.json();
-            if(data.error) throw new Error(data.error.message);
-            return data.candidates[0].content.parts[0].text;
+            const data = await res.json(); if(data.error) throw new Error(data.error.message); return data.candidates[0].content.parts[0].text;
         }
 
         async function executarPrumaIA(tipo, perguntaForcada = null) {
             try {
                 const isAdmin = (userAtual.uid === ADMIN_UID);
-                const modelo = isAdmin ? "gemini-3.1-pro-preview" : "gemini-3.6-flash";
-                
-                // Instrução blindada para respostas curtas, objetivas, com emojis e setas
-                let regraBase = "IMPORTANTE: Seja extremamente objetivo, direto e conciso. Não escreva textos longos. Use emojis e setas (->) para estruturar a explicação. Use **negrito** para destacar termos importantes. Se criar questões de múltipla escolha, crie 4 alternativas (A, B, C, D) e adicione [CORRETA] ao final exato da resposta certa.";
+                const modelo = isAdmin ? "gemini-1.5-pro-latest" : "gemini-1.5-flash-latest";
+                let regraBase = "Aja como tutora especialista. Seja objetiva e clara. Use emojis e setas (->). IMPORTANTE: Pesquise dados atuais na web e SEMPRE cite a fonte das informações. Se criar questões de múltipla escolha, crie 4 alternativas (A, B, C, D) e adicione [CORRETA] ao final exato da certa.";
 
                 if(tipo === 'tutor') {
                     const inp = document.getElementById('inp-chat'); const pergunta = perguntaForcada || inp.value.trim();
@@ -584,9 +563,9 @@
                     box.innerHTML += `<div class="msg msg-u">${sanitizeText(pergunta)}</div>`; inp.value = ''; box.scrollTop = box.scrollHeight;
 
                     let contexto = pdfId ? `\n\n[Referência: ${meusPdfs.find(p => p.id === pdfId).texto}]` : "";
-                    let prompt = `${regraBase}\n${contexto}\n\nDúvida do estudante: ${pergunta}`;
+                    let prompt = `${regraBase}\n${contexto}\n\nDúvida: ${pergunta}`;
                     
-                    box.innerHTML += `<div class="msg msg-a" id="loading-msg">Analisando... ⏳</div>`;
+                    box.innerHTML += `<div class="msg msg-a" id="loading-msg">Pesquisando e analisando... ⏳</div>`;
                     let resposta = await chamarApiGeminiEspecifica(prompt, modelo); document.getElementById('loading-msg').remove();
                     box.innerHTML += `<div class="msg msg-a"><strong>PRUMA:</strong><br>${formatarRespostaIA(resposta)}</div>`; box.scrollTop = box.scrollHeight;
 
@@ -595,7 +574,7 @@
                 else if(tipo === 'simulador') {
                     const box = document.getElementById('box-sim'); if(meuCadernoErros.length === 0) return alert("Caderno vazio.");
                     let erros = meuCadernoErros.map(e => `[${e.disciplina}]: ${e.descricao}`).join("\n");
-                    let prompt = `${regraBase}\n\nCrie 2 questões inéditas focadas estritamente em corrigir estes erros do aluno:\n${erros}`;
+                    let prompt = `${regraBase}\n\nCrie 2 questões inéditas para corrigir estes erros:\n${erros}`;
                     box.style.display = 'block'; box.innerHTML = "Gerando simulado... ⏳";
                     let resposta = await chamarApiGeminiEspecifica(prompt, modelo); box.innerHTML = formatarRespostaIA(resposta);
                 }
