@@ -3,96 +3,116 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PRUMA | Alto Rendimento</title>
+    <title>PRUMA | Painel de Estudos</title>
+    <!-- Ícone de perfil estudando -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>👨‍💻</text></svg>">
     
+    <!-- Bibliotecas Seguras -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js" crossorigin="anonymous"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" crossorigin="anonymous"></script>
+    <link href="https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
 
+    <!-- SOFT UI (iOS Style) CSS -->
     <style>
         :root {
-            --bg-body: #f8fafc; --bg-card: #ffffff; --text-main: #1e293b; --text-muted: #64748b;
-            --border-color: #e2e8f0; --bg-input: #f1f5f9; --bg-hover: #f1f5f9;
-            --brand-primary: #6366f1; --brand-primary-hover: #4f46e5;
-            --brand-success: #10b981; --brand-danger: #ef4444; --brand-warning: #f59e0b;
-            --shadow-sm: 0 1px 3px rgba(0,0,0,0.05); --shadow-md: 0 10px 15px -3px rgba(0,0,0,0.05);
-            --radius-sm: 8px; --radius-md: 16px; --radius-lg: 24px;
+            /* Light Theme Apple Style */
+            --bg-body: #F5F5F7; --bg-card: #FFFFFF; --text-main: #1D1D1F; --text-muted: #86868B;
+            --border-color: #E5E5EA; --bg-input: #F2F2F7; --bg-hover: #E8E8ED;
+            --brand-primary: #007AFF; --brand-success: #34C759; --brand-danger: #FF3B30; --brand-warning: #FF9500;
+            --shadow-sm: 0 2px 10px rgba(0,0,0,0.03); --shadow-md: 0 8px 30px rgba(0,0,0,0.08);
+            --radius-sm: 10px; --radius-md: 18px; --radius-lg: 24px;
         }
         [data-theme="dark"] {
-            --bg-body: #0f172a; --bg-card: #1e293b; --text-main: #f8fafc; --text-muted: #94a3b8;
-            --border-color: #334155; --bg-input: #0f172a; --bg-hover: #334155;
-            --brand-primary: #818cf8; --brand-primary-hover: #6366f1;
-            --shadow-md: 0 10px 15px -3px rgba(0,0,0,0.3);
+            /* Dark Theme Apple Style */
+            --bg-body: #000000; --bg-card: #1C1C1E; --text-main: #F5F5F7; --text-muted: #98989D;
+            --border-color: #38383A; --bg-input: #2C2C2E; --bg-hover: #3A3A3C;
+            --brand-primary: #0A84FF; --brand-success: #30D158; --brand-danger: #FF453A; --brand-warning: #FF9F0A;
+            --shadow-sm: 0 2px 10px rgba(0,0,0,0.2); --shadow-md: 0 8px 30px rgba(0,0,0,0.4);
         }
 
-        * { box-sizing: border-box; transition: background-color 0.2s, color 0.2s, border-color 0.2s; font-family: 'Inter', sans-serif; }
-        body { background-color: var(--bg-body); color: var(--text-main); margin: 0; display: flex; height: 100vh; overflow: hidden; font-size: 14px; }
-        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        * { box-sizing: border-box; transition: background-color 0.2s, color 0.2s, border-color 0.2s; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif; }
+        body { background-color: var(--bg-body); color: var(--text-main); margin: 0; display: flex; height: 100vh; overflow: hidden; font-size: 15px; -webkit-font-smoothing: antialiased; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb { background: var(--text-muted); border-radius: 10px; }
 
-        .mobile-header { display: none; background: rgba(var(--bg-card), 0.8); backdrop-filter: blur(10px); padding: 12px 20px; border-bottom: 1px solid var(--border-color); width: 100%; justify-content: space-between; align-items: center; z-index: 1000; }
+        /* Header Mobile */
+        .mobile-header { display: none; background: rgba(var(--bg-card), 0.85); backdrop-filter: saturate(180%) blur(20px); -webkit-backdrop-filter: saturate(180%) blur(20px); padding: 12px 20px; border-bottom: 1px solid var(--border-color); width: 100%; justify-content: space-between; align-items: center; z-index: 1000; }
         
-        .sidebar { width: 260px; background-color: var(--bg-card); border-right: 1px solid var(--border-color); display: flex; flex-direction: column; padding: 24px 16px; gap: 8px; z-index: 900; overflow-y: auto; }
-        .sidebar-logo { display: flex; align-items: center; gap: 10px; margin-bottom: 24px; padding-left: 10px; }
-        .sidebar-logo h1 { font-size: 1.5rem; margin: 0; font-weight: 800; color: var(--text-main); letter-spacing: -0.5px; }
-        .sidebar-logo span { color: var(--brand-primary); }
+        /* Sidebar */
+        .sidebar { width: 270px; background-color: var(--bg-card); border-right: 1px solid var(--border-color); display: flex; flex-direction: column; padding: 24px 16px; gap: 6px; z-index: 900; overflow-y: auto; }
+        .sidebar-logo { display: flex; flex-direction: column; align-items: flex-start; padding-left: 12px; margin-bottom: 24px; }
+        .sidebar-logo h1 { font-size: 1.8rem; margin: 0; font-weight: 700; color: var(--text-main); letter-spacing: -0.5px; }
+        .sidebar-logo span.sub { font-size: 0.8rem; color: var(--text-muted); font-weight: 500; text-transform: uppercase; letter-spacing: 1px; }
         
-        .nav-btn { background: transparent; color: var(--text-muted); border: none; text-align: left; padding: 10px 14px; font-size: 0.95rem; border-radius: var(--radius-sm); cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 12px; }
+        .nav-btn { background: transparent; color: var(--text-muted); border: none; text-align: left; padding: 10px 14px; font-size: 0.95rem; border-radius: var(--radius-sm); cursor: pointer; font-weight: 500; display: flex; align-items: center; gap: 12px; }
         .nav-btn:hover { background: var(--bg-hover); color: var(--text-main); }
-        .nav-btn.active { background: var(--brand-primary); color: white; box-shadow: 0 4px 6px rgba(99, 102, 241, 0.2); }
+        .nav-btn.active { background: var(--brand-primary); color: #FFF; font-weight: 600; }
+        .nav-group { border-top: 1px solid var(--border-color); margin-top: 10px; padding-top: 10px; display: flex; flex-direction: column; gap: 6px; }
 
+        .tempo-total-box { background: var(--bg-input); padding: 16px; border-radius: var(--radius-md); text-align: center; margin-bottom: 16px; border: 1px solid var(--border-color); }
+        .tempo-total-box span { font-size: 0.8rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; }
+        .tempo-total-box strong { display: block; font-size: 1.5rem; color: var(--brand-primary); font-weight: 700; margin-top: 4px; font-variant-numeric: tabular-nums; }
+
+        /* Main Content */
         .main-content { flex: 1; padding: 30px; overflow-y: auto; scroll-behavior: smooth; }
-        .container-interno { max-width: 900px; margin: 0 auto; padding-bottom: 60px; }
+        .container-interno { max-width: 950px; margin: 0 auto; padding-bottom: 80px; }
         
+        /* Components */
         .card { background-color: var(--bg-card); border-radius: var(--radius-md); padding: 24px; margin-bottom: 24px; border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); }
-        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 24px; }
-        .stat-card { background: var(--bg-input); padding: 16px; border-radius: var(--radius-md); border: 1px solid var(--border-color); text-align: center; }
-        .stat-card span { display: block; font-size: 0.85rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
-        .stat-card strong { display: block; font-size: 1.8rem; color: var(--brand-primary); font-weight: 800; }
-
-        h2 { margin: 0 0 16px 0; color: var(--text-main); font-size: 1.25rem; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+        h2 { margin: 0 0 16px 0; color: var(--text-main); font-size: 1.4rem; font-weight: 700; letter-spacing: -0.5px; }
         
-        input, select, textarea { width: 100%; padding: 12px 14px; margin-bottom: 12px; background-color: var(--bg-input); border: 1px solid var(--border-color); border-radius: var(--radius-sm); color: var(--text-main); font-size: 0.95rem; outline: none; }
-        input:focus, select:focus, textarea:focus { border-color: var(--brand-primary); box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1); }
+        input, select, textarea { width: 100%; padding: 12px 16px; margin-bottom: 12px; background-color: var(--bg-input); border: 1px solid transparent; border-radius: var(--radius-sm); color: var(--text-main); font-size: 0.95rem; outline: none; }
+        input:focus, select:focus, textarea:focus { border-color: var(--brand-primary); background-color: var(--bg-card); }
         
-        button.btn-primary { width: 100%; padding: 12px; font-weight: 600; border: none; border-radius: var(--radius-sm); cursor: pointer; background: var(--brand-primary); color: white; font-size: 0.95rem; }
-        button.btn-primary:hover { background: var(--brand-primary-hover); }
-        button.btn-outline { width: 100%; padding: 12px; font-weight: 600; border: 1px solid var(--border-color); border-radius: var(--radius-sm); cursor: pointer; background: transparent; color: var(--text-main); font-size: 0.95rem; }
+        button.btn-primary { width: 100%; padding: 14px; font-weight: 600; border: none; border-radius: var(--radius-sm); cursor: pointer; background: var(--brand-primary); color: #FFF; font-size: 0.95rem; }
+        button.btn-primary:active { transform: scale(0.98); }
+        button.btn-outline { width: 100%; padding: 14px; font-weight: 600; border: 1px solid var(--border-color); border-radius: var(--radius-sm); cursor: pointer; background: transparent; color: var(--text-main); font-size: 0.95rem; }
         button.btn-outline:hover { background: var(--bg-hover); }
-        button.btn-danger { background: var(--brand-danger); color: white; border: none; padding: 6px 12px; border-radius: var(--radius-sm); cursor: pointer; font-size: 0.8rem; font-weight: 600; }
+        button.btn-danger { background: var(--brand-danger); color: #FFF; border: none; padding: 8px 14px; border-radius: var(--radius-sm); cursor: pointer; font-size: 0.85rem; font-weight: 600; }
+        button.btn-icon { background:transparent; border:none; color:var(--text-muted); cursor:pointer; font-size:1.1rem; padding:4px;}
+        button.btn-icon:hover { color:var(--brand-danger);}
 
-        .badge { padding: 4px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: 700; background: var(--bg-input); color: var(--text-muted); }
-        .badge.success { background: rgba(16, 185, 129, 0.1); color: var(--brand-success); }
-        .badge.danger { background: rgba(239, 68, 68, 0.1); color: var(--brand-danger); }
-        .badge.primary { background: rgba(99, 102, 241, 0.1); color: var(--brand-primary); }
+        /* Badges & Grids */
+        .badge { padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; background: var(--bg-input); color: var(--text-muted); }
+        .badge.success { background: rgba(52, 199, 89, 0.15); color: var(--brand-success); }
+        .badge.danger { background: rgba(255, 59, 48, 0.15); color: var(--brand-danger); }
         
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 16px; margin-bottom: 24px; }
+        .stat-card { background: var(--bg-card); padding: 20px; border-radius: var(--radius-md); border: 1px solid var(--border-color); text-align: center; box-shadow: var(--shadow-sm); }
+        .stat-card span { display: block; font-size: 0.8rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; }
+        .stat-card strong { display: block; font-size: 1.8rem; color: var(--text-main); font-weight: 700; margin-top: 8px; }
+
         .list-item { padding: 16px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
-        .list-item:last-child { border-bottom: none; padding-bottom: 0; }
+        .list-item:last-child { border-bottom: none; }
 
-        .pruma-sub-abas { display: flex; gap: 8px; margin-bottom: 20px; overflow-x: auto; background: var(--bg-input); padding: 6px; border-radius: var(--radius-md); }
-        .sub-aba-btn { flex: 1; background: transparent; color: var(--text-muted); border: none; padding: 10px; border-radius: var(--radius-sm); cursor: pointer; font-weight: 600; font-size: 0.9rem; white-space: nowrap; }
-        .sub-aba-btn.ativa { background: var(--bg-card); color: var(--brand-primary); box-shadow: var(--shadow-sm); }
-
-        .chat-box { border: 1px solid var(--border-color); border-radius: var(--radius-md); height: 450px; overflow-y: auto; padding: 20px; background: var(--bg-body); display: flex; flex-direction: column; gap: 16px; margin-bottom: 16px; }
-        .msg { padding: 14px 18px; border-radius: var(--radius-md); max-width: 85%; line-height: 1.5; font-size: 0.95rem; word-break: break-word; }
-        .msg-u { background: var(--brand-primary); color: white; align-self: flex-end; border-bottom-right-radius: 4px; }
-        .msg-a { background: var(--bg-card); border: 1px solid var(--border-color); align-self: flex-start; color: var(--text-main); border-bottom-left-radius: 4px; box-shadow: var(--shadow-sm); }
+        /* Folders / Accordeon */
+        .pasta { margin-bottom: 12px; }
+        .pasta-header { background: var(--bg-input); padding: 14px 16px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-weight: 600; font-size: 0.95rem; border-radius: var(--radius-sm); }
+        .pasta-body { padding: 12px 16px; display: none; border-left: 2px solid var(--border-color); margin-left: 16px; }
+        .pasta-body.aberta { display: block; }
         
-        .modal { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); display:none; justify-content:center; align-items:center; z-index:2000; backdrop-filter: blur(4px); padding: 20px; }
-        .modal-content { background:var(--bg-card); padding:32px; border-radius:var(--radius-lg); width:100%; max-width:550px; max-height:90vh; overflow-y:auto; box-shadow: var(--shadow-md); position: relative; }
-        .modal-close { position: absolute; top: 16px; right: 16px; background: transparent; border: none; font-size: 1.2rem; cursor: pointer; color: var(--text-muted); }
+        /* Chat UI */
+        .chat-box { border: 1px solid var(--border-color); border-radius: var(--radius-md); height: 500px; overflow-y: auto; padding: 20px; background: var(--bg-body); display: flex; flex-direction: column; gap: 16px; margin-bottom: 16px; }
+        .msg { padding: 14px 18px; border-radius: 18px; max-width: 85%; line-height: 1.5; font-size: 0.95rem; word-break: break-word; }
+        .msg-u { background: var(--brand-primary); color: #FFF; align-self: flex-end; border-bottom-right-radius: 4px; }
+        .msg-a { background: var(--bg-card); border: 1px solid var(--border-color); align-self: flex-start; color: var(--text-main); border-bottom-left-radius: 4px; box-shadow: var(--shadow-sm); }
 
-        #toast-container { position: fixed; bottom: 20px; right: 20px; display: flex; flex-direction: column; gap: 10px; z-index: 9999; }
-        .toast { background: var(--bg-card); color: var(--text-main); padding: 16px 24px; border-radius: var(--radius-sm); box-shadow: var(--shadow-md); border-left: 4px solid var(--brand-primary); font-weight: 600; animation: slideIn 0.3s ease-out; }
-        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        .color-dot { width: 28px; height: 28px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; }
+        .color-dot:hover { transform: scale(1.1); }
+
+        /* Modal */
+        .modal { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.4); display:none; justify-content:center; align-items:center; z-index:2000; backdrop-filter: blur(5px); padding: 20px; }
+        .modal-content { background:var(--bg-card); padding:32px; border-radius:var(--radius-lg); width:100%; max-width:550px; max-height:90vh; overflow-y:auto; box-shadow: var(--shadow-md); position: relative; }
+        .modal-close { position: absolute; top: 16px; right: 16px; background: transparent; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-muted); }
 
         @media(max-width: 768px) {
             body { flex-direction: column; }
             .mobile-header { display: flex; }
             .main-content { padding: 16px; }
-            .sidebar { position: fixed; top: 57px; left: -100%; width: 100%; height: calc(100vh - 57px); transition: left 0.3s ease; }
+            .sidebar { position: fixed; top: 60px; left: -100%; width: 100%; height: calc(100vh - 60px); transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
             .sidebar.open { left: 0; }
             .stats-grid { grid-template-columns: 1fr 1fr; }
         }
@@ -105,316 +125,359 @@
 </head>
 <body>
 
+    <!-- Header Mobile -->
     <header class="mobile-header">
-        <h2 style="margin:0; font-size:1.3rem; font-weight:800; color:var(--text-main);">PRUMA <span style="color:var(--brand-primary)">IA</span></h2>
-        <div style="display: flex; gap: 12px;">
-            <button style="background:none; border:none; color:var(--text-main); font-size:1.2rem;" onclick="alternarTema()">🌓</button>
-            <button style="background:none; border:none; color:var(--text-main); font-size:1.2rem;" onclick="document.getElementById('sidebar-menu').classList.toggle('open')">☰</button>
+        <div style="display:flex; flex-direction:column;">
+            <h2 style="margin:0; font-size:1.4rem; font-weight:700; color:var(--text-main); letter-spacing:-0.5px;">PRUMA</h2>
+            <span style="font-size:0.7rem; color:var(--text-muted); font-weight:500;">PAINEL DE ESTUDOS</span>
+        </div>
+        <div style="display: flex; gap: 16px; align-items:center;">
+            <button style="background:none; border:none; color:var(--text-main); font-size:1.3rem;" onclick="document.getElementById('sidebar-menu').classList.toggle('open')">☰</button>
         </div>
     </header>
 
+    <!-- Sidebar Lateral -->
     <aside id="sidebar-menu" class="sidebar">
         <div class="sidebar-logo">
-            <h1>PRUMA <span>IA</span></h1>
+            <h1>PRUMA</h1>
+            <span class="sub">Painel de Estudos</span>
         </div>
         
-        <button class="nav-btn active" onclick="irTela('home', event)"><span>🏠</span> Início</button>
-        <button class="nav-btn" onclick="irTela('provas', event)"><span>🎯</span> Minhas Provas</button>
-        <button class="nav-btn" onclick="irTela('edital', event)"><span>📚</span> Edital Inteligente</button>
-        <button class="nav-btn" onclick="irTela('caderno', event)"><span>📓</span> Caderno de Erros</button>
-        <button class="nav-btn" onclick="irTela('estatisticas', event)"><span>📈</span> Estatísticas</button>
-        <button class="nav-btn" onclick="irTela('pruma', event)" style="color:var(--brand-primary); background:rgba(99,102,241,0.05); margin-top:10px;"><span>✨</span> Cérebro PRUMA</button>
+        <div class="tempo-total-box">
+            <span>Tempo Total</span>
+            <strong id="side-tempo-total">00:00:00</strong>
+        </div>
         
-        <div style="margin-top:auto; padding-top:20px; display:flex; flex-direction:column; gap:8px;">
-            <button class="btn-outline" onclick="document.getElementById('modal-apikey').style.display='flex'">⚙️ API Key</button>
-            <button class="btn-outline" onclick="alternarTema()">Tema 🌓</button>
-            <button class="btn-outline" onclick="firebase.auth().signOut()" style="color:var(--brand-danger); border-color:transparent;">Sair</button>
+        <button class="nav-btn active" onclick="irTela('inicio', event)">🏠 Início</button>
+        <button class="nav-btn" onclick="irTela('provas', event)">🎯 Minhas Provas</button>
+        <button class="nav-btn" onclick="irTela('materias', event)">📚 Matérias</button>
+        <button class="nav-btn" onclick="irTela('caderno', event)">📓 Caderno de Erros</button>
+        <button class="nav-btn" onclick="irTela('estatisticas', event)">📈 Estatísticas</button>
+        <button class="nav-btn" onclick="irTela('pruma', event)" style="color:var(--brand-primary); font-weight:600;">✨ PRUMA IA</button>
+        <button class="nav-btn" onclick="irTela('biblioteca', event)">📁 Biblioteca</button>
+        
+        <div class="nav-group">
+            <button class="nav-btn" onclick="irTela('conta', event)">👤 Minha Conta</button>
+            <button class="nav-btn" onclick="document.getElementById('modal-apikey').style.display='flex'">🔑 API Key</button>
+            <button class="nav-btn" onclick="alternarTema()">🌓 Tema Claro/Escuro</button>
+            <button class="nav-btn" onclick="firebase.auth().signOut()" style="color:var(--brand-danger);">🚪 Sair</button>
         </div>
     </aside>
 
     <main class="main-content" onclick="if(window.innerWidth<=768) document.getElementById('sidebar-menu').classList.remove('open')">
         
+        <!-- Login -->
         <div id="tela-login" class="card" style="max-width:400px; margin:80px auto; text-align:center;">
-            <h1 style="color:var(--text-main); font-size:2rem; margin:0 0 10px 0; font-weight:800;">PRUMA <span style="color:var(--brand-primary)">IA</span></h1>
-            <p style="color:var(--text-muted); margin-bottom:30px;">Faça login para acessar o ecossistema de alto rendimento.</p>
+            <h1 style="color:var(--text-main); font-size:2.5rem; margin:0 0 5px 0; font-weight:700;">PRUMA</h1>
+            <p style="color:var(--text-muted); margin-bottom:30px; font-weight:500;">Painel de Estudos</p>
             <button class="btn-outline" style="display:flex; align-items:center; justify-content:center; gap:10px;" onclick="firebase.auth().signInWithPopup(new firebase.auth.GoogleAuthProvider())">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" width="18" alt=""> Continuar com Google
+                <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" width="20" alt=""> Entrar com Google
             </button>
         </div>
 
         <div id="tela-painel" class="container-interno" style="display:none;">
             
-            <div id="view-home">
-                <h2>Resumo do Dia (Hoje)</h2>
+            <!-- INÍCIO -->
+            <div id="view-inicio">
+                <h2>Resumo de Hoje</h2>
                 <div class="stats-grid">
-                    <div class="stat-card"><span>Tempo de Estudo</span><strong id="stat-hj-tempo">0h 0m</strong></div>
-                    <div class="stat-card"><span>Questões Feitas</span><strong id="stat-hj-qts">0</strong></div>
-                    <div class="stat-card"><span>Taxa de Acerto</span><strong id="stat-hj-perc">0%</strong></div>
+                    <div class="stat-card"><span>Tempo de Estudo</span><strong id="hj-tempo">0h 0m</strong></div>
+                    <div class="stat-card"><span>Questões</span><strong id="hj-qts">0</strong></div>
+                    <div class="stat-card"><span>Acertos <span style="color:var(--brand-success)">●</span></span><strong id="hj-acertos" style="color:var(--brand-success)">0</strong></div>
+                    <div class="stat-card"><span>Erros <span style="color:var(--brand-danger)">●</span></span><strong id="hj-erros" style="color:var(--brand-danger)">0</strong></div>
+                    <div class="stat-card"><span>Aproveitamento</span><strong id="hj-perc">0%</strong></div>
                 </div>
 
                 <div class="card" style="text-align: center; padding: 40px 20px;">
-                    <div id="cronometro-visor" style="font-size: 4.5rem; color: var(--text-main); font-weight: 800; font-variant-numeric: tabular-nums; margin: 10px 0;">00:00:00</div>
-                    <div style="display:flex; justify-content:center; gap:12px; max-width: 320px; margin: 20px auto 0;">
-                        <button class="btn-primary" onclick="iniciarCronometro()">▶ Iniciar</button>
+                    <div id="cronometro-visor" style="font-size: 5rem; color: var(--text-main); font-weight: 700; font-variant-numeric: tabular-nums; margin: 10px 0; letter-spacing:-2px;">00:00:00</div>
+                    <div style="display:flex; justify-content:center; gap:16px; max-width: 350px; margin: 20px auto 0;">
+                        <button class="btn-primary" style="background:var(--brand-success);" onclick="iniciarCronometro()">▶ Iniciar</button>
                         <button class="btn-outline" onclick="pausarCronometro()">⏸ Pausar</button>
                     </div>
 
-                    <div id="form-sessao" style="display:none; margin-top:30px; text-align:left; background:var(--bg-card); padding:24px; border-radius:var(--radius-md); border:1px solid var(--border-color); box-shadow:var(--shadow-md);">
+                    <div id="form-sessao" style="display:none; margin-top:30px; text-align:left; background:var(--bg-input); padding:24px; border-radius:var(--radius-md);">
                         <h3 style="margin-top:0; border-bottom:1px solid var(--border-color); padding-bottom:12px; display:flex; justify-content:space-between;">
-                            Salvar Sessão 
-                            <span style="font-size:0.8rem; font-weight:normal; color:var(--text-muted); cursor:pointer;" onclick="document.getElementById('form-sessao').style.display='none'">Cancelar ✖</span>
+                            Registrar Sessão <span style="font-size:0.9rem; color:var(--text-muted); cursor:pointer;" onclick="document.getElementById('form-sessao').style.display='none'">Cancelar ✖</span>
                         </h3>
                         
-                        <div style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:4px;">
-                            <div style="flex:1; min-width:160px;">
+                        <div style="display:flex; gap:16px; flex-wrap:wrap; margin-bottom:8px;">
+                            <div style="flex:1; min-width:200px;">
                                 <label style="font-size:0.85rem; font-weight:600;">Matéria:</label>
-                                <select id="ses-mat" onchange="atualizarTopicosSessao()"><option value="">Selecione ou adicione...</option><option value="NOVA">+ Nova Matéria</option></select>
-                                <input type="text" id="ses-mat-nova" placeholder="Nome da nova matéria" style="display:none;">
+                                <input type="text" id="ses-mat" placeholder="Ex: Português" list="lista-materias-dl">
+                                <datalist id="lista-materias-dl"></datalist>
                             </div>
-                            <div style="flex:1; min-width:160px;">
+                            <div style="flex:1; min-width:200px;">
                                 <label style="font-size:0.85rem; font-weight:600;">Tópico/Assunto:</label>
-                                <select id="ses-top"><option value="">Selecione a matéria primeiro...</option><option value="NOVO">+ Novo Tópico</option></select>
-                                <input type="text" id="ses-top-novo" placeholder="Nome do novo tópico" style="display:none;">
+                                <input type="text" id="ses-top" placeholder="Ex: Crase">
                             </div>
                         </div>
 
-                        <div style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:4px;">
-                            <div style="flex:1; min-width:160px;">
+                        <div style="display:flex; gap:16px; flex-wrap:wrap; margin-bottom:8px;">
+                            <div style="flex:1; min-width:200px;">
                                 <label style="font-size:0.85rem; font-weight:600;">Tipo de Estudo:</label>
                                 <select id="ses-tipo-estudo"><option value="Teoria">Teoria</option><option value="Questões">Questões</option><option value="Revisão">Revisão</option></select>
                             </div>
-                            <div style="flex:1; min-width:160px;">
+                            <div style="flex:1; min-width:200px;">
                                 <label style="font-size:0.85rem; font-weight:600;">Material Usado:</label>
                                 <select id="ses-tipo-mat" onchange="toggleCamposDetalhes()">
-                                    <option value="Sistema de Questões">📝 Sistema de Questões</option>
-                                    <option value="PDF">📖 PDF / Lei Seca</option>
+                                    <option value="Questões">📝 Questões</option>
+                                    <option value="PDF/Lei Seca">📖 PDF / Lei Seca</option>
                                     <option value="Vídeo Aula">🎥 Vídeo Aula</option>
                                 </select>
                             </div>
                         </div>
 
-                        <div id="campos-pdf" style="display:none; gap:12px; margin-bottom:4px;">
+                        <div id="campos-pdf" style="display:none; gap:16px; margin-bottom:8px;">
                             <div style="flex:1;"><label style="font-size:0.85rem; font-weight:600;">Pág Inicial:</label><input type="number" id="ses-pdf-ini"></div>
                             <div style="flex:1;"><label style="font-size:0.85rem; font-weight:600;">Pág Final:</label><input type="number" id="ses-pdf-fim"></div>
+                            <div style="flex:1;"><label style="font-size:0.85rem; font-weight:600;">Fonte do PDF:</label><input type="text" id="ses-pdf-fonte"></div>
                         </div>
-                        <div id="campos-video" style="display:none; gap:12px; margin-bottom:4px;">
-                            <div style="flex:1;"><label style="font-size:0.85rem; font-weight:600;">Vídeo Início (Nº):</label><input type="number" id="ses-vid-ini"></div>
-                            <div style="flex:1;"><label style="font-size:0.85rem; font-weight:600;">Vídeo Fim (Nº):</label><input type="number" id="ses-vid-fim"></div>
+                        <div id="campos-video" style="display:none; gap:16px; margin-bottom:8px;">
+                            <div style="flex:1;"><label style="font-size:0.85rem; font-weight:600;">Vídeo Inicial (Nº):</label><input type="number" id="ses-vid-ini"></div>
+                            <div style="flex:1;"><label style="font-size:0.85rem; font-weight:600;">Vídeo Final (Nº - Opcional):</label><input type="number" id="ses-vid-fim"></div>
+                            <div style="flex:1;"><label style="font-size:0.85rem; font-weight:600;">Plataforma:</label><input type="text" id="ses-vid-fonte"></div>
                         </div>
 
-                        <div style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:12px; background:var(--bg-input); padding:12px; border-radius:var(--radius-sm);">
-                            <div style="flex:1; min-width:120px;"><label style="font-size:0.85rem; font-weight:600; color:var(--brand-success);">✅ Acertos:</label><input type="number" id="ses-acertos" value="0"></div>
-                            <div style="flex:1; min-width:120px;"><label style="font-size:0.85rem; font-weight:600; color:var(--brand-danger);">❌ Erros:</label><input type="number" id="ses-erros" value="0"></div>
+                        <div style="display:flex; gap:16px; flex-wrap:wrap; margin-bottom:16px; background:var(--bg-card); padding:16px; border-radius:var(--radius-sm); border:1px solid var(--border-color);">
+                            <div style="flex:1; min-width:120px;"><label style="font-size:0.85rem; font-weight:600; color:var(--brand-success);">Acertos totais:</label><input type="number" id="ses-acertos" value="0"></div>
+                            <div style="flex:1; min-width:120px;"><label style="font-size:0.85rem; font-weight:600; color:var(--brand-danger);">Erros totais:</label><input type="number" id="ses-erros" value="0"></div>
+                            <div style="flex:1; min-width:120px;"><label style="font-size:0.85rem; font-weight:600;">Tempo Manual (min):</label><input type="number" id="ses-tempo-manual" placeholder="Se não usou cronômetro"></div>
                         </div>
                         
-                        <label style="font-size:0.85rem; font-weight:600;">Observações (Opcional):</label>
-                        <textarea id="ses-obs" rows="2" placeholder="Qual material usou? Como foi o rendimento?"></textarea>
+                        <label style="font-size:0.85rem; font-weight:600;">Observação Relevante:</label>
+                        <textarea id="ses-obs" rows="2" placeholder="Desempenho, material bom/ruim..."></textarea>
 
-                        <button class="btn-primary" onclick="confirmarSalvarSessao()">💾 Salvar Registro</button>
+                        <button class="btn-primary" onclick="salvarRegistro()">Finalizar Sessão / Salvar</button>
                     </div>
                 </div>
 
                 <div class="card">
                     <h2>Últimos Registros</h2>
-                    <div id="lista-ultimos-registros">Nenhum registro encontrado.</div>
+                    <div id="lista-ultimos-registros">Nenhum registro.</div>
                 </div>
             </div>
 
+            <!-- MINHAS PROVAS -->
             <div id="view-provas" style="display:none;">
                 <div class="card">
-                    <h2>Criar Nova Meta / Prova</h2>
-                    <input type="text" id="conc-nome" placeholder="Nome do Concurso (Ex: TCE-GO, Receita Federal)">
-                    <div style="display:flex; gap:12px;">
-                        <input type="date" id="conc-data" style="flex:1;">
-                        <input type="file" id="conc-foto-file" accept="image/*" style="flex:1;" title="Foto de Motivação (Opcional)">
+                    <h2>Adicionar Projeto/Concurso</h2>
+                    <div style="display:flex; gap:16px; flex-wrap:wrap;">
+                        <input type="text" id="conc-nome" placeholder="Nome do Concurso (Ex: TRF-1)" style="flex:2; min-width:200px;">
+                        <input type="date" id="conc-data" style="flex:1; min-width:150px;">
+                        <button class="btn-primary" style="flex:1; min-width:150px;" onclick="salvarProva()">Adicionar (Máx 5)</button>
                     </div>
-                    <button class="btn-primary" onclick="salvarConcurso()">Salvar Prova</button>
                 </div>
-                <h2>Minhas Provas Cadastradas</h2>
-                <div id="lista-concursos-div" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap:16px;"></div>
+                <h2>Provas Cadastradas</h2>
+                <div id="lista-provas-div" class="stats-grid"></div>
             </div>
 
-            <div id="view-edital" style="display:none;">
+            <!-- MATÉRIAS -->
+            <div id="view-materias" style="display:none;">
                 <div class="card">
-                    <h2>Edital Inteligente (Mapeamento)</h2>
-                    <p style="font-size:0.9rem; color:var(--text-muted); margin-bottom:16px;">Cole o texto do edital. A IA irá organizar disciplinas e tópicos. Você pode vinculá-los a uma Prova específica.</p>
-                    <label style="font-size:0.85rem; font-weight:600;">Vincular a qual Prova? (Opcional)</label>
-                    <select id="edital-prova-select"><option value="">Nenhuma (Edital Geral)</option></select>
-                    
-                    <textarea id="edital-gigante" placeholder="Cole os conhecimentos básicos e específicos aqui..." rows="5"></textarea>
-                    <button class="btn-primary" onclick="processarEditalAutomatico(this)">✨ Mapear Edital com IA</button>
+                    <h2>Criar Matéria/Tópico</h2>
+                    <div style="display:flex; gap:16px; flex-wrap:wrap; margin-bottom:16px;">
+                        <input type="text" id="mat-nome" placeholder="Nome da Matéria" style="flex:1; min-width:150px;" list="lista-materias-dl">
+                        <input type="text" id="mat-topico" placeholder="Novo Tópico (Opcional)" style="flex:1; min-width:150px;">
+                        <select id="mat-prova" style="flex:1; min-width:150px;"><option value="">Vincular a uma Prova? (Opcional)</option></select>
+                    </div>
+                    <label style="font-size:0.85rem; font-weight:600; display:block; margin-bottom:8px;">Cor da Pasta:</label>
+                    <div id="mat-paleta" style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px;"></div>
+                    <button class="btn-primary" onclick="salvarMateria()">Criar / Atualizar Pasta</button>
                 </div>
-
-                <div class="card">
-                    <h2 style="justify-content: space-between;">
-                        Minhas Matérias 
-                        <button class="btn-outline" style="width:auto; padding:6px 12px; font-size:0.8rem;" onclick="document.getElementById('modal-add-materia').style.display='flex'">+ Adicionar Manual</button>
-                    </h2>
-                    <div id="lista-materias-div"></div>
-                </div>
+                <h2>Acervo de Matérias</h2>
+                <div id="lista-materias-cadastradas"></div>
             </div>
 
+            <!-- CADERNO DE ERROS -->
             <div id="view-caderno" style="display:none;">
                 <div class="card">
-                    <h2>Adicionar ao Caderno</h2>
-                    <div style="display:flex; gap:12px; flex-wrap:wrap;">
-                        <select id="err-disc" style="flex:1; min-width:150px;" onchange="atualizarTopicosCaderno()"><option value="">Selecione a Matéria</option></select>
-                        <select id="err-assunto" style="flex:1; min-width:150px;"><option value="">Selecione o Tópico</option></select>
+                    <h2>Adicionar Anotação / Erro</h2>
+                    <div style="display:flex; gap:16px; flex-wrap:wrap;">
+                        <input type="text" id="err-mat" placeholder="Matéria" list="lista-materias-dl" onchange="atualizarTopicosDatalist('err-top', this.value)" style="flex:1; min-width:200px;">
+                        <input type="text" id="err-top" placeholder="Tópico" list="dl-err-top" style="flex:1; min-width:200px;">
+                        <datalist id="dl-err-top"></datalist>
                     </div>
-                    <textarea id="err-desc" placeholder="Descreva a pegadinha, lei ou exceção que você errou..." rows="3"></textarea>
-                    <button class="btn-primary" onclick="salvarErroManual()">Salvar no Caderno</button>
+                    <textarea id="err-texto" placeholder="Cole a questão, comentário ou pegadinha..." rows="4"></textarea>
+                    <button class="btn-primary" onclick="salvarErro()">Salvar no Caderno</button>
                 </div>
-                <div class="card">
-                    <h2>Meu Acervo de Erros</h2>
-                    <div id="lista-erros-div"></div>
-                </div>
+                <h2>Acervo de Cadernos</h2>
+                <div id="lista-cadernos-div"></div>
             </div>
 
+            <!-- ESTATÍSTICAS -->
             <div id="view-estatisticas" style="display:none;">
                 <div class="card">
-                    <h2>Métricas de Estudo</h2>
-                    <div style="display:flex; gap:12px; margin-bottom:20px; flex-wrap:wrap;">
-                        <div style="flex:1; min-width:140px;">
-                            <label style="font-size:0.85rem; font-weight:600;">Período:</label>
-                            <select id="filtro-periodo" onchange="renderizarDashboardEstatisticas()">
-                                <option value="7">Últimos 7 dias</option>
-                                <option value="30">Últimos 30 dias</option>
-                                <option value="tudo" selected>Todo o período</option>
-                            </select>
-                        </div>
-                        <div style="flex:1; min-width:140px;">
-                            <label style="font-size:0.85rem; font-weight:600;">Gráfico (Tempo):</label>
-                            <select id="filtro-grafico" onchange="renderizarDashboardEstatisticas()">
-                                <option value="doughnut">Rosca</option>
-                                <option value="bar">Barras</option>
-                            </select>
-                        </div>
+                    <h2>Métricas de Desempenho</h2>
+                    <div style="display:flex; gap:16px; margin-bottom:24px; flex-wrap:wrap;">
+                        <select id="est-periodo" onchange="atualizarEstatisticas()" style="flex:1; min-width:150px;">
+                            <option value="hoje">Hoje</option><option value="7">Últimos 7 dias</option><option value="30">Últimos 30 dias</option><option value="tudo" selected>Sempre</option><option value="custom">Selecionar Período...</option>
+                        </select>
+                        <select id="est-tipo-grafico" onchange="atualizarEstatisticas()" style="flex:1; min-width:150px;">
+                            <option value="doughnut">Gráfico Rosca</option><option value="bar">Gráfico de Barras</option>
+                        </select>
                     </div>
-                    
-                    <div class="stats-grid">
-                        <div class="stat-card"><span>Total Horas</span><strong id="stat-tot-horas">0h</strong></div>
-                        <div class="stat-card"><span>Questões Feitas</span><strong id="stat-tot-qts">0</strong></div>
-                        <div class="stat-card"><span>Págs Lidas 📖</span><strong id="stat-tot-pags">0</strong></div>
-                        <div class="stat-card"><span>Vídeos 🎥</span><strong id="stat-tot-vids">0</strong></div>
+                    <div id="est-custom-dates" style="display:none; gap:16px; margin-bottom:24px; background:var(--bg-input); padding:16px; border-radius:var(--radius-sm);">
+                        <input type="date" id="est-dt-ini" style="margin:0;"><input type="date" id="est-dt-fim" style="margin:0;">
+                        <button class="btn-primary" style="width:auto;" onclick="atualizarEstatisticas()">Filtrar</button>
                     </div>
 
-                    <div style="position: relative; height:300px; width:100%; border-top:1px solid var(--border-color); padding-top:20px;">
-                        <canvas id="graficoDinamico"></canvas>
+                    <div class="stats-grid">
+                        <div class="stat-card"><span>Acertos Totais</span><strong id="st-acertos" style="color:var(--brand-success)">0</strong></div>
+                        <div class="stat-card"><span>Erros Totais</span><strong id="st-erros" style="color:var(--brand-danger)">0</strong></div>
+                        <div class="stat-card"><span>Aproveitamento</span><strong id="st-perc">0%</strong></div>
+                        <div class="stat-card"><span>Tempo Líquido</span><strong id="st-tempo">0h</strong></div>
+                        <div class="stat-card"><span>Págs Lidas</span><strong id="st-pags">0</strong></div>
+                        <div class="stat-card"><span>Vídeos</span><strong id="st-vids">0</strong></div>
+                    </div>
+
+                    <div style="position: relative; height:350px; width:100%; margin-top:30px;">
+                        <canvas id="graficoEst"></canvas>
                     </div>
                 </div>
             </div>
 
+            <!-- PRUMA IA -->
             <div id="view-pruma" style="display:none;">
-                <div class="card" style="border: 1px solid var(--brand-primary); padding:0; overflow:hidden;">
-                    <div style="background:var(--brand-primary); padding:16px 24px;">
-                        <h2 style="color:white; margin:0; border:none; display:flex; justify-content:space-between; align-items:center;">
-                            ✨ PRUMA IA (Cérebro)
-                            <span id="badge-modelo-ia" class="badge" style="background:rgba(255,255,255,0.2); color:white;">Verificando...</span>
-                        </h2>
+                <div class="card" style="padding:0; overflow:hidden; border:1px solid var(--brand-primary);">
+                    <div style="background:var(--brand-primary); padding:20px; display:flex; justify-content:space-between; align-items:center;">
+                        <div style="display:flex; flex-direction:column;">
+                            <h2 style="color:#FFF; margin:0; border:none; letter-spacing:0;">✨ PRUMA IA</h2>
+                            <span id="badge-modelo-ia" style="color:rgba(255,255,255,0.8); font-size:0.8rem; font-weight:600;">Carregando Modelo...</span>
+                        </div>
+                        <button class="btn-outline" style="width:auto; padding:8px 12px; border-color:rgba(255,255,255,0.3); color:#FFF; font-size:0.85rem;" onclick="document.getElementById('modal-historico-ia').style.display='flex'">Ver Histórico (Últimas 10)</button>
                     </div>
                     
-                    <div style="padding:20px;">
+                    <div style="padding:24px;">
                         <div class="pruma-sub-abas">
-                            <button class="sub-aba-btn ativa" onclick="mudarSubIa('tutor', this)">💬 Chat & Pesquisa</button>
-                            <button class="sub-aba-btn" onclick="mudarSubIa('simulador', this)">🎯 Simulador</button>
+                            <button class="sub-aba-btn ativa" onclick="mudarSubIa('chat', this)">💬 Chat & Pesquisa</button>
+                            <button class="sub-aba-btn" onclick="mudarSubIa('simulador', this)">🎯 Gerador de Questões</button>
                             <button class="sub-aba-btn" onclick="mudarSubIa('flashcards', this)">⚡ Flashcards</button>
-                            <button class="sub-aba-btn" onclick="mudarSubIa('arquivos', this)">📁 Gerenciar Fontes</button>
+                            <button class="sub-aba-btn" onclick="mudarSubIa('edital', this)">📚 Edital Inteligente</button>
                         </div>
 
-                        <div id="subia-tutor">
-                            <div style="background:var(--bg-input); padding:16px; border-radius:var(--radius-sm); margin-bottom:16px; border:1px solid var(--border-color);">
-                                <strong style="font-size:0.9rem;">Fontes Habilitadas para esta Sessão:</strong>
-                                <div id="checkboxes-pdfs-chat" style="max-height:100px; overflow-y:auto; margin-top:10px; display:flex; flex-direction:column; gap:6px;"></div>
-                                <hr style="border:0; border-top:1px solid var(--border-color); margin:12px 0;">
-                                <label style="display:flex; align-items:center; gap:8px; font-weight:600; color:var(--brand-primary); cursor:pointer;">
-                                    <input type="checkbox" id="check-usar-erros-chat"> 🧠 Alimentar IA com meu Caderno de Erros
-                                </label>
-                            </div>
-                            
+                        <!-- Caixa de seleção de fontes comum a quase todas as abas -->
+                        <div id="caixa-fontes-ia" style="background:var(--bg-input); padding:16px; border-radius:var(--radius-sm); margin-bottom:20px; border:1px solid var(--border-color);">
+                            <strong style="font-size:0.9rem; display:block; margin-bottom:10px;">📚 Fontes de Busca (Marque o que a IA deve usar):</strong>
+                            <div style="max-height:120px; overflow-y:auto; display:flex; flex-direction:column; gap:8px;" id="checkboxes-biblioteca"></div>
+                            <hr style="border:0; border-top:1px solid var(--border-color); margin:12px 0;">
+                            <strong style="font-size:0.9rem; display:block; margin-bottom:10px;">📓 Cadernos de Erros (Focar nos seus erros):</strong>
+                            <div style="max-height:120px; overflow-y:auto; display:flex; flex-direction:column; gap:8px;" id="checkboxes-cadernos"></div>
+                            <p style="font-size:0.75rem; color:var(--text-muted); margin:10px 0 0 0;">* A busca inteligente na web do Google está sempre ativa por padrão.</p>
+                        </div>
+
+                        <!-- Sub: Chat -->
+                        <div id="subia-chat">
                             <div class="chat-box" id="box-chat">
-                                <div class="msg msg-a"><strong>PRUMA:</strong> Olá! Selecione os materiais acima. Tenho acesso ao Google Search automaticamente. O que vamos estudar?</div>
+                                <div class="msg msg-a"><strong>PRUMA:</strong> Olá! Selecione os materiais acima ou me faça uma pergunta. Considerarei nossas últimas conversas!</div>
                             </div>
-                            <div style="display:flex; gap:10px;">
-                                <textarea id="inp-chat" placeholder="Digite sua dúvida ou comando..." rows="2" style="margin:0; resize:none;"></textarea>
-                                <button class="btn-primary" onclick="executarPrumaIA('tutor')" style="width:100px;">Enviar</button>
+                            <div style="display:flex; gap:12px; align-items:flex-end;">
+                                <textarea id="inp-chat" placeholder="Peça um resumo de PDF, tire dúvidas, busque jurisprudência..." rows="2" style="margin:0; resize:none;"></textarea>
+                                <button class="btn-primary" onclick="executarIA('chat')" style="width:120px; height:50px;">Enviar</button>
                             </div>
                         </div>
 
+                        <!-- Sub: Simulador -->
                         <div id="subia-simulador" style="display:none;">
-                            <p style="color:var(--text-muted); font-size:0.95rem;">A PRUMA gera questões inéditas focadas nos seus pontos fracos e fontes selecionadas.</p>
-                            <div id="checkboxes-pdfs-sim" style="background:var(--bg-input); padding:10px; border-radius:var(--radius-sm); margin-bottom:16px; max-height:100px; overflow-y:auto;"></div>
-                            <button class="btn-primary" onclick="executarPrumaIA('simulador')">Gerar Bateria de Questões</button>
-                            <div class="chat-box" id="box-sim" style="margin-top:16px; display:none;"></div>
+                            <p style="color:var(--text-muted); font-size:0.95rem; margin-top:-5px;">Gere questões inéditas focadas nos cadernos ou PDFs que você marcou acima.</p>
+                            <div style="display:flex; gap:12px; margin-bottom:16px;">
+                                <input type="number" id="ia-qts-num" value="5" min="1" max="15" style="width:80px; margin:0;" title="Nº de Questões">
+                                <input type="text" id="ia-qts-tema" placeholder="Tema específico (Opcional)" style="flex:1; margin:0;">
+                            </div>
+                            <button class="btn-primary" onclick="executarIA('questoes')">Gerar Bateria de Questões</button>
+                            <div class="chat-box" id="box-qts" style="margin-top:16px; display:none; height:auto; min-height:200px;"></div>
                         </div>
 
+                        <!-- Sub: Flashcards -->
                         <div id="subia-flashcards" style="display:none;">
-                            <div style="display:flex; gap:12px; margin-bottom:12px;">
-                                <select id="fc-mat" style="flex:1;" onchange="atualizarTopicosFc()"><option value="">Selecionar Matéria Alvo</option></select>
-                                <select id="fc-top" style="flex:1;"><option value="">Selecionar Tópico</option></select>
+                            <div style="display:flex; gap:16px; margin-bottom:16px; flex-wrap:wrap;">
+                                <input type="text" id="fc-mat-dest" placeholder="Salvar em qual Matéria? (Opcional)" list="lista-materias-dl" onchange="atualizarTopicosDatalist('fc-top-dest', this.value)" style="flex:1; min-width:200px;">
+                                <input type="text" id="fc-top-dest" placeholder="Tópico (Opcional)" list="dl-fc-top-dest" style="flex:1; min-width:200px;">
+                                <datalist id="dl-fc-top-dest"></datalist>
                             </div>
-                            <p style="font-size:0.85rem; color:var(--text-muted); margin-top:-5px;">Selecione acima onde os flashcards gerados devem ser salvos no seu Caderno de Erros.</p>
-                            
-                            <div id="checkboxes-pdfs-fc" style="background:var(--bg-input); padding:10px; border-radius:var(--radius-sm); margin-bottom:16px; max-height:100px; overflow-y:auto;"></div>
-                            
-                            <textarea id="fc-prompt" placeholder="Descreva o tema para gerar os flashcards (Ex: Atos Administrativos - Foco em Extinção)" rows="2"></textarea>
-                            <button class="btn-primary" onclick="executarPrumaIA('flashcards')">Gerar Flashcards Interativos</button>
+                            <textarea id="fc-tema" placeholder="Qual o tema dos Flashcards? A IA analisará suas fontes marcadas para criar." rows="2"></textarea>
+                            <button class="btn-primary" onclick="executarIA('flashcards')">Criar Flashcards</button>
                             <div class="chat-box" id="box-fc" style="margin-top:16px; display:none; background:transparent; border:none; padding:0; height:auto; overflow:visible;"></div>
                         </div>
 
-                        <div id="subia-arquivos" style="display:none;">
-                            <div style="display:flex; gap:20px; flex-wrap:wrap;">
-                                <div style="flex:1; min-width:250px; background:var(--bg-input); padding:20px; border-radius:var(--radius-sm);">
-                                    <h3 style="margin-top:0;">Subir Arquivo</h3>
-                                    <input type="file" id="up-pdf" accept=".pdf,.txt">
-                                    <button class="btn-primary" onclick="enviarPdfNuvem()">Processar e Salvar</button>
-                                </div>
-                                <div style="flex:1; min-width:250px; background:var(--bg-input); padding:20px; border-radius:var(--radius-sm);">
-                                    <h3 style="margin-top:0;">Salvar Link Web</h3>
-                                    <input type="url" id="inp-link-fonte" placeholder="https://...">
-                                    <button class="btn-primary" style="background:var(--brand-primary);" onclick="adicionarLinkComoFonte()">Salvar Link</button>
-                                </div>
-                            </div>
-                            <h3 style="margin-top:24px;">Minhas Fontes na PRUMA</h3>
-                            <div id="lista-gestao-fontes" style="display:flex; flex-direction:column; gap:8px;"></div>
+                        <!-- Sub: Edital Inteligente -->
+                        <div id="subia-edital" style="display:none;">
+                            <p style="font-size:0.95rem; color:var(--text-muted); margin-top:-5px;">Cole o texto do edital. A IA irá organizar tudo. Pode colar textos gigantes (a IA processa em partes).</p>
+                            <select id="edital-ia-prova" style="margin-bottom:16px;"><option value="">Vincular a qual Prova? (Opcional)</option></select>
+                            <textarea id="edital-texto" placeholder="Cole os conhecimentos básicos e específicos aqui..." rows="6"></textarea>
+                            <button class="btn-primary" onclick="processarEdital(this)">✨ Mapear Edital com IA</button>
                         </div>
                     </div>
+                </div>
+            </div>
+
+            <!-- BIBLIOTECA -->
+            <div id="view-biblioteca" style="display:none;">
+                <div class="card">
+                    <h2>Upload de Fontes (Nuvem PRUMA)</h2>
+                    <div style="display:flex; gap:24px; flex-wrap:wrap;">
+                        <div style="flex:1; min-width:250px; background:var(--bg-input); padding:24px; border-radius:var(--radius-md);">
+                            <h3 style="margin-top:0;">Enviar Arquivo (PDF/Texto)</h3>
+                            <input type="text" id="bib-mat-arq" placeholder="Matéria/Assunto (Opcional)">
+                            <input type="file" id="bib-file" accept=".pdf,.txt" style="background:#FFF; padding:8px;">
+                            <button class="btn-primary" onclick="uploadArquivo()">Processar e Salvar</button>
+                        </div>
+                        <div style="flex:1; min-width:250px; background:var(--bg-input); padding:24px; border-radius:var(--radius-md);">
+                            <h3 style="margin-top:0;">Salvar Link (Web)</h3>
+                            <input type="text" id="bib-mat-link" placeholder="Matéria/Assunto (Opcional)">
+                            <input type="url" id="bib-link" placeholder="https://...">
+                            <button class="btn-primary" style="background:var(--text-main);" onclick="salvarLink()">Salvar URL</button>
+                        </div>
+                    </div>
+                </div>
+                <h2>Acervo da Biblioteca</h2>
+                <div id="lista-biblioteca"></div>
+            </div>
+
+            <!-- MINHA CONTA -->
+            <div id="view-conta" style="display:none;">
+                <div class="card" style="max-width:500px; margin:0 auto;">
+                    <h2>Minha Conta</h2>
+                    <div style="background:var(--bg-input); padding:20px; border-radius:var(--radius-md); margin-bottom:24px;">
+                        <p style="margin:0 0 10px 0; font-size:1rem;"><strong>E-mail:</strong> <span id="conta-email">Carregando...</span></p>
+                        <p style="margin:0 0 10px 0; font-size:1rem;"><strong>Nome do Perfil:</strong> <input type="text" id="conta-nome" style="width:auto; display:inline-block; margin:0; padding:6px 12px;"></p>
+                        <p style="margin:0; font-size:0.9rem; color:var(--text-muted);">Membro desde: <span id="conta-data"></span></p>
+                        <button class="btn-outline" style="margin-top:16px; width:auto; padding:8px 16px; font-size:0.85rem;" onclick="salvarNomePerfil()">Salvar Nome</button>
+                    </div>
+                    
+                    <label style="font-weight:600; display:block; margin-bottom:12px;">Paleta de Cores do Sistema (15 Cores):</label>
+                    <div id="paleta-cores-sistema" style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:30px;"></div>
+
+                    <button class="btn-danger" style="width:100%; padding:14px; font-size:1rem;" onclick="excluirConta()">Excluir Minha Conta (Irreversível)</button>
                 </div>
             </div>
 
         </div>
     </main>
 
-    <div id="modal-imagem" class="modal" onclick="this.style.display='none'">
-        <img id="img-modal-expand" src="" style="max-width:90%; max-height:90vh; border-radius:12px; box-shadow:0 10px 25px rgba(0,0,0,0.5); margin:auto; display:block;">
-    </div>
-
+    <!-- Modais -->
     <div id="modal-apikey" class="modal">
         <div class="modal-content">
             <button class="modal-close" onclick="document.getElementById('modal-apikey').style.display='none'">✖</button>
-            <h2 style="margin-top:0;">⚙️ Configuração IA</h2>
-            <p style="font-size:0.9rem; color:var(--text-muted); line-height:1.5;">Insira sua API Key do Gemini. Por segurança (Prevenção XSS), ela será armazenada apenas na Sessão Atual e apagada ao fechar a aba.</p>
-            <input type="password" id="input-apikey-user" placeholder="Cole a API Key">
-            <button class="btn-primary" onclick="salvarApiKeyUser()">Salvar na Sessão</button>
-        </div>
-    </div>
-    
-    <div id="modal-add-materia" class="modal">
-        <div class="modal-content">
-            <button class="modal-close" onclick="document.getElementById('modal-add-materia').style.display='none'">✖</button>
-            <h2 style="margin-top:0;">Nova Matéria/Tópico</h2>
-            <label>Vincular Prova:</label>
-            <select id="modal-mat-prova"><option value="">Geral</option></select>
-            <input type="text" id="modal-mat-nome" placeholder="Nome da Disciplina">
-            <input type="text" id="modal-mat-topico" placeholder="Nome do Tópico">
-            <button class="btn-primary" onclick="adicionarMateriaManual()">Salvar</button>
+            <h2 style="margin-top:0;">🔑 API Key (Gemini)</h2>
+            <p style="color:var(--text-muted); font-size:0.9rem;">Sua chave fica salva no armazenamento local do seu dispositivo.</p>
+            <input type="password" id="input-api-key" placeholder="Cole sua API Key do Google AI Studio">
+            <button class="btn-primary" onclick="salvarApiKey()">Salvar Chave</button>
         </div>
     </div>
 
-    <div id="toast-container"></div>
+    <div id="modal-historico-ia" class="modal">
+        <div class="modal-content" style="max-width:700px;">
+            <button class="modal-close" onclick="document.getElementById('modal-historico-ia').style.display='none'">✖</button>
+            <h2 style="margin-top:0;">🔄 Histórico da IA (Últimas 10)</h2>
+            <p style="font-size:0.85rem; color:var(--text-muted); margin-top:-5px;">A IA lembra desse contexto para as próximas respostas.</p>
+            <div id="lista-historico-ia" style="display:flex; flex-direction:column; gap:12px;"></div>
+        </div>
+    </div>
 
+    <!-- Script Principal -->
     <script>
+        // CONFIGURAÇÃO FIREBASE - SUBSTITUA PELAS SUAS CHAVES
         const ADMIN_UID = "COLE_SEU_UID_DE_ADMIN_AQUI"; 
-        
         const firebaseConfig = {
             apiKey: "AIzaSyCIPK3YBKulMbjJzm_UahdtQrNjgqLmYho",
             authDomain: "plataforma-de-estudos-98ec8.firebaseapp.com",
@@ -423,733 +486,464 @@
             storageBucket: "plataforma-de-estudos-98ec8.firebasestorage.app"
         };
         firebase.initializeApp(firebaseConfig);
-        const db = firebase.database(); 
-        const storage = firebase.storage();
+        const db = firebase.database(); const storage = firebase.storage();
 
+        // ESTADO GLOBAL
         let userAtual = null, refDb = null, refStore = null;
-        let planejamentoEdital = [], meusConcursos = [], meuCadernoErros = [], sessoesHistorico = [], meusPdfs = [];
-        let segundosEstudo = 0, cronometroInterval = null, chartRoscaInstance = null;
-        const paletaCoresList = ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#3b82f6', '#14b8a6', '#64748b'];
+        let dbData = { sessoes: [], provas: [], materias: [], cadernos: [], biblioteca: [], iaHistorico: [] };
+        let segundosCronometro = 0, cronometroInterval = null, graficoInstance = null;
+        
+        const paleta15 = ['#007AFF','#34C759','#FF9500','#FF3B30','#5856D6','#AF52DE','#FF2D55','#5AC8FA','#E5C07B','#98C379','#E06C75','#C678DD','#56B6C2','#D19A66','#61AFEF'];
+        let corAtualMateria = paleta15[0];
 
+        // UTILITÁRIOS
         function sanitizeText(str) { return typeof str === 'string' ? DOMPurify.sanitize(str) : ''; }
-        function showToast(msg) {
-            const toast = document.createElement('div'); toast.className = 'toast'; toast.textContent = msg;
-            document.getElementById('toast-container').appendChild(toast);
-            setTimeout(() => { toast.remove(); }, 3000);
-        }
-
+        function gerarId() { return Date.now().toString(36) + Math.random().toString(36).substr(2); }
+        
         function alternarTema() { 
-            let html = document.documentElement; 
-            let novoTema = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-            html.setAttribute('data-theme', novoTema); 
-            localStorage.setItem('pruma_tema', novoTema);
-            if(document.getElementById('view-estatisticas').style.display === 'block') renderizarDashboardEstatisticas();
+            let html = document.documentElement; let novoTema = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+            html.setAttribute('data-theme', novoTema); localStorage.setItem('pruma_tema', novoTema);
+            if(document.getElementById('view-estatisticas').style.display === 'block') atualizarEstatisticas();
         }
         if(localStorage.getItem('pruma_tema') === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
 
+        // AUTENTICAÇÃO
         firebase.auth().onAuthStateChanged(user => {
             if(user) {
-                userAtual = user; 
-                refDb = db.ref('usuarios/' + user.uid); 
-                refStore = storage.ref('usuarios/' + user.uid + '/materiais');
-                document.getElementById('tela-login').style.display = 'none'; 
-                document.getElementById('tela-painel').style.display = 'block';
+                userAtual = user; refDb = db.ref('usuarios/' + user.uid); refStore = storage.ref('usuarios/' + user.uid);
+                document.getElementById('tela-login').style.display = 'none'; document.getElementById('tela-painel').style.display = 'block';
                 
-                document.getElementById('badge-modelo-ia').textContent = (user.uid === ADMIN_UID) ? "Modelo: 3.1 PRO" : "Modelo: 3.6 FLASH";
-                document.getElementById('badge-modelo-ia').className = "badge " + ((user.uid === ADMIN_UID) ? "primary" : "success");
-
-                carregarDadosDoBanco(); 
-                carregarApiKeySalva(); 
-                irTela('home');
+                document.getElementById('conta-email').textContent = user.email;
+                document.getElementById('conta-data').textContent = new Date(user.metadata.creationTime).toLocaleDateString();
+                document.getElementById('badge-modelo-ia').textContent = (user.uid === ADMIN_UID) ? "Modelo: 3.1 Pro" : "Modelo: 3.8 Flash";
+                
+                carregarPaletaSistema(); carregarApiKey(); carregarDadosGlobais(); irTela('inicio');
             } else {
-                userAtual = null; 
-                document.getElementById('tela-login').style.display = 'block'; 
-                document.getElementById('tela-painel').style.display = 'none';
+                userAtual = null; document.getElementById('tela-login').style.display = 'block'; document.getElementById('tela-painel').style.display = 'none';
             }
         });
 
         function irTela(t, e) {
-            ['home', 'provas', 'edital', 'caderno', 'estatisticas', 'pruma'].forEach(v => {
-                let el = document.getElementById('view-' + v); 
-                if(el) el.style.display = (v === t) ? 'block' : 'none';
+            ['inicio', 'provas', 'materias', 'caderno', 'estatisticas', 'pruma', 'biblioteca', 'conta'].forEach(v => {
+                let el = document.getElementById('view-' + v); if(el) el.style.display = (v === t) ? 'block' : 'none';
             });
             document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
             if(e && e.currentTarget) e.currentTarget.classList.add('active');
             if(window.innerWidth <= 768) document.getElementById('sidebar-menu').classList.remove('open');
-            if(t === 'estatisticas') renderizarDashboardEstatisticas();
+            if(t === 'estatisticas') atualizarEstatisticas();
         }
 
-        function mudarSubIa(sub, btn) {
-            ['tutor', 'simulador', 'flashcards', 'arquivos'].forEach(s => {
-                let el = document.getElementById('subia-' + s); 
-                if(el) el.style.display = (s === sub) ? 'block' : 'none';
+        // MINHA CONTA / API KEY
+        function carregarPaletaSistema() {
+            let div = document.getElementById('paleta-cores-sistema'); div.innerHTML = '';
+            paleta15.forEach(cor => {
+                let dot = document.createElement('div'); dot.className = 'color-dot'; dot.style.backgroundColor = cor;
+                dot.onclick = () => { document.documentElement.style.setProperty('--brand-primary', cor); localStorage.setItem('pruma_cor_sys', cor); };
+                div.appendChild(dot);
             });
-            document.querySelectorAll('.sub-aba-btn').forEach(b => b.classList.remove('ativa')); 
-            if(btn) btn.classList.add('ativa');
+            let salva = localStorage.getItem('pruma_cor_sys'); if(salva) document.documentElement.style.setProperty('--brand-primary', salva);
         }
-
-        function salvarApiKeyUser() {
-            let k = document.getElementById('input-apikey-user').value.trim();
-            if(k) { 
-                sessionStorage.setItem('pruma_user_apikey', k); 
-                showToast("API Key salva na sessão!"); 
-                document.getElementById('modal-apikey').style.display = 'none'; 
-            }
-        }
-        function carregarApiKeySalva() { 
-            let k = sessionStorage.getItem('pruma_user_apikey'); 
-            if(k) document.getElementById('input-apikey-user').value = k; 
-        }
-
-        function iniciarCronometro() { 
-            document.getElementById('form-sessao').style.display = 'none'; 
-            if(!cronometroInterval) { 
-                cronometroInterval = setInterval(() => { 
-                    segundosEstudo++; 
-                    atualizarVisorCronometro(); 
-                }, 1000); 
-            } 
-        }
-        function pausarCronometro() { 
-            clearInterval(cronometroInterval); 
-            cronometroInterval = null; 
-            if(segundosEstudo > 0) { 
-                document.getElementById('form-sessao').style.display = 'block'; 
-            } 
-        }
-        function atualizarVisorCronometro() {
-            let h = Math.floor(segundosEstudo / 3600).toString().padStart(2, '0'); 
-            let m = Math.floor((segundosEstudo % 3600) / 60).toString().padStart(2, '0'); 
-            let s = (segundosEstudo % 60).toString().padStart(2, '0');
-            let tempoStr = `${h}:${m}:${s}`; 
-            document.getElementById('cronometro-visor').textContent = tempoStr; 
-            document.getElementById('sidebar-total-horas').textContent = tempoStr;
-        }
+        function salvarNomePerfil() { let n = document.getElementById('conta-nome').value.trim(); if(n) refDb.child('perfil/nome').set(n); alert("Nome salvo."); }
+        async function excluirConta() { if(confirm("Certeza? Apagará TUDO.")) { await refDb.remove(); await userAtual.delete(); window.location.reload(); } }
         
+        function salvarApiKey() { let k = document.getElementById('input-api-key').value.trim(); if(k) { localStorage.setItem('pruma_apikey', k); alert("Chave Salva!"); document.getElementById('modal-apikey').style.display='none'; } }
+        function carregarApiKey() { let k = localStorage.getItem('pruma_apikey'); if(k) document.getElementById('input-api-key').value = k; }
+
+        // SINCRONIZAÇÃO DE DADOS FIREBASE
+        function carregarDadosGlobais() {
+            refDb.child('perfil/nome').on('value', s => { if(s.val()) document.getElementById('conta-nome').value = s.val(); });
+            refDb.child('sessoes').on('value', s => { dbData.sessoes = s.val() ? Object.values(s.val()) : []; renderizarInicio(); calcularTempoTotal(); seTela('estatisticas', atualizarEstatisticas); });
+            refDb.child('provas').on('value', s => { dbData.provas = s.val() || []; renderizarProvas(); atualizarSelectProvas(); });
+            refDb.child('materias').on('value', s => { dbData.materias = s.val() || []; renderizarMaterias(); atualizarDatalists(); });
+            refDb.child('cadernos').on('value', s => { dbData.cadernos = s.val() || []; renderizarCadernos(); atualizarCheckboxesIA(); });
+            refDb.child('biblioteca').on('value', s => { dbData.biblioteca = s.val() ? Object.values(s.val()) : []; renderizarBiblioteca(); atualizarCheckboxesIA(); });
+            refDb.child('ia_historico').on('value', s => { dbData.iaHistorico = s.val() || []; renderizarHistoricoIA(); });
+        }
+        function seTela(t, func) { if(document.getElementById('view-'+t).style.display === 'block') func(); }
+
+        // TEMPO TOTAL & CRONÔMETRO
+        function calcularTempoTotal() {
+            let segs = dbData.sessoes.reduce((acc, s) => acc + (s.segundos || 0), 0);
+            let h = Math.floor(segs / 3600), m = Math.floor((segs % 3600) / 60);
+            document.getElementById('side-tempo-total').textContent = `${h}h ${m}m`;
+        }
+        function iniciarCronometro() { document.getElementById('form-sessao').style.display = 'none'; if(!cronometroInterval) { cronometroInterval = setInterval(() => { segundosCronometro++; atualizarVisorCronometro(); }, 1000); } }
+        function pausarCronometro() { clearInterval(cronometroInterval); cronometroInterval = null; document.getElementById('form-sessao').style.display = 'block'; }
+        function atualizarVisorCronometro() {
+            let h = Math.floor(segundosCronometro / 3600).toString().padStart(2, '0'), m = Math.floor((segundosCronometro % 3600) / 60).toString().padStart(2, '0'), s = (segundosCronometro % 60).toString().padStart(2, '0');
+            document.getElementById('cronometro-visor').textContent = `${h}:${m}:${s}`;
+        }
         function toggleCamposDetalhes() {
             let mat = document.getElementById('ses-tipo-mat').value;
-            document.getElementById('campos-pdf').style.display = (mat === 'PDF') ? 'flex' : 'none';
+            document.getElementById('campos-pdf').style.display = (mat.includes('PDF')) ? 'flex' : 'none';
             document.getElementById('campos-video').style.display = (mat === 'Vídeo Aula') ? 'flex' : 'none';
         }
 
-        document.addEventListener('DOMContentLoaded', () => {
-            const sesMatEl = document.getElementById('ses-mat');
-            if(sesMatEl) {
-                sesMatEl.addEventListener('change', function() {
-                    document.getElementById('ses-mat-nova').style.display = (this.value === 'NOVA') ? 'block' : 'none';
-                });
-            }
-            const sesTopEl = document.getElementById('ses-top');
-            if(sesTopEl) {
-                sesTopEl.addEventListener('change', function() {
-                    document.getElementById('ses-top-novo').style.display = (this.value === 'NOVO') ? 'block' : 'none';
-                });
-            }
-        });
-
-        function confirmarSalvarSessao() {
-            let acertos = parseInt(document.getElementById('ses-acertos').value) || 0;
-            let erros = parseInt(document.getElementById('ses-erros').value) || 0;
-            let matSel = document.getElementById('ses-mat').value; 
-            let matFinal = matSel === 'NOVA' ? document.getElementById('ses-mat-nova').value : matSel;
-            let topSel = document.getElementById('ses-top').value; 
-            let topFinal = topSel === 'NOVO' ? document.getElementById('ses-top-novo').value : topSel;
+        // INÍCIO & REGISTRO
+        function salvarRegistro() {
+            let mat = sanitizeText(document.getElementById('ses-mat').value.trim()), top = sanitizeText(document.getElementById('ses-top').value.trim());
+            if(!mat) return alert("Preencha a matéria.");
             
-            if(!matFinal) return alert("Selecione ou digite uma matéria.");
-
-            let registro = {
-                id: Date.now().toString(),
-                segundos: segundosEstudo,
-                materia: sanitizeText(matFinal), 
-                topico: sanitizeText(topFinal),
-                tipoEstudo: document.getElementById('ses-tipo-estudo').value,
-                tipoMaterial: document.getElementById('ses-tipo-mat').value,
-                acertos: acertos, 
-                erros: erros, 
-                totalQuestoes: acertos + erros,
-                obs: sanitizeText(document.getElementById('ses-obs').value),
-                dataHora: new Date().toLocaleString('pt-BR'), 
-                timestamp: Date.now()
+            let manMin = parseInt(document.getElementById('ses-tempo-manual').value) || 0;
+            let segsFinais = manMin > 0 ? (manMin * 60) : segundosCronometro;
+            
+            let a = parseInt(document.getElementById('ses-acertos').value)||0, e = parseInt(document.getElementById('ses-erros').value)||0;
+            let reg = {
+                id: gerarId(), timestamp: Date.now(), data: new Date().toLocaleDateString(), hora: new Date().toLocaleTimeString().substring(0,5),
+                materia: mat, topico: top, tipoEstudo: document.getElementById('ses-tipo-estudo').value, tipoMat: document.getElementById('ses-tipo-mat').value,
+                segundos: segsFinais, acertos: a, erros: e, totalQts: a+e, obs: sanitizeText(document.getElementById('ses-obs').value)
             };
 
-            if(registro.tipoMaterial === 'PDF') {
-                registro.pIni = parseInt(document.getElementById('ses-pdf-ini').value)||0; 
-                registro.pFim = parseInt(document.getElementById('ses-pdf-fim').value)||0;
-                registro.paginas = Math.max(0, registro.pFim - registro.pIni + 1);
-            } else if(registro.tipoMaterial === 'Vídeo Aula') {
-                registro.vIni = parseInt(document.getElementById('ses-vid-ini').value)||0; 
-                registro.vFim = parseInt(document.getElementById('ses-vid-fim').value)||0;
-                registro.videos = Math.max(0, registro.vFim - registro.vIni + 1);
-            }
-            
-            sessoesHistorico.push(registro); 
-            refDb.child('historico_sessoes').set(sessoesHistorico);
-            
-            if(matSel === 'NOVA' || topSel === 'NOVO') {
-                let idx = planejamentoEdital.findIndex(x => x.disciplina === matFinal);
-                if(idx !== -1) { 
-                    if(topFinal && !planejamentoEdital[idx].topicos.includes(topFinal)) {
-                        planejamentoEdital[idx].topicos.push(topFinal);
-                    }
-                } else { 
-                    planejamentoEdital.push({disciplina: matFinal, topicos: topFinal ? [topFinal] : []}); 
-                }
-                refDb.child('planejamento').set(planejamentoEdital);
-            }
+            if(reg.tipoMat.includes('PDF')) { reg.pIni = parseInt(document.getElementById('ses-pdf-ini').value)||0; reg.pFim = parseInt(document.getElementById('ses-pdf-fim').value)||0; reg.paginas = Math.max(0, reg.pFim - reg.pIni + 1); reg.fonte = sanitizeText(document.getElementById('ses-pdf-fonte').value); }
+            if(reg.tipoMat === 'Vídeo Aula') { reg.vIni = parseInt(document.getElementById('ses-vid-ini').value)||0; reg.vFim = parseInt(document.getElementById('ses-vid-fim').value)||0; reg.videos = Math.max(0, reg.vFim - reg.vIni + 1); reg.fonte = sanitizeText(document.getElementById('ses-vid-fonte').value); }
 
-            showToast("Registro Salvo!"); 
-            segundosEstudo = 0; 
-            atualizarVisorCronometro(); 
-            document.getElementById('form-sessao').style.display = 'none';
+            // Auto-criação de matéria/tópico se não existir
+            let idxM = dbData.materias.findIndex(m => m.nome.toLowerCase() === mat.toLowerCase());
+            if(idxM === -1) { dbData.materias.push({id: gerarId(), nome: mat, cor: paleta15[0], topicos: top ? [top] : []}); refDb.child('materias').set(dbData.materias); }
+            else if(top && !dbData.materias[idxM].topicos.includes(top)) { dbData.materias[idxM].topicos.push(top); refDb.child('materias').set(dbData.materias); }
+
+            refDb.child('sessoes/'+reg.id).set(reg);
+            segundosCronometro = 0; atualizarVisorCronometro(); document.getElementById('form-sessao').style.display='none';
+            document.getElementById('ses-mat').value=''; document.getElementById('ses-top').value=''; document.getElementById('ses-acertos').value='0'; document.getElementById('ses-erros').value='0'; document.getElementById('ses-tempo-manual').value='';
         }
+        function excluirRegistro(id) { if(confirm("Excluir?")) refDb.child('sessoes/'+id).remove(); }
 
-        function excluirRegistroSessao(id) {
-            if(confirm("Excluir este registro?")) { 
-                sessoesHistorico = sessoesHistorico.filter(s => s.id !== id); 
-                refDb.child('historico_sessoes').set(sessoesHistorico); 
-            }
-        }
-
-        function renderizarRegistrosIniciais() {
-            let div = document.getElementById('lista-ultimos-registros'); 
-            div.innerHTML = '';
-            let hojeQs = 0, hojeAcertos = 0, hojeSegs = 0; 
-            let agora = Date.now();
+        function renderizarInicio() {
+            let hojeQs = 0, hojeA = 0, hojeE = 0, hojeSegs = 0; let dtHoje = new Date().toLocaleDateString();
+            let divReg = document.getElementById('lista-ultimos-registros'); divReg.innerHTML = '';
             
-            let ultimos = [...sessoesHistorico].reverse().slice(0, 15);
-            if(ultimos.length === 0) { 
-                div.innerHTML = "<p>Nenhum registro.</p>"; 
-            }
-
-            sessoesHistorico.forEach(s => {
-                if((agora - s.timestamp) <= 86400000) { 
-                    hojeQs += (s.totalQuestoes||0); 
-                    hojeAcertos += (s.acertos||0); 
-                    hojeSegs += s.segundos; 
-                }
-            });
-
-            document.getElementById('stat-hj-tempo').textContent = `${Math.floor(hojeSegs/3600)}h ${Math.floor((hojeSegs%3600)/60)}m`;
-            document.getElementById('stat-hj-qts').textContent = hojeQs;
-            document.getElementById('stat-hj-perc').textContent = hojeQs > 0 ? Math.round((hojeAcertos/hojeQs)*100) + '%' : '0%';
-
-            ultimos.forEach(s => {
-                let iconeMat = s.tipoMaterial === 'PDF' ? '📖' : s.tipoMaterial === 'Vídeo Aula' ? '🎥' : '📝';
-                let statsExtra = '';
-                if(s.tipoMaterial === 'PDF' && s.paginas) statsExtra = `<span class="badge primary">${s.paginas} págs</span>`;
-                if(s.tipoMaterial === 'Vídeo Aula' && s.videos) statsExtra = `<span class="badge primary">${s.videos} vídeos</span>`;
-                let txA = s.totalQuestoes > 0 ? Math.round((s.acertos/s.totalQuestoes)*100) : 0;
-                
-                div.innerHTML += `
-                <div class="list-item">
-                    <div style="flex:1;">
-                        <div style="display:flex; align-items:center; gap:8px;">
-                            <strong style="font-size:1.05rem;">${iconeMat} ${sanitizeText(s.materia)}</strong>
-                            <span class="badge">${sanitizeText(s.tipoEstudo)}</span>
+            let arr = [...dbData.sessoes].sort((a,b)=> b.timestamp - a.timestamp);
+            if(arr.length === 0) divReg.innerHTML = '<p style="color:var(--text-muted)">Nenhum registro.</p>';
+            
+            arr.forEach((s, idx) => {
+                if(s.data === dtHoje) { hojeQs += s.totalQts; hojeA += s.acertos; hojeE += s.erros; hojeSegs += s.segundos; }
+                if(idx < 15) {
+                    let perc = s.totalQts > 0 ? Math.round((s.acertos/s.totalQts)*100) : 0;
+                    let icone = s.tipoMat.includes('PDF') ? '📖' : s.tipoMat === 'Vídeo Aula' ? '🎥' : '📝';
+                    divReg.innerHTML += `
+                    <div class="list-item">
+                        <div style="flex:1;">
+                            <div style="display:flex; align-items:center; gap:8px;"><strong>${icone} ${s.materia}</strong><span class="badge">${s.tipoEstudo}</span></div>
+                            <div style="font-size:0.85rem; color:var(--text-muted); margin:4px 0;">${s.topico||'Geral'} | 📅 ${s.data} às ${s.hora}</div>
+                            ${s.obs ? `<div style="font-size:0.85rem; font-style:italic; background:var(--bg-input); padding:6px; border-radius:4px;">"${s.obs}"</div>` : ''}
                         </div>
-                        <div style="font-size:0.85rem; color:var(--text-muted); margin:6px 0;">${sanitizeText(s.topico||'')} | 📅 ${s.dataHora}</div>
-                        ${s.obs ? `<div style="font-size:0.85rem; background:var(--bg-hover); padding:6px; border-radius:4px; font-style:italic;">"${sanitizeText(s.obs)}"</div>` : ''}
-                    </div>
-                    <div style="text-align:right; min-width:90px;">
-                        <strong style="color:var(--brand-primary); font-size:1.1rem; display:block;">${Math.floor(s.segundos/60)}m</strong>
-                        ${s.totalQuestoes > 0 ? `<div style="font-size:0.8rem; margin-top:4px;">🎯 ${txA}% (${s.acertos}/${s.totalQuestoes})</div>` : ''}
-                        ${statsExtra}
-                        <button class="btn-danger" style="margin-top:8px;" onclick="excluirRegistroSessao('${s.id}')">Excluir</button>
-                    </div>
-                </div>`;
+                        <div style="text-align:right;">
+                            <strong style="font-size:1.1rem; color:var(--brand-primary); display:block;">${Math.floor(s.segundos/60)}m</strong>
+                            ${s.totalQts > 0 ? `<div style="font-size:0.8rem; margin-top:4px;"><span style="color:var(--brand-success)">${s.acertos}</span> / <span style="color:var(--brand-danger)">${s.erros}</span> (${perc}%)</div>` : ''}
+                            <button class="btn-icon" onclick="excluirRegistro('${s.id}')">🗑️</button>
+                        </div>
+                    </div>`;
+                }
             });
+            document.getElementById('hj-tempo').textContent = `${Math.floor(hojeSegs/3600)}h ${Math.floor((hojeSegs%3600)/60)}m`;
+            document.getElementById('hj-qts').textContent = hojeQs; document.getElementById('hj-acertos').textContent = hojeA; document.getElementById('hj-erros').textContent = hojeE;
+            document.getElementById('hj-perc').textContent = hojeQs > 0 ? Math.round((hojeA/hojeQs)*100) + '%' : '0%';
         }
 
-        async function salvarConcurso() {
-            let nome = sanitizeText(document.getElementById('conc-nome').value.trim());
-            let data = document.getElementById('conc-data').value;
-            let file = document.getElementById('conc-foto-file').files[0];
-            if(!nome || !data) return alert("Preencha nome e data.");
-            let id = Date.now().toString(); 
-            let fotoUrl = ""; 
-            if(file) { 
-                let refF = refStore.child('provas/'+id); 
-                await refF.put(file); 
-                fotoUrl = await refF.getDownloadURL(); 
-            }
-            meusConcursos.push({id, nome, data, fotoUrl}); 
-            refDb.child('concursos').set(meusConcursos); 
-            showToast("Prova Criada!");
+        // PROVAS (Máx 5)
+        function salvarProva() {
+            if(dbData.provas.length >= 5) return alert("Máximo de 5 provas.");
+            let n = sanitizeText(document.getElementById('conc-nome').value), d = document.getElementById('conc-data').value;
+            if(!n || !d) return alert("Preencha nome e data.");
+            dbData.provas.push({id: gerarId(), nome: n, data: d}); refDb.child('provas').set(dbData.provas);
         }
-        function excluirProva(id) { 
-            if(confirm("Excluir esta prova?")) { 
-                meusConcursos = meusConcursos.filter(c => c.id !== id); 
-                refDb.child('concursos').set(meusConcursos); 
-            } 
-        }
-        function expandirImg(url) { 
-            document.getElementById('img-modal-expand').src = url; 
-            document.getElementById('modal-imagem').style.display = 'flex'; 
-        }
-        
-        function renderizarConcursos() {
-            let div = document.getElementById('lista-concursos-div'); 
-            div.innerHTML = '';
-            let sEdital = document.getElementById('edital-prova-select'); 
-            let sMatModal = document.getElementById('modal-mat-prova');
-            sEdital.innerHTML = '<option value="">Nenhuma (Edital Geral)</option>'; 
-            sMatModal.innerHTML = '<option value="">Geral</option>';
-            
-            meusConcursos.forEach(c => {
-                let dias = Math.ceil((new Date(c.data) - new Date()) / (1000 * 60 * 60 * 24));
-                sEdital.innerHTML += `<option value="${c.id}">${sanitizeText(c.nome)}</option>`; 
-                sMatModal.innerHTML += `<option value="${c.id}">${sanitizeText(c.nome)}</option>`;
-                
+        function excluirProva(id) { if(confirm("Excluir? As matérias vinculadas não serão apagadas, mas perderão o vínculo.")) { dbData.provas = dbData.provas.filter(p=>p.id!==id); refDb.child('provas').set(dbData.provas); } }
+        function renderizarProvas() {
+            let div = document.getElementById('lista-provas-div'); div.innerHTML = '';
+            dbData.provas.forEach(p => {
+                let dias = Math.ceil((new Date(p.data) - new Date()) / (1000*60*60*24));
                 div.innerHTML += `
-                <div class="card" style="padding:0; overflow:hidden; display:flex; flex-direction:column;">
-                    ${c.fotoUrl ? `<div style="height:120px; background:url('${c.fotoUrl}') center/cover; cursor:pointer;" onclick="expandirImg('${c.fotoUrl}')"></div>` : '<div style="height:40px; background:var(--brand-primary);"></div>'}
-                    <div style="padding:20px; flex:1; display:flex; flex-direction:column;">
-                        <h3 style="margin:0 0 10px 0;">${sanitizeText(c.nome)}</h3>
-                        <div style="font-size:1.5rem; font-weight:800; color:${dias<30?'var(--brand-danger)':'var(--brand-success)'}; margin-bottom:10px;">Faltam ${dias} dias</div>
-                        <div style="font-size:0.85rem; color:var(--text-muted); margin-bottom:auto;">📅 Prova: ${c.data}</div>
-                        <button class="btn-outline" style="margin-top:16px; color:var(--brand-danger); border-color:var(--brand-danger);" onclick="excluirProva('${c.id}')">Excluir</button>
-                    </div>
+                <div class="stat-card" style="position:relative; overflow:hidden;">
+                    <span style="font-size:1rem; color:var(--text-main);">${p.nome}</span>
+                    <strong style="color:${dias<30?'var(--brand-danger)':'var(--brand-primary)'}; font-size:2.2rem; margin:10px 0;">Faltam ${dias} dias</strong>
+                    <span style="font-size:0.8rem; font-weight:normal;">📅 ${p.data}</span>
+                    <button class="btn-icon" style="position:absolute; top:10px; right:10px;" onclick="excluirProva('${p.id}')">✖</button>
                 </div>`;
             });
         }
-
-        async function processarEditalAutomatico(btn) {
-    const apiKey = sessionStorage.getItem('pruma_user_apikey'); 
-    if(!apiKey) return alert("Configure a API Key da IA primeiro.");
-    let texto = document.getElementById('edital-gigante').value.trim(); 
-    let pId = document.getElementById('edital-prova-select').value;
-    if(!texto) return alert("Cole o texto do edital.");
-    
-    // Utiliza o mesmo modelo dinâmico configurado no chat
-    const modeloStr = (userAtual.uid === ADMIN_UID) ? "gemini-3.1-pro-preview" : "gemini-3.6-flash";
-    
-    const txOriginal = btn.textContent; 
-    btn.disabled = true; 
-    btn.textContent = "Analisando com IA...";
-    let prompt = `Organize o edital em JSON puro (array de objetos): [{"disciplina": "Nome", "topicos": ["T1", "T2"]}]. Sem markdown extra. Texto:\n${texto.substring(0,25000)}`;
-    try {
-        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modeloStr}:generateContent?key=${apiKey}`, { 
-            method:'POST', 
-            headers:{'Content-Type':'application/json'}, 
-            body:JSON.stringify({contents:[{parts:[{text:prompt}]}]}) 
-        });
-        const data = await res.json(); 
-        if(data.error) throw new Error(data.error.message);
-        let respostaTxt = data.candidates[0].content.parts[0].text;
-        let editalExtraido = JSON.parse(respostaTxt.match(/\[.*\]/s)[0]);
-        
-        editalExtraido.forEach(nova => {
-            let obj = { disciplina: nova.disciplina, topicos: nova.topicos }; 
-            if(pId) obj.provaId = pId;
-            let idx = planejamentoEdital.findIndex(x => x.disciplina === nova.disciplina && x.provaId === pId);
-            if(idx !== -1) { 
-                obj.topicos.forEach(t => { 
-                    if(!planejamentoEdital[idx].topicos.includes(t)) planejamentoEdital[idx].topicos.push(t); 
-                }); 
-            } else { 
-                planejamentoEdital.push(obj); 
-            }
-        });
-        refDb.child('planejamento').set(planejamentoEdital); 
-        document.getElementById('edital-gigante').value = ''; 
-        showToast("Edital Mapeado!");
-    } catch(e) { 
-        alert("Falha: " + e.message); 
-    } finally { 
-        btn.disabled = false; 
-        btn.textContent = txOriginal; 
-    }
-}
-        
-        function adicionarMateriaManual() {
-            let pId = document.getElementById('modal-mat-prova').value;
-            let m = sanitizeText(document.getElementById('modal-mat-nome').value.trim());
-            let t = sanitizeText(document.getElementById('modal-mat-topico').value.trim());
-            if(!m) return;
-            let idx = planejamentoEdital.findIndex(x => x.disciplina === m && x.provaId === pId);
-            if(idx !== -1) { 
-                if(t) planejamentoEdital[idx].topicos.push(t); 
-            } else { 
-                planejamentoEdital.push({provaId: pId, disciplina: m, topicos: t ? [t] : []}); 
-            }
-            refDb.child('planejamento').set(planejamentoEdital); 
-            document.getElementById('modal-add-materia').style.display='none';
+        function atualizarSelectProvas() {
+            let sels = [document.getElementById('mat-prova'), document.getElementById('edital-ia-prova')];
+            sels.forEach(s => { if(s) { s.innerHTML = '<option value="">Vincular a uma Prova? (Opcional)</option>'; dbData.provas.forEach(p => s.innerHTML += `<option value="${p.id}">${p.nome}</option>`); } });
         }
 
-        function renderizarEdital() {
-            let div = document.getElementById('lista-materias-div'); 
-            div.innerHTML = '';
+        // MATÉRIAS
+        let currentCorMateria = paleta15[0];
+        document.getElementById('mat-paleta').innerHTML = paleta15.map(c => `<div class="color-dot" style="background:${c};" onclick="currentCorMateria='${c}'; this.style.borderColor='var(--text-main)'"></div>`).join('');
+        
+        function salvarMateria() {
+            let n = sanitizeText(document.getElementById('mat-nome').value), t = sanitizeText(document.getElementById('mat-topico').value), pId = document.getElementById('mat-prova').value;
+            if(!n) return;
+            let idx = dbData.materias.findIndex(m => m.nome.toLowerCase() === n.toLowerCase() && m.provaId === pId);
+            if(idx !== -1) { if(t && !dbData.materias[idx].topicos.includes(t)) dbData.materias[idx].topicos.push(t); dbData.materias[idx].cor = currentCorMateria; } 
+            else { dbData.materias.push({id: gerarId(), nome: n, cor: currentCorMateria, topicos: t ? [t] : [], provaId: pId}); }
+            refDb.child('materias').set(dbData.materias); document.getElementById('mat-topico').value = '';
+        }
+        function excluirMateriaTopico(mId, tIdx) { dbData.materias.find(m=>m.id===mId).topicos.splice(tIdx, 1); refDb.child('materias').set(dbData.materias); }
+        function excluirMateriaInteira(mId) { if(confirm("Excluir pasta inteira?")) { dbData.materias = dbData.materias.filter(m=>m.id!==mId); refDb.child('materias').set(dbData.materias); } }
+        
+        function renderizarMaterias() {
+            let div = document.getElementById('lista-materias-cadastradas'); div.innerHTML = '';
             let grupos = { 'geral': [] };
-            planejamentoEdital.forEach((item, idx) => { 
-                let pId = item.provaId || 'geral'; 
-                if(!grupos[pId]) grupos[pId] = []; 
-                grupos[pId].push({...item, originalIdx: idx}); 
-            });
-            
-            for(let pId in grupos) {
-                if(grupos[pId].length === 0) continue;
-                let nomeProva = pId === 'geral' ? 'Matérias Gerais' : (meusConcursos.find(c=>c.id===pId)?.nome || 'Prova Desconhecida');
-                div.innerHTML += `<h3 style="margin:24px 0 12px 0; color:var(--brand-primary);">${nomeProva}</h3>`;
-                
-                grupos[pId].forEach(item => {
-                    let htmlTopicos = item.topicos.map((t, iT) => `<div class="topico-item"><span>${sanitizeText(t)}</span><button class="btn-danger" style="padding:2px 6px; font-size:0.7rem;" onclick="removerTopico(${item.originalIdx}, ${iT}, event)">✖</button></div>`).join('');
-                    div.innerHTML += `<div class="card" style="padding:0; margin-bottom:12px;"><div class="pasta-header" onclick="this.nextElementSibling.classList.toggle('aberta')"><span>📚 ${sanitizeText(item.disciplina)}</span><span class="badge primary">${item.topicos.length}</span></div><div class="pasta-body">${htmlTopicos}</div></div>`;
+            dbData.materias.forEach(m => { let p = m.provaId || 'geral'; if(!grupos[p]) grupos[p] = []; grupos[p].push(m); });
+
+            for(let p in grupos) {
+                if(grupos[p].length === 0) continue;
+                let nomeP = p === 'geral' ? 'Geral (Sem Vínculo)' : (dbData.provas.find(x=>x.id===p)?.nome || 'Desconhecida');
+                div.innerHTML += `<h3 style="margin-top:20px; font-size:1.1rem; color:var(--text-muted);">${nomeP}</h3>`;
+                grupos[p].forEach(m => {
+                    let htmlT = m.topicos.map((t, i) => `<div style="padding:8px; display:flex; justify-content:space-between; border-bottom:1px solid var(--border-color);"><span>📄 ${t}</span> <button class="btn-icon" onclick="excluirMateriaTopico('${m.id}', ${i})">✖</button></div>`).join('');
+                    div.innerHTML += `
+                    <div class="pasta">
+                        <div class="pasta-header" style="border-left:5px solid ${m.cor};" onclick="this.nextElementSibling.classList.toggle('aberta')">
+                            <span>📁 ${m.nome} <span style="font-size:0.8rem; font-weight:normal;">(${m.topicos.length})</span></span>
+                            <button class="btn-icon" onclick="event.stopPropagation(); excluirMateriaInteira('${m.id}')">🗑️</button>
+                        </div>
+                        <div class="pasta-body">${htmlT || '<span style="color:var(--text-muted);font-size:0.85rem;">Nenhum tópico.</span>'}</div>
+                    </div>`;
                 });
             }
-            atualizarSelectsFormularios();
         }
-        function removerTopico(idD, idT, e) { 
-            e.stopPropagation(); 
-            if(confirm("Excluir tópico?")) { 
-                planejamentoEdital[idD].topicos.splice(idT, 1); 
-                if(planejamentoEdital[idD].topicos.length === 0) planejamentoEdital.splice(idD, 1); 
-                refDb.child('planejamento').set(planejamentoEdital); 
-            } 
+        function atualizarDatalists() {
+            let dlMats = document.getElementById('lista-materias-dl'); dlMats.innerHTML = '';
+            let matsUnicas = [...new Set(dbData.materias.map(m=>m.nome))];
+            matsUnicas.forEach(m => dlMats.innerHTML += `<option value="${m}">`);
         }
-
-        function atualizarSelectsFormularios() {
-            let sMat = document.getElementById('ses-mat');
-            let fcMat = document.getElementById('fc-mat');
-            let errMat = document.getElementById('err-disc');
-            if(!sMat || !fcMat || !errMat) return;
-            
-            let materiasUnicas = [...new Set(planejamentoEdital.map(x => x.disciplina))].sort();
-            
-            let hM = '<option value="">Selecione ou adicione...</option><option value="NOVA">+ Nova Matéria</option>';
-            let hF = '<option value="">Selecionar Matéria Alvo</option>';
-            let hE = '<option value="">Selecione a Matéria</option>';
-            
-            materiasUnicas.forEach(m => { 
-                let sm = sanitizeText(m); 
-                hM += `<option value="${sm}">${sm}</option>`; 
-                hF += `<option value="${sm}">${sm}</option>`; 
-                hE += `<option value="${sm}">${sm}</option>`; 
-            });
-            
-            sMat.innerHTML = hM; 
-            fcMat.innerHTML = hF; 
-            errMat.innerHTML = hE;
-        }
-        function atualizarTopicosSessao() {
-            let sel = document.getElementById('ses-mat').value;
-            let sTop = document.getElementById('ses-top');
-            sTop.innerHTML = '<option value="">Selecione o Tópico</option><option value="NOVO">+ Novo Tópico</option>';
-            planejamentoEdital.filter(x => x.disciplina === sel).forEach(x => { 
-                x.topicos.forEach(t => { 
-                    sTop.innerHTML += `<option value="${sanitizeText(t)}">${sanitizeText(t)}</option>`; 
-                }); 
-            });
+        function atualizarTopicosDatalist(inputId, matNome) {
+            let dl = document.getElementById('dl-'+inputId); if(!dl) return; dl.innerHTML = '';
+            dbData.materias.filter(m => m.nome.toLowerCase() === matNome.toLowerCase()).forEach(m => m.topicos.forEach(t => dl.innerHTML += `<option value="${t}">`));
         }
 
-        function atualizarTopicosCaderno() {
-            let sel = document.getElementById('err-disc').value;
-            let sTop = document.getElementById('err-assunto');
-            sTop.innerHTML = '<option value="">Selecione o Tópico</option>';
-            planejamentoEdital.filter(x => x.disciplina === sel).forEach(x => { 
-                x.topicos.forEach(t => { 
-                    sTop.innerHTML += `<option value="${sanitizeText(t)}">${sanitizeText(t)}</option>`; 
-                }); 
-            });
+        // CADERNO DE ERROS
+        function salvarErro() {
+            let m = sanitizeText(document.getElementById('err-mat').value), t = sanitizeText(document.getElementById('err-top').value), txt = sanitizeText(document.getElementById('err-texto').value);
+            if(!m || !txt) return alert("Preencha Matéria e o Texto.");
+            dbData.cadernos.push({id: gerarId(), materia: m, topico: t || 'Geral', texto: txt, timestamp: Date.now(), data: new Date().toLocaleDateString()+' '+new Date().toLocaleTimeString().substring(0,5)});
+            refDb.child('cadernos').set(dbData.cadernos); document.getElementById('err-texto').value = '';
         }
-        function atualizarTopicosFc() {
-            let sel = document.getElementById('fc-mat').value;
-            let sTop = document.getElementById('fc-top');
-            sTop.innerHTML = '<option value="">Selecione o Tópico</option>';
-            planejamentoEdital.filter(x => x.disciplina === sel).forEach(x => { 
-                x.topicos.forEach(t => { 
-                    sTop.innerHTML += `<option value="${sanitizeText(t)}">${sanitizeText(t)}</option>`; 
-                }); 
-            });
-        }
-        
-        function salvarErroManual() {
-            let d = document.getElementById('err-disc').value;
-            let a = document.getElementById('err-assunto').value;
-            let e = document.getElementById('err-desc').value.trim();
-            if(!d || !e) return alert("Preencha Matéria e Descrição.");
-            meuCadernoErros.push({id: Date.now().toString(), disciplina: d, assunto: a || 'Geral', descricao: e}); 
-            refDb.child('caderno_erros').set(meuCadernoErros); 
-            document.getElementById('err-desc').value = ''; 
-            showToast("Salvo no Caderno!");
-        }
-        function excluirErro(id) { 
-            if(confirm("Apagar este erro?")) { 
-                meuCadernoErros = meuCadernoErros.filter(e => e.id !== id); 
-                refDb.child('caderno_erros').set(meuCadernoErros); 
-            } 
-        }
-        
-        function renderizarCaderno() {
-            let div = document.getElementById('lista-erros-div'); 
-            div.innerHTML = ''; 
-            let agr = {};
-            meuCadernoErros.forEach(e => { 
-                if(!agr[e.disciplina]) agr[e.disciplina] = {}; 
-                if(!agr[e.disciplina][e.assunto]) agr[e.disciplina][e.assunto] = []; 
-                agr[e.disciplina][e.assunto].push(e); 
-            });
-            for(let d in agr) {
-                let htmlA = ""; 
-                for(let a in agr[d]) { 
-                    htmlA += `<div style="font-weight:700; margin:16px 0 8px 0; font-size:0.95rem; color:var(--brand-primary);">📌 ${sanitizeText(a)}</div>` + 
-                    agr[d][a].map(n => `<div style="padding:12px; background:var(--bg-input); margin-bottom:8px; border-radius:var(--radius-sm); border:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:flex-start;"><span style="flex:1;">${sanitizeText(n.descricao)}</span><button class="btn-danger" style="margin-left:10px;" onclick="excluirErro('${n.id}')">✖</button></div>`).join(''); 
+        function excluirItemCaderno(id) { dbData.cadernos = dbData.cadernos.filter(c=>c.id!==id); refDb.child('cadernos').set(dbData.cadernos); }
+        function renderizarCadernos() {
+            let div = document.getElementById('lista-cadernos-div'); div.innerHTML = ''; let agr = {};
+            dbData.cadernos.forEach(c => { if(!agr[c.materia]) agr[c.materia] = {}; if(!agr[c.materia][c.topico]) agr[c.materia][c.topico] = []; agr[c.materia][c.topico].push(c); });
+            
+            for(let m in agr) {
+                let htmlM = '';
+                for(let t in agr[m]) {
+                    htmlM += `<div style="font-weight:700; color:var(--brand-primary); margin:16px 0 8px 0;">📌 ${t}</div>`;
+                    agr[m][t].forEach(item => { htmlM += `<div style="background:var(--bg-input); padding:12px; border-radius:var(--radius-sm); margin-bottom:8px; display:flex; gap:10px;"><div style="flex:1;"><p style="margin:0 0 8px 0; font-size:0.95rem;">${item.texto}</p><span style="font-size:0.75rem; color:var(--text-muted);">${item.data}</span></div><button class="btn-icon" onclick="excluirItemCaderno('${item.id}')">✖</button></div>`; });
                 }
-                div.innerHTML += `<div class="card" style="padding:0; margin-bottom:12px;"><div class="pasta-header" onclick="this.nextElementSibling.classList.toggle('aberta')"><span>📁 ${sanitizeText(d)}</span><span>▼</span></div><div class="pasta-body">${htmlA}</div></div>`;
+                div.innerHTML += `<div class="pasta"><div class="pasta-header" onclick="this.nextElementSibling.classList.toggle('aberta')">📓 ${m}</div><div class="pasta-body">${htmlM}</div></div>`;
             }
         }
 
-        function renderizarDashboardEstatisticas() {
-            const periodo = document.getElementById('filtro-periodo').value; 
-            const tipoGrafico = document.getElementById('filtro-grafico').value;
-            const ctx = document.getElementById('graficoDinamico').getContext('2d');
-            if(chartRoscaInstance) chartRoscaInstance.destroy();
-
-            let agora = Date.now(), totHoras = 0, totQts = 0, totPags = 0, totVids = 0;
-            let sessoesFiltradas = sessoesHistorico.filter(s => {
-                let d = (agora - s.timestamp);
-                if(periodo === 'tudo') return true;
-                return d <= (parseInt(periodo) * 86400000);
+        // ESTATÍSTICAS
+        function atualizarEstatisticas() {
+            let per = document.getElementById('est-periodo').value, tipo = document.getElementById('est-tipo-grafico').value;
+            let divCus = document.getElementById('est-custom-dates'); divCus.style.display = (per==='custom') ? 'flex' : 'none';
+            let dtI = document.getElementById('est-dt-ini').value, dtF = document.getElementById('est-dt-fim').value;
+            
+            let agora = Date.now(), tA = 0, tE = 0, tSeg = 0, tPag = 0, tVid = 0; let dadosGrafico = {};
+            
+            let filtrados = dbData.sessoes.filter(s => {
+                if(per === 'tudo') return true;
+                if(per === 'custom') { if(!dtI || !dtF) return true; return (s.timestamp >= new Date(dtI).getTime() && s.timestamp <= new Date(dtF).getTime()+86399999); }
+                return (agora - s.timestamp) <= (parseInt(per)*86400000);
             });
 
-            let dadosAgrupados = {};
-            sessoesFiltradas.forEach(s => {
-                totHoras += s.segundos; 
-                totQts += (s.totalQuestoes||0); 
-                totPags += (s.paginas||0); 
-                totVids += (s.videos||0);
-                dadosAgrupados[s.materia||'Geral'] = (dadosAgrupados[s.materia||'Geral'] || 0) + (s.segundos / 60);
+            filtrados.forEach(s => {
+                tA += (s.acertos||0); tE += (s.erros||0); tSeg += (s.segundos||0); tPag += (s.paginas||0); tVid += (s.videos||0);
+                dadosGrafico[s.materia] = (dadosGrafico[s.materia]||0) + (s.segundos/60);
             });
 
-            document.getElementById('stat-tot-horas').textContent = `${Math.floor(totHoras/3600)}h ${Math.floor((totHoras%3600)/60)}m`;
-            document.getElementById('stat-tot-qts').textContent = totQts; 
-            document.getElementById('stat-tot-pags').textContent = totPags; 
-            document.getElementById('stat-tot-vids').textContent = totVids;
+            document.getElementById('st-acertos').textContent = tA; document.getElementById('st-erros').textContent = tE;
+            document.getElementById('st-perc').textContent = (tA+tE)>0 ? Math.round((tA/(tA+tE))*100)+'%' : '0%';
+            document.getElementById('st-tempo').textContent = `${Math.floor(tSeg/3600)}h ${Math.floor((tSeg%3600)/60)}m`;
+            document.getElementById('st-pags').textContent = tPag; document.getElementById('st-vids').textContent = tVid;
 
-            let isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-            let textColor = isDark ? '#f8fafc' : '#1e293b';
+            // Chart
+            if(graficoInstance) graficoInstance.destroy();
+            let isDark = document.documentElement.getAttribute('data-theme') === 'dark'; let txtCor = isDark ? '#F5F5F7' : '#1D1D1F';
+            let keys = Object.keys(dadosGrafico).length>0 ? Object.keys(dadosGrafico) : ['Sem dados'];
+            let vals = Object.values(dadosGrafico).length>0 ? Object.values(dadosGrafico) : [1];
+            // Match cores das matérias
+            let cores = keys.map(k => { let m = dbData.materias.find(x=>x.nome===k); return m ? m.cor : paleta15[0]; });
 
-            chartRoscaInstance = new Chart(ctx, {
-                type: tipoGrafico,
-                data: { 
-                    labels: Object.keys(dadosAgrupados).length > 0 ? Object.keys(dadosAgrupados) : ['Sem dados'], 
-                    datasets: [{ 
-                        label: 'Minutos Estudados', 
-                        data: Object.values(dadosAgrupados).length > 0 ? Object.values(dadosAgrupados) : [1], 
-                        backgroundColor: paletaCoresList, 
-                        borderWidth: 0, 
-                        borderRadius: tipoGrafico==='bar'?4:0 
-                    }] 
-                },
-                options: { 
-                    responsive: true, 
-                    maintainAspectRatio: false, 
-                    color: textColor, 
-                    plugins: { 
-                        legend: { position: 'bottom', labels: { color: textColor } } 
-                    }, 
-                    scales: tipoGrafico === 'bar' ? { x: { ticks:{color:textColor} }, y: { ticks:{color:textColor} } } : {} 
-                }
+            graficoInstance = new Chart(document.getElementById('graficoEst').getContext('2d'), {
+                type: tipo, data: { labels: keys, datasets: [{ label: 'Minutos', data: vals, backgroundColor: cores, borderWidth: 0, borderRadius: tipo==='bar'?6:0 }] },
+                options: { responsive: true, maintainAspectRatio: false, color: txtCor, plugins: { legend: { labels: { color: txtCor } } }, scales: tipo==='bar' ? { x:{ticks:{color:txtCor}}, y:{ticks:{color:txtCor}} } : {} }
             });
         }
 
-        function carregarDadosDoBanco() {
-            refDb.child('planejamento').on('value', snap => { planejamentoEdital = snap.val() || []; renderizarEdital(); });
-            refDb.child('caderno_erros').on('value', snap => { meuCadernoErros = snap.val() || []; renderizarCaderno(); });
-            refDb.child('concursos').on('value', snap => { meusConcursos = snap.val() || []; renderizarConcursos(); });
-            refDb.child('pdfs').on('value', snap => { let obj = snap.val() || {}; meusPdfs = Object.keys(obj).map(k => ({id: k, ...obj[k]})); renderizarFontes(); });
-            refDb.child('historico_sessoes').on('value', snap => { let obj = snap.val() || {}; sessoesHistorico = Object.keys(obj).map(k => obj[k]); renderizarRegistrosIniciais(); if(document.getElementById('view-estatisticas').style.display==='block') renderizarDashboardEstatisticas(); });
-        }
-
-        async function enviarPdfNuvem() {
-            const f = document.getElementById('up-pdf').files[0]; if(!f) return;
-            const btn = event.currentTarget; const tx = btn.textContent;
+        // BIBLIOTECA
+        async function uploadArquivo() {
+            let f = document.getElementById('bib-file').files[0]; if(!f) return alert("Selecione.");
+            let btn = event.currentTarget; let tx = btn.textContent; btn.disabled = true; btn.textContent = "Lendo e Subindo...";
             try {
-                btn.disabled = true; btn.textContent = "Lendo...";
-                const refF = refStore.child(Date.now()+'_'+f.name); 
-                await refF.put(f); 
-                const url = await refF.getDownloadURL();
+                let refF = refStore.child('biblioteca/'+gerarId()+'_'+f.name); await refF.put(f); let url = await refF.getDownloadURL();
                 let txt = "";
-                if(f.type === "application/pdf" || f.name.toLowerCase().endsWith('.pdf')) {
-                    const arrayBuffer = await f.arrayBuffer(); 
-                    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-                    for(let i = 1; i <= Math.min(pdf.numPages, 15); i++) { 
-                        const cnt = await (await pdf.getPage(i)).getTextContent(); 
-                        txt += cnt.items.map(it => it.str).join(" ") + "\n"; 
-                    }
-                } else { 
-                    txt = await f.text(); 
-                }
-                await refDb.child('pdfs').push({ nome: f.name, url: url, texto: sanitizeText(txt.substring(0, 35000)), data: new Date().toLocaleDateString(), refPath: refF.fullPath });
-                btn.textContent = "✅ Salvo!"; 
-                document.getElementById('up-pdf').value = ''; 
-                setTimeout(() => { btn.textContent = tx; btn.disabled = false; }, 2000);
-            } catch (e) { 
-                alert("Erro: " + e.message); 
-                btn.textContent = tx; 
-                btn.disabled = false; 
+                if(f.type.includes('pdf')) {
+                    const arr = await f.arrayBuffer(); const pdf = await pdfjsLib.getDocument({data:arr}).promise;
+                    for(let i=1; i<=Math.min(pdf.numPages, 15); i++) { let c = await (await pdf.getPage(i)).getTextContent(); txt += c.items.map(it=>it.str).join(" ") + "\n"; }
+                } else { txt = await f.text(); }
+                let m = sanitizeText(document.getElementById('bib-mat-arq').value||'Geral');
+                refDb.child('biblioteca').push({ id: gerarId(), nome: f.name, tipo: 'ARQUIVO', url: url, texto: txt.substring(0,40000), materia: m, data: new Date().toLocaleDateString(), refPath: refF.fullPath });
+                document.getElementById('bib-file').value = ''; btn.textContent = "✅ Salvo!"; setTimeout(()=> {btn.textContent=tx; btn.disabled=false;}, 2000);
+            } catch(e) { alert("Erro: "+e.message); btn.textContent=tx; btn.disabled=false; }
+        }
+        function salvarLink() {
+            let url = document.getElementById('bib-link').value.trim(); if(!url) return;
+            let m = sanitizeText(document.getElementById('bib-mat-link').value||'Geral');
+            refDb.child('biblioteca').push({ id: gerarId(), nome: new URL(url).hostname, tipo: 'LINK', url: url, texto: "Conteúdo Web referenciado pelo usuário: "+url, materia: m, data: new Date().toLocaleDateString() });
+            document.getElementById('bib-link').value = ''; alert("Link Salvo.");
+        }
+        async function excluirBib(id, path) { if(confirm("Excluir?")) { let item = Object.entries(dbData.biblioteca).find(e=>e[1].id===id); if(item) { refDb.child('biblioteca/'+item[0]).remove(); if(path) try{ await storage.ref(path).delete(); }catch(e){} } } }
+        
+        function renderizarBiblioteca() {
+            let div = document.getElementById('lista-biblioteca'); div.innerHTML = ''; let agr = {};
+            dbData.biblioteca.forEach(b => { if(!agr[b.materia]) agr[b.materia]=[]; agr[b.materia].push(b); });
+            for(let m in agr) {
+                let html = agr[m].map(b => `<div class="list-item" style="background:var(--bg-card); border-radius:var(--radius-sm); border:1px solid var(--border-color); margin-bottom:8px;"><div><strong>${b.tipo==='LINK'?'🌐':'📄'} ${b.nome}</strong><div style="font-size:0.8rem; color:var(--text-muted);">${b.data}</div></div><button class="btn-icon" onclick="excluirBib('${b.id}', '${b.refPath||''}')">✖</button></div>`).join('');
+                div.innerHTML += `<div class="pasta"><div class="pasta-header" onclick="this.nextElementSibling.classList.toggle('aberta')">📁 ${m}</div><div class="pasta-body">${html}</div></div>`;
             }
         }
 
-        async function adicionarLinkComoFonte() {
-            let url = document.getElementById('inp-link-fonte').value.trim(); if(!url) return;
-            const btn = event.currentTarget; const tx = btn.textContent;
-            try {
-                btn.disabled = true; btn.textContent = "Salvando...";
-                await refDb.child('pdfs').push({ nome: "🌐 " + new URL(url).hostname, url: url, texto: "Link referenciado: " + sanitizeText(url), data: new Date().toLocaleDateString() });
-                btn.textContent = "✅ Link Salvo!"; 
-                document.getElementById('inp-link-fonte').value = ''; 
-                setTimeout(() => { btn.textContent = tx; btn.disabled = false; }, 2000);
-            } catch(e) { 
-                alert("Erro: " + e.message); 
-                btn.textContent = tx; 
-                btn.disabled = false; 
-            }
+        // PRUMA IA
+        function mudarSubIa(sub, btn) {
+            ['chat', 'simulador', 'flashcards', 'edital'].forEach(s => { let el = document.getElementById('subia-'+s); if(el) el.style.display = (s===sub)?'block':'none'; });
+            document.querySelectorAll('.sub-aba-btn').forEach(b => b.classList.remove('ativa')); if(btn) btn.classList.add('ativa');
+            // Hide font selection for Edital
+            document.getElementById('caixa-fontes-ia').style.display = (sub==='edital') ? 'none' : 'block';
         }
 
-        async function excluirFonte(id, refPath) {
-            if(confirm("Excluir esta fonte da PRUMA?")) {
-                await refDb.child('pdfs').child(id).remove();
-                if(refPath) { try { await storage.ref(refPath).delete(); } catch(e){} }
-            }
+        function atualizarCheckboxesIA() {
+            let cBib = document.getElementById('checkboxes-biblioteca'); cBib.innerHTML = '';
+            dbData.biblioteca.forEach(b => { cBib.innerHTML += `<label style="display:flex; gap:8px;"><input type="checkbox" class="ia-chk-bib" value="${b.id}"> ${b.tipo==='LINK'?'🌐':'📄'} ${b.nome} (${b.materia})</label>`; });
+            
+            let cCad = document.getElementById('checkboxes-cadernos'); cCad.innerHTML = ''; let cats = [...new Set(dbData.cadernos.map(c=>c.materia))];
+            cats.forEach(c => { cCad.innerHTML += `<label style="display:flex; gap:8px; color:var(--brand-danger); font-weight:600;"><input type="checkbox" class="ia-chk-cad" value="${c}"> 📓 Caderno: ${c}</label>`; });
         }
 
-        function renderizarFontes() {
-            let h = ''; let chk = '';
-            if(meusPdfs.length === 0) { 
-                h = '<p>Nenhuma fonte.</p>'; 
-                chk = '<p style="font-size:0.85rem; color:var(--text-muted);">Nenhuma fonte adicionada.</p>'; 
-            }
-            meusPdfs.forEach(p => {
-                h += `<div class="list-item" style="background:var(--bg-card); border:1px solid var(--border-color); border-radius:var(--radius-sm); margin-bottom:8px;">
-                        <div><strong style="display:block;">${sanitizeText(p.nome)}</strong><span style="font-size:0.8rem; color:var(--text-muted);">Adicionado em: ${p.data}</span></div>
-                        <button class="btn-danger" onclick="excluirFonte('${p.id}', '${p.refPath||''}')">Excluir</button>
-                      </div>`;
-                chk += `<label style="display:flex; align-items:center; gap:8px; cursor:pointer;"><input type="checkbox" class="check-pdf-fonte" value="${p.id}"> 📄 ${sanitizeText(p.nome)}</label>`;
+        function renderizarHistoricoIA() {
+            let div = document.getElementById('lista-historico-ia'); div.innerHTML = '';
+            if(dbData.iaHistorico.length===0) div.innerHTML = '<p>Vazio.</p>';
+            [...dbData.iaHistorico].reverse().forEach(h => {
+                div.innerHTML += `<div style="background:var(--bg-input); padding:12px; border-radius:var(--radius-sm); border:1px solid var(--border-color); display:flex; justify-content:space-between; gap:10px;"><span style="flex:1; font-size:0.9rem; overflow:hidden; text-overflow:ellipsis;">"${h}"</span><button class="btn-primary" style="width:auto; padding:6px 12px; font-size:0.8rem;" onclick="reEnviarHistoria('${sanitizeText(h).replace(/'/g, "\\'")}')">🔄 Enviar</button></div>`;
             });
-            document.getElementById('lista-gestao-fontes').innerHTML = h;
-            document.getElementById('checkboxes-pdfs-chat').innerHTML = chk; 
-            document.getElementById('checkboxes-pdfs-sim').innerHTML = chk; 
-            document.getElementById('checkboxes-pdfs-fc').innerHTML = chk;
         }
+        function reEnviarHistoria(txt) { document.getElementById('modal-historico-ia').style.display='none'; document.getElementById('inp-chat').value = txt; executarIA('chat'); }
 
-        function extrairContextoSelecionado() {
+        function extrairContextoGeral() {
             let ctx = "";
-            document.querySelectorAll('.check-pdf-fonte:checked').forEach(c => { 
-                let pdf = meusPdfs.find(p=>p.id===c.value); 
-                if(pdf) ctx += `\n[FONTE: ${pdf.nome}]\n${pdf.texto}\n`; 
-            });
+            document.querySelectorAll('.ia-chk-bib:checked').forEach(c => { let b = dbData.biblioteca.find(x=>x.id===c.value); if(b) ctx += `\n[FONTE BIBLIOTECA: ${b.nome}]\n${b.texto}\n`; });
+            document.querySelectorAll('.ia-chk-cad:checked').forEach(c => { let errs = dbData.cadernos.filter(x=>x.materia===c.value).map(e=>e.texto).join('\n'); ctx += `\n[MEU CADERNO DE ERROS - ${c.value} (FOQUE NISSO)]:\n${errs}\n`; });
+            if(dbData.iaHistorico.length>0) ctx += `\n[HISTÓRICO DA NOSSA CONVERSA RECENTE]:\n${dbData.iaHistorico.map((h,i)=> `Eu perguntei antes: ${h}`).join('\n')}\n`;
             return ctx;
         }
 
-        function formatarRespostaIA(txt) {
-            let limpo = sanitizeText(txt).replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\*(.*?)\*/g, '<em>$1</em>');
-            limpo = limpo.replace(/^([A-E]\)) (.*?)(\[CORRETA\])?$/gm, (m, l, t, c) => `<div class="quiz-opt" onclick="responderQuestaoPruma(this, ${c?'true':'false'})">${l} ${t.trim()}</div>`);
-            return limpo.replace(/\n/g, '<br>');
+        function formatarIAResponse(txt) {
+            let l = sanitizeText(txt).replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\*(.*?)\*/g, '<em>$1</em>');
+            l = l.replace(/^([A-E]\)) (.*?)(\[CORRETA\])?$/gm, (m, lt, t, c) => `<div style="padding:10px; background:var(--bg-card); border:1px solid var(--border-color); margin:6px 0; border-radius:var(--radius-sm); cursor:pointer;" onclick="this.style.borderColor='${c?'var(--brand-success)':'var(--brand-danger)'}'">${lt} ${t.trim()}</div>`);
+            return l.replace(/\n/g, '<br>');
         }
-        function responderQuestaoPruma(e, c) { e.classList.add(c ? 'acerto' : 'erro'); }
 
-        async function executarPrumaIA(tipo) {
-            const apiKey = sessionStorage.getItem('pruma_user_apikey'); 
-            if(!apiKey) return alert("Configure a API Key nas configurações.");
-            
-            // Modelos solicitados configurados com as chaves oficiais para Admin e Alunos via v1beta
-            const modeloStr = (userAtual.uid === ADMIN_UID) ? "gemini-3.1-pro-preview" : "gemini-3.6-flash";
-            
-            let prompt = "", box = null;
-            let ctxBase = extrairContextoSelecionado();
-            let regra = "Aja como tutora especialista. Use emojis, listas e tabelas se necessário. Faça buscas na web para dados recentes.";
+        function baixarPdfResumo(txtBase64) {
+            try {
+                const doc = new window.jspdf.jsPDF();
+                doc.setFont("helvetica"); doc.setFontSize(12);
+                let textLines = doc.splitTextToSize(atob(txtBase64), 180);
+                doc.text(textLines, 15, 15);
+                doc.save("Resumo_PRUMA.pdf");
+            } catch(e) { alert("Erro ao gerar PDF."); }
+        }
 
-            if(tipo === 'tutor') {
-                let p = document.getElementById('inp-chat').value.trim(); 
-                if(!p) return; 
-                box = document.getElementById('box-chat');
-                box.innerHTML += `<div class="msg msg-u">${sanitizeText(p)}</div>`; 
-                document.getElementById('inp-chat').value = ''; 
-                box.scrollTop = box.scrollHeight;
-                if(document.getElementById('check-usar-erros-chat').checked && meuCadernoErros.length>0) {
-                    ctxBase += `\n[MEU CADERNO DE ERROS]:\n${meuCadernoErros.map(e=>e.descricao).join('\n')}`;
-                }
-                prompt = `${regra}\n\n${ctxBase ? "CONTEXTO SELECIONADO:\n"+ctxBase : ""}\n\nPERGUNTA: ${p}`;
-            }
-            else if(tipo === 'simulador') {
-                box = document.getElementById('box-sim'); 
-                box.style.display = 'flex'; 
-                box.innerHTML = '';
-                if(meuCadernoErros.length>0) {
-                    ctxBase += `\n[FOQUE NESTES MEUS ERROS AO CRIAR QUESTÕES]:\n${meuCadernoErros.map(e=>e.descricao).join('\n')}`;
-                }
-                prompt = `${regra}\n\n${ctxBase}\nCrie 3 questões inéditas difíceis de múltipla escolha (A, B, C, D) no estilo prova, colocando [CORRETA] ao final da alternativa certa.`;
-            }
-            else if(tipo === 'flashcards') {
-                let p = document.getElementById('fc-prompt').value.trim(); 
-                if(!p) return alert("Descreva o tema.");
-                let d = document.getElementById('fc-mat').value;
-                let t = document.getElementById('fc-top').value;
-                if(!d) return alert("Selecione onde salvar os flashcards.");
-                box = document.getElementById('box-fc'); 
-                box.style.display = 'block'; 
-                box.innerHTML = '';
-                prompt = `${regra}\n\n${ctxBase}\nCrie flashcards sobre: ${p}. Retorne EXATAMENTE UM JSON PURO: [{"f": "Pergunta", "v": "Resposta"}]. Sem crases ou markdown de bloco de código no início ou fim.`;
+        async function executarIA(tipo) {
+            let k = localStorage.getItem('pruma_apikey'); if(!k) return alert("Configure a API Key na aba lateral.");
+            const modelo = (userAtual.uid === ADMIN_UID) ? "gemini-3.1-pro-preview" : "gemini-3.8-flash";
+            
+            let p = "", box = null; let ctx = extrairContextoGeral();
+            let baseSys = "Você é a PRUMA IA, especialista em concursos e provas. É rigorosa, direta e não inventa dados (evite alucinações). Use buscas web do google ativas para dados atuais se necessário. Se for pedido um RESUMO de PDF e uma fonte estiver anexada, retorne um resumo focado com no máximo 40% do tamanho original.";
+
+            if(tipo === 'chat') {
+                p = document.getElementById('inp-chat').value.trim(); if(!p) return;
+                box = document.getElementById('box-chat'); box.innerHTML += `<div class="msg msg-u">${sanitizeText(p)}</div>`; document.getElementById('inp-chat').value=''; box.scrollTop = box.scrollHeight;
+                // Salvar histórico
+                dbData.iaHistorico.push(p); if(dbData.iaHistorico.length>10) dbData.iaHistorico.shift(); refDb.child('ia_historico').set(dbData.iaHistorico);
+            } else if(tipo === 'questoes') {
+                let num = document.getElementById('ia-qts-num').value, tma = document.getElementById('ia-qts-tema').value;
+                p = `Crie exatamente ${num} questões inéditas no estilo prova múltipla escolha (A,B,C,D,E) sobre ${tma||'o contexto fornecido'}. Coloque [CORRETA] ao lado da certa.`;
+                box = document.getElementById('box-qts'); box.style.display='flex'; box.innerHTML='';
+            } else if(tipo === 'flashcards') {
+                let t = document.getElementById('fc-tema').value.trim(); if(!t) return alert("Digite o tema.");
+                p = `Crie flashcards sobre: ${t}. Retorne EXATAMENTE UM JSON ARRAY PURO: [{"f":"Pergunta","v":"Resposta"}]. Sem formatação markdown de bloco (\`\`\`).`;
+                box = document.getElementById('box-fc'); box.style.display='block'; box.innerHTML='';
             }
 
             try {
-                if(tipo !== 'flashcards') { 
-                    box.innerHTML += `<div class="msg msg-a" id="load-ia">Analisando dados... ⏳</div>`; 
-                    box.scrollTop = box.scrollHeight; 
-                } else { 
-                    box.innerHTML = "Gerando cartões... ⏳"; 
-                }
+                if(tipo!=='flashcards') { box.innerHTML += `<div class="msg msg-a" id="load-ia">Raciocinando... ⏳</div>`; box.scrollTop = box.scrollHeight; }
+                else { box.innerHTML = "Gerando cartões... ⏳"; }
 
-                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modeloStr}:generateContent?key=${apiKey}`, {
-                    method:'POST', 
-                    headers:{'Content-Type':'application/json'}, 
-                    body:JSON.stringify({
-                        contents:[{parts:[{text:prompt}]}], 
-                        tools:[{googleSearch:{}}]
-                    })
+                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelo}:generateContent?key=${k}`, {
+                    method:'POST', headers:{'Content-Type':'application/json'},
+                    body:JSON.stringify({ contents:[{parts:[{text: `${baseSys}\n\n${ctx ? "CONTEXTO DE BASE/FONTES/HISTÓRICO:\n"+ctx : ""}\n\nINSTRUÇÃO DO USUÁRIO: ${p}`}]}], tools:[{googleSearch:{}}] })
                 });
-                const data = await res.json(); 
-                if(data.error) throw new Error(data.error.message);
-                let txtFinal = data.candidates[0].content.parts[0].text;
+                const data = await res.json(); if(data.error) throw new Error(data.error.message);
+                let txtF = data.candidates[0].content.parts[0].text;
 
                 if(tipo === 'flashcards') {
-                    let jsonStr = txtFinal.replace(/```json/g, '').replace(/```/g, '').trim();
-                    let cards = JSON.parse(jsonStr.match(/\[.*\]/s)[0]);
-                    let d = sanitizeText(document.getElementById('fc-mat').value);
-                    let t = sanitizeText(document.getElementById('fc-top').value);
+                    let json = JSON.parse(txtF.replace(/```json/g,'').replace(/```/g,'').match(/\[.*\]/s)[0]);
+                    let mD = sanitizeText(document.getElementById('fc-mat-dest').value), tD = sanitizeText(document.getElementById('fc-top-dest').value);
                     box.innerHTML = '';
-                    cards.forEach(c => {
-                        let idBtn = 'fc-btn-' + Date.now() + Math.random();
-                        box.innerHTML += `
-                        <div class="card" style="padding:16px; margin-bottom:12px;">
-                            <div style="font-weight:700; color:var(--brand-primary); margin-bottom:8px;">FRENTE:</div>
-                            <div style="margin-bottom:12px;">${sanitizeText(c.f)}</div>
-                            <div style="font-weight:700; color:var(--brand-success); margin-bottom:8px; border-top:1px dashed var(--border-color); padding-top:12px;">VERSO:</div>
-                            <div>${sanitizeText(c.v)}</div>
-                            <button id="${idBtn}" class="btn-outline" style="margin-top:16px; border-color:var(--brand-primary); color:var(--brand-primary);" onclick="salvarFcNoCaderno('${d}', '${t}', '${sanitizeText(c.f).replace(/'/g,"\\'")} - ${sanitizeText(c.v).replace(/'/g,"\\'")}', this)">Salvar no Caderno</button>
+                    json.forEach(c => {
+                        let bId = gerarId();
+                        box.innerHTML += `<div class="card" style="padding:16px; margin-bottom:12px;">
+                            <strong style="color:var(--brand-primary); display:block; margin-bottom:8px;">FRENTE:</strong><div>${sanitizeText(c.f)}</div>
+                            <strong style="color:var(--brand-success); display:block; margin:12px 0 8px 0; border-top:1px dashed var(--border-color); padding-top:12px;">VERSO:</strong><div>${sanitizeText(c.v)}</div>
+                            <button id="${bId}" class="btn-outline" style="margin-top:16px;" onclick="salvarFc('${mD}', '${tD}', '${sanitizeText(c.f).replace(/'/g,"\\'")} - ${sanitizeText(c.v).replace(/'/g,"\\'")}', this)">Salvar no Caderno de Erros</button>
                         </div>`;
                     });
                 } else {
-                    let loadEl = document.getElementById('load-ia');
-                    if(loadEl) loadEl.remove();
-                    box.innerHTML += `<div class="msg msg-a"><strong>PRUMA:</strong><br>${formatarRespostaIA(txtFinal)}</div>`; 
-                    box.scrollTop = box.scrollHeight;
+                    let l = document.getElementById('load-ia'); if(l) l.remove();
+                    
+                    // Lógica para Resumo PDF Helper
+                    let btnPdf = '';
+                    if(p.toLowerCase().includes('resumo') && p.toLowerCase().includes('pdf')) {
+                        let txtBase64 = btoa(unescape(encodeURIComponent(txtF)));
+                        btnPdf = `<br><br><button class="btn-primary" style="width:auto; padding:8px 16px; font-size:0.85rem;" onclick="baixarPdfResumo('${txtBase64}')">📥 Baixar PDF deste Resumo</button>`;
+                    }
+
+                    box.innerHTML += `<div class="msg msg-a"><strong>PRUMA:</strong><br>${formatarIAResponse(txtF)}${btnPdf}</div>`; box.scrollTop = box.scrollHeight;
                 }
-            } catch(e) { 
-                let loadEl = document.getElementById('load-ia');
-                if(loadEl) loadEl.remove(); 
-                if(box) box.innerHTML += `<div class="msg msg-a" style="color:var(--brand-danger);">Erro: ${e.message}</div>`; 
-            }
+            } catch(e) { let l = document.getElementById('load-ia'); if(l) l.remove(); if(box) box.innerHTML += `<div class="msg msg-a" style="color:var(--brand-danger);">Erro: ${e.message}</div>`; }
         }
 
-        function salvarFcNoCaderno(d, t, desc, btn) {
-            meuCadernoErros.push({id: Date.now().toString(), disciplina: d, assunto: t || 'Flashcards IA', descricao: desc});
-            refDb.child('caderno_erros').set(meuCadernoErros);
-            btn.textContent = "✅ Salvo no Caderno!"; 
-            btn.disabled = true; 
-            btn.style.background = 'var(--brand-success)'; 
-            btn.style.color = 'white'; 
-            btn.style.borderColor = 'var(--brand-success)';
+        function salvarFc(m, t, txt, btn) {
+            dbData.cadernos.push({id:gerarId(), materia:m||'Flashcards IA', topico:t||'Geral', texto:txt, timestamp:Date.now(), data:new Date().toLocaleDateString()});
+            refDb.child('cadernos').set(dbData.cadernos);
+            btn.textContent = "✅ Salvo!"; btn.disabled = true; btn.style.background = 'var(--brand-success)'; btn.style.color = '#FFF'; btn.style.borderColor = 'var(--brand-success)';
+        }
+
+        // EDITAL INTELIGENTE
+        async function processarEdital(btn) {
+            let k = localStorage.getItem('pruma_apikey'); if(!k) return alert("API Key ausente.");
+            let txt = document.getElementById('edital-texto').value.trim(); if(!txt) return;
+            let pId = document.getElementById('edital-ia-prova').value;
+            const modelo = (userAtual.uid === ADMIN_UID) ? "gemini-3.1-pro-preview" : "gemini-3.8-flash";
+            
+            let tx = btn.textContent; btn.disabled=true; btn.textContent="Processando blocos com IA...";
+            // O modelo consegue lidar bem com textos longos nativamente graças à grande janela de contexto do Gemini 1.5/3.x.
+            let p = `Organize o edital em JSON puro (array de objetos): [{"disciplina": "Nome", "topicos": ["T1", "T2"]}]. Sem markdown. Edital:\n${txt.substring(0,60000)}`;
+            try {
+                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelo}:generateContent?key=${k}`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({contents:[{parts:[{text:p}]}]}) });
+                const data = await res.json(); if(data.error) throw new Error(data.error.message);
+                let json = JSON.parse(data.candidates[0].content.parts[0].text.match(/\[.*\]/s)[0]);
+                
+                json.forEach(n => {
+                    let obj = {id:gerarId(), nome:n.disciplina, cor:paleta15[0], topicos:n.topicos, provaId:pId};
+                    let idx = dbData.materias.findIndex(x=>x.nome.toLowerCase()===n.disciplina.toLowerCase() && x.provaId===pId);
+                    if(idx !== -1) { n.topicos.forEach(t=>{ if(!dbData.materias[idx].topicos.includes(t)) dbData.materias[idx].topicos.push(t); }); }
+                    else { dbData.materias.push(obj); }
+                });
+                refDb.child('materias').set(dbData.materias); document.getElementById('edital-texto').value=''; alert("Edital mapeado!");
+            } catch(e) { alert("Erro: "+e.message); } finally { btn.textContent=tx; btn.disabled=false; }
         }
     </script>
 </body>
