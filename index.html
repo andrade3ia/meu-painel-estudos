@@ -230,7 +230,7 @@
                         </div>
                         
                         <div class="chat-box" id="box-chat">
-                            <div class="msg msg-a"><strong>PRUMA:</strong> Como posso ajudar você, caro estudante? Estou pronta para responder ou criar questões interativas.</div>
+                            <div class="msg msg-a"><strong>PRUMA:</strong> Olá! Como posso ajudar você hoje? 🎯</div>
                         </div>
 
                         <div style="display:flex; gap:8px;">
@@ -306,7 +306,7 @@
             authDomain: "plataforma-de-estudos-98ec8.firebaseapp.com",
             databaseURL: "https://plataforma-de-estudos-98ec8-default-rtdb.firebaseio.com",
             projectId: "plataforma-de-estudos-98ec8",
-            storageBucket: "plataforma-de-estudos-98ec8.appspot.com"
+            storageBucket: "plataforma-de-estudos-98ec8.firebasestorage.app" // Corrigido para o padrão atual do Firebase
         };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
@@ -432,10 +432,10 @@
         async function processarEditalAutomatico() {
             let texto = document.getElementById('edital-gigante').value.trim(); if(!texto) return alert("Cole o texto do edital.");
             const btn = event.currentTarget; btn.disabled = true; btn.textContent = "Analisando com IA (Flash)...";
-            let prompt = `Analise o texto do edital abaixo e organize as matérias e seus tópicos. Você DEVE retornar EXATAMENTE no formato JSON, sem nenhum outro texto. Exemplo: [{"disciplina": "Língua Portuguesa", "topicos": ["Compreensão", "Crase"]}]\nTexto:\n${texto.substring(0, 25000)}`;
+            let prompt = `Analise o texto do edital abaixo e organize as matérias e seus tópicos. Retorne EXATAMENTE no formato JSON: [{"disciplina": "Língua Portuguesa", "topicos": ["Compreensão", "Crase"]}]\nTexto:\n${texto.substring(0, 25000)}`;
             try {
                 let resposta = await chamarApiGeminiEspecifica(prompt, "gemini-3.6-flash"); let jsonStr = resposta.match(/\[.*\]/s); 
-                if(!jsonStr) throw new Error("A IA não retornou o formato JSON esperado.");
+                if(!jsonStr) throw new Error("A IA não retornou o JSON esperado.");
                 let editalExtraido = JSON.parse(jsonStr[0]);
                 editalExtraido.forEach(novaDisc => {
                     let idx = planejamentoEdital.findIndex(x => x.disciplina.toLowerCase() === novaDisc.disciplina.toLowerCase());
@@ -493,25 +493,23 @@
             chartRoscaInstance = new Chart(ctx, { type: 'doughnut', data: { labels: ['Sessões Salvas', 'Descanso'], datasets: [{ data: [sessoesHistorico.length || 1, 5], backgroundColor: ['#2563eb', '#e5e7eb'] }] }, options: { responsive: true, maintainAspectRatio: false } });
         }
 
-        // ================= UPLOAD CORRIGIDO =================
         async function enviarPdfNuvem() {
             const fileInput = document.getElementById('up-pdf');
             const f = fileInput.files[0];
-            
-            if(!f) { alert("Por favor, selecione um arquivo válido."); return; }
+            if(!f) { alert("Selecione um arquivo válido."); return; }
 
             const btn = event.currentTarget;
             const textoOriginalBtn = btn.textContent;
             
             try {
                 btn.disabled = true;
-                btn.textContent = "1/3 - Enviando para a Nuvem...";
+                btn.textContent = "1/3 - Enviando arquivo...";
 
                 const refF = refStore.child(f.name);
                 await refF.put(f);
                 const url = await refF.getDownloadURL();
 
-                btn.textContent = "2/3 - Lendo conteúdo do arquivo...";
+                btn.textContent = "2/3 - Lendo conteúdo...";
                 let textoExtraido = "";
 
                 if(f.type === "application/pdf" || f.name.toLowerCase().endsWith('.pdf')) {
@@ -529,7 +527,7 @@
                     textoExtraido = await f.text();
                 }
 
-                btn.textContent = "3/3 - Indexando na base da PRUMA...";
+                btn.textContent = "3/3 - Salvando na PRUMA...";
 
                 await refDb.child('pdfs').push({
                     nome: f.name,
@@ -540,51 +538,45 @@
 
                 btn.textContent = "✅ Upload Concluído!";
                 fileInput.value = '';
-                
-                setTimeout(() => {
-                    btn.textContent = textoOriginalBtn;
-                    btn.disabled = false;
-                }, 2000);
+                setTimeout(() => { btn.textContent = textoOriginalBtn; btn.disabled = false; }, 2000);
 
             } catch (erro) {
-                console.error("Erro detalhado no upload:", erro);
+                console.error("Erro no upload:", erro);
                 alert("Erro ao processar o arquivo: " + erro.message);
                 btn.textContent = textoOriginalBtn;
                 btn.disabled = false;
             }
         }
 
-        // ================= A FUNÇÃO QUE ESTAVA FALTANDO =================
         function atualizarSelectsPdf() {
             let lDiv = document.getElementById('lista-meus-pdfs'); 
             let sChat = document.getElementById('select-pdf-chat'); 
             let sFc = document.getElementById('select-pdf-fc');
-            
-            lDiv.innerHTML = ''; 
-            sChat.innerHTML = '<option value="">Conhecimento Geral da IA</option>'; 
-            sFc.innerHTML = '<option value="">Selecione o Material</option>';
-            
+            lDiv.innerHTML = ''; sChat.innerHTML = '<option value="">Conhecimento Geral da IA</option>'; sFc.innerHTML = '<option value="">Selecione o Material</option>';
             meusPdfs.forEach(p => {
                 lDiv.innerHTML += `<div style="padding:6px; background:var(--bg-input); border-radius:4px; margin-top:4px;">📄 ${sanitizeText(p.nome)}</div>`;
                 sChat.innerHTML += `<option value="${p.id}">${sanitizeText(p.nome)}</option>`; 
                 sFc.innerHTML += `<option value="${p.id}">${sanitizeText(p.nome)}</option>`;
             });
         }
-        // =================================================================
 
         async function chamarApiGeminiEspecifica(prompt, modelo) {
             let apiKey = localStorage.getItem('pruma_user_apikey') || "SUA_API_KEY_AQUI";
             const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelo}:generateContent?key=${apiKey}`, {
                 method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
             });
-            const data = await res.json(); if(data.error) throw new Error(data.error.message); return data.candidates[0].content.parts[0].text;
+            const data = await res.json();
+            if(data.error) throw new Error(data.error.message);
+            return data.candidates[0].content.parts[0].text;
         }
 
         async function executarPrumaIA(tipo, perguntaForcada = null) {
             try {
                 const isAdmin = (userAtual.uid === ADMIN_UID);
                 const modelo = isAdmin ? "gemini-3.1-pro-preview" : "gemini-3.6-flash";
-                let regraBase = "Seja direta, objetiva e concisa. Responda em parágrafos curtos. Use emojis e setas (->) para facilitar a leitura. Use **texto** para negrito. Se gerar questões de múltipla escolha, crie exatamente 4 alternativas começando com A), B), C) e D) e insira a tag [CORRETA] no final exato da alternativa certa (ex: C) Resposta certa [CORRETA]).";
+                
+                // Instrução blindada para respostas curtas, objetivas, com emojis e setas
+                let regraBase = "IMPORTANTE: Seja extremamente objetivo, direto e conciso. Não escreva textos longos. Use emojis e setas (->) para estruturar a explicação. Use **negrito** para destacar termos importantes. Se criar questões de múltipla escolha, crie 4 alternativas (A, B, C, D) e adicione [CORRETA] ao final exato da resposta certa.";
 
                 if(tipo === 'tutor') {
                     const inp = document.getElementById('inp-chat'); const pergunta = perguntaForcada || inp.value.trim();
@@ -592,9 +584,9 @@
                     box.innerHTML += `<div class="msg msg-u">${sanitizeText(pergunta)}</div>`; inp.value = ''; box.scrollTop = box.scrollHeight;
 
                     let contexto = pdfId ? `\n\n[Referência: ${meusPdfs.find(p => p.id === pdfId).texto}]` : "";
-                    let prompt = `${regraBase}\n\nAja como tutora especialista. ${contexto}\n\nDúvida: ${pergunta}`;
+                    let prompt = `${regraBase}\n${contexto}\n\nDúvida do estudante: ${pergunta}`;
                     
-                    box.innerHTML += `<div class="msg msg-a" id="loading-msg">Processando...</div>`;
+                    box.innerHTML += `<div class="msg msg-a" id="loading-msg">Analisando... ⏳</div>`;
                     let resposta = await chamarApiGeminiEspecifica(prompt, modelo); document.getElementById('loading-msg').remove();
                     box.innerHTML += `<div class="msg msg-a"><strong>PRUMA:</strong><br>${formatarRespostaIA(resposta)}</div>`; box.scrollTop = box.scrollHeight;
 
@@ -603,8 +595,8 @@
                 else if(tipo === 'simulador') {
                     const box = document.getElementById('box-sim'); if(meuCadernoErros.length === 0) return alert("Caderno vazio.");
                     let erros = meuCadernoErros.map(e => `[${e.disciplina}]: ${e.descricao}`).join("\n");
-                    let prompt = `${regraBase}\n\nCrie 2 questões inéditas de múltipla escolha focadas nos seguintes erros do aluno:\n${erros}`;
-                    box.style.display = 'block'; box.innerHTML = "Gerando questões baseadas nos seus erros...";
+                    let prompt = `${regraBase}\n\nCrie 2 questões inéditas focadas estritamente em corrigir estes erros do aluno:\n${erros}`;
+                    box.style.display = 'block'; box.innerHTML = "Gerando simulado... ⏳";
                     let resposta = await chamarApiGeminiEspecifica(prompt, modelo); box.innerHTML = formatarRespostaIA(resposta);
                 }
             } catch(e) { alert("Erro na IA: " + e.message); let l = document.getElementById('loading-msg'); if(l) l.remove(); }
