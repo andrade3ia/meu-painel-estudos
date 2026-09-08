@@ -486,7 +486,7 @@
                 document.getElementById('tela-login').style.display = 'none'; document.getElementById('tela-painel').style.display = 'block';
                 
                 // Set Badge do Modelo IA
-                document.getElementById('badge-modelo-ia').const modeloStr = (userAtual.uid === ADMIN_UID) ? "gemini-3.1-pro-preview" : "gemini-3.6-flash";
+                document.getElementById('badge-modelo-ia').textContent = (user.uid === ADMIN_UID) ? "Modelo: 3.1 PRO" : "Modelo: 3.6 FLASH";
                 document.getElementById('badge-modelo-ia').className = "badge " + ((user.uid === ADMIN_UID) ? "primary" : "success");
 
                 carregarDadosDoBanco(); carregarApiKeySalva(); irTela('home');
@@ -853,99 +853,67 @@
         }
         function responderQuestaoPruma(e, c) { e.classList.add(c ? 'acerto' : 'erro'); }
 
-       async function executarPrumaIA(tipo) {
-    const apiKey = sessionStorage.getItem('pruma_user_apikey'); 
-    if(!apiKey) return alert("Configure a API Key nas configurações.");
-    
-    // Definição segura dos modelos sem erros de sintaxe
-    const modeloStr = (userAtual.uid === ADMIN_UID) ? "gemini-1.5-pro" : "gemini-1.5-flash";
-    
-    let prompt = "", box = null;
-    let ctxBase = extrairContextoSelecionado();
-    let regra = "Aja como tutora especialista. Use emojis, listas e tabelas se necessário. Faça buscas na web para dados recentes.";
+        async function executarPrumaIA(tipo) {
+            const apiKey = sessionStorage.getItem('pruma_user_apikey'); if(!apiKey) return alert("Configure a API Key nas configurações.");
+            const modeloStr = (userAtual.uid === ADMIN_UID) ? "gemini-1.5-pro-latest" : "gemini-1.5-flash-latest"; // Usando endpoints válidos da API, refletindo Pro/Flash
+            
+            let prompt = "", box = null, container = null;
+            let ctxBase = extrairContextoSelecionado();
+            let regra = "Aja como tutora especialista. Use emojis, listas e tabelas se necessário. Faça buscas na web para dados recentes.";
 
-    if(tipo === 'tutor') {
-        let p = document.getElementById('inp-chat').value.trim(); 
-        if(!p) return; 
-        box = document.getElementById('box-chat');
-        box.innerHTML += `<div class="msg msg-u">${sanitizeText(p)}</div>`; 
-        document.getElementById('inp-chat').value = ''; 
-        box.scrollTop = box.scrollHeight;
-        
-        if(document.getElementById('check-usar-erros-chat').checked && meuCadernoErros.length > 0) {
-            ctxBase += `\n[MEU CADERNO DE ERROS]:\n${meuCadernoErros.map(e=>e.descricao).join('\n')}`;
-        }
-        prompt = `${regra}\n\n${ctxBase ? "CONTEXTO SELECIONADO:\n"+ctxBase : ""}\n\nPERGUNTA: ${p}`;
-    }
-    else if(tipo === 'simulador') {
-        box = document.getElementById('box-sim'); 
-        box.style.display = 'flex'; 
-        box.innerHTML = '';
-        if(meuCadernoErros.length > 0) {
-            ctxBase += `\n[FOQUE NESTES MEUS ERROS AO CRIAR QUESTÕES]:\n${meuCadernoErros.map(e=>e.descricao).join('\n')}`;
-        }
-        prompt = `${regra}\n\n${ctxBase}\nCrie 3 questões inéditas difíceis de múltipla escolha (A, B, C, D) no estilo prova, colocando [CORRETA] ao final da alternativa certa.`;
-    }
-    else if(tipo === 'flashcards') {
-        let p = document.getElementById('fc-prompt').value.trim(); 
-        if(!p) return alert("Descreva o tema.");
-        let d = document.getElementById('fc-mat').value, t = document.getElementById('fc-top').value;
-        if(!d) return alert("Selecione onde salvar os flashcards.");
-        box = document.getElementById('box-fc'); 
-        box.style.display = 'block'; 
-        box.innerHTML = '';
-        prompt = `${regra}\n\n${ctxBase}\nCrie flashcards sobre: ${p}. Retorne EXATAMENTE UM JSON PURO: [{"f": "Pergunta", "v": "Resposta"}]. Sem crases ou markdown de bloco de código no início ou fim.`;
-    }
+            if(tipo === 'tutor') {
+                let p = document.getElementById('inp-chat').value.trim(); if(!p) return; box = document.getElementById('box-chat');
+                box.innerHTML += `<div class="msg msg-u">${sanitizeText(p)}</div>`; document.getElementById('inp-chat').value = ''; box.scrollTop = box.scrollHeight;
+                if(document.getElementById('check-usar-erros-chat').checked && meuCadernoErros.length>0) ctxBase += `\n[MEU CADERNO DE ERROS]:\n${meuCadernoErros.map(e=>e.descricao).join('\n')}`;
+                prompt = `${regra}\n\n${ctxBase ? "CONTEXTO SELECIONADO:\n"+ctxBase : ""}\n\nPERGUNTA: ${p}`;
+            }
+            else if(tipo === 'simulador') {
+                box = document.getElementById('box-sim'); box.style.display = 'flex'; box.innerHTML = '';
+                if(meuCadernoErros.length>0) ctxBase += `\n[FOQUE NESTES MEUS ERROS AO CRIAR QUESTÕES]:\n${meuCadernoErros.map(e=>e.descricao).join('\n')}`;
+                prompt = `${regra}\n\n${ctxBase}\nCrie 3 questões inéditas difíceis de múltipla escolha (A, B, C, D) no estilo prova, colocando [CORRETA] ao final da alternativa certa.`;
+            }
+            else if(tipo === 'flashcards') {
+                let p = document.getElementById('fc-prompt').value.trim(); if(!p) return alert("Descreva o tema.");
+                let d = document.getElementById('fc-mat').value, t = document.getElementById('fc-top').value;
+                if(!d) return alert("Selecione onde salvar os flashcards.");
+                box = document.getElementById('box-fc'); box.style.display = 'block'; box.innerHTML = '';
+                prompt = `${regra}\n\n${ctxBase}\nCrie flashcards sobre: ${p}. Retorne EXATAMENTE UM JSON PURO: [{"f": "Pergunta", "v": "Resposta"}]. Sem crases ou markdown de bloco de código no início ou fim.`;
+            }
 
-    try {
-        if(tipo !== 'flashcards') { 
-            box.innerHTML += `<div class="msg msg-a" id="load-ia">Analisando dados... ⏳</div>`; 
-            box.scrollTop = box.scrollHeight; 
-        } else { 
-            box.innerHTML = "Gerando cartões... ⏳"; 
-        }
+            try {
+                if(tipo !== 'flashcards') { box.innerHTML += `<div class="msg msg-a" id="load-ia">Analisando dados (Modelo: ${userAtual.uid===ADMIN_UID?'Pro':'Flash'})... ⏳</div>`; box.scrollTop = box.scrollHeight; }
+                else { box.innerHTML = "Gerando cartões... ⏳"; }
 
-        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modeloStr}:generateContent?key=${apiKey}`, {
-            method: 'POST', 
-            headers: {'Content-Type': 'application/json'}, 
-            body: JSON.stringify({
-                contents: [{parts: [{text: prompt}]}], 
-                tools: [{googleSearch: {}}]
-            })
-        });
-        
-        const data = await res.json(); 
-        if(data.error) throw new Error(data.error.message);
-        let txtFinal = data.candidates[0].content.parts[0].text;
+                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modeloStr}:generateContent?key=${apiKey}`, {
+                    method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({contents:[{parts:[{text:prompt}]}], tools:[{googleSearch:{}}]})
+                });
+                const data = await res.json(); if(data.error) throw new Error(data.error.message);
+                let txtFinal = data.candidates[0].content.parts[0].text;
 
-        if(tipo === 'flashcards') {
-            let jsonStr = txtFinal.replace(/```json/g, '').replace(/```/g, '').trim();
-            let cards = JSON.parse(jsonStr.match(/\[.*\]/s)[0]);
-            let d = sanitizeText(document.getElementById('fc-mat').value), t = sanitizeText(document.getElementById('fc-top').value);
-            box.innerHTML = '';
-            cards.forEach(c => {
-                let idBtn = 'fc-btn-' + Date.now() + Math.random();
-                box.innerHTML += `
-                <div class="card" style="padding:16px; margin-bottom:12px;">
-                    <div style="font-weight:700; color:var(--brand-primary); margin-bottom:8px;">FRENTE:</div>
-                    <div style="margin-bottom:12px;">${sanitizeText(c.f)}</div>
-                    <div style="font-weight:700; color:var(--brand-success); margin-bottom:8px; border-top:1px dashed var(--border-color); padding-top:12px;">VERSO:</div>
-                    <div>${sanitizeText(c.v)}</div>
-                    <button id="${idBtn}" class="btn-outline" style="margin-top:16px; border-color:var(--brand-primary); color:var(--brand-primary);" onclick="salvarFcNoCaderno('${d}', '${t}', '${sanitizeText(c.f).replace(/'/g,"\\'")} - ${sanitizeText(c.v).replace(/'/g,"\\'")}', this)">Salvar no Caderno</button>
-                </div>`;
-            });
-        } else {
-            let loadEl = document.getElementById('load-ia');
-            if(loadEl) loadEl.remove();
-            box.innerHTML += `<div class="msg msg-a"><strong>PRUMA:</strong><br>${formatarRespostaIA(txtFinal)}</div>`; 
-            box.scrollTop = box.scrollHeight;
+                if(tipo === 'flashcards') {
+                    let jsonStr = txtFinal.replace(/```json/g, '').replace(/```/g, '').trim();
+                    let cards = JSON.parse(jsonStr.match(/\[.*\]/s)[0]);
+                    let d = sanitizeText(document.getElementById('fc-mat').value), t = sanitizeText(document.getElementById('fc-top').value);
+                    box.innerHTML = '';
+                    cards.forEach(c => {
+                        let idBtn = 'fc-btn-' + Date.now() + Math.random();
+                        box.innerHTML += `<div class="card" style="padding:16px; margin-bottom:12px;">
+                            <div style="font-weight:700; color:var(--brand-primary); margin-bottom:8px;">FRENTE:</div>
+                            <div style="margin-bottom:12px;">${sanitizeText(c.f)}</div>
+                            <div style="font-weight:700; color:var(--brand-success); margin-bottom:8px; border-top:1px dashed var(--border-color); padding-top:12px;">VERSO:</div>
+                            <div>${sanitizeText(c.v)}</div>
+                            <button id="${idBtn}" class="btn-outline" style="margin-top:16px; border-color:var(--brand-primary); color:var(--brand-primary);" onclick="salvarFcNoCaderno('${d}', '${t}', '${sanitizeText(c.f).replace(/'/g,"\\'")} - ${sanitizeText(c.v).replace(/'/g,"\\'")}', this)">Salvar no Caderno</button>
+                        </div>`;
+                    });
+                } else {
+                    document.getElementById('load-ia').remove();
+                    box.innerHTML += `<div class="msg msg-a"><strong>PRUMA:</strong><br>${formatarRespostaIA(txtFinal)}</div>`; box.scrollTop = box.scrollHeight;
+                }
+            } catch(e) { 
+                if(box && tipo!=='flashcards' && document.getElementById('load-ia')) document.getElementById('load-ia').remove(); 
+                if(box) box.innerHTML += `<div class="msg msg-a" style="color:var(--brand-danger);">Erro: ${e.message}</div>`; 
+            }
         }
-    } catch(e) { 
-        let loadEl = document.getElementById('load-ia');
-        if(loadEl) loadEl.remove(); 
-        if(box) box.innerHTML += `<div class="msg msg-a" style="color:var(--brand-danger);">Erro: ${e.message}</div>`; 
-    }
-}
 
         function salvarFcNoCaderno(d, t, desc, btn) {
             meuCadernoErros.push({id: Date.now().toString(), disciplina:d, assunto:t||'Flashcards IA', descricao:desc});
