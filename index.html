@@ -10,100 +10,96 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" crossorigin="anonymous"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <style>
         :root {
-            /* Cores mais vivas e intuitivas */
-            --bg-body: #F0F2F5; --bg-card: #FFFFFF; --text-main: #1C1E21; --text-muted: #65676B;
-            --border-color: #E4E6EB; --bg-input: #F0F2F5; --bg-hover: #E4E6EB;
-            --brand-primary: #1877F2; --brand-success: #31A24C; --brand-danger: #E41E3F; --brand-warning: #F2A100;
-            --btn-text: #FFFFFF; --shadow-sm: 0 1px 2px rgba(0,0,0,0.1); --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
-            --radius-sm: 8px; --radius-md: 12px; --radius-lg: 20px;
+            /* Apple iOS Soft UI Palette - Light */
+            --bg-body: #F5F5F7; --bg-card: #FFFFFF; --text-main: #1D1D1F; --text-muted: #86868B;
+            --border-color: #D2D2D7; --bg-input: #E8E8ED; --bg-hover: #D1D1D6;
+            --brand-primary: #007AFF; --brand-success: #34C759; --brand-danger: #FF3B30; --brand-warning: #FF9500;
+            --btn-text: #FFFFFF; --shadow-sm: 0 4px 16px rgba(0,0,0,0.04); --shadow-md: 0 12px 32px rgba(0,0,0,0.08);
+            --radius-sm: 12px; --radius-md: 18px; --radius-lg: 24px;
         }
         [data-theme="dark"] {
-            /* Modo escuro suave e elegante (não 100% preto) */
-            --bg-body: #18191A; --bg-card: #242526; --text-main: #E4E6EB; --text-muted: #B0B3B8;
-            --border-color: #3A3B3C; --bg-input: #3A3B3C; --bg-hover: #4E4F50;
-            --brand-primary: #2374E1; --brand-success: #31A24C; --brand-danger: #E41E3F; 
-            --shadow-md: 0 4px 12px rgba(0,0,0,0.3);
+            /* Apple iOS Soft UI Palette - Dark Space Gray */
+            --bg-body: #000000; --bg-card: #1C1C1E; --text-main: #F5F5F7; --text-muted: #98989D;
+            --border-color: #38383A; --bg-input: #2C2C2E; --bg-hover: #3A3A3C;
+            --brand-primary: #0A84FF; --brand-success: #30D158; --brand-danger: #FF453A; --brand-warning: #FF9F0A;
+            --shadow-md: 0 12px 32px rgba(0,0,0,0.4);
         }
 
-        * { box-sizing: border-box; transition: background-color 0.2s, border-color 0.2s; font-family: 'Nunito', sans-serif; }
-        body { background-color: var(--bg-body); color: var(--text-main); margin: 0; display: flex; height: 100vh; overflow: hidden; font-size: 15px; }
+        * { box-sizing: border-box; transition: background-color 0.2s, border-color 0.2s, color 0.2s; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif; }
+        body { background-color: var(--bg-body); color: var(--text-main); margin: 0; display: flex; height: 100vh; overflow: hidden; font-size: 15px; -webkit-font-smoothing: antialiased; }
         ::-webkit-scrollbar { width: 8px; height: 8px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: var(--text-muted); border-radius: 10px; }
 
-        .mobile-header { display: none; background: var(--bg-card); padding: 12px 20px; border-bottom: 1px solid var(--border-color); width: 100%; justify-content: space-between; align-items: center; z-index: 1000; box-shadow: var(--shadow-sm); }
+        .mobile-header { display: none; background: rgba(var(--bg-card), 0.85); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); padding: 12px 20px; border-bottom: 1px solid var(--border-color); width: 100%; justify-content: space-between; align-items: center; z-index: 1000; box-shadow: var(--shadow-sm); }
         
-        .sidebar { width: 280px; background-color: var(--bg-card); border-right: 1px solid var(--border-color); display: flex; flex-direction: column; padding: 24px 16px; gap: 6px; z-index: 900; overflow-y: auto; box-shadow: var(--shadow-sm); }
+        .sidebar { width: 280px; background-color: var(--bg-card); border-right: 1px solid var(--border-color); display: flex; flex-direction: column; padding: 24px 16px; gap: 6px; z-index: 900; overflow-y: auto; backdrop-filter: blur(20px); }
         .sidebar-logo { display: flex; flex-direction: column; align-items: flex-start; padding-left: 12px; margin-bottom: 24px; }
-        .sidebar-logo h1 { font-size: 1.8rem; margin: 0; font-weight: 800; color: var(--brand-primary); }
-        .sidebar-logo span.sub { font-size: 0.85rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; }
+        .sidebar-logo h1 { font-size: 1.8rem; margin: 0; font-weight: 700; color: var(--brand-primary); letter-spacing: -0.5px; }
+        .sidebar-logo span.sub { font-size: 0.75rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
         
-        .nav-btn { background: transparent; color: var(--text-main); border: none; text-align: left; padding: 12px 14px; font-size: 0.95rem; border-radius: var(--radius-sm); cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 12px; }
+        .nav-btn { background: transparent; color: var(--text-main); border: none; text-align: left; padding: 12px 14px; font-size: 0.95rem; border-radius: var(--radius-sm); cursor: pointer; font-weight: 500; display: flex; align-items: center; gap: 12px; }
         .nav-btn:hover { background: var(--bg-hover); }
-        .nav-btn.active { background: rgba(24, 119, 242, 0.1); color: var(--brand-primary); border-left: 4px solid var(--brand-primary); }
+        .nav-btn.active { background: rgba(0, 122, 255, 0.12); color: var(--brand-primary); font-weight: 600; border-left: 4px solid var(--brand-primary); }
 
-        .tempo-total-box { background: linear-gradient(135deg, var(--brand-primary), #0056b3); padding: 16px; border-radius: var(--radius-md); text-align: center; margin-bottom: 16px; color: white; box-shadow: var(--shadow-md); }
-        .tempo-total-box span { font-size: 0.8rem; font-weight: 700; text-transform: uppercase; opacity: 0.9; }
-        .tempo-total-box strong { display: block; font-size: 1.6rem; font-weight: 800; margin-top: 4px; }
+        .tempo-total-box { background: linear-gradient(135deg, var(--brand-primary), #0056b3); padding: 18px; border-radius: var(--radius-md); text-align: center; margin-bottom: 16px; color: white; box-shadow: var(--shadow-md); }
+        .tempo-total-box span { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; opacity: 0.85; letter-spacing: 0.5px; }
+        .tempo-total-box strong { display: block; font-size: 1.6rem; font-weight: 700; margin-top: 4px; font-variant-numeric: tabular-nums; }
 
-        .main-content { flex: 1; padding: 24px; overflow-y: auto; scroll-behavior: smooth; }
+        .main-content { flex: 1; padding: 30px; overflow-y: auto; scroll-behavior: smooth; }
         .container-interno { max-width: 1000px; margin: 0 auto; padding-bottom: 80px; }
         
-        .card { background-color: var(--bg-card); border-radius: var(--radius-md); padding: 20px; margin-bottom: 20px; border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); }
-        h2 { margin: 0 0 16px 0; color: var(--text-main); font-size: 1.3rem; font-weight: 800; border-bottom: 2px solid var(--bg-body); padding-bottom: 10px;}
+        .card { background-color: var(--bg-card); border-radius: var(--radius-md); padding: 24px; margin-bottom: 24px; border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); }
+        h2 { margin: 0 0 16px 0; color: var(--text-main); font-size: 1.35rem; font-weight: 700; border-bottom: 1px solid var(--border-color); padding-bottom: 12px; letter-spacing: -0.5px; }
         
-        input, select, textarea { width: 100%; padding: 12px 14px; margin-bottom: 12px; background-color: var(--bg-input); border: 2px solid transparent; border-radius: var(--radius-sm); color: var(--text-main); font-size: 0.95rem; outline: none; font-weight: 600;}
-        input:focus, select:focus, textarea:focus { border-color: var(--brand-primary); }
+        input, select, textarea { width: 100%; padding: 12px 16px; margin-bottom: 12px; background-color: var(--bg-input); border: 1px solid transparent; border-radius: var(--radius-sm); color: var(--text-main); font-size: 0.95rem; outline: none; font-weight: 500; }
+        input:focus, select:focus, textarea:focus { border-color: var(--brand-primary); background-color: var(--bg-card); }
         
-        button.btn-primary { width: 100%; padding: 12px; font-weight: 700; border: none; border-radius: var(--radius-sm); cursor: pointer; background: var(--brand-primary); color: var(--btn-text); font-size: 0.95rem; box-shadow: var(--shadow-sm); }
-        button.btn-primary:active { transform: translateY(2px); }
-        button.btn-outline { width: 100%; padding: 12px; font-weight: 700; border: 2px solid var(--border-color); border-radius: var(--radius-sm); cursor: pointer; background: transparent; color: var(--text-main); font-size: 0.95rem; }
-        button.btn-outline:hover { background: var(--bg-hover); border-color: var(--text-muted); }
-        button.btn-success { background: var(--brand-success); color: white; border: none; padding: 10px; border-radius: var(--radius-sm); font-weight: 700; cursor: pointer;}
-        button.btn-danger { background: var(--brand-danger); color: white; border: none; padding: 8px 12px; border-radius: var(--radius-sm); cursor: pointer; font-size: 0.85rem; font-weight: 700; }
+        button.btn-primary { width: 100%; padding: 14px; font-weight: 600; border: none; border-radius: var(--radius-sm); cursor: pointer; background: var(--brand-primary); color: var(--btn-text); font-size: 0.95rem; box-shadow: var(--shadow-sm); }
+        button.btn-primary:active { transform: scale(0.98); }
+        button.btn-outline { width: 100%; padding: 14px; font-weight: 600; border: 1px solid var(--border-color); border-radius: var(--radius-sm); cursor: pointer; background: transparent; color: var(--text-main); font-size: 0.95rem; }
+        button.btn-outline:hover { background: var(--bg-hover); }
+        button.btn-success { background: var(--brand-success); color: white; border: none; padding: 12px 20px; border-radius: var(--radius-sm); font-weight: 600; cursor: pointer; }
+        button.btn-danger { background: var(--brand-danger); color: white; border: none; padding: 8px 14px; border-radius: var(--radius-sm); cursor: pointer; font-size: 0.85rem; font-weight: 600; }
         
-        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; margin-bottom: 20px; }
-        .stat-card { background: var(--bg-input); padding: 16px; border-radius: var(--radius-md); text-align: center; border: 1px solid var(--border-color); }
-        .stat-card span { display: block; font-size: 0.8rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; }
-        .stat-card strong { display: block; font-size: 1.6rem; color: var(--text-main); font-weight: 800; margin-top: 6px; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 16px; margin-bottom: 24px; }
+        .stat-card { background: var(--bg-card); padding: 20px; border-radius: var(--radius-md); text-align: center; border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); }
+        .stat-card span { display: block; font-size: 0.75rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+        .stat-card strong { display: block; font-size: 1.6rem; color: var(--text-main); font-weight: 700; margin-top: 6px; }
 
-        /* Registros Curtos */
-        .registro-curto { display: flex; justify-content: space-between; align-items: center; background: var(--bg-input); padding: 10px 14px; border-radius: var(--radius-sm); margin-bottom: 8px; border: 1px solid var(--border-color); }
+        .registro-curto { display: flex; justify-content: space-between; align-items: center; background: var(--bg-input); padding: 12px 16px; border-radius: var(--radius-sm); margin-bottom: 10px; border: 1px solid var(--border-color); }
         .registro-curto .info { display: flex; flex-direction: column; gap: 4px; }
-        .registro-curto .info strong { font-size: 0.95rem; color: var(--text-main); }
-        .registro-curto .info span { font-size: 0.8rem; color: var(--text-muted); font-weight: 600; }
-        .registro-curto .acoes { display: flex; align-items: center; gap: 12px; font-weight: 800; font-size: 1rem; }
-        .btn-x-vermelho { background: transparent; border: none; color: var(--brand-danger); font-size: 1.2rem; cursor: pointer; font-weight: 900; padding: 0 5px; }
+        .registro-curto .info strong { font-size: 0.95rem; color: var(--text-main); font-weight: 600; }
+        .registro-curto .info span { font-size: 0.8rem; color: var(--text-muted); font-weight: 500; }
+        .btn-x-vermelho { background: transparent; border: none; color: var(--brand-danger); font-size: 1.2rem; cursor: pointer; font-weight: 700; padding: 0 4px; }
         
-        /* Pastas de Matérias Melhoradas */
-        .bloco-prova { background: var(--bg-input); border: 2px solid var(--border-color); border-radius: var(--radius-md); padding: 16px; margin-bottom: 16px; }
-        .bloco-prova-titulo { font-size: 1.2rem; font-weight: 800; color: var(--brand-primary); margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
-        .pasta-header { background: var(--bg-card); padding: 12px 16px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-weight: 700; border-radius: var(--radius-sm); border: 1px solid var(--border-color); margin-bottom: 6px; box-shadow: var(--shadow-sm); }
-        .pasta-body { padding: 8px 16px; display: none; border-left: 3px solid var(--border-color); margin-left: 10px; margin-bottom: 12px;}
+        .bloco-prova { background: var(--bg-input); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 20px; margin-bottom: 20px; box-shadow: var(--shadow-sm); }
+        .bloco-prova-titulo { font-size: 1.25rem; font-weight: 700; color: var(--brand-primary); margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+        .pasta-header { background: var(--bg-card); padding: 14px 18px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-weight: 600; border-radius: var(--radius-sm); border: 1px solid var(--border-color); margin-bottom: 8px; box-shadow: var(--shadow-sm); }
+        .pasta-body { padding: 8px 18px; display: none; border-left: 3px solid var(--brand-primary); margin-left: 12px; margin-bottom: 12px; }
         .pasta-body.aberta { display: block; }
 
-        /* Caixas de Seleção IA Organizadas */
-        .grid-fontes { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; margin-top: 10px; }
-        .fonte-checkbox { display: flex; align-items: center; gap: 8px; background: var(--bg-card); padding: 10px; border-radius: var(--radius-sm); border: 1px solid var(--border-color); cursor: pointer; font-size: 0.85rem; font-weight: 600; }
-        .fonte-checkbox:hover { border-color: var(--brand-primary); }
+        .grid-fontes { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
+        .fonte-checkbox { display: flex; align-items: center; gap: 8px; background: var(--bg-card); padding: 12px; border-radius: var(--radius-sm); border: 1px solid var(--border-color); cursor: pointer; font-size: 0.85rem; font-weight: 500; }
+        .fonte-checkbox:hover { border-color: var(--brand-primary); background: var(--bg-hover); }
 
         .chat-box { border: 1px solid var(--border-color); border-radius: var(--radius-md); height: 500px; overflow-y: auto; padding: 20px; background: var(--bg-body); display: flex; flex-direction: column; gap: 16px; margin-bottom: 16px; }
-        .msg { padding: 14px 18px; border-radius: 12px; max-width: 85%; line-height: 1.5; font-size: 0.95rem; }
-        .msg-u { background: var(--brand-primary); color: white; align-self: flex-end; font-weight: 600; }
-        .msg-a { background: var(--bg-card); border: 1px solid var(--border-color); align-self: flex-start; color: var(--text-main); box-shadow: var(--shadow-sm); }
+        .msg { padding: 14px 18px; border-radius: 18px; max-width: 85%; line-height: 1.5; font-size: 0.95rem; }
+        .msg-u { background: var(--brand-primary); color: white; align-self: flex-end; font-weight: 500; border-bottom-right-radius: 4px; }
+        .msg-a { background: var(--bg-card); border: 1px solid var(--border-color); align-self: flex-start; color: var(--text-main); box-shadow: var(--shadow-sm); border-bottom-left-radius: 4px; }
 
-        .modal { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); display:none; justify-content:center; align-items:center; z-index:2000; padding: 20px; }
-        .modal-content { background:var(--bg-card); padding:24px; border-radius:var(--radius-md); width:100%; max-width:500px; max-height:90vh; overflow-y:auto; box-shadow: var(--shadow-md); position: relative; }
+        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: none; justify-content: center; align-items: center; z-index: 2000; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); padding: 20px; }
+        .modal-content { background: var(--bg-card); padding: 32px; border-radius: var(--radius-lg); width: 100%; max-width: 520px; max-height: 90vh; overflow-y: auto; box-shadow: var(--shadow-md); position: relative; }
 
         @media(max-width: 768px) {
             body { flex-direction: column; }
             .mobile-header { display: flex; }
             .main-content { padding: 16px; }
-            .sidebar { position: fixed; top: 60px; left: -100%; width: 100%; height: calc(100vh - 60px); transition: left 0.3s ease; }
+            .sidebar { position: fixed; top: 60px; left: -100%; width: 100%; height: calc(100vh - 60px); transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
             .sidebar.open { left: 0; }
         }
     </style>
@@ -116,7 +112,7 @@
 <body>
 
     <header class="mobile-header">
-        <h2 style="margin:0; font-size:1.5rem; color:var(--brand-primary);">PRUMA</h2>
+        <h2 style="margin:0; font-size:1.4rem; font-weight:700; color:var(--brand-primary); letter-spacing:-0.5px;">PRUMA</h2>
         <button style="background:none; border:none; color:var(--text-main); font-size:1.5rem;" onclick="document.getElementById('sidebar-menu').classList.toggle('open')">☰</button>
     </header>
 
@@ -136,10 +132,10 @@
         <button class="nav-btn" onclick="irTela('materias', event)">📚 Matérias</button>
         <button class="nav-btn" onclick="irTela('caderno', event)">📓 Caderno de Erros</button>
         <button class="nav-btn" onclick="irTela('estatisticas', event)">📈 Estatísticas</button>
-        <button class="nav-btn" onclick="irTela('pruma', event)" style="color:var(--brand-primary); font-weight:800; background:rgba(24,119,242,0.05);">✨ PRUMA IA</button>
+        <button class="nav-btn" onclick="irTela('pruma', event)" style="color:var(--brand-primary); font-weight:600;">✨ PRUMA IA</button>
         <button class="nav-btn" onclick="irTela('biblioteca', event)">📁 Biblioteca</button>
         
-        <div style="border-top: 2px solid var(--border-color); margin-top: 10px; padding-top: 10px; display: flex; flex-direction: column; gap: 6px;">
+        <div style="border-top: 1px solid var(--border-color); margin-top: 10px; padding-top: 10px; display: flex; flex-direction: column; gap: 6px;">
             <button class="nav-btn" onclick="irTela('conta', event)">👤 Minha Conta</button>
             <button class="nav-btn" onclick="document.getElementById('modal-apikey').style.display='flex'">🔑 API Key</button>
             <button class="nav-btn" onclick="alternarTema()">🌓 Claro / Escuro</button>
@@ -151,9 +147,9 @@
         
         <!-- Login -->
         <div id="tela-login" class="card" style="max-width:400px; margin:80px auto; text-align:center;">
-            <h1 style="color:var(--brand-primary); font-size:2.8rem; margin:0 0 5px 0;">PRUMA</h1>
-            <p style="color:var(--text-muted); margin-bottom:30px; font-weight:700;">Painel de Estudos</p>
-            <button class="btn-outline" style="display:flex; align-items:center; justify-content:center; gap:10px; border-color:var(--text-main);" onclick="firebase.auth().signInWithPopup(new firebase.auth.GoogleAuthProvider())">
+            <h1 style="color:var(--brand-primary); font-size:2.8rem; margin:0 0 5px 0; font-weight:700;">PRUMA</h1>
+            <p style="color:var(--text-muted); margin-bottom:30px; font-weight:500;">Painel de Estudos</p>
+            <button class="btn-outline" style="display:flex; align-items:center; justify-content:center; gap:10px; border-color:var(--border-color);" onclick="firebase.auth().signInWithPopup(new firebase.auth.GoogleAuthProvider())">
                 <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" width="20" alt=""> Entrar com Google
             </button>
         </div>
@@ -172,21 +168,20 @@
                     <div class="stat-card"><span>Vídeos</span><strong id="hj-vids">0</strong></div>
                 </div>
 
-                <div class="card" style="display:flex; flex-wrap:wrap; gap:20px; align-items:flex-start;">
-                    <!-- Cronômetro e Formulário Fixo Lado a Lado no Desktop -->
-                    <div style="flex:1; min-width:250px; text-align:center; background:var(--bg-input); padding:20px; border-radius:var(--radius-md);">
-                        <div style="font-size: 0.9rem; font-weight:700; color:var(--text-muted); text-transform:uppercase;">Cronômetro</div>
-                        <div id="cronometro-visor" style="font-size: 4rem; color: var(--brand-primary); font-weight: 800; font-variant-numeric: tabular-nums; margin: 10px 0;">00:00:00</div>
+                <div class="card" style="display:flex; flex-wrap:wrap; gap:24px; align-items:flex-start;">
+                    <!-- Cronômetro e Formulário Fixo -->
+                    <div style="flex:1; min-width:250px; text-align:center; background:var(--bg-input); padding:24px; border-radius:var(--radius-md);">
+                        <div style="font-size: 0.75rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px;">Cronômetro</div>
+                        <div id="cronometro-visor" style="font-size: 4rem; color: var(--brand-primary); font-weight: 700; font-variant-numeric: tabular-nums; margin: 10px 0; letter-spacing:-1px;">00:00:00</div>
                         <div style="display:flex; justify-content:center; gap:12px;">
                             <button class="btn-success" onclick="iniciarCronometro()">▶ Iniciar</button>
-                            <button class="btn-outline" style="width:auto; padding:10px;" onclick="pausarCronometro()">⏸ Pausar</button>
+                            <button class="btn-outline" style="width:auto; padding:12px 16px;" onclick="pausarCronometro()">⏸ Pausar</button>
                         </div>
                     </div>
 
-                    <!-- Formulário Fixo e Visível -->
-                    <div style="flex:2; min-width:300px;">
-                        <h3 style="margin-top:0; color:var(--text-main);">Salvar Sessão</h3>
-                        <div style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:8px;">
+                    <div style="flex:2; min-width:320px;">
+                        <h3 style="margin-top:0; color:var(--text-main); font-size:1.1rem; font-weight:700;">Registrar Sessão</h3>
+                        <div style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:4px;">
                             <div style="flex:1; min-width:140px;">
                                 <input type="text" id="ses-mat" placeholder="Matéria" list="lista-materias-dl" oninput="atualizarTopicosSessao(this.value)">
                                 <datalist id="lista-materias-dl"></datalist>
@@ -196,28 +191,32 @@
                                 <datalist id="dl-ses-top"></datalist>
                             </div>
                         </div>
-                        <div style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:8px;">
+                        <div style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:4px;">
                             <select id="ses-tipo-estudo" style="flex:1;"><option value="Teoria">Teoria</option><option value="Questões">Questões</option><option value="Revisão">Revisão</option></select>
                             <select id="ses-tipo-mat" style="flex:1;" onchange="toggleCamposDetalhes()">
                                 <option value="Questões">📝 Questões</option><option value="PDF/Lei Seca">📖 PDF / Lei Seca</option><option value="Vídeo Aula">🎥 Vídeo Aula</option>
                             </select>
                         </div>
 
-                        <div id="campos-pdf" style="display:none; gap:12px; margin-bottom:8px;">
+                        <div id="campos-pdf" style="display:none; gap:12px; margin-bottom:4px;">
                             <input type="number" id="ses-pdf-ini" placeholder="Pág Inicial" style="flex:1;"><input type="number" id="ses-pdf-fim" placeholder="Pág Final" style="flex:1;"><input type="text" id="ses-pdf-fonte" placeholder="Fonte" style="flex:1;">
                         </div>
-                        <div id="campos-video" style="display:none; gap:12px; margin-bottom:8px;">
+                        <div id="campos-video" style="display:none; gap:12px; margin-bottom:4px;">
                             <input type="number" id="ses-vid-ini" placeholder="Vídeo Ini" style="flex:1;"><input type="number" id="ses-vid-fim" placeholder="Vídeo Fim (Opc)" style="flex:1;"><input type="text" id="ses-vid-fonte" placeholder="Plataforma" style="flex:1;">
                         </div>
 
-                        <div style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:12px; background:var(--bg-input); padding:10px; border-radius:var(--radius-sm);">
-                            <div style="flex:1;"><label style="font-size:0.8rem; font-weight:700; color:var(--brand-success);">Acertos</label><input type="number" id="ses-acertos" value="0" style="margin:0;"></div>
-                            <div style="flex:1;"><label style="font-size:0.8rem; font-weight:700; color:var(--brand-danger);">Erros</label><input type="number" id="ses-erros" value="0" style="margin:0;"></div>
-                            <div style="flex:1;"><label style="font-size:0.8rem; font-weight:700;">Tempo Manual (min)</label><input type="number" id="ses-tempo-manual" placeholder="Se sem cronômetro" style="margin:0;"></div>
+                        <div style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:12px; background:var(--bg-input); padding:12px; border-radius:var(--radius-sm);">
+                            <div style="flex:1;"><label style="font-size:0.75rem; font-weight:700; color:var(--brand-success);">Acertos</label><input type="number" id="ses-acertos" value="0" style="margin:0;"></div>
+                            <div style="flex:1;"><label style="font-size:0.75rem; font-weight:700; color:var(--brand-danger);">Erros</label><input type="number" id="ses-erros" value="0" style="margin:0;"></div>
+                            <!-- Cronômetro Manual em Horas e Minutos -->
+                            <div style="flex:1; display:flex; gap:6px;">
+                                <div><label style="font-size:0.75rem; font-weight:700;">Horas</label><input type="number" id="ses-man-horas" value="0" min="0" style="margin:0;"></div>
+                                <div><label style="font-size:0.75rem; font-weight:700;">Min</label><input type="number" id="ses-man-mins" value="0" min="0" max="59" style="margin:0;"></div>
+                            </div>
                         </div>
                         
                         <textarea id="ses-obs" rows="1" placeholder="Observações..." style="margin-bottom:12px;"></textarea>
-                        <button class="btn-primary" onclick="salvarRegistro()">💾 Registrar Estudo</button>
+                        <button class="btn-primary" onclick="salvarRegistro()">💾 Salvar Sessão</button>
                     </div>
                 </div>
 
@@ -231,7 +230,7 @@
             <div id="view-provas" style="display:none;">
                 <div class="card">
                     <h2>Nova Prova / Concurso</h2>
-                    <div style="display:flex; gap:12px; flex-wrap:wrap;">
+                    <div style="display:flex; gap:16px; flex-wrap:wrap;">
                         <input type="text" id="conc-nome" placeholder="Nome (Ex: TRF-1)" style="flex:2; min-width:200px;">
                         <input type="date" id="conc-data" style="flex:1; min-width:150px;">
                         <button class="btn-primary" style="flex:1; min-width:150px;" onclick="salvarProva()">Adicionar (Máx 5)</button>
@@ -244,14 +243,14 @@
             <div id="view-materias" style="display:none;">
                 <div class="card">
                     <h2>Criar Matéria / Tópico</h2>
-                    <div style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:12px;">
+                    <div style="display:flex; gap:16px; flex-wrap:wrap; margin-bottom:12px;">
                         <input type="text" id="mat-nome" placeholder="Nome da Matéria" style="flex:1; min-width:150px;" list="lista-materias-dl">
                         <input type="text" id="mat-topico" placeholder="Novo Tópico (Opcional)" style="flex:1; min-width:150px;">
                         <select id="mat-prova" style="flex:1; min-width:150px;"><option value="">Vincular a uma Prova? (Opcional)</option></select>
                     </div>
-                    <label style="font-size:0.85rem; font-weight:700;">Cor (Opcional):</label>
-                    <div id="mat-paleta" style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px; margin-top:5px;"></div>
-                    <button class="btn-primary" onclick="salvarMateria()">Salvar</button>
+                    <label style="font-size:0.8rem; font-weight:700; display:block; margin-bottom:8px;">Cor:</label>
+                    <div id="mat-paleta" style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px;"></div>
+                    <button class="btn-primary" onclick="salvarMateria()">Salvar Matéria</button>
                 </div>
                 <h2>Acervo de Matérias</h2>
                 <div id="lista-materias-cadastradas"></div>
@@ -261,13 +260,13 @@
             <div id="view-caderno" style="display:none;">
                 <div class="card">
                     <h2>Novo Caderno / Anotação</h2>
-                    <div style="display:flex; gap:12px; flex-wrap:wrap;">
-                        <input type="text" id="err-mat" placeholder="Matéria" list="lista-materias-dl" oninput="atualizarTopicosDatalist('err-top', this.value)" style="flex:1; min-width:150px;">
-                        <input type="text" id="err-top" placeholder="Tópico" list="dl-err-top" style="flex:1; min-width:150px;">
+                    <div style="display:flex; gap:16px; flex-wrap:wrap;">
+                        <input type="text" id="err-mat" placeholder="Matéria" list="lista-materias-dl" oninput="atualizarTopicosDatalist('err-top', this.value)" style="flex:1; min-width:180px;">
+                        <input type="text" id="err-top" placeholder="Tópico" list="dl-err-top" style="flex:1; min-width:180px;">
                         <datalist id="dl-err-top"></datalist>
                     </div>
-                    <textarea id="err-texto" placeholder="Cole a questão, lei, comentário..." rows="4"></textarea>
-                    <button class="btn-primary" onclick="salvarErro()">Salvar Anotação</button>
+                    <textarea id="err-texto" placeholder="Cole a questão, lei ou comentário..." rows="4"></textarea>
+                    <button class="btn-primary" onclick="salvarErro()">Salvar no Caderno</button>
                 </div>
                 <h2>Meus Cadernos</h2>
                 <div id="lista-cadernos-div"></div>
@@ -277,11 +276,11 @@
             <div id="view-estatisticas" style="display:none;">
                 <div class="card">
                     <h2>Métricas e Gráficos</h2>
-                    <div style="display:flex; gap:12px; margin-bottom:20px; flex-wrap:wrap;">
+                    <div style="display:flex; gap:16px; margin-bottom:20px; flex-wrap:wrap;">
                         <select id="est-periodo" onchange="atualizarEstatisticas()" style="flex:1;"><option value="hoje">Hoje</option><option value="7">Últimos 7 dias</option><option value="30">Últimos 30 dias</option><option value="tudo" selected>Sempre</option><option value="custom">Período Específico...</option></select>
                         <select id="est-tipo-grafico" onchange="atualizarEstatisticas()" style="flex:1;"><option value="doughnut">Gráfico Rosca</option><option value="bar">Gráfico de Barras</option></select>
                     </div>
-                    <div id="est-custom-dates" style="display:none; gap:12px; margin-bottom:20px; background:var(--bg-input); padding:12px; border-radius:var(--radius-sm);">
+                    <div id="est-custom-dates" style="display:none; gap:16px; margin-bottom:20px; background:var(--bg-input); padding:16px; border-radius:var(--radius-sm);">
                         <input type="date" id="est-dt-ini" style="margin:0;"><input type="date" id="est-dt-fim" style="margin:0;">
                         <button class="btn-success" style="width:auto;" onclick="atualizarEstatisticas()">Filtrar</button>
                     </div>
@@ -305,63 +304,68 @@
             <div id="view-pruma" style="display:none;">
                 <div class="card" style="padding:0; overflow:hidden; border:2px solid var(--brand-primary);">
                     <div style="background:var(--brand-primary); padding:20px; display:flex; justify-content:space-between; align-items:center;">
-                        <h2 style="color:white; margin:0; border:none; padding:0;">✨ PRUMA IA <span id="badge-modelo-ia" style="font-size:0.8rem; font-weight:normal; opacity:0.8; margin-left:10px;"></span></h2>
-                        <button class="btn-outline" style="width:auto; padding:8px 12px; border-color:white; color:white; font-size:0.85rem;" onclick="document.getElementById('modal-historico-ia').style.display='flex'">Ver Histórico (10 Últimas)</button>
+                        <h2 style="color:white; margin:0; border:none; padding:0;">✨ PRUMA IA <span id="badge-modelo-ia" style="font-size:0.8rem; font-weight:normal; opacity:0.85; margin-left:10px;"></span></h2>
+                        <button class="btn-outline" style="width:auto; padding:8px 14px; border-color:white; color:white; font-size:0.85rem;" onclick="document.getElementById('modal-historico-ia').style.display='flex'">Ver Histórico (10 Últimas)</button>
                     </div>
                     
-                    <div style="padding:20px;">
-                        <div style="display:flex; gap:10px; margin-bottom:20px; overflow-x:auto;">
+                    <div style="padding:24px;">
+                        <div style="display:flex; gap:10px; margin-bottom:24px; overflow-x:auto;">
                             <button class="btn-outline" style="flex:1; border-color:var(--brand-primary); color:var(--brand-primary);" onclick="mudarSubIa('chat', this)">💬 Chat Especialista</button>
                             <button class="btn-outline" style="flex:1;" onclick="mudarSubIa('simulador', this)">🎯 Gerar Questões</button>
                             <button class="btn-outline" style="flex:1;" onclick="mudarSubIa('flashcards', this)">⚡ Flashcards</button>
                             <button class="btn-outline" style="flex:1;" onclick="mudarSubIa('edital', this)">📚 Edital Inteligente</button>
                         </div>
 
-                        <!-- Caixas de Seleção de Fontes Organizadas -->
-                        <div id="caixa-fontes-ia" style="background:var(--bg-input); padding:20px; border-radius:var(--radius-md); margin-bottom:20px;">
-                            <h3 style="margin:0 0 12px 0; font-size:1.1rem; color:var(--brand-primary);">🔍 Selecione as Fontes de Pesquisa</h3>
-                            
-                            <strong style="font-size:0.9rem; color:var(--text-muted);">📚 Arquivos da Biblioteca:</strong>
-                            <div id="checkboxes-biblioteca" class="grid-fontes" style="margin-bottom:16px;"></div>
-                            
-                            <strong style="font-size:0.9rem; color:var(--brand-danger);">📓 Focar nos Meus Erros (Cadernos):</strong>
-                            <div id="checkboxes-cadernos" class="grid-fontes"></div>
-                            
-                            <p style="font-size:0.8rem; color:var(--brand-success); font-weight:700; margin:16px 0 0 0;">✓ Busca inteligente na base do Google sempre ativa por padrão.</p>
+                        <!-- Menu Retrátil Elegante para Seleção de Fontes -->
+                        <div id="caixa-fontes-ia" style="position:relative; margin-bottom:20px;">
+                            <button class="btn-outline" onclick="toggleDropdownFontes()" style="display:flex; justify-content:space-between; align-items:center; background:var(--bg-input); font-weight:600;">
+                                <span>📚 Selecionar Fontes e Cadernos (<span id="contador-fontes-sel">0</span> ativas)</span>
+                                <span>▼</span>
+                            </button>
+                            <div id="dropdown-fontes-menu" style="display:none; position:absolute; top:100%; left:0; width:100%; background:var(--bg-card); border:1px solid var(--border-color); border-radius:var(--radius-sm); padding:16px; z-index:100; box-shadow:var(--shadow-md); max-height:240px; overflow-y:auto; margin-top:4px;">
+                                <div style="font-weight:700; font-size:0.75rem; color:var(--text-muted); text-transform:uppercase; margin-bottom:8px;">Arquivos da Biblioteca</div>
+                                <div id="checkboxes-biblioteca" class="grid-fontes" style="margin-bottom:12px;"></div>
+                                <div style="font-weight:700; font-size:0.75rem; color:var(--brand-danger); text-transform:uppercase; margin-bottom:8px;">Cadernos de Erros</div>
+                                <div id="checkboxes-cadernos" class="grid-fontes"></div>
+                            </div>
                         </div>
 
+                        <!-- Sub: Chat -->
                         <div id="subia-chat">
                             <div class="chat-box" id="box-chat">
-                                <div class="msg msg-a"><strong>PRUMA:</strong> Olá! Selecione os materiais acima e envie seu prompt. Sou especialista em concursos. Qual a missão de hoje?</div>
+                                <div class="msg msg-a"><strong>PRUMA:</strong> Olá! Selecione suas fontes acima e envie sua dúvida. Sou especialista em provas e concursos. O que estudaremos hoje?</div>
                             </div>
-                            <div style="display:flex; gap:10px;">
-                                <textarea id="inp-chat" placeholder="Peça resumos, resoluções profundas, ou jurisprudências..." rows="2" style="margin:0; resize:none;"></textarea>
+                            <div style="display:flex; gap:12px;">
+                                <textarea id="inp-chat" placeholder="Peça resumos de PDFs, resoluções profundas ou jurisprudência..." rows="2" style="margin:0; resize:none;"></textarea>
                                 <button class="btn-primary" onclick="executarIA('chat')" style="width:120px;">Enviar</button>
                             </div>
                         </div>
 
+                        <!-- Sub: Simulador -->
                         <div id="subia-simulador" style="display:none;">
-                            <div style="display:flex; gap:12px; margin-bottom:16px;">
-                                <input type="number" id="ia-qts-num" value="5" min="1" max="20" style="width:80px; margin:0;" title="Nº">
+                            <div style="display:flex; gap:16px; margin-bottom:16px;">
+                                <input type="number" id="ia-qts-num" value="5" min="1" max="20" style="width:90px; margin:0;" title="Nº de Questões">
                                 <input type="text" id="ia-qts-tema" placeholder="Tema específico (Ou deixe em branco para focar nas fontes selecionadas)" style="flex:1; margin:0;">
                             </div>
-                            <button class="btn-primary" onclick="executarIA('questoes')">Gerar Bateria</button>
+                            <button class="btn-primary" onclick="executarIA('questoes')">Gerar Bateria de Questões</button>
                             <div class="chat-box" id="box-qts" style="margin-top:16px; display:none; height:auto; min-height:200px;"></div>
                         </div>
 
+                        <!-- Sub: Flashcards (Sem obrigatoriedade de tema personalizado) -->
                         <div id="subia-flashcards" style="display:none;">
-                            <div style="display:flex; gap:12px; margin-bottom:12px; flex-wrap:wrap;">
-                                <input type="text" id="fc-mat-dest" placeholder="Salvar em qual Matéria? (Opcional)" list="lista-materias-dl" oninput="atualizarTopicosDatalist('fc-top-dest', this.value)" style="flex:1; min-width:150px;">
-                                <input type="text" id="fc-top-dest" placeholder="Tópico (Opcional)" list="dl-fc-top-dest" style="flex:1; min-width:150px;">
+                            <div style="display:flex; gap:16px; margin-bottom:16px; flex-wrap:wrap;">
+                                <input type="text" id="fc-mat-dest" placeholder="Matéria Alvo *" list="lista-materias-dl" oninput="atualizarTopicosDatalist('fc-top-dest', this.value)" style="flex:1; min-width:200px;">
+                                <input type="text" id="fc-top-dest" placeholder="Tópico Alvo *" list="dl-fc-top-dest" style="flex:1; min-width:200px;">
                                 <datalist id="dl-fc-top-dest"></datalist>
                             </div>
-                            <textarea id="fc-tema" placeholder="Descreva o tema dos flashcards..." rows="2"></textarea>
-                            <button class="btn-primary" onclick="executarIA('flashcards')">Gerar Cartões</button>
+                            <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:16px;">A IA criará flashcards inteligentes baseados na Matéria, Tópico e nas fontes marcadas acima.</p>
+                            <button class="btn-primary" onclick="executarIA('flashcards')">Gerar Flashcards Automáticos</button>
                             <div class="chat-box" id="box-fc" style="margin-top:16px; display:none; background:transparent; border:none; padding:0; height:auto; overflow:visible;"></div>
                         </div>
 
+                        <!-- Sub: Edital -->
                         <div id="subia-edital" style="display:none;">
-                            <select id="edital-ia-prova"><option value="">Vincular a qual Prova? (Opcional)</option></select>
+                            <select id="edital-ia-prova" style="margin-bottom:16px;"><option value="">Vincular a qual Prova? (Opcional)</option></select>
                             <textarea id="edital-texto" placeholder="Cole o texto gigante do edital aqui..." rows="6"></textarea>
                             <button class="btn-primary" onclick="processarEdital(this)">✨ Mapear Estrutura com IA</button>
                         </div>
@@ -375,14 +379,14 @@
                     <h2>Nuvem PRUMA (Fontes)</h2>
                     <div style="display:flex; gap:20px; flex-wrap:wrap;">
                         <div style="flex:1; min-width:250px; background:var(--bg-input); padding:20px; border-radius:var(--radius-md);">
-                            <h3 style="margin-top:0;">Enviar PDF / Texto</h3>
-                            <input type="text" id="bib-mat-arq" placeholder="Materia (Opcional)">
-                            <input type="file" id="bib-file" accept=".pdf,.txt" style="background:white; padding:8px;">
+                            <h3 style="margin-top:0; font-size:1.1rem;">Enviar PDF / Texto</h3>
+                            <input type="text" id="bib-mat-arq" placeholder="Matéria (Opcional)">
+                            <input type="file" id="bib-file" accept=".pdf,.txt" style="background:var(--bg-card); padding:8px;">
                             <button class="btn-primary" onclick="uploadArquivo()">Subir Arquivo</button>
                         </div>
                         <div style="flex:1; min-width:250px; background:var(--bg-input); padding:20px; border-radius:var(--radius-md);">
-                            <h3 style="margin-top:0;">Salvar Link Web</h3>
-                            <input type="text" id="bib-mat-link" placeholder="Materia (Opcional)">
+                            <h3 style="margin-top:0; font-size:1.1rem;">Salvar Link Web</h3>
+                            <input type="text" id="bib-mat-link" placeholder="Matéria (Opcional)">
                             <input type="url" id="bib-link" placeholder="https://...">
                             <button class="btn-success" onclick="salvarLink()">Salvar URL</button>
                         </div>
@@ -398,16 +402,16 @@
                     <h2>Minha Conta</h2>
                     
                     <div style="background:var(--brand-primary); color:white; padding:20px; border-radius:var(--radius-md); margin-bottom:20px;">
-                        <h3 style="margin-top:0;">Recuperação de Dados Antigos</h3>
-                        <p style="font-size:0.9rem; margin-bottom:12px;">Se você usou a versão antiga do site, seus PDFs e Cadernos podem estar fora da nuvem segura atual.</p>
-                        <button style="background:white; color:var(--brand-primary); border:none; font-weight:800; padding:10px 16px; border-radius:var(--radius-sm); cursor:pointer; width:100%;" onclick="resgatarDadosAntigos()">🔄 Resgatar Dados Antigos</button>
+                        <h3 style="margin-top:0; font-size:1.1rem; color:white;">Recuperação de Dados Antigos</h3>
+                        <p style="font-size:0.9rem; margin-bottom:12px; opacity:0.9;">Caso possua dados em versões anteriores, clique abaixo para resgatá-los para sua nuvem.</p>
+                        <button style="background:white; color:var(--brand-primary); border:none; font-weight:700; padding:12px; border-radius:var(--radius-sm); cursor:pointer; width:100%;" onclick="resgatarDadosAntigos()">🔄 Resgatar Dados Antigos</button>
                     </div>
 
                     <p><strong>E-mail:</strong> <span id="conta-email">...</span></p>
-                    <p><strong>Nome:</strong> <input type="text" id="conta-nome" style="width:200px; display:inline-block; padding:8px; margin:0;"></p>
-                    <button class="btn-outline" style="width:auto; padding:8px 16px; margin-bottom:20px;" onclick="salvarNomePerfil()">Salvar Nome</button>
+                    <p><strong>Nome:</strong> <input type="text" id="conta-nome" style="width:220px; display:inline-block; padding:8px; margin:0;"></p>
+                    <button class="btn-outline" style="width:auto; padding:8px 16px; margin-bottom:24px;" onclick="salvarNomePerfil()">Salvar Nome</button>
                     
-                    <label style="font-weight:700; display:block; margin-bottom:10px;">Cores do Sistema (15 Opções):</label>
+                    <label style="font-weight:700; display:block; margin-bottom:10px;">Paleta de Cores do Sistema (15 Opções):</label>
                     <div id="paleta-cores-sistema" style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:30px;"></div>
 
                     <button class="btn-danger" style="width:100%; padding:14px; font-size:1rem;" onclick="excluirConta()">Excluir Minha Conta Permanentemente</button>
@@ -420,17 +424,17 @@
     <!-- Modais -->
     <div id="modal-apikey" class="modal">
         <div class="modal-content">
-            <button class="modal-close" style="position:absolute; top:15px; right:15px; background:transparent; border:none; font-size:1.5rem; cursor:pointer; color:var(--text-muted);" onclick="document.getElementById('modal-apikey').style.display='none'">✖</button>
+            <button class="modal-close" style="position:absolute; top:20px; right:20px; background:transparent; border:none; font-size:1.5rem; cursor:pointer; color:var(--text-muted);" onclick="document.getElementById('modal-apikey').style.display='none'">✖</button>
             <h2 style="margin-top:0;">🔑 Chave API Gemini</h2>
             <p style="color:var(--text-muted); font-size:0.9rem;">Fica salva localmente no seu dispositivo.</p>
             <input type="password" id="input-api-key" placeholder="Cole sua API Key">
-            <button class="btn-primary" onclick="salvarApiKey()">Salvar</button>
+            <button class="btn-primary" onclick="salvarApiKey()">Salvar Chave</button>
         </div>
     </div>
 
     <div id="modal-historico-ia" class="modal">
         <div class="modal-content" style="max-width:700px;">
-            <button class="modal-close" style="position:absolute; top:15px; right:15px; background:transparent; border:none; font-size:1.5rem; cursor:pointer; color:var(--text-muted);" onclick="document.getElementById('modal-historico-ia').style.display='none'">✖</button>
+            <button class="modal-close" style="position:absolute; top:20px; right:20px; background:transparent; border:none; font-size:1.5rem; cursor:pointer; color:var(--text-muted);" onclick="document.getElementById('modal-historico-ia').style.display='none'">✖</button>
             <h2 style="margin-top:0;">🔄 Últimas 10 Perguntas</h2>
             <div id="lista-historico-ia" style="display:flex; flex-direction:column; gap:12px; margin-top:16px;"></div>
         </div>
@@ -438,12 +442,11 @@
 
     <div id="modal-juntar" class="modal">
         <div class="modal-content">
-            <button class="modal-close" style="position:absolute; top:15px; right:15px; background:transparent; border:none; font-size:1.5rem; cursor:pointer; color:var(--text-muted);" onclick="document.getElementById('modal-juntar').style.display='none'">✖</button>
+            <button class="modal-close" style="position:absolute; top:20px; right:20px; background:transparent; border:none; font-size:1.5rem; cursor:pointer; color:var(--text-muted);" onclick="document.getElementById('modal-juntar').style.display='none'">✖</button>
             <h2 style="margin-top:0;">🔗 Juntar Tópicos</h2>
-            <p>Mover o tópico <strong id="lbl-topico-origem" style="color:var(--brand-danger)"></strong> para dentro de outro e apagá-lo.</p>
-            <select id="sel-topico-destino"></select>
-            <input type="hidden" id="hid-mat-id">
-            <input type="hidden" id="hid-top-origem">
+            <p>Mover o tópico <strong id="lbl-topico-origem" style="color:var(--brand-danger)"></strong> para dentro de outro e excluí-lo.</p>
+            <select id="sel-topico-destino" style="margin-bottom:16px;"></select>
+            <input type="hidden" id="hid-mat-id"><input type="hidden" id="hid-top-origem">
             <button class="btn-primary" onclick="confirmarJuncao()">Confirmar Junção</button>
         </div>
     </div>
@@ -463,12 +466,12 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database(); const storage = firebase.storage();
 
-        // ESTADOS E VARIÁVEIS GERAIS
+        // ESTADOS GERAIS
         let userAtual = null, refDb = null, refStore = null;
         let dbData = { sessoes: [], provas: [], materias: [], cadernos: [], biblioteca: [], iaHistorico: [] };
         let segundosCronometro = 0, cronometroInterval = null, graficoInstance = null;
         
-        const paleta15 = ['#1877F2','#31A24C','#E41E3F','#F2A100','#6F42C1','#D63384','#17A2B8','#FD7E14','#20C997','#6610F2','#0D6EFD','#198754','#DC3545','#FFC107','#0DCAF0'];
+        const paleta15 = ['#007AFF','#34C759','#FF3B30','#FF9500','#5856D6','#AF52DE','#5AC8FA','#FF2D55','#E5C07B','#98C379','#E06C75','#C678DD','#56B6C2','#D19A66','#61AFEF'];
         let corAtualMateria = paleta15[0];
 
         function sanitizeText(str) { return typeof str === 'string' ? DOMPurify.sanitize(str) : ''; }
@@ -501,17 +504,17 @@
             document.querySelectorAll('.nav-btn').forEach(b => { b.classList.remove('active'); b.style.borderColor='transparent'; b.style.background='transparent'; });
             if(e && e.currentTarget) {
                 e.currentTarget.classList.add('active');
-                if(e.currentTarget.textContent.includes('PRUMA IA')) { e.currentTarget.style.background='rgba(24,119,242,0.1)'; e.currentTarget.style.borderLeft='4px solid var(--brand-primary)'; }
+                if(e.currentTarget.textContent.includes('PRUMA IA')) { e.currentTarget.style.background='rgba(0,122,255,0.1)'; e.currentTarget.style.borderLeft='4px solid var(--brand-primary)'; }
             }
             if(window.innerWidth <= 768) document.getElementById('sidebar-menu').classList.remove('open');
             if(t === 'estatisticas') atualizarEstatisticas();
         }
 
-        // MINHA CONTA & RECUPERAÇÃO DE DADOS
+        // CONTA E RESGATE
         function carregarPaletaSistema() {
             let div = document.getElementById('paleta-cores-sistema'); div.innerHTML = '';
             paleta15.forEach(cor => {
-                let dot = document.createElement('div'); dot.style.width='30px'; dot.style.height='30px'; dot.style.borderRadius='50%'; dot.style.background=cor; dot.style.cursor='pointer';
+                let dot = document.createElement('div'); dot.style.width='32px'; dot.style.height='32px'; dot.style.borderRadius='50%'; dot.style.background=cor; dot.style.cursor='pointer';
                 dot.onclick = () => { document.documentElement.style.setProperty('--brand-primary', cor); localStorage.setItem('pruma_cor_sys', cor); };
                 div.appendChild(dot);
             });
@@ -523,24 +526,23 @@
         function carregarApiKey() { let k = localStorage.getItem('pruma_apikey'); if(k) document.getElementById('input-api-key').value = k; }
 
         async function resgatarDadosAntigos() {
-            if(!confirm("Isso procurará dados antigos na raiz do banco e os copiará para sua nuvem segura. Deseja continuar?")) return;
+            if(!confirm("Prosseguir com o resgate de dados antigos?")) return;
             try {
                 let dbs = ['pdfs', 'caderno_erros', 'historico_sessoes', 'planejamento', 'concursos'];
                 for(let raiz of dbs) {
-                    let snap = await db.ref(raiz).once('value');
-                    let dados = snap.val();
+                    let snap = await db.ref(raiz).once('value'); let dados = snap.val();
                     if(dados) {
                         if(raiz==='historico_sessoes') await refDb.child('sessoes').update(dados);
-                        if(raiz==='pdfs') { Object.values(dados).forEach(p => refDb.child('biblioteca').push({id:gerarId(), nome:p.nome||'PDF Antigo', tipo:'ARQUIVO', url:p.url, texto:p.texto||'', materia:'Geral', data:p.data||new Date().toLocaleDateString()})); }
+                        if(raiz==='pdfs') { Object.values(dados).forEach(p => refDb.child('biblioteca').push({id:gerarId(), nome:p.nome||'PDF', tipo:'ARQUIVO', url:p.url, texto:p.texto||'', materia:'Geral', data:p.data||new Date().toLocaleDateString()})); }
                         if(raiz==='caderno_erros') await refDb.child('cadernos').set(dados);
                         if(raiz==='concursos') await refDb.child('provas').set(dados);
                     }
                 }
-                alert("Verificação e resgate concluídos com sucesso! Recarregue a página se necessário.");
+                alert("Resgate concluído!");
             } catch(e) { alert("Erro: " + e.message); }
         }
 
-        // CARREGAMENTO DE DADOS
+        // DADOS
         function carregarDadosGlobais() {
             refDb.child('perfil/nome').on('value', s => { if(s.val()) document.getElementById('conta-nome').value = s.val(); });
             refDb.child('sessoes').on('value', s => { dbData.sessoes = s.val() ? Object.values(s.val()) : []; renderizarInicio(); calcularTempoTotal(); if(document.getElementById('view-estatisticas').style.display==='block') atualizarEstatisticas(); });
@@ -551,7 +553,6 @@
             refDb.child('ia_historico').on('value', s => { dbData.iaHistorico = s.val() || []; renderizarHistoricoIA(); });
         }
 
-        // TEMPO E CRONÔMETRO
         function calcularTempoTotal() {
             let segs = dbData.sessoes.reduce((acc, s) => acc + (s.segundos || 0), 0);
             document.getElementById('side-tempo-total').textContent = `${Math.floor(segs / 3600)}h ${Math.floor((segs % 3600) / 60)}m`;
@@ -568,18 +569,20 @@
             document.getElementById('campos-video').style.display = mat==='Vídeo Aula' ? 'flex' : 'none';
         }
 
-        // REGISTRO FIXO E INÍCIO
         function atualizarTopicosSessao(matNome) {
             let dl = document.getElementById('dl-ses-top'); if(!dl) return; dl.innerHTML = '';
             dbData.materias.filter(m => m.nome.toLowerCase() === matNome.toLowerCase()).forEach(m => m.topicos.forEach(t => dl.innerHTML += `<option value="${t}">`));
         }
 
+        // REGISTRO (Com Horas e Minutos manuais)
         function salvarRegistro() {
             let mat = sanitizeText(document.getElementById('ses-mat').value), top = sanitizeText(document.getElementById('ses-top').value);
             if(!mat) return alert("Preencha a matéria.");
             
-            let manMin = parseInt(document.getElementById('ses-tempo-manual').value) || 0;
-            let segsFinais = manMin > 0 ? (manMin * 60) : segundosCronometro;
+            let hMan = parseInt(document.getElementById('ses-man-horas').value) || 0;
+            let mMan = parseInt(document.getElementById('ses-man-mins').value) || 0;
+            let segsManuais = (hMan * 3600) + (mMan * 60);
+            let segsFinais = segsManuais > 0 ? segsManuais : segundosCronometro;
             
             let a = parseInt(document.getElementById('ses-acertos').value)||0, e = parseInt(document.getElementById('ses-erros').value)||0;
             let reg = { id: gerarId(), timestamp: Date.now(), data: new Date().toLocaleDateString(), hora: new Date().toLocaleTimeString().substring(0,5), materia: mat, topico: top, tipoEstudo: document.getElementById('ses-tipo-estudo').value, tipoMat: document.getElementById('ses-tipo-mat').value, segundos: segsFinais, acertos: a, erros: e, totalQts: a+e, obs: sanitizeText(document.getElementById('ses-obs').value) };
@@ -593,7 +596,7 @@
 
             refDb.child('sessoes/'+reg.id).set(reg);
             segundosCronometro = 0; atualizarVisorCronometro();
-            ['ses-mat','ses-top','ses-acertos','ses-erros','ses-tempo-manual','ses-obs','ses-pdf-ini','ses-pdf-fim','ses-vid-ini','ses-vid-fim'].forEach(id=> { if(document.getElementById(id)) document.getElementById(id).value = id.includes('acertos')||id.includes('erros')?'0':''; });
+            ['ses-mat','ses-top','ses-acertos','ses-erros','ses-man-horas','ses-man-mins','ses-obs','ses-pdf-ini','ses-pdf-fim','ses-vid-ini','ses-vid-fim'].forEach(id=> { if(document.getElementById(id)) document.getElementById(id).value = id.includes('acertos')||id.includes('erros')?'0':''; });
         }
 
         function renderizarInicio() {
@@ -629,12 +632,12 @@
             let div = document.getElementById('lista-provas-div'); div.innerHTML = '';
             dbData.provas.forEach(p => {
                 let dias = Math.ceil((new Date(p.data) - new Date()) / (1000*60*60*24));
-                div.innerHTML += `<div class="stat-card" style="position:relative;"><span>${p.nome}</span><strong style="color:${dias<30?'var(--brand-danger)':'var(--brand-primary)'}; margin:10px 0;">Faltam ${dias} dias</strong><span style="font-weight:normal;">📅 ${p.data}</span><button class="btn-x-vermelho" style="position:absolute; top:5px; right:5px;" onclick="if(confirm('Excluir?')) { dbData.provas=dbData.provas.filter(x=>x.id!=='${p.id}'); refDb.child('provas').set(dbData.provas); }">✖</button></div>`;
+                div.innerHTML += `<div class="stat-card" style="position:relative;"><span>${p.nome}</span><strong style="color:${dias<30?'var(--brand-danger)':'var(--brand-primary)'}; margin:10px 0;">Faltam ${dias} dias</strong><span style="font-weight:normal;">📅 ${p.data}</span><button class="btn-x-vermelho" style="position:absolute; top:8px; right:8px;" onclick="if(confirm('Excluir?')) { dbData.provas=dbData.provas.filter(x=>x.id!=='${p.id}'); refDb.child('provas').set(dbData.provas); }">✖</button></div>`;
             });
         }
 
         // MATÉRIAS E JUNÇÃO DE TÓPICOS
-        document.getElementById('mat-paleta').innerHTML = paleta15.map(c => `<div style="width:25px; height:25px; border-radius:50%; background:${c}; cursor:pointer;" onclick="corAtualMateria='${c}'; this.style.border='2px solid var(--text-main)';"></div>`).join('');
+        document.getElementById('mat-paleta').innerHTML = paleta15.map(c => `<div style="width:28px; height:28px; border-radius:50%; background:${c}; cursor:pointer;" onclick="corAtualMateria='${c}'; this.style.border='2px solid var(--text-main)';"></div>`).join('');
         
         function salvarMateria() {
             let n = sanitizeText(document.getElementById('mat-nome').value), t = sanitizeText(document.getElementById('mat-topico').value), pId = document.getElementById('mat-prova').value;
@@ -653,17 +656,17 @@
             for(let p in grupos) {
                 if(grupos[p].length === 0) continue;
                 let isGeral = p === 'geral';
-                let nomeP = isGeral ? 'Matérias Gerais (Sem Prova)' : (dbData.provas.find(x=>x.id===p)?.nome || 'Desconhecida');
+                let nomeP = isGeral ? 'Matérias Gerais' : (dbData.provas.find(x=>x.id===p)?.nome || 'Prova');
                 
                 let conteudoMat = grupos[p].map(m => {
-                    let htmlT = m.topicos.map((t, i) => `<div style="padding:6px 0; border-bottom:1px solid var(--border-color); display:flex; justify-content:space-between;"><span>📄 ${t}</span> <div><button style="background:transparent;border:none;cursor:pointer;font-size:1.1rem;" title="Juntar" onclick="abrirModalJuntar('${m.id}', '${sanitizeText(t).replace(/'/g,"\\'")}')">🔗</button> <button class="btn-x-vermelho" onclick="dbData.materias.find(x=>x.id==='${m.id}').topicos.splice(${i},1); refDb.child('materias').set(dbData.materias);">✖</button></div></div>`).join('');
-                    return `<div class="pasta-header" style="border-left:5px solid ${m.cor};" onclick="this.nextElementSibling.classList.toggle('aberta')"><span>📁 ${m.nome} (${m.topicos.length})</span><button class="btn-x-vermelho" onclick="event.stopPropagation(); if(confirm('Apagar Pasta?')) { dbData.materias=dbData.materias.filter(x=>x.id!=='${m.id}'); refDb.child('materias').set(dbData.materias); }">✖</button></div><div class="pasta-body">${htmlT||'<span style="color:var(--text-muted);font-size:0.85rem;">Vazio.</span>'}</div>`;
+                    let htmlT = m.topicos.map((t, i) => `<div style="padding:8px 0; border-bottom:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center;"><span>📄 ${t}</span> <div><button style="background:transparent;border:none;cursor:pointer;font-size:1.1rem;margin-right:8px;" title="Juntar" onclick="abrirModalJuntar('${m.id}', '${sanitizeText(t).replace(/'/g,"\\'")}')">🔗</button> <button class="btn-x-vermelho" onclick="dbData.materias.find(x=>x.id==='${m.id}').topicos.splice(${i},1); refDb.child('materias').set(dbData.materias);">✖</button></div></div>`).join('');
+                    return `<div class="pasta-header" style="border-left:5px solid ${m.cor};" onclick="this.nextElementSibling.classList.toggle('aberta')"><span>📁 ${m.nome} (${m.topicos.length})</span><button class="btn-x-vermelho" onclick="event.stopPropagation(); if(confirm('Apagar?')) { dbData.materias=dbData.materias.filter(x=>x.id!=='${m.id}'); refDb.child('materias').set(dbData.materias); }">✖</button></div><div class="pasta-body">${htmlT||'<span style="color:var(--text-muted);font-size:0.85rem;">Vazio.</span>'}</div>`;
                 }).join('');
 
                 if(!isGeral) {
                     div.innerHTML += `<div class="bloco-prova"><div class="bloco-prova-titulo">🎯 ${nomeP}</div>${conteudoMat}</div>`;
                 } else {
-                    div.innerHTML += `<h3 style="color:var(--text-muted); margin-top:20px;">${nomeP}</h3>${conteudoMat}`;
+                    div.innerHTML += `<h3 style="color:var(--text-muted); margin-top:20px; font-size:1.1rem;">${nomeP}</h3>${conteudoMat}`;
                 }
             }
         }
@@ -676,19 +679,16 @@
             
             let sel = document.getElementById('sel-topico-destino'); sel.innerHTML = '';
             mat.topicos.forEach(t => { if(t !== topOri) sel.innerHTML += `<option value="${t}">${t}</option>`; });
-            if(sel.options.length === 0) return alert("Não há outros tópicos para juntar.");
+            if(sel.options.length === 0) return alert("Não há outros tópicos.");
             document.getElementById('modal-juntar').style.display='flex';
         }
         function confirmarJuncao() {
             let mId = document.getElementById('hid-mat-id').value, tOri = document.getElementById('hid-top-origem').value, tDest = document.getElementById('sel-topico-destino').value;
             let mat = dbData.materias.find(m => m.id === mId);
-            mat.topicos = mat.topicos.filter(t => t !== tOri); // Remove origem
+            mat.topicos = mat.topicos.filter(t => t !== tOri);
             
-            // Opcional: Atualizar sessões e cadernos
-            let sAtualizadas=0; dbData.sessoes.forEach(s => { if(s.materia===mat.nome && s.topico===tOri) { s.topico = tDest; sAtualizadas++; } });
-            if(sAtualizadas>0) refDb.child('sessoes').set(dbData.sessoes);
-            let cAtualizados=0; dbData.cadernos.forEach(c => { if(c.materia===mat.nome && c.topico===tOri) { c.topico = tDest; cAtualizados++; } });
-            if(cAtualizados>0) refDb.child('cadernos').set(dbData.cadernos);
+            dbData.sessoes.forEach(s => { if(s.materia===mat.nome && s.topico===tOri) s.topico = tDest; }); refDb.child('sessoes').set(dbData.sessoes);
+            dbData.cadernos.forEach(c => { if(c.materia===mat.nome && c.topico===tOri) c.topico = tDest; }); refDb.child('cadernos').set(dbData.cadernos);
 
             refDb.child('materias').set(dbData.materias);
             document.getElementById('modal-juntar').style.display='none'; alert("Tópicos juntados com sucesso!");
@@ -717,8 +717,8 @@
             for(let m in agr) {
                 let htmlM = '';
                 for(let t in agr[m]) {
-                    htmlM += `<div style="font-weight:800; color:var(--brand-primary); margin:12px 0 6px 0;">📌 ${t}</div>`;
-                    agr[m][t].forEach(i => { htmlM += `<div style="background:var(--bg-input); padding:10px; border-radius:var(--radius-sm); margin-bottom:6px; display:flex; justify-content:space-between;"><div style="font-size:0.95rem;">${i.texto} <span style="font-size:0.75rem; color:var(--text-muted); display:block;">${i.data}</span></div><button class="btn-x-vermelho" onclick="if(confirm('Excluir?')){ dbData.cadernos=dbData.cadernos.filter(x=>x.id!=='${i.id}'); refDb.child('cadernos').set(dbData.cadernos); }">✖</button></div>`; });
+                    htmlM += `<div style="font-weight:700; color:var(--brand-primary); margin:10px 0 4px 0;">📌 ${t}</div>`;
+                    agr[m][t].forEach(i => { htmlM += `<div style="background:var(--bg-input); padding:10px; border-radius:var(--radius-sm); margin-bottom:6px; display:flex; justify-content:space-between; align-items:flex-start;"><div style="font-size:0.95rem;">${i.texto} <span style="font-size:0.75rem; color:var(--text-muted); display:block;">${i.data}</span></div><button class="btn-x-vermelho" onclick="if(confirm('Excluir?')){ dbData.cadernos=dbData.cadernos.filter(x=>x.id!=='${i.id}'); refDb.child('cadernos').set(dbData.cadernos); }">✖</button></div>`; });
                 }
                 div.innerHTML += `<div class="pasta-header" onclick="this.nextElementSibling.classList.toggle('aberta')">📓 ${m}</div><div class="pasta-body">${htmlM}</div>`;
             }
@@ -746,7 +746,7 @@
             document.getElementById('st-pags').textContent = tPag; document.getElementById('st-vids').textContent = tVid;
 
             if(graficoInstance) graficoInstance.destroy();
-            let isDark = document.documentElement.getAttribute('data-theme') === 'dark'; let txtCor = isDark ? '#E4E6EB' : '#1C1E21';
+            let isDark = document.documentElement.getAttribute('data-theme') === 'dark'; let txtCor = isDark ? '#F5F5F7' : '#1D1D1F';
             let keys = Object.keys(dadosGraf).length>0 ? Object.keys(dadosGraf) : ['Sem dados'], vals = Object.values(dadosGraf).length>0 ? Object.values(dadosGraf) : [1];
             let cores = keys.map(k => { let m = dbData.materias.find(x=>x.nome===k); return m ? m.cor : paleta15[0]; });
 
@@ -756,10 +756,10 @@
             });
         }
 
-        // BIBLIOTECA E FONTES
+        // BIBLIOTECA
         async function uploadArquivo() {
             let f = document.getElementById('bib-file').files[0]; if(!f) return alert("Selecione.");
-            let btn = event.currentTarget; let tx = btn.textContent; btn.disabled = true; btn.textContent = "Lendo e Subindo...";
+            let btn = event.currentTarget; let tx = btn.textContent; btn.disabled = true; btn.textContent = "Lendo...";
             try {
                 let refF = refStore.child('biblioteca/'+gerarId()+'_'+f.name); await refF.put(f); let url = await refF.getDownloadURL();
                 let txt = "";
@@ -782,7 +782,7 @@
             dbData.biblioteca.forEach(b => { div.innerHTML += `<div class="registro-curto"><div class="info"><strong>${b.tipo==='LINK'?'🌐':'📄'} ${b.nome}</strong><span>${b.materia} | ${b.data}</span></div><button class="btn-x-vermelho" onclick="if(confirm('Excluir?')) { let i = Object.entries(dbData.biblioteca).find(e=>e[1].id==='${b.id}'); if(i) { refDb.child('biblioteca/'+i[0]).remove(); if('${b.refPath||''}') try{ storage.ref('${b.refPath}').delete(); }catch(e){} } }">✖</button></div>`; });
         }
 
-        // PRUMA IA - O CÉREBRO
+        // PRUMA IA
         function mudarSubIa(sub, btn) {
             ['chat', 'simulador', 'flashcards', 'edital'].forEach(s => { let el = document.getElementById('subia-'+s); if(el) el.style.display = (s===sub)?'block':'none'; });
             document.querySelectorAll('#view-pruma .btn-outline').forEach(b => { b.style.background='transparent'; b.style.color='var(--text-main)'; });
@@ -790,46 +790,58 @@
             document.getElementById('caixa-fontes-ia').style.display = (sub==='edital') ? 'none' : 'block';
         }
 
+        function toggleDropdownFontes() {
+            let m = document.getElementById('dropdown-fontes-menu');
+            m.style.display = m.style.display === 'block' ? 'none' : 'block';
+        }
+
         function atualizarCheckboxesIA() {
             let cBib = document.getElementById('checkboxes-biblioteca'); cBib.innerHTML = '';
-            dbData.biblioteca.forEach(b => { cBib.innerHTML += `<label class="fonte-checkbox"><input type="checkbox" class="ia-chk-bib" value="${b.id}"> ${b.tipo==='LINK'?'🌐':'📄'} ${b.nome}</label>`; });
+            dbData.biblioteca.forEach(b => { cBib.innerHTML += `<label class="fonte-checkbox"><input type="checkbox" class="ia-chk-bib" value="${b.id}" onchange="atualizarContadorFontes()"> ${b.tipo==='LINK'?'🌐':'📄'} ${b.nome}</label>`; });
             let cCad = document.getElementById('checkboxes-cadernos'); cCad.innerHTML = '';
-            [...new Set(dbData.cadernos.map(c=>c.materia))].forEach(c => { cCad.innerHTML += `<label class="fonte-checkbox" style="color:var(--brand-danger);"><input type="checkbox" class="ia-chk-cad" value="${c}"> 📓 Caderno: ${c}</label>`; });
+            [...new Set(dbData.cadernos.map(c=>c.materia))].forEach(c => { cCad.innerHTML += `<label class="fonte-checkbox" style="color:var(--brand-danger);"><input type="checkbox" class="ia-chk-cad" value="${c}" onchange="atualizarContadorFontes()"> 📓 Caderno: ${c}</label>`; });
+            atualizarContadorFontes();
+        }
+
+        function atualizarContadorFontes() {
+            let total = document.querySelectorAll('.ia-chk-bib:checked, .ia-chk-cad:checked').length;
+            document.getElementById('contador-fontes-sel').textContent = total;
         }
 
         function renderizarHistoricoIA() {
             let div = document.getElementById('lista-historico-ia'); div.innerHTML = '';
-            if(dbData.iaHistorico.length===0) div.innerHTML = '<p>Nenhuma pergunta recente.</p>';
+            if(dbData.iaHistorico.length===0) div.innerHTML = '<p>Vazio.</p>';
             [...dbData.iaHistorico].reverse().forEach(h => {
-                div.innerHTML += `<div style="background:var(--bg-input); padding:12px; border-radius:var(--radius-sm); border:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center; gap:10px;"><span style="font-size:0.9rem; overflow:hidden;">"${h}"</span><button class="btn-primary" style="width:auto; padding:6px 12px; font-size:0.8rem;" onclick="document.getElementById('modal-historico-ia').style.display='none'; document.getElementById('inp-chat').value = '${sanitizeText(h).replace(/'/g, "\\'")}'; executarIA('chat');">🔄 Reenviar</button></div>`;
+                div.innerHTML += `<div style="background:var(--bg-input); padding:12px; border-radius:var(--radius-sm); border:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center; gap:10px;"><span style="font-size:0.9rem;">"${h}"</span><button class="btn-primary" style="width:auto; padding:6px 12px; font-size:0.8rem;" onclick="document.getElementById('modal-historico-ia').style.display='none'; document.getElementById('inp-chat').value = '${sanitizeText(h).replace(/'/g, "\\'")}'; executarIA('chat');">🔄 Reenviar</button></div>`;
             });
         }
 
         function extrairContextoGeral() {
             let ctx = "";
             document.querySelectorAll('.ia-chk-bib:checked').forEach(c => { let b = dbData.biblioteca.find(x=>x.id===c.value); if(b) ctx += `\n[FONTE BIBLIOTECA: ${b.nome}]\n${b.texto}\n`; });
-            document.querySelectorAll('.ia-chk-cad:checked').forEach(c => { let errs = dbData.cadernos.filter(x=>x.materia===c.value).map(e=>e.texto).join('\n'); ctx += `\n[MEU CADERNO DE ERROS - ${c.value} (FOQUE NISSO)]:\n${errs}\n`; });
-            if(dbData.iaHistorico.length>0) ctx += `\n[HISTÓRICO DA NOSSA CONVERSA RECENTE]:\n${dbData.iaHistorico.map(h=> `Eu perguntei antes: ${h}`).join('\n')}\n`;
+            document.querySelectorAll('.ia-chk-cad:checked').forEach(c => { let errs = dbData.cadernos.filter(x=>x.materia===c.value).map(e=>e.texto).join('\n'); ctx += `\n[MEU CADERNO DE ERROS - ${c.value}]:\n${errs}\n`; });
+            if(dbData.iaHistorico.length>0) ctx += `\n[HISTÓRICO RECENTE]:\n${dbData.iaHistorico.map(h=> `Eu perguntei: ${h}`).join('\n')}\n`;
             return ctx;
         }
 
         async function executarIA(tipo) {
-            let k = localStorage.getItem('pruma_apikey'); if(!k) return alert("Configure a API Key da IA na aba lateral.");
+            let k = localStorage.getItem('pruma_apikey'); if(!k) return alert("Configure a API Key na aba lateral.");
             const modelo = (userAtual.uid === ADMIN_UID) ? "gemini-3.1-pro-preview" : "gemini-3.8-flash";
             
             let p = "", box = null; let ctx = extrairContextoGeral();
-            let baseSys = "Você é a PRUMA IA, especialista absoluta em provas e concursos. Resolva problemas, aprofunde as explicações e sintetize o conhecimento. OBEDEÇA cegamente às ordens e prompts que o usuário digitar (escrever como especialista em algo, adotar um tom, etc). OBRIGATÓRIO: Ao final de sua resposta, liste/indique a fonte utilizada (seja do Google Search ou dos arquivos/cadernos do usuário).";
+            let baseSys = "Você é a PRUMA IA, especialista absoluta em provas e concursos. Resolva problemas, aprofunde explicações e sintetize o conhecimento. OBEDEÇA cegamente às ordens e prompts que o usuário digitar. OBRIGATÓRIO: Ao final de sua resposta, indique claramente a fonte utilizada.";
 
             if(tipo === 'chat') {
                 p = document.getElementById('inp-chat').value.trim(); if(!p) return;
                 box = document.getElementById('box-chat'); box.innerHTML += `<div class="msg msg-u">${sanitizeText(p)}</div>`; document.getElementById('inp-chat').value=''; box.scrollTop = box.scrollHeight;
                 dbData.iaHistorico.push(p); if(dbData.iaHistorico.length>10) dbData.iaHistorico.shift(); refDb.child('ia_historico').set(dbData.iaHistorico);
             } else if(tipo === 'questoes') {
-                p = `Crie exatamente ${document.getElementById('ia-qts-num').value} questões inéditas estilo prova múltipla escolha (A,B,C,D,E) sobre ${document.getElementById('ia-qts-tema').value||'o contexto fornecido'}. Coloque [CORRETA] ao lado da certa e cite a fonte.`;
+                p = `Crie exatamente ${document.getElementById('ia-qts-num').value} questões inéditas estilo prova múltipla escolha (A,B,C,D,E) sobre ${document.getElementById('ia-qts-tema').value||'o contexto das fontes selecionadas'}. Coloque [CORRETA] ao lado da certa e cite a fonte.`;
                 box = document.getElementById('box-qts'); box.style.display='flex'; box.innerHTML='';
             } else if(tipo === 'flashcards') {
-                if(!document.getElementById('fc-tema').value.trim()) return alert("Digite o tema.");
-                p = `Crie flashcards sobre: ${document.getElementById('fc-tema').value.trim()}. Retorne EXATAMENTE UM JSON ARRAY PURO: [{"f":"Pergunta","v":"Resposta"}]. Sem \`\`\`.`;
+                let mSel = document.getElementById('fc-mat-dest').value.trim(), tSel = document.getElementById('fc-top-dest').value.trim();
+                if(!mSel) return alert("Selecione ao menos a Matéria alvo.");
+                p = `Crie flashcards de estudo focados na Matéria: ${mSel} ${tSel?'e Tópico: '+tSel:''} com base nas fontes e cadernos selecionados. Retorne EXATAMENTE UM JSON ARRAY PURO: [{"f":"Pergunta","v":"Resposta"}]. Sem \`\`\`.`;
                 box = document.getElementById('box-fc'); box.style.display='block'; box.innerHTML='';
             }
 
