@@ -14,61 +14,65 @@
 
     <style>
         :root {
-            /* Apple iOS Soft UI Palette - Light */
-            --bg-body: #F5F5F7; --bg-card: #FFFFFF; --text-main: #1D1D1F; --text-muted: #86868B;
-            --border-color: #D2D2D7; --bg-input: #E8E8ED; --bg-hover: #D1D1D6;
+            /* Apple iOS Human Interface & Soft UI Palette - Light */
+            --bg-body: #F2F2F7; --bg-card: #FFFFFF; --text-main: #000000; --text-muted: #8E8E93;
+            --border-color: #D1D1D6; --bg-input: #E5E5EA; --bg-hover: #D1D1D6;
             --brand-primary: #007AFF; --brand-success: #34C759; --brand-danger: #FF3B30; --brand-warning: #FF9500;
-            --btn-text: #FFFFFF; --shadow-sm: 0 4px 16px rgba(0,0,0,0.04); --shadow-md: 0 12px 32px rgba(0,0,0,0.08);
+            --btn-text: #FFFFFF; --shadow-sm: 0 4px 16px rgba(0,0,0,0.03); --shadow-md: 0 12px 32px rgba(0,0,0,0.07);
             --radius-sm: 12px; --radius-md: 18px; --radius-lg: 24px;
         }
         [data-theme="dark"] {
-            /* Apple iOS Soft UI Palette - Dark Space Gray */
-            --bg-body: #000000; --bg-card: #1C1C1E; --text-main: #F5F5F7; --text-muted: #98989D;
+            /* Apple iOS Human Interface & Soft UI Palette - Dark Space Gray */
+            --bg-body: #000000; --bg-card: #1C1C1E; --text-main: #FFFFFF; --text-muted: #8E8E93;
             --border-color: #38383A; --bg-input: #2C2C2E; --bg-hover: #3A3A3C;
             --brand-primary: #0A84FF; --brand-success: #30D158; --brand-danger: #FF453A; --brand-warning: #FF9F0A;
-            --shadow-md: 0 12px 32px rgba(0,0,0,0.4);
+            --shadow-md: 0 12px 32px rgba(0,0,0,0.45);
         }
 
-        * { box-sizing: border-box; transition: background-color 0.2s, border-color 0.2s, color 0.2s; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif; }
+        * { box-sizing: border-box; transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease, transform 0.15s ease; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif; }
         body { background-color: var(--bg-body); color: var(--text-main); margin: 0; display: flex; height: 100vh; overflow: hidden; font-size: 15px; -webkit-font-smoothing: antialiased; }
         ::-webkit-scrollbar { width: 8px; height: 8px; }
         ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: var(--text-muted); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 10px; }
 
-        .mobile-header { display: none; background: rgba(var(--bg-card), 0.85); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); padding: 12px 20px; border-bottom: 1px solid var(--border-color); width: 100%; justify-content: space-between; align-items: center; z-index: 1000; box-shadow: var(--shadow-sm); }
+        .mobile-header { display: none; background: rgba(255, 255, 255, 0.82); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); padding: 14px 20px; border-bottom: 1px solid var(--border-color); width: 100%; justify-content: space-between; align-items: center; z-index: 1000; box-shadow: var(--shadow-sm); }
+        [data-theme="dark"] .mobile-header { background: rgba(28, 28, 30, 0.82); }
         
-        .sidebar { width: 280px; background-color: var(--bg-card); border-right: 1px solid var(--border-color); display: flex; flex-direction: column; padding: 24px 16px; gap: 6px; z-index: 900; overflow-y: auto; backdrop-filter: blur(20px); }
+        .sidebar { width: 280px; background-color: var(--bg-card); border-right: 1px solid var(--border-color); display: flex; flex-direction: column; padding: 28px 16px; gap: 8px; z-index: 900; overflow-y: auto; backdrop-filter: blur(20px); }
         .sidebar-logo { display: flex; flex-direction: column; align-items: flex-start; padding-left: 12px; margin-bottom: 24px; }
         .sidebar-logo h1 { font-size: 1.8rem; margin: 0; font-weight: 700; color: var(--brand-primary); letter-spacing: -0.5px; }
-        .sidebar-logo span.sub { font-size: 0.75rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
+        .sidebar-logo span.sub { font-size: 0.7rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 1.2px; }
         
         .nav-btn { background: transparent; color: var(--text-main); border: none; text-align: left; padding: 12px 14px; font-size: 0.95rem; border-radius: var(--radius-sm); cursor: pointer; font-weight: 500; display: flex; align-items: center; gap: 12px; }
-        .nav-btn:hover { background: var(--bg-hover); }
+        .nav-btn:hover { background: var(--bg-hover); transform: translateX(2px); }
         .nav-btn.active { background: rgba(0, 122, 255, 0.12); color: var(--brand-primary); font-weight: 600; border-left: 4px solid var(--brand-primary); }
 
-        .tempo-total-box { background: linear-gradient(135deg, var(--brand-primary), #0056b3); padding: 18px; border-radius: var(--radius-md); text-align: center; margin-bottom: 16px; color: white; box-shadow: var(--shadow-md); }
-        .tempo-total-box span { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; opacity: 0.85; letter-spacing: 0.5px; }
+        .tempo-total-box { background: linear-gradient(135deg, var(--brand-primary), #0056b3); padding: 20px; border-radius: var(--radius-md); text-align: center; margin-bottom: 16px; color: white; box-shadow: var(--shadow-md); }
+        .tempo-total-box span { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; opacity: 0.85; letter-spacing: 0.8px; }
         .tempo-total-box strong { display: block; font-size: 1.6rem; font-weight: 700; margin-top: 4px; font-variant-numeric: tabular-nums; }
 
-        .main-content { flex: 1; padding: 30px; overflow-y: auto; scroll-behavior: smooth; }
-        .container-interno { max-width: 1000px; margin: 0 auto; padding-bottom: 80px; }
+        .main-content { flex: 1; padding: 32px; overflow-y: auto; scroll-behavior: smooth; }
+        .container-interno { max-width: 1020px; margin: 0 auto; padding-bottom: 80px; }
         
-        .card { background-color: var(--bg-card); border-radius: var(--radius-md); padding: 24px; margin-bottom: 24px; border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); }
-        h2 { margin: 0 0 16px 0; color: var(--text-main); font-size: 1.35rem; font-weight: 700; border-bottom: 1px solid var(--border-color); padding-bottom: 12px; letter-spacing: -0.5px; }
+        .card { background-color: var(--bg-card); border-radius: var(--radius-md); padding: 24px; margin-bottom: 24px; border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); backdrop-filter: blur(10px); }
+        h2 { margin: 0 0 18px 0; color: var(--text-main); font-size: 1.35rem; font-weight: 700; border-bottom: 1px solid var(--border-color); padding-bottom: 12px; letter-spacing: -0.5px; }
         
         input, select, textarea { width: 100%; padding: 12px 16px; margin-bottom: 12px; background-color: var(--bg-input); border: 1px solid transparent; border-radius: var(--radius-sm); color: var(--text-main); font-size: 0.95rem; outline: none; font-weight: 500; }
-        input:focus, select:focus, textarea:focus { border-color: var(--brand-primary); background-color: var(--bg-card); }
+        input:focus, select:focus, textarea:focus { border-color: var(--brand-primary); background-color: var(--bg-card); box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.15); }
         
         button.btn-primary { width: 100%; padding: 14px; font-weight: 600; border: none; border-radius: var(--radius-sm); cursor: pointer; background: var(--brand-primary); color: var(--btn-text); font-size: 0.95rem; box-shadow: var(--shadow-sm); }
-        button.btn-primary:active { transform: scale(0.98); }
+        button.btn-primary:active { transform: scale(0.97); }
         button.btn-outline { width: 100%; padding: 14px; font-weight: 600; border: 1px solid var(--border-color); border-radius: var(--radius-sm); cursor: pointer; background: transparent; color: var(--text-main); font-size: 0.95rem; }
         button.btn-outline:hover { background: var(--bg-hover); }
-        button.btn-success { background: var(--brand-success); color: white; border: none; padding: 12px 20px; border-radius: var(--radius-sm); font-weight: 600; cursor: pointer; }
-        button.btn-danger { background: var(--brand-danger); color: white; border: none; padding: 8px 14px; border-radius: var(--radius-sm); cursor: pointer; font-size: 0.85rem; font-weight: 600; }
+        button.btn-outline:active { transform: scale(0.97); }
+        button.btn-success { background: var(--brand-success); color: white; border: none; padding: 12px 20px; border-radius: var(--radius-sm); font-weight: 600; cursor: pointer; box-shadow: var(--shadow-sm); }
+        button.btn-success:active { transform: scale(0.97); }
+        button.btn-danger { background: var(--brand-danger); color: white; border: none; padding: 10px 16px; border-radius: var(--radius-sm); cursor: pointer; font-size: 0.85rem; font-weight: 600; box-shadow: var(--shadow-sm); }
+        button.btn-danger:active { transform: scale(0.97); }
         
         .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 16px; margin-bottom: 24px; }
         .stat-card { background: var(--bg-card); padding: 20px; border-radius: var(--radius-md); text-align: center; border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); }
-        .stat-card span { display: block; font-size: 0.75rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+        .stat-card span { display: block; font-size: 0.7rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; }
         .stat-card strong { display: block; font-size: 1.6rem; color: var(--text-main); font-weight: 700; margin-top: 6px; }
 
         .registro-curto { display: flex; justify-content: space-between; align-items: center; background: var(--bg-input); padding: 12px 16px; border-radius: var(--radius-sm); margin-bottom: 10px; border: 1px solid var(--border-color); }
@@ -76,10 +80,12 @@
         .registro-curto .info strong { font-size: 0.95rem; color: var(--text-main); font-weight: 600; }
         .registro-curto .info span { font-size: 0.8rem; color: var(--text-muted); font-weight: 500; }
         .btn-x-vermelho { background: transparent; border: none; color: var(--brand-danger); font-size: 1.2rem; cursor: pointer; font-weight: 700; padding: 0 4px; }
+        .btn-x-vermelho:hover { transform: scale(1.15); }
         
         .bloco-prova { background: var(--bg-input); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 20px; margin-bottom: 20px; box-shadow: var(--shadow-sm); }
         .bloco-prova-titulo { font-size: 1.25rem; font-weight: 700; color: var(--brand-primary); margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
         .pasta-header { background: var(--bg-card); padding: 14px 18px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-weight: 600; border-radius: var(--radius-sm); border: 1px solid var(--border-color); margin-bottom: 8px; box-shadow: var(--shadow-sm); }
+        .pasta-header:hover { background: var(--bg-hover); }
         .pasta-body { padding: 8px 18px; display: none; border-left: 3px solid var(--brand-primary); margin-left: 12px; margin-bottom: 12px; }
         .pasta-body.aberta { display: block; }
 
@@ -89,10 +95,10 @@
 
         .chat-box { border: 1px solid var(--border-color); border-radius: var(--radius-md); height: 500px; overflow-y: auto; padding: 20px; background: var(--bg-body); display: flex; flex-direction: column; gap: 16px; margin-bottom: 16px; }
         .msg { padding: 14px 18px; border-radius: 18px; max-width: 85%; line-height: 1.5; font-size: 0.95rem; }
-        .msg-u { background: var(--brand-primary); color: white; align-self: flex-end; font-weight: 500; border-bottom-right-radius: 4px; }
+        .msg-u { background: var(--brand-primary); color: white; align-self: flex-end; font-weight: 500; border-bottom-right-radius: 4px; box-shadow: var(--shadow-sm); }
         .msg-a { background: var(--bg-card); border: 1px solid var(--border-color); align-self: flex-start; color: var(--text-main); box-shadow: var(--shadow-sm); border-bottom-left-radius: 4px; }
 
-        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: none; justify-content: center; align-items: center; z-index: 2000; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); padding: 20px; }
+        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: center; z-index: 2000; backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); padding: 20px; }
         .modal-content { background: var(--bg-card); padding: 32px; border-radius: var(--radius-lg); width: 100%; max-width: 520px; max-height: 90vh; overflow-y: auto; box-shadow: var(--shadow-md); position: relative; }
 
         @media(max-width: 768px) {
@@ -113,7 +119,7 @@
 
     <header class="mobile-header">
         <h2 style="margin:0; font-size:1.4rem; font-weight:700; color:var(--brand-primary); letter-spacing:-0.5px;">PRUMA</h2>
-        <button style="background:none; border:none; color:var(--text-main); font-size:1.5rem;" onclick="document.getElementById('sidebar-menu').classList.toggle('open')">☰</button>
+        <button style="background:none; border:none; color:var(--text-main); font-size:1.5rem; cursor:pointer;" onclick="document.getElementById('sidebar-menu').classList.toggle('open')">☰</button>
     </header>
 
     <aside id="sidebar-menu" class="sidebar">
@@ -171,7 +177,7 @@
                 <div class="card" style="display:flex; flex-wrap:wrap; gap:24px; align-items:flex-start;">
                     <!-- Cronômetro e Formulário Fixo -->
                     <div style="flex:1; min-width:250px; text-align:center; background:var(--bg-input); padding:24px; border-radius:var(--radius-md);">
-                        <div style="font-size: 0.75rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px;">Cronômetro</div>
+                        <div style="font-size: 0.7rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.8px;">Cronômetro</div>
                         <div id="cronometro-visor" style="font-size: 4rem; color: var(--brand-primary); font-weight: 700; font-variant-numeric: tabular-nums; margin: 10px 0; letter-spacing:-1px;">00:00:00</div>
                         <div style="display:flex; justify-content:center; gap:12px;">
                             <button class="btn-success" onclick="iniciarCronometro()">▶ Iniciar</button>
@@ -206,12 +212,12 @@
                         </div>
 
                         <div style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:12px; background:var(--bg-input); padding:12px; border-radius:var(--radius-sm);">
-                            <div style="flex:1;"><label style="font-size:0.75rem; font-weight:700; color:var(--brand-success);">Acertos</label><input type="number" id="ses-acertos" value="0" style="margin:0;"></div>
-                            <div style="flex:1;"><label style="font-size:0.75rem; font-weight:700; color:var(--brand-danger);">Erros</label><input type="number" id="ses-erros" value="0" style="margin:0;"></div>
+                            <div style="flex:1;"><label style="font-size:0.7rem; font-weight:700; color:var(--brand-success);">Acertos</label><input type="number" id="ses-acertos" value="0" style="margin:0;"></div>
+                            <div style="flex:1;"><label style="font-size:0.7rem; font-weight:700; color:var(--brand-danger);">Erros</label><input type="number" id="ses-erros" value="0" style="margin:0;"></div>
                             <!-- Cronômetro Manual em Horas e Minutos -->
                             <div style="flex:1; display:flex; gap:6px;">
-                                <div><label style="font-size:0.75rem; font-weight:700;">Horas</label><input type="number" id="ses-man-horas" value="0" min="0" style="margin:0;"></div>
-                                <div><label style="font-size:0.75rem; font-weight:700;">Min</label><input type="number" id="ses-man-mins" value="0" min="0" max="59" style="margin:0;"></div>
+                                <div><label style="font-size:0.7rem; font-weight:700;">Horas</label><input type="number" id="ses-man-horas" value="0" min="0" style="margin:0;"></div>
+                                <div><label style="font-size:0.7rem; font-weight:700;">Min</label><input type="number" id="ses-man-mins" value="0" min="0" max="59" style="margin:0;"></div>
                             </div>
                         </div>
                         
@@ -323,9 +329,9 @@
                                 <span>▼</span>
                             </button>
                             <div id="dropdown-fontes-menu" style="display:none; position:absolute; top:100%; left:0; width:100%; background:var(--bg-card); border:1px solid var(--border-color); border-radius:var(--radius-sm); padding:16px; z-index:100; box-shadow:var(--shadow-md); max-height:240px; overflow-y:auto; margin-top:4px;">
-                                <div style="font-weight:700; font-size:0.75rem; color:var(--text-muted); text-transform:uppercase; margin-bottom:8px;">Arquivos da Biblioteca</div>
+                                <div style="font-weight:700; font-size:0.7rem; color:var(--text-muted); text-transform:uppercase; margin-bottom:8px; letter-spacing:0.8px;">Arquivos da Biblioteca</div>
                                 <div id="checkboxes-biblioteca" class="grid-fontes" style="margin-bottom:12px;"></div>
-                                <div style="font-weight:700; font-size:0.75rem; color:var(--brand-danger); text-transform:uppercase; margin-bottom:8px;">Cadernos de Erros</div>
+                                <div style="font-weight:700; font-size:0.7rem; color:var(--brand-danger); text-transform:uppercase; margin-bottom:8px; letter-spacing:0.8px;">Cadernos de Erros</div>
                                 <div id="checkboxes-cadernos" class="grid-fontes"></div>
                             </div>
                         </div>
@@ -504,7 +510,7 @@
             document.querySelectorAll('.nav-btn').forEach(b => { b.classList.remove('active'); b.style.borderColor='transparent'; b.style.background='transparent'; });
             if(e && e.currentTarget) {
                 e.currentTarget.classList.add('active');
-                if(e.currentTarget.textContent.includes('PRUMA IA')) { e.currentTarget.style.background='rgba(0,122,255,0.1)'; e.currentTarget.style.borderLeft='4px solid var(--brand-primary)'; }
+                if(e.currentTarget.textContent.includes('PRUMA IA')) { e.currentTarget.style.background='rgba(0,122,255,0.12)'; e.currentTarget.style.borderLeft='4px solid var(--brand-primary)'; }
             }
             if(window.innerWidth <= 768) document.getElementById('sidebar-menu').classList.remove('open');
             if(t === 'estatisticas') atualizarEstatisticas();
@@ -746,7 +752,7 @@
             document.getElementById('st-pags').textContent = tPag; document.getElementById('st-vids').textContent = tVid;
 
             if(graficoInstance) graficoInstance.destroy();
-            let isDark = document.documentElement.getAttribute('data-theme') === 'dark'; let txtCor = isDark ? '#F5F5F7' : '#1D1D1F';
+            let isDark = document.documentElement.getAttribute('data-theme') === 'dark'; let txtCor = isDark ? '#FFFFFF' : '#000000';
             let keys = Object.keys(dadosGraf).length>0 ? Object.keys(dadosGraf) : ['Sem dados'], vals = Object.values(dadosGraf).length>0 ? Object.values(dadosGraf) : [1];
             let cores = keys.map(k => { let m = dbData.materias.find(x=>x.nome===k); return m ? m.cor : paleta15[0]; });
 
