@@ -513,24 +513,36 @@
         }
 
         async function adicionarLinkComoFonte() {
-            let urlInput = document.getElementById('inp-link-fonte'); let url = urlInput.value.trim();
-            if(!url || (!url.startsWith('https://') && !url.startsWith('http://'))) return alert("Insira um link válido iniciado com https://");
-            const btn = event.currentTarget; const textoOriginalBtn = btn.textContent;
+            let urlInput = document.getElementById('inp-link-fonte');
+            let url = urlInput.value.trim();
+            if(!url || (!url.startsWith('https://') && !url.startsWith('http://'))) {
+                return alert("Insira um link válido iniciado com https://");
+            }
+            
+            const btn = event.currentTarget;
+            const textoOriginalBtn = btn.textContent;
+            
             try {
-                btn.disabled = true; btn.textContent = "Buscando conteúdo... ⏳";
-                let proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
-                let resposta = await fetch(proxyUrl); let dados = await resposta.json();
-                if(!dados.contents) throw new Error("Não foi possível ler o conteúdo da página.");
-                let doc = new DOMParser().parseFromString(dados.contents, 'text/html');
-                doc.querySelectorAll('script, style, nav, footer').forEach(el => el.remove());
-                let textoLimpo = doc.body.textContent.replace(/\s+/g, ' ').trim();
-                if(textoLimpo.length < 50) throw new Error("Pouco conteúdo legível na página.");
-                let nomePagina = new URL(url).hostname + " - " + (doc.title || "Página Web");
-                btn.textContent = "Salvando na base...";
-                await refDb.child('pdfs').push({ nome: "🌐 " + nomePagina.substring(0, 50), url: url, texto: textoLimpo.substring(0, 35000), data: new Date().toLocaleDateString() });
-                btn.textContent = "✅ Link Adicionado!"; urlInput.value = '';
+                btn.disabled = true;
+                btn.textContent = "Salvando link na base...";
+
+                let hostname = new URL(url).hostname;
+
+                await refDb.child('pdfs').push({
+                    nome: "🌐 " + hostname,
+                    url: url,
+                    texto: "Link de referência web: " + url,
+                    data: new Date().toLocaleDateString()
+                });
+
+                btn.textContent = "✅ Link Salvo com Sucesso!";
+                urlInput.value = '';
                 setTimeout(() => { btn.textContent = textoOriginalBtn; btn.disabled = false; }, 2000);
-            } catch(e) { alert("Erro ao ler link: " + e.message); btn.textContent = textoOriginalBtn; btn.disabled = false; }
+            } catch(e) {
+                alert("Erro ao salvar link: " + e.message);
+                btn.textContent = textoOriginalBtn;
+                btn.disabled = false;
+            }
         }
 
         function atualizarSelectsPdf() {
