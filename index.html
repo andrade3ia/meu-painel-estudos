@@ -714,48 +714,52 @@
         }
 
         async function processarEditalAutomatico(btn) {
-            const apiKey = sessionStorage.getItem('pruma_user_apikey'); 
-            if(!apiKey) return alert("Configure a API Key da IA primeiro.");
-            let texto = document.getElementById('edital-gigante').value.trim(); 
-            let pId = document.getElementById('edital-prova-select').value;
-            if(!texto) return alert("Cole o texto do edital.");
-            const txOriginal = btn.textContent; 
-            btn.disabled = true; 
-            btn.textContent = "Analisando com IA...";
-            let prompt = `Organize o edital em JSON puro (array de objetos): [{"disciplina": "Nome", "topicos": ["T1", "T2"]}]. Sem markdown extra. Texto:\n${texto.substring(0,25000)}`;
-            try {
-                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, { 
-                    method:'POST', 
-                    headers:{'Content-Type':'application/json'}, 
-                    body:JSON.stringify({contents:[{parts:[{text:prompt}]}]}) 
-                });
-                const data = await res.json(); 
-                if(data.error) throw new Error(data.error.message);
-                let respostaTxt = data.candidates[0].content.parts[0].text;
-                let editalExtraido = JSON.parse(respostaTxt.match(/\[.*\]/s)[0]);
-                
-                editalExtraido.forEach(nova => {
-                    let obj = { disciplina: nova.disciplina, topicos: nova.topicos }; 
-                    if(pId) obj.provaId = pId;
-                    let idx = planejamentoEdital.findIndex(x => x.disciplina === nova.disciplina && x.provaId === pId);
-                    if(idx !== -1) { 
-                        obj.topicos.forEach(t => { 
-                            if(!planejamentoEdital[idx].topicos.includes(t)) planejamentoEdital[idx].topicos.push(t); 
-                        }); 
-                    } else { 
-                        planejamentoEdital.push(obj); 
-                    }
-                });
-                refDb.child('planejamento').set(planejamentoEdital); 
-                document.getElementById('edital-gigante').value = ''; 
-                showToast("Edital Mapeado!");
-            } catch(e) { 
-                alert("Falha: " + e.message); 
-            } finally { 
-                btn.disabled = false; 
-                btn.textContent = txOriginal; 
+    const apiKey = sessionStorage.getItem('pruma_user_apikey'); 
+    if(!apiKey) return alert("Configure a API Key da IA primeiro.");
+    let texto = document.getElementById('edital-gigante').value.trim(); 
+    let pId = document.getElementById('edital-prova-select').value;
+    if(!texto) return alert("Cole o texto do edital.");
+    
+    // Utiliza o mesmo modelo dinâmico configurado no chat
+    const modeloStr = (userAtual.uid === ADMIN_UID) ? "gemini-3.1-pro-preview" : "gemini-3.6-flash";
+    
+    const txOriginal = btn.textContent; 
+    btn.disabled = true; 
+    btn.textContent = "Analisando com IA...";
+    let prompt = `Organize o edital em JSON puro (array de objetos): [{"disciplina": "Nome", "topicos": ["T1", "T2"]}]. Sem markdown extra. Texto:\n${texto.substring(0,25000)}`;
+    try {
+        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modeloStr}:generateContent?key=${apiKey}`, { 
+            method:'POST', 
+            headers:{'Content-Type':'application/json'}, 
+            body:JSON.stringify({contents:[{parts:[{text:prompt}]}]}) 
+        });
+        const data = await res.json(); 
+        if(data.error) throw new Error(data.error.message);
+        let respostaTxt = data.candidates[0].content.parts[0].text;
+        let editalExtraido = JSON.parse(respostaTxt.match(/\[.*\]/s)[0]);
+        
+        editalExtraido.forEach(nova => {
+            let obj = { disciplina: nova.disciplina, topicos: nova.topicos }; 
+            if(pId) obj.provaId = pId;
+            let idx = planejamentoEdital.findIndex(x => x.disciplina === nova.disciplina && x.provaId === pId);
+            if(idx !== -1) { 
+                obj.topicos.forEach(t => { 
+                    if(!planejamentoEdital[idx].topicos.includes(t)) planejamentoEdital[idx].topicos.push(t); 
+                }); 
+            } else { 
+                planejamentoEdital.push(obj); 
             }
-        }
+        });
+        refDb.child('planejamento').set(planejamentoEdital); 
+        document.getElementById('edital-gigante').value = ''; 
+        showToast("Edital Mapeado!");
+    } catch(e) { 
+        alert("Falha: " + e.message); 
+    } finally { 
+        btn.disabled = false; 
+        btn.textContent = txOriginal; 
+    }
+}
         
         function adicionarMateriaManual() {
             let pId = document.getElementById('modal-mat-prova').value;
@@ -1045,99 +1049,99 @@
         function responderQuestaoPruma(e, c) { e.classList.add(c ? 'acerto' : 'erro'); }
 
         async function executarPrumaIA(tipo) {
-    const apiKey = sessionStorage.getItem('pruma_user_apikey'); 
-    if(!apiKey) return alert("Configure a API Key nas configurações.");
-    
-    // Modelos oficiais da série Gemini 3 com suporte a pesquisa web
-    const modeloStr = (userAtual.uid === ADMIN_UID) ? "gemini-3.1-pro-preview" : "gemini-3.6-flash";
-    
-    let prompt = "", box = null;
-    let ctxBase = extrairContextoSelecionado();
-    let regra = "Aja como tutora especialista. Use emojis, listas e tabelas se necessário. Faça buscas na web para dados recentes.";
+            const apiKey = sessionStorage.getItem('pruma_user_apikey'); 
+            if(!apiKey) return alert("Configure a API Key nas configurações.");
+            
+            // Modelos solicitados configurados com as chaves oficiais para Admin e Alunos via v1beta
+            const modeloStr = (userAtual.uid === ADMIN_UID) ? "gemini-3.1-pro-preview" : "gemini-3.6-flash";
+            
+            let prompt = "", box = null;
+            let ctxBase = extrairContextoSelecionado();
+            let regra = "Aja como tutora especialista. Use emojis, listas e tabelas se necessário. Faça buscas na web para dados recentes.";
 
-    if(tipo === 'tutor') {
-        let p = document.getElementById('inp-chat').value.trim(); 
-        if(!p) return; 
-        box = document.getElementById('box-chat');
-        box.innerHTML += `<div class="msg msg-u">${sanitizeText(p)}</div>`; 
-        document.getElementById('inp-chat').value = ''; 
-        box.scrollTop = box.scrollHeight;
-        if(document.getElementById('check-usar-erros-chat').checked && meuCadernoErros.length>0) {
-            ctxBase += `\n[MEU CADERNO DE ERROS]:\n${meuCadernoErros.map(e=>e.descricao).join('\n')}`;
-        }
-        prompt = `${regra}\n\n${ctxBase ? "CONTEXTO SELECIONADO:\n"+ctxBase : ""}\n\nPERGUNTA: ${p}`;
-    }
-    else if(tipo === 'simulador') {
-        box = document.getElementById('box-sim'); 
-        box.style.display = 'flex'; 
-        box.innerHTML = '';
-        if(meuCadernoErros.length>0) {
-            ctxBase += `\n[FOQUE NESTES MEUS ERROS AO CRIAR QUESTÕES]:\n${meuCadernoErros.map(e=>e.descricao).join('\n')}`;
-        }
-        prompt = `${regra}\n\n${ctxBase}\nCrie 3 questões inéditas difíceis de múltipla escolha (A, B, C, D) no estilo prova, colocando [CORRETA] ao final da alternativa certa.`;
-    }
-    else if(tipo === 'flashcards') {
-        let p = document.getElementById('fc-prompt').value.trim(); 
-        if(!p) return alert("Descreva o tema.");
-        let d = document.getElementById('fc-mat').value;
-        let t = document.getElementById('fc-top').value;
-        if(!d) return alert("Selecione onde salvar os flashcards.");
-        box = document.getElementById('box-fc'); 
-        box.style.display = 'block'; 
-        box.innerHTML = '';
-        prompt = `${regra}\n\n${ctxBase}\nCrie flashcards sobre: ${p}. Retorne EXATAMENTE UM JSON PURO: [{"f": "Pergunta", "v": "Resposta"}]. Sem crases ou markdown de bloco de código no início ou fim.`;
-    }
+            if(tipo === 'tutor') {
+                let p = document.getElementById('inp-chat').value.trim(); 
+                if(!p) return; 
+                box = document.getElementById('box-chat');
+                box.innerHTML += `<div class="msg msg-u">${sanitizeText(p)}</div>`; 
+                document.getElementById('inp-chat').value = ''; 
+                box.scrollTop = box.scrollHeight;
+                if(document.getElementById('check-usar-erros-chat').checked && meuCadernoErros.length>0) {
+                    ctxBase += `\n[MEU CADERNO DE ERROS]:\n${meuCadernoErros.map(e=>e.descricao).join('\n')}`;
+                }
+                prompt = `${regra}\n\n${ctxBase ? "CONTEXTO SELECIONADO:\n"+ctxBase : ""}\n\nPERGUNTA: ${p}`;
+            }
+            else if(tipo === 'simulador') {
+                box = document.getElementById('box-sim'); 
+                box.style.display = 'flex'; 
+                box.innerHTML = '';
+                if(meuCadernoErros.length>0) {
+                    ctxBase += `\n[FOQUE NESTES MEUS ERROS AO CRIAR QUESTÕES]:\n${meuCadernoErros.map(e=>e.descricao).join('\n')}`;
+                }
+                prompt = `${regra}\n\n${ctxBase}\nCrie 3 questões inéditas difíceis de múltipla escolha (A, B, C, D) no estilo prova, colocando [CORRETA] ao final da alternativa certa.`;
+            }
+            else if(tipo === 'flashcards') {
+                let p = document.getElementById('fc-prompt').value.trim(); 
+                if(!p) return alert("Descreva o tema.");
+                let d = document.getElementById('fc-mat').value;
+                let t = document.getElementById('fc-top').value;
+                if(!d) return alert("Selecione onde salvar os flashcards.");
+                box = document.getElementById('box-fc'); 
+                box.style.display = 'block'; 
+                box.innerHTML = '';
+                prompt = `${regra}\n\n${ctxBase}\nCrie flashcards sobre: ${p}. Retorne EXATAMENTE UM JSON PURO: [{"f": "Pergunta", "v": "Resposta"}]. Sem crases ou markdown de bloco de código no início ou fim.`;
+            }
 
-    try {
-        if(tipo !== 'flashcards') { 
-            box.innerHTML += `<div class="msg msg-a" id="load-ia">Analisando dados (IA Ativa)... ⏳</div>`; 
-            box.scrollTop = box.scrollHeight; 
-        } else { 
-            box.innerHTML = "Gerando cartões... ⏳"; 
+            try {
+                if(tipo !== 'flashcards') { 
+                    box.innerHTML += `<div class="msg msg-a" id="load-ia">Analisando dados... ⏳</div>`; 
+                    box.scrollTop = box.scrollHeight; 
+                } else { 
+                    box.innerHTML = "Gerando cartões... ⏳"; 
+                }
+
+                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modeloStr}:generateContent?key=${apiKey}`, {
+                    method:'POST', 
+                    headers:{'Content-Type':'application/json'}, 
+                    body:JSON.stringify({
+                        contents:[{parts:[{text:prompt}]}], 
+                        tools:[{googleSearch:{}}]
+                    })
+                });
+                const data = await res.json(); 
+                if(data.error) throw new Error(data.error.message);
+                let txtFinal = data.candidates[0].content.parts[0].text;
+
+                if(tipo === 'flashcards') {
+                    let jsonStr = txtFinal.replace(/```json/g, '').replace(/```/g, '').trim();
+                    let cards = JSON.parse(jsonStr.match(/\[.*\]/s)[0]);
+                    let d = sanitizeText(document.getElementById('fc-mat').value);
+                    let t = sanitizeText(document.getElementById('fc-top').value);
+                    box.innerHTML = '';
+                    cards.forEach(c => {
+                        let idBtn = 'fc-btn-' + Date.now() + Math.random();
+                        box.innerHTML += `
+                        <div class="card" style="padding:16px; margin-bottom:12px;">
+                            <div style="font-weight:700; color:var(--brand-primary); margin-bottom:8px;">FRENTE:</div>
+                            <div style="margin-bottom:12px;">${sanitizeText(c.f)}</div>
+                            <div style="font-weight:700; color:var(--brand-success); margin-bottom:8px; border-top:1px dashed var(--border-color); padding-top:12px;">VERSO:</div>
+                            <div>${sanitizeText(c.v)}</div>
+                            <button id="${idBtn}" class="btn-outline" style="margin-top:16px; border-color:var(--brand-primary); color:var(--brand-primary);" onclick="salvarFcNoCaderno('${d}', '${t}', '${sanitizeText(c.f).replace(/'/g,"\\'")} - ${sanitizeText(c.v).replace(/'/g,"\\'")}', this)">Salvar no Caderno</button>
+                        </div>`;
+                    });
+                } else {
+                    let loadEl = document.getElementById('load-ia');
+                    if(loadEl) loadEl.remove();
+                    box.innerHTML += `<div class="msg msg-a"><strong>PRUMA:</strong><br>${formatarRespostaIA(txtFinal)}</div>`; 
+                    box.scrollTop = box.scrollHeight;
+                }
+            } catch(e) { 
+                let loadEl = document.getElementById('load-ia');
+                if(loadEl) loadEl.remove(); 
+                if(box) box.innerHTML += `<div class="msg msg-a" style="color:var(--brand-danger);">Erro: ${e.message}</div>`; 
+            }
         }
 
-        // Endpoint v1beta obrigatório para modelos preview/Gemini 3
-        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modeloStr}:generateContent?key=${apiKey}`, {
-            method:'POST', 
-            headers:{'Content-Type':'application/json'}, 
-            body:JSON.stringify({
-                contents:[{parts:[{text:prompt}]}], 
-                tools:[{googleSearch:{}}]
-            })
-        });
-        const data = await res.json(); 
-        if(data.error) throw new Error(data.error.message);
-        let txtFinal = data.candidates[0].content.parts[0].text;
-
-        if(tipo === 'flashcards') {
-            let jsonStr = txtFinal.replace(/```json/g, '').replace(/```/g, '').trim();
-            let cards = JSON.parse(jsonStr.match(/\[.*\]/s)[0]);
-            let d = sanitizeText(document.getElementById('fc-mat').value);
-            let t = sanitizeText(document.getElementById('fc-top').value);
-            box.innerHTML = '';
-            cards.forEach(c => {
-                let idBtn = 'fc-btn-' + Date.now() + Math.random();
-                box.innerHTML += `
-                <div class="card" style="padding:16px; margin-bottom:12px;">
-                    <div style="font-weight:700; color:var(--brand-primary); margin-bottom:8px;">FRENTE:</div>
-                    <div style="margin-bottom:12px;">${sanitizeText(c.f)}</div>
-                    <div style="font-weight:700; color:var(--brand-success); margin-bottom:8px; border-top:1px dashed var(--border-color); padding-top:12px;">VERSO:</div>
-                    <div>${sanitizeText(c.v)}</div>
-                    <button id="${idBtn}" class="btn-outline" style="margin-top:16px; border-color:var(--brand-primary); color:var(--brand-primary);" onclick="salvarFcNoCaderno('${d}', '${t}', '${sanitizeText(c.f).replace(/'/g,"\\'")} - ${sanitizeText(c.v).replace(/'/g,"\\'")}', this)">Salvar no Caderno</button>
-                </div>`;
-            });
-        } else {
-            let loadEl = document.getElementById('load-ia');
-            if(loadEl) loadEl.remove();
-            box.innerHTML += `<div class="msg msg-a"><strong>PRUMA:</strong><br>${formatarRespostaIA(txtFinal)}</div>`; 
-            box.scrollTop = box.scrollHeight;
-        }
-    } catch(e) { 
-        let loadEl = document.getElementById('load-ia');
-        if(loadEl) loadEl.remove(); 
-        if(box) box.innerHTML += `<div class="msg msg-a" style="color:var(--brand-danger);">Erro: ${e.message}</div>`; 
-    }
-}
         function salvarFcNoCaderno(d, t, desc, btn) {
             meuCadernoErros.push({id: Date.now().toString(), disciplina: d, assunto: t || 'Flashcards IA', descricao: desc});
             refDb.child('caderno_erros').set(meuCadernoErros);
