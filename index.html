@@ -4,117 +4,107 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>PRUMA | Painel de Estudos</title>
-    <!-- Ícone de perfil estudando -->
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>👨‍💻</text></svg>">
     
-    <!-- Bibliotecas Seguras -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" crossorigin="anonymous"></script>
-    <link href="https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
 
-    <!-- SOFT UI (iOS Style) CSS -->
     <style>
         :root {
-            /* Light Theme Apple Style */
-            --bg-body: #F5F5F7; --bg-card: #FFFFFF; --text-main: #1D1D1F; --text-muted: #86868B;
-            --border-color: #E5E5EA; --bg-input: #F2F2F7; --bg-hover: #E8E8ED;
-            --brand-primary: #007AFF; --brand-success: #34C759; --brand-danger: #FF3B30; --brand-warning: #FF9500;
-            --shadow-sm: 0 2px 10px rgba(0,0,0,0.03); --shadow-md: 0 8px 30px rgba(0,0,0,0.08);
-            --radius-sm: 10px; --radius-md: 18px; --radius-lg: 24px;
+            /* Cores mais vivas e intuitivas */
+            --bg-body: #F0F2F5; --bg-card: #FFFFFF; --text-main: #1C1E21; --text-muted: #65676B;
+            --border-color: #E4E6EB; --bg-input: #F0F2F5; --bg-hover: #E4E6EB;
+            --brand-primary: #1877F2; --brand-success: #31A24C; --brand-danger: #E41E3F; --brand-warning: #F2A100;
+            --btn-text: #FFFFFF; --shadow-sm: 0 1px 2px rgba(0,0,0,0.1); --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+            --radius-sm: 8px; --radius-md: 12px; --radius-lg: 20px;
         }
         [data-theme="dark"] {
-            /* Dark Theme Apple Style */
-            --bg-body: #000000; --bg-card: #1C1C1E; --text-main: #F5F5F7; --text-muted: #98989D;
-            --border-color: #38383A; --bg-input: #2C2C2E; --bg-hover: #3A3A3C;
-            --brand-primary: #0A84FF; --brand-success: #30D158; --brand-danger: #FF453A; --brand-warning: #FF9F0A;
-            --shadow-sm: 0 2px 10px rgba(0,0,0,0.2); --shadow-md: 0 8px 30px rgba(0,0,0,0.4);
+            /* Modo escuro suave e elegante (não 100% preto) */
+            --bg-body: #18191A; --bg-card: #242526; --text-main: #E4E6EB; --text-muted: #B0B3B8;
+            --border-color: #3A3B3C; --bg-input: #3A3B3C; --bg-hover: #4E4F50;
+            --brand-primary: #2374E1; --brand-success: #31A24C; --brand-danger: #E41E3F; 
+            --shadow-md: 0 4px 12px rgba(0,0,0,0.3);
         }
 
-        * { box-sizing: border-box; transition: background-color 0.2s, color 0.2s, border-color 0.2s; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif; }
-        body { background-color: var(--bg-body); color: var(--text-main); margin: 0; display: flex; height: 100vh; overflow: hidden; font-size: 15px; -webkit-font-smoothing: antialiased; }
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        * { box-sizing: border-box; transition: background-color 0.2s, border-color 0.2s; font-family: 'Nunito', sans-serif; }
+        body { background-color: var(--bg-body); color: var(--text-main); margin: 0; display: flex; height: 100vh; overflow: hidden; font-size: 15px; }
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: var(--text-muted); border-radius: 10px; }
 
-        /* Header Mobile */
-        .mobile-header { display: none; background: rgba(var(--bg-card), 0.85); backdrop-filter: saturate(180%) blur(20px); -webkit-backdrop-filter: saturate(180%) blur(20px); padding: 12px 20px; border-bottom: 1px solid var(--border-color); width: 100%; justify-content: space-between; align-items: center; z-index: 1000; }
+        .mobile-header { display: none; background: var(--bg-card); padding: 12px 20px; border-bottom: 1px solid var(--border-color); width: 100%; justify-content: space-between; align-items: center; z-index: 1000; box-shadow: var(--shadow-sm); }
         
-        /* Sidebar */
-        .sidebar { width: 270px; background-color: var(--bg-card); border-right: 1px solid var(--border-color); display: flex; flex-direction: column; padding: 24px 16px; gap: 6px; z-index: 900; overflow-y: auto; }
+        .sidebar { width: 280px; background-color: var(--bg-card); border-right: 1px solid var(--border-color); display: flex; flex-direction: column; padding: 24px 16px; gap: 6px; z-index: 900; overflow-y: auto; box-shadow: var(--shadow-sm); }
         .sidebar-logo { display: flex; flex-direction: column; align-items: flex-start; padding-left: 12px; margin-bottom: 24px; }
-        .sidebar-logo h1 { font-size: 1.8rem; margin: 0; font-weight: 700; color: var(--text-main); letter-spacing: -0.5px; }
-        .sidebar-logo span.sub { font-size: 0.8rem; color: var(--text-muted); font-weight: 500; text-transform: uppercase; letter-spacing: 1px; }
+        .sidebar-logo h1 { font-size: 1.8rem; margin: 0; font-weight: 800; color: var(--brand-primary); }
+        .sidebar-logo span.sub { font-size: 0.85rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; }
         
-        .nav-btn { background: transparent; color: var(--text-muted); border: none; text-align: left; padding: 10px 14px; font-size: 0.95rem; border-radius: var(--radius-sm); cursor: pointer; font-weight: 500; display: flex; align-items: center; gap: 12px; }
-        .nav-btn:hover { background: var(--bg-hover); color: var(--text-main); }
-        .nav-btn.active { background: var(--brand-primary); color: #FFF; font-weight: 600; }
-        .nav-group { border-top: 1px solid var(--border-color); margin-top: 10px; padding-top: 10px; display: flex; flex-direction: column; gap: 6px; }
+        .nav-btn { background: transparent; color: var(--text-main); border: none; text-align: left; padding: 12px 14px; font-size: 0.95rem; border-radius: var(--radius-sm); cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 12px; }
+        .nav-btn:hover { background: var(--bg-hover); }
+        .nav-btn.active { background: rgba(24, 119, 242, 0.1); color: var(--brand-primary); border-left: 4px solid var(--brand-primary); }
 
-        .tempo-total-box { background: var(--bg-input); padding: 16px; border-radius: var(--radius-md); text-align: center; margin-bottom: 16px; border: 1px solid var(--border-color); }
-        .tempo-total-box span { font-size: 0.8rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; }
-        .tempo-total-box strong { display: block; font-size: 1.5rem; color: var(--brand-primary); font-weight: 700; margin-top: 4px; font-variant-numeric: tabular-nums; }
+        .tempo-total-box { background: linear-gradient(135deg, var(--brand-primary), #0056b3); padding: 16px; border-radius: var(--radius-md); text-align: center; margin-bottom: 16px; color: white; box-shadow: var(--shadow-md); }
+        .tempo-total-box span { font-size: 0.8rem; font-weight: 700; text-transform: uppercase; opacity: 0.9; }
+        .tempo-total-box strong { display: block; font-size: 1.6rem; font-weight: 800; margin-top: 4px; }
 
-        /* Main Content */
-        .main-content { flex: 1; padding: 30px; overflow-y: auto; scroll-behavior: smooth; }
-        .container-interno { max-width: 950px; margin: 0 auto; padding-bottom: 80px; }
+        .main-content { flex: 1; padding: 24px; overflow-y: auto; scroll-behavior: smooth; }
+        .container-interno { max-width: 1000px; margin: 0 auto; padding-bottom: 80px; }
         
-        /* Components */
-        .card { background-color: var(--bg-card); border-radius: var(--radius-md); padding: 24px; margin-bottom: 24px; border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); }
-        h2 { margin: 0 0 16px 0; color: var(--text-main); font-size: 1.4rem; font-weight: 700; letter-spacing: -0.5px; }
+        .card { background-color: var(--bg-card); border-radius: var(--radius-md); padding: 20px; margin-bottom: 20px; border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); }
+        h2 { margin: 0 0 16px 0; color: var(--text-main); font-size: 1.3rem; font-weight: 800; border-bottom: 2px solid var(--bg-body); padding-bottom: 10px;}
         
-        input, select, textarea { width: 100%; padding: 12px 16px; margin-bottom: 12px; background-color: var(--bg-input); border: 1px solid transparent; border-radius: var(--radius-sm); color: var(--text-main); font-size: 0.95rem; outline: none; }
-        input:focus, select:focus, textarea:focus { border-color: var(--brand-primary); background-color: var(--bg-card); }
+        input, select, textarea { width: 100%; padding: 12px 14px; margin-bottom: 12px; background-color: var(--bg-input); border: 2px solid transparent; border-radius: var(--radius-sm); color: var(--text-main); font-size: 0.95rem; outline: none; font-weight: 600;}
+        input:focus, select:focus, textarea:focus { border-color: var(--brand-primary); }
         
-        button.btn-primary { width: 100%; padding: 14px; font-weight: 600; border: none; border-radius: var(--radius-sm); cursor: pointer; background: var(--brand-primary); color: #FFF; font-size: 0.95rem; }
-        button.btn-primary:active { transform: scale(0.98); }
-        button.btn-outline { width: 100%; padding: 14px; font-weight: 600; border: 1px solid var(--border-color); border-radius: var(--radius-sm); cursor: pointer; background: transparent; color: var(--text-main); font-size: 0.95rem; }
-        button.btn-outline:hover { background: var(--bg-hover); }
-        button.btn-danger { background: var(--brand-danger); color: #FFF; border: none; padding: 8px 14px; border-radius: var(--radius-sm); cursor: pointer; font-size: 0.85rem; font-weight: 600; }
-        button.btn-icon { background:transparent; border:none; color:var(--text-muted); cursor:pointer; font-size:1.1rem; padding:4px;}
-        button.btn-icon:hover { color:var(--brand-danger);}
-
-        /* Badges & Grids */
-        .badge { padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; background: var(--bg-input); color: var(--text-muted); }
-        .badge.success { background: rgba(52, 199, 89, 0.15); color: var(--brand-success); }
-        .badge.danger { background: rgba(255, 59, 48, 0.15); color: var(--brand-danger); }
+        button.btn-primary { width: 100%; padding: 12px; font-weight: 700; border: none; border-radius: var(--radius-sm); cursor: pointer; background: var(--brand-primary); color: var(--btn-text); font-size: 0.95rem; box-shadow: var(--shadow-sm); }
+        button.btn-primary:active { transform: translateY(2px); }
+        button.btn-outline { width: 100%; padding: 12px; font-weight: 700; border: 2px solid var(--border-color); border-radius: var(--radius-sm); cursor: pointer; background: transparent; color: var(--text-main); font-size: 0.95rem; }
+        button.btn-outline:hover { background: var(--bg-hover); border-color: var(--text-muted); }
+        button.btn-success { background: var(--brand-success); color: white; border: none; padding: 10px; border-radius: var(--radius-sm); font-weight: 700; cursor: pointer;}
+        button.btn-danger { background: var(--brand-danger); color: white; border: none; padding: 8px 12px; border-radius: var(--radius-sm); cursor: pointer; font-size: 0.85rem; font-weight: 700; }
         
-        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 16px; margin-bottom: 24px; }
-        .stat-card { background: var(--bg-card); padding: 20px; border-radius: var(--radius-md); border: 1px solid var(--border-color); text-align: center; box-shadow: var(--shadow-sm); }
-        .stat-card span { display: block; font-size: 0.8rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; }
-        .stat-card strong { display: block; font-size: 1.8rem; color: var(--text-main); font-weight: 700; margin-top: 8px; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; margin-bottom: 20px; }
+        .stat-card { background: var(--bg-input); padding: 16px; border-radius: var(--radius-md); text-align: center; border: 1px solid var(--border-color); }
+        .stat-card span { display: block; font-size: 0.8rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; }
+        .stat-card strong { display: block; font-size: 1.6rem; color: var(--text-main); font-weight: 800; margin-top: 6px; }
 
-        .list-item { padding: 16px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
-        .list-item:last-child { border-bottom: none; }
-
-        /* Folders / Accordeon */
-        .pasta { margin-bottom: 12px; }
-        .pasta-header { background: var(--bg-input); padding: 14px 16px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-weight: 600; font-size: 0.95rem; border-radius: var(--radius-sm); }
-        .pasta-body { padding: 12px 16px; display: none; border-left: 2px solid var(--border-color); margin-left: 16px; }
+        /* Registros Curtos */
+        .registro-curto { display: flex; justify-content: space-between; align-items: center; background: var(--bg-input); padding: 10px 14px; border-radius: var(--radius-sm); margin-bottom: 8px; border: 1px solid var(--border-color); }
+        .registro-curto .info { display: flex; flex-direction: column; gap: 4px; }
+        .registro-curto .info strong { font-size: 0.95rem; color: var(--text-main); }
+        .registro-curto .info span { font-size: 0.8rem; color: var(--text-muted); font-weight: 600; }
+        .registro-curto .acoes { display: flex; align-items: center; gap: 12px; font-weight: 800; font-size: 1rem; }
+        .btn-x-vermelho { background: transparent; border: none; color: var(--brand-danger); font-size: 1.2rem; cursor: pointer; font-weight: 900; padding: 0 5px; }
+        
+        /* Pastas de Matérias Melhoradas */
+        .bloco-prova { background: var(--bg-input); border: 2px solid var(--border-color); border-radius: var(--radius-md); padding: 16px; margin-bottom: 16px; }
+        .bloco-prova-titulo { font-size: 1.2rem; font-weight: 800; color: var(--brand-primary); margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+        .pasta-header { background: var(--bg-card); padding: 12px 16px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-weight: 700; border-radius: var(--radius-sm); border: 1px solid var(--border-color); margin-bottom: 6px; box-shadow: var(--shadow-sm); }
+        .pasta-body { padding: 8px 16px; display: none; border-left: 3px solid var(--border-color); margin-left: 10px; margin-bottom: 12px;}
         .pasta-body.aberta { display: block; }
-        
-        /* Chat UI */
+
+        /* Caixas de Seleção IA Organizadas */
+        .grid-fontes { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; margin-top: 10px; }
+        .fonte-checkbox { display: flex; align-items: center; gap: 8px; background: var(--bg-card); padding: 10px; border-radius: var(--radius-sm); border: 1px solid var(--border-color); cursor: pointer; font-size: 0.85rem; font-weight: 600; }
+        .fonte-checkbox:hover { border-color: var(--brand-primary); }
+
         .chat-box { border: 1px solid var(--border-color); border-radius: var(--radius-md); height: 500px; overflow-y: auto; padding: 20px; background: var(--bg-body); display: flex; flex-direction: column; gap: 16px; margin-bottom: 16px; }
-        .msg { padding: 14px 18px; border-radius: 18px; max-width: 85%; line-height: 1.5; font-size: 0.95rem; word-break: break-word; }
-        .msg-u { background: var(--brand-primary); color: #FFF; align-self: flex-end; border-bottom-right-radius: 4px; }
-        .msg-a { background: var(--bg-card); border: 1px solid var(--border-color); align-self: flex-start; color: var(--text-main); border-bottom-left-radius: 4px; box-shadow: var(--shadow-sm); }
+        .msg { padding: 14px 18px; border-radius: 12px; max-width: 85%; line-height: 1.5; font-size: 0.95rem; }
+        .msg-u { background: var(--brand-primary); color: white; align-self: flex-end; font-weight: 600; }
+        .msg-a { background: var(--bg-card); border: 1px solid var(--border-color); align-self: flex-start; color: var(--text-main); box-shadow: var(--shadow-sm); }
 
-        .color-dot { width: 28px; height: 28px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; }
-        .color-dot:hover { transform: scale(1.1); }
-
-        /* Modal */
-        .modal { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.4); display:none; justify-content:center; align-items:center; z-index:2000; backdrop-filter: blur(5px); padding: 20px; }
-        .modal-content { background:var(--bg-card); padding:32px; border-radius:var(--radius-lg); width:100%; max-width:550px; max-height:90vh; overflow-y:auto; box-shadow: var(--shadow-md); position: relative; }
-        .modal-close { position: absolute; top: 16px; right: 16px; background: transparent; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-muted); }
+        .modal { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); display:none; justify-content:center; align-items:center; z-index:2000; padding: 20px; }
+        .modal-content { background:var(--bg-card); padding:24px; border-radius:var(--radius-md); width:100%; max-width:500px; max-height:90vh; overflow-y:auto; box-shadow: var(--shadow-md); position: relative; }
 
         @media(max-width: 768px) {
             body { flex-direction: column; }
             .mobile-header { display: flex; }
             .main-content { padding: 16px; }
-            .sidebar { position: fixed; top: 60px; left: -100%; width: 100%; height: calc(100vh - 60px); transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+            .sidebar { position: fixed; top: 60px; left: -100%; width: 100%; height: calc(100vh - 60px); transition: left 0.3s ease; }
             .sidebar.open { left: 0; }
-            .stats-grid { grid-template-columns: 1fr 1fr; }
         }
     </style>
 
@@ -125,18 +115,11 @@
 </head>
 <body>
 
-    <!-- Header Mobile -->
     <header class="mobile-header">
-        <div style="display:flex; flex-direction:column;">
-            <h2 style="margin:0; font-size:1.4rem; font-weight:700; color:var(--text-main); letter-spacing:-0.5px;">PRUMA</h2>
-            <span style="font-size:0.7rem; color:var(--text-muted); font-weight:500;">PAINEL DE ESTUDOS</span>
-        </div>
-        <div style="display: flex; gap: 16px; align-items:center;">
-            <button style="background:none; border:none; color:var(--text-main); font-size:1.3rem;" onclick="document.getElementById('sidebar-menu').classList.toggle('open')">☰</button>
-        </div>
+        <h2 style="margin:0; font-size:1.5rem; color:var(--brand-primary);">PRUMA</h2>
+        <button style="background:none; border:none; color:var(--text-main); font-size:1.5rem;" onclick="document.getElementById('sidebar-menu').classList.toggle('open')">☰</button>
     </header>
 
-    <!-- Sidebar Lateral -->
     <aside id="sidebar-menu" class="sidebar">
         <div class="sidebar-logo">
             <h1>PRUMA</h1>
@@ -153,13 +136,13 @@
         <button class="nav-btn" onclick="irTela('materias', event)">📚 Matérias</button>
         <button class="nav-btn" onclick="irTela('caderno', event)">📓 Caderno de Erros</button>
         <button class="nav-btn" onclick="irTela('estatisticas', event)">📈 Estatísticas</button>
-        <button class="nav-btn" onclick="irTela('pruma', event)" style="color:var(--brand-primary); font-weight:600;">✨ PRUMA IA</button>
+        <button class="nav-btn" onclick="irTela('pruma', event)" style="color:var(--brand-primary); font-weight:800; background:rgba(24,119,242,0.05);">✨ PRUMA IA</button>
         <button class="nav-btn" onclick="irTela('biblioteca', event)">📁 Biblioteca</button>
         
-        <div class="nav-group">
+        <div style="border-top: 2px solid var(--border-color); margin-top: 10px; padding-top: 10px; display: flex; flex-direction: column; gap: 6px;">
             <button class="nav-btn" onclick="irTela('conta', event)">👤 Minha Conta</button>
             <button class="nav-btn" onclick="document.getElementById('modal-apikey').style.display='flex'">🔑 API Key</button>
-            <button class="nav-btn" onclick="alternarTema()">🌓 Tema Claro/Escuro</button>
+            <button class="nav-btn" onclick="alternarTema()">🌓 Claro / Escuro</button>
             <button class="nav-btn" onclick="firebase.auth().signOut()" style="color:var(--brand-danger);">🚪 Sair</button>
         </div>
     </aside>
@@ -168,9 +151,9 @@
         
         <!-- Login -->
         <div id="tela-login" class="card" style="max-width:400px; margin:80px auto; text-align:center;">
-            <h1 style="color:var(--text-main); font-size:2.5rem; margin:0 0 5px 0; font-weight:700;">PRUMA</h1>
-            <p style="color:var(--text-muted); margin-bottom:30px; font-weight:500;">Painel de Estudos</p>
-            <button class="btn-outline" style="display:flex; align-items:center; justify-content:center; gap:10px;" onclick="firebase.auth().signInWithPopup(new firebase.auth.GoogleAuthProvider())">
+            <h1 style="color:var(--brand-primary); font-size:2.8rem; margin:0 0 5px 0;">PRUMA</h1>
+            <p style="color:var(--text-muted); margin-bottom:30px; font-weight:700;">Painel de Estudos</p>
+            <button class="btn-outline" style="display:flex; align-items:center; justify-content:center; gap:10px; border-color:var(--text-main);" onclick="firebase.auth().signInWithPopup(new firebase.auth.GoogleAuthProvider())">
                 <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" width="20" alt=""> Entrar com Google
             </button>
         </div>
@@ -181,73 +164,60 @@
             <div id="view-inicio">
                 <h2>Resumo de Hoje</h2>
                 <div class="stats-grid">
-                    <div class="stat-card"><span>Tempo de Estudo</span><strong id="hj-tempo">0h 0m</strong></div>
+                    <div class="stat-card"><span>Estudo</span><strong id="hj-tempo" style="color:var(--brand-primary);">0h 0m</strong></div>
                     <div class="stat-card"><span>Questões</span><strong id="hj-qts">0</strong></div>
-                    <div class="stat-card"><span>Acertos <span style="color:var(--brand-success)">●</span></span><strong id="hj-acertos" style="color:var(--brand-success)">0</strong></div>
-                    <div class="stat-card"><span>Erros <span style="color:var(--brand-danger)">●</span></span><strong id="hj-erros" style="color:var(--brand-danger)">0</strong></div>
-                    <div class="stat-card"><span>Aproveitamento</span><strong id="hj-perc">0%</strong></div>
+                    <div class="stat-card"><span>Acertos</span><strong id="hj-acertos" style="color:var(--brand-success)">0</strong></div>
+                    <div class="stat-card"><span>Erros</span><strong id="hj-erros" style="color:var(--brand-danger)">0</strong></div>
+                    <div class="stat-card"><span>Págs Lidas</span><strong id="hj-pags">0</strong></div>
+                    <div class="stat-card"><span>Vídeos</span><strong id="hj-vids">0</strong></div>
                 </div>
 
-                <div class="card" style="text-align: center; padding: 40px 20px;">
-                    <div id="cronometro-visor" style="font-size: 5rem; color: var(--text-main); font-weight: 700; font-variant-numeric: tabular-nums; margin: 10px 0; letter-spacing:-2px;">00:00:00</div>
-                    <div style="display:flex; justify-content:center; gap:16px; max-width: 350px; margin: 20px auto 0;">
-                        <button class="btn-primary" style="background:var(--brand-success);" onclick="iniciarCronometro()">▶ Iniciar</button>
-                        <button class="btn-outline" onclick="pausarCronometro()">⏸ Pausar</button>
+                <div class="card" style="display:flex; flex-wrap:wrap; gap:20px; align-items:flex-start;">
+                    <!-- Cronômetro e Formulário Fixo Lado a Lado no Desktop -->
+                    <div style="flex:1; min-width:250px; text-align:center; background:var(--bg-input); padding:20px; border-radius:var(--radius-md);">
+                        <div style="font-size: 0.9rem; font-weight:700; color:var(--text-muted); text-transform:uppercase;">Cronômetro</div>
+                        <div id="cronometro-visor" style="font-size: 4rem; color: var(--brand-primary); font-weight: 800; font-variant-numeric: tabular-nums; margin: 10px 0;">00:00:00</div>
+                        <div style="display:flex; justify-content:center; gap:12px;">
+                            <button class="btn-success" onclick="iniciarCronometro()">▶ Iniciar</button>
+                            <button class="btn-outline" style="width:auto; padding:10px;" onclick="pausarCronometro()">⏸ Pausar</button>
+                        </div>
                     </div>
 
-                    <div id="form-sessao" style="display:none; margin-top:30px; text-align:left; background:var(--bg-input); padding:24px; border-radius:var(--radius-md);">
-                        <h3 style="margin-top:0; border-bottom:1px solid var(--border-color); padding-bottom:12px; display:flex; justify-content:space-between;">
-                            Registrar Sessão <span style="font-size:0.9rem; color:var(--text-muted); cursor:pointer;" onclick="document.getElementById('form-sessao').style.display='none'">Cancelar ✖</span>
-                        </h3>
-                        
-                        <div style="display:flex; gap:16px; flex-wrap:wrap; margin-bottom:8px;">
-                            <div style="flex:1; min-width:200px;">
-                                <label style="font-size:0.85rem; font-weight:600;">Matéria:</label>
-                                <input type="text" id="ses-mat" placeholder="Ex: Português" list="lista-materias-dl">
+                    <!-- Formulário Fixo e Visível -->
+                    <div style="flex:2; min-width:300px;">
+                        <h3 style="margin-top:0; color:var(--text-main);">Salvar Sessão</h3>
+                        <div style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:8px;">
+                            <div style="flex:1; min-width:140px;">
+                                <input type="text" id="ses-mat" placeholder="Matéria" list="lista-materias-dl" oninput="atualizarTopicosSessao(this.value)">
                                 <datalist id="lista-materias-dl"></datalist>
                             </div>
-                            <div style="flex:1; min-width:200px;">
-                                <label style="font-size:0.85rem; font-weight:600;">Tópico/Assunto:</label>
-                                <input type="text" id="ses-top" placeholder="Ex: Crase">
+                            <div style="flex:1; min-width:140px;">
+                                <input type="text" id="ses-top" placeholder="Tópico" list="dl-ses-top">
+                                <datalist id="dl-ses-top"></datalist>
                             </div>
                         </div>
-
-                        <div style="display:flex; gap:16px; flex-wrap:wrap; margin-bottom:8px;">
-                            <div style="flex:1; min-width:200px;">
-                                <label style="font-size:0.85rem; font-weight:600;">Tipo de Estudo:</label>
-                                <select id="ses-tipo-estudo"><option value="Teoria">Teoria</option><option value="Questões">Questões</option><option value="Revisão">Revisão</option></select>
-                            </div>
-                            <div style="flex:1; min-width:200px;">
-                                <label style="font-size:0.85rem; font-weight:600;">Material Usado:</label>
-                                <select id="ses-tipo-mat" onchange="toggleCamposDetalhes()">
-                                    <option value="Questões">📝 Questões</option>
-                                    <option value="PDF/Lei Seca">📖 PDF / Lei Seca</option>
-                                    <option value="Vídeo Aula">🎥 Vídeo Aula</option>
-                                </select>
-                            </div>
+                        <div style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:8px;">
+                            <select id="ses-tipo-estudo" style="flex:1;"><option value="Teoria">Teoria</option><option value="Questões">Questões</option><option value="Revisão">Revisão</option></select>
+                            <select id="ses-tipo-mat" style="flex:1;" onchange="toggleCamposDetalhes()">
+                                <option value="Questões">📝 Questões</option><option value="PDF/Lei Seca">📖 PDF / Lei Seca</option><option value="Vídeo Aula">🎥 Vídeo Aula</option>
+                            </select>
                         </div>
 
-                        <div id="campos-pdf" style="display:none; gap:16px; margin-bottom:8px;">
-                            <div style="flex:1;"><label style="font-size:0.85rem; font-weight:600;">Pág Inicial:</label><input type="number" id="ses-pdf-ini"></div>
-                            <div style="flex:1;"><label style="font-size:0.85rem; font-weight:600;">Pág Final:</label><input type="number" id="ses-pdf-fim"></div>
-                            <div style="flex:1;"><label style="font-size:0.85rem; font-weight:600;">Fonte do PDF:</label><input type="text" id="ses-pdf-fonte"></div>
+                        <div id="campos-pdf" style="display:none; gap:12px; margin-bottom:8px;">
+                            <input type="number" id="ses-pdf-ini" placeholder="Pág Inicial" style="flex:1;"><input type="number" id="ses-pdf-fim" placeholder="Pág Final" style="flex:1;"><input type="text" id="ses-pdf-fonte" placeholder="Fonte" style="flex:1;">
                         </div>
-                        <div id="campos-video" style="display:none; gap:16px; margin-bottom:8px;">
-                            <div style="flex:1;"><label style="font-size:0.85rem; font-weight:600;">Vídeo Inicial (Nº):</label><input type="number" id="ses-vid-ini"></div>
-                            <div style="flex:1;"><label style="font-size:0.85rem; font-weight:600;">Vídeo Final (Nº - Opcional):</label><input type="number" id="ses-vid-fim"></div>
-                            <div style="flex:1;"><label style="font-size:0.85rem; font-weight:600;">Plataforma:</label><input type="text" id="ses-vid-fonte"></div>
+                        <div id="campos-video" style="display:none; gap:12px; margin-bottom:8px;">
+                            <input type="number" id="ses-vid-ini" placeholder="Vídeo Ini" style="flex:1;"><input type="number" id="ses-vid-fim" placeholder="Vídeo Fim (Opc)" style="flex:1;"><input type="text" id="ses-vid-fonte" placeholder="Plataforma" style="flex:1;">
                         </div>
 
-                        <div style="display:flex; gap:16px; flex-wrap:wrap; margin-bottom:16px; background:var(--bg-card); padding:16px; border-radius:var(--radius-sm); border:1px solid var(--border-color);">
-                            <div style="flex:1; min-width:120px;"><label style="font-size:0.85rem; font-weight:600; color:var(--brand-success);">Acertos totais:</label><input type="number" id="ses-acertos" value="0"></div>
-                            <div style="flex:1; min-width:120px;"><label style="font-size:0.85rem; font-weight:600; color:var(--brand-danger);">Erros totais:</label><input type="number" id="ses-erros" value="0"></div>
-                            <div style="flex:1; min-width:120px;"><label style="font-size:0.85rem; font-weight:600;">Tempo Manual (min):</label><input type="number" id="ses-tempo-manual" placeholder="Se não usou cronômetro"></div>
+                        <div style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:12px; background:var(--bg-input); padding:10px; border-radius:var(--radius-sm);">
+                            <div style="flex:1;"><label style="font-size:0.8rem; font-weight:700; color:var(--brand-success);">Acertos</label><input type="number" id="ses-acertos" value="0" style="margin:0;"></div>
+                            <div style="flex:1;"><label style="font-size:0.8rem; font-weight:700; color:var(--brand-danger);">Erros</label><input type="number" id="ses-erros" value="0" style="margin:0;"></div>
+                            <div style="flex:1;"><label style="font-size:0.8rem; font-weight:700;">Tempo Manual (min)</label><input type="number" id="ses-tempo-manual" placeholder="Se sem cronômetro" style="margin:0;"></div>
                         </div>
                         
-                        <label style="font-size:0.85rem; font-weight:600;">Observação Relevante:</label>
-                        <textarea id="ses-obs" rows="2" placeholder="Desempenho, material bom/ruim..."></textarea>
-
-                        <button class="btn-primary" onclick="salvarRegistro()">Finalizar Sessão / Salvar</button>
+                        <textarea id="ses-obs" rows="1" placeholder="Observações..." style="margin-bottom:12px;"></textarea>
+                        <button class="btn-primary" onclick="salvarRegistro()">💾 Registrar Estudo</button>
                     </div>
                 </div>
 
@@ -260,29 +230,28 @@
             <!-- MINHAS PROVAS -->
             <div id="view-provas" style="display:none;">
                 <div class="card">
-                    <h2>Adicionar Projeto/Concurso</h2>
-                    <div style="display:flex; gap:16px; flex-wrap:wrap;">
-                        <input type="text" id="conc-nome" placeholder="Nome do Concurso (Ex: TRF-1)" style="flex:2; min-width:200px;">
+                    <h2>Nova Prova / Concurso</h2>
+                    <div style="display:flex; gap:12px; flex-wrap:wrap;">
+                        <input type="text" id="conc-nome" placeholder="Nome (Ex: TRF-1)" style="flex:2; min-width:200px;">
                         <input type="date" id="conc-data" style="flex:1; min-width:150px;">
                         <button class="btn-primary" style="flex:1; min-width:150px;" onclick="salvarProva()">Adicionar (Máx 5)</button>
                     </div>
                 </div>
-                <h2>Provas Cadastradas</h2>
                 <div id="lista-provas-div" class="stats-grid"></div>
             </div>
 
             <!-- MATÉRIAS -->
             <div id="view-materias" style="display:none;">
                 <div class="card">
-                    <h2>Criar Matéria/Tópico</h2>
-                    <div style="display:flex; gap:16px; flex-wrap:wrap; margin-bottom:16px;">
+                    <h2>Criar Matéria / Tópico</h2>
+                    <div style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:12px;">
                         <input type="text" id="mat-nome" placeholder="Nome da Matéria" style="flex:1; min-width:150px;" list="lista-materias-dl">
                         <input type="text" id="mat-topico" placeholder="Novo Tópico (Opcional)" style="flex:1; min-width:150px;">
                         <select id="mat-prova" style="flex:1; min-width:150px;"><option value="">Vincular a uma Prova? (Opcional)</option></select>
                     </div>
-                    <label style="font-size:0.85rem; font-weight:600; display:block; margin-bottom:8px;">Cor da Pasta:</label>
-                    <div id="mat-paleta" style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px;"></div>
-                    <button class="btn-primary" onclick="salvarMateria()">Criar / Atualizar Pasta</button>
+                    <label style="font-size:0.85rem; font-weight:700;">Cor (Opcional):</label>
+                    <div id="mat-paleta" style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px; margin-top:5px;"></div>
+                    <button class="btn-primary" onclick="salvarMateria()">Salvar</button>
                 </div>
                 <h2>Acervo de Matérias</h2>
                 <div id="lista-materias-cadastradas"></div>
@@ -291,46 +260,42 @@
             <!-- CADERNO DE ERROS -->
             <div id="view-caderno" style="display:none;">
                 <div class="card">
-                    <h2>Adicionar Anotação / Erro</h2>
-                    <div style="display:flex; gap:16px; flex-wrap:wrap;">
-                        <input type="text" id="err-mat" placeholder="Matéria" list="lista-materias-dl" onchange="atualizarTopicosDatalist('err-top', this.value)" style="flex:1; min-width:200px;">
-                        <input type="text" id="err-top" placeholder="Tópico" list="dl-err-top" style="flex:1; min-width:200px;">
+                    <h2>Novo Caderno / Anotação</h2>
+                    <div style="display:flex; gap:12px; flex-wrap:wrap;">
+                        <input type="text" id="err-mat" placeholder="Matéria" list="lista-materias-dl" oninput="atualizarTopicosDatalist('err-top', this.value)" style="flex:1; min-width:150px;">
+                        <input type="text" id="err-top" placeholder="Tópico" list="dl-err-top" style="flex:1; min-width:150px;">
                         <datalist id="dl-err-top"></datalist>
                     </div>
-                    <textarea id="err-texto" placeholder="Cole a questão, comentário ou pegadinha..." rows="4"></textarea>
-                    <button class="btn-primary" onclick="salvarErro()">Salvar no Caderno</button>
+                    <textarea id="err-texto" placeholder="Cole a questão, lei, comentário..." rows="4"></textarea>
+                    <button class="btn-primary" onclick="salvarErro()">Salvar Anotação</button>
                 </div>
-                <h2>Acervo de Cadernos</h2>
+                <h2>Meus Cadernos</h2>
                 <div id="lista-cadernos-div"></div>
             </div>
 
             <!-- ESTATÍSTICAS -->
             <div id="view-estatisticas" style="display:none;">
                 <div class="card">
-                    <h2>Métricas de Desempenho</h2>
-                    <div style="display:flex; gap:16px; margin-bottom:24px; flex-wrap:wrap;">
-                        <select id="est-periodo" onchange="atualizarEstatisticas()" style="flex:1; min-width:150px;">
-                            <option value="hoje">Hoje</option><option value="7">Últimos 7 dias</option><option value="30">Últimos 30 dias</option><option value="tudo" selected>Sempre</option><option value="custom">Selecionar Período...</option>
-                        </select>
-                        <select id="est-tipo-grafico" onchange="atualizarEstatisticas()" style="flex:1; min-width:150px;">
-                            <option value="doughnut">Gráfico Rosca</option><option value="bar">Gráfico de Barras</option>
-                        </select>
+                    <h2>Métricas e Gráficos</h2>
+                    <div style="display:flex; gap:12px; margin-bottom:20px; flex-wrap:wrap;">
+                        <select id="est-periodo" onchange="atualizarEstatisticas()" style="flex:1;"><option value="hoje">Hoje</option><option value="7">Últimos 7 dias</option><option value="30">Últimos 30 dias</option><option value="tudo" selected>Sempre</option><option value="custom">Período Específico...</option></select>
+                        <select id="est-tipo-grafico" onchange="atualizarEstatisticas()" style="flex:1;"><option value="doughnut">Gráfico Rosca</option><option value="bar">Gráfico de Barras</option></select>
                     </div>
-                    <div id="est-custom-dates" style="display:none; gap:16px; margin-bottom:24px; background:var(--bg-input); padding:16px; border-radius:var(--radius-sm);">
+                    <div id="est-custom-dates" style="display:none; gap:12px; margin-bottom:20px; background:var(--bg-input); padding:12px; border-radius:var(--radius-sm);">
                         <input type="date" id="est-dt-ini" style="margin:0;"><input type="date" id="est-dt-fim" style="margin:0;">
-                        <button class="btn-primary" style="width:auto;" onclick="atualizarEstatisticas()">Filtrar</button>
+                        <button class="btn-success" style="width:auto;" onclick="atualizarEstatisticas()">Filtrar</button>
                     </div>
 
                     <div class="stats-grid">
+                        <div class="stat-card"><span>Aproveitamento</span><strong id="st-perc" style="color:var(--brand-primary)">0%</strong></div>
+                        <div class="stat-card"><span>Tempo Líquido</span><strong id="st-tempo">0h</strong></div>
                         <div class="stat-card"><span>Acertos Totais</span><strong id="st-acertos" style="color:var(--brand-success)">0</strong></div>
                         <div class="stat-card"><span>Erros Totais</span><strong id="st-erros" style="color:var(--brand-danger)">0</strong></div>
-                        <div class="stat-card"><span>Aproveitamento</span><strong id="st-perc">0%</strong></div>
-                        <div class="stat-card"><span>Tempo Líquido</span><strong id="st-tempo">0h</strong></div>
-                        <div class="stat-card"><span>Págs Lidas</span><strong id="st-pags">0</strong></div>
-                        <div class="stat-card"><span>Vídeos</span><strong id="st-vids">0</strong></div>
+                        <div class="stat-card"><span>Páginas Lidas</span><strong id="st-pags">0</strong></div>
+                        <div class="stat-card"><span>Vídeos Vistos</span><strong id="st-vids">0</strong></div>
                     </div>
 
-                    <div style="position: relative; height:350px; width:100%; margin-top:30px;">
+                    <div style="position: relative; height:350px; width:100%; margin-top:20px;">
                         <canvas id="graficoEst"></canvas>
                     </div>
                 </div>
@@ -338,73 +303,67 @@
 
             <!-- PRUMA IA -->
             <div id="view-pruma" style="display:none;">
-                <div class="card" style="padding:0; overflow:hidden; border:1px solid var(--brand-primary);">
+                <div class="card" style="padding:0; overflow:hidden; border:2px solid var(--brand-primary);">
                     <div style="background:var(--brand-primary); padding:20px; display:flex; justify-content:space-between; align-items:center;">
-                        <div style="display:flex; flex-direction:column;">
-                            <h2 style="color:#FFF; margin:0; border:none; letter-spacing:0;">✨ PRUMA IA</h2>
-                            <span id="badge-modelo-ia" style="color:rgba(255,255,255,0.8); font-size:0.8rem; font-weight:600;">Carregando Modelo...</span>
-                        </div>
-                        <button class="btn-outline" style="width:auto; padding:8px 12px; border-color:rgba(255,255,255,0.3); color:#FFF; font-size:0.85rem;" onclick="document.getElementById('modal-historico-ia').style.display='flex'">Ver Histórico (Últimas 10)</button>
+                        <h2 style="color:white; margin:0; border:none; padding:0;">✨ PRUMA IA <span id="badge-modelo-ia" style="font-size:0.8rem; font-weight:normal; opacity:0.8; margin-left:10px;"></span></h2>
+                        <button class="btn-outline" style="width:auto; padding:8px 12px; border-color:white; color:white; font-size:0.85rem;" onclick="document.getElementById('modal-historico-ia').style.display='flex'">Ver Histórico (10 Últimas)</button>
                     </div>
                     
-                    <div style="padding:24px;">
-                        <div class="pruma-sub-abas">
-                            <button class="sub-aba-btn ativa" onclick="mudarSubIa('chat', this)">💬 Chat & Pesquisa</button>
-                            <button class="sub-aba-btn" onclick="mudarSubIa('simulador', this)">🎯 Gerador de Questões</button>
-                            <button class="sub-aba-btn" onclick="mudarSubIa('flashcards', this)">⚡ Flashcards</button>
-                            <button class="sub-aba-btn" onclick="mudarSubIa('edital', this)">📚 Edital Inteligente</button>
+                    <div style="padding:20px;">
+                        <div style="display:flex; gap:10px; margin-bottom:20px; overflow-x:auto;">
+                            <button class="btn-outline" style="flex:1; border-color:var(--brand-primary); color:var(--brand-primary);" onclick="mudarSubIa('chat', this)">💬 Chat Especialista</button>
+                            <button class="btn-outline" style="flex:1;" onclick="mudarSubIa('simulador', this)">🎯 Gerar Questões</button>
+                            <button class="btn-outline" style="flex:1;" onclick="mudarSubIa('flashcards', this)">⚡ Flashcards</button>
+                            <button class="btn-outline" style="flex:1;" onclick="mudarSubIa('edital', this)">📚 Edital Inteligente</button>
                         </div>
 
-                        <!-- Caixa de seleção de fontes comum a quase todas as abas -->
-                        <div id="caixa-fontes-ia" style="background:var(--bg-input); padding:16px; border-radius:var(--radius-sm); margin-bottom:20px; border:1px solid var(--border-color);">
-                            <strong style="font-size:0.9rem; display:block; margin-bottom:10px;">📚 Fontes de Busca (Marque o que a IA deve usar):</strong>
-                            <div style="max-height:120px; overflow-y:auto; display:flex; flex-direction:column; gap:8px;" id="checkboxes-biblioteca"></div>
-                            <hr style="border:0; border-top:1px solid var(--border-color); margin:12px 0;">
-                            <strong style="font-size:0.9rem; display:block; margin-bottom:10px;">📓 Cadernos de Erros (Focar nos seus erros):</strong>
-                            <div style="max-height:120px; overflow-y:auto; display:flex; flex-direction:column; gap:8px;" id="checkboxes-cadernos"></div>
-                            <p style="font-size:0.75rem; color:var(--text-muted); margin:10px 0 0 0;">* A busca inteligente na web do Google está sempre ativa por padrão.</p>
+                        <!-- Caixas de Seleção de Fontes Organizadas -->
+                        <div id="caixa-fontes-ia" style="background:var(--bg-input); padding:20px; border-radius:var(--radius-md); margin-bottom:20px;">
+                            <h3 style="margin:0 0 12px 0; font-size:1.1rem; color:var(--brand-primary);">🔍 Selecione as Fontes de Pesquisa</h3>
+                            
+                            <strong style="font-size:0.9rem; color:var(--text-muted);">📚 Arquivos da Biblioteca:</strong>
+                            <div id="checkboxes-biblioteca" class="grid-fontes" style="margin-bottom:16px;"></div>
+                            
+                            <strong style="font-size:0.9rem; color:var(--brand-danger);">📓 Focar nos Meus Erros (Cadernos):</strong>
+                            <div id="checkboxes-cadernos" class="grid-fontes"></div>
+                            
+                            <p style="font-size:0.8rem; color:var(--brand-success); font-weight:700; margin:16px 0 0 0;">✓ Busca inteligente na base do Google sempre ativa por padrão.</p>
                         </div>
 
-                        <!-- Sub: Chat -->
                         <div id="subia-chat">
                             <div class="chat-box" id="box-chat">
-                                <div class="msg msg-a"><strong>PRUMA:</strong> Olá! Selecione os materiais acima ou me faça uma pergunta. Considerarei nossas últimas conversas!</div>
+                                <div class="msg msg-a"><strong>PRUMA:</strong> Olá! Selecione os materiais acima e envie seu prompt. Sou especialista em concursos. Qual a missão de hoje?</div>
                             </div>
-                            <div style="display:flex; gap:12px; align-items:flex-end;">
-                                <textarea id="inp-chat" placeholder="Peça um resumo de PDF, tire dúvidas, busque jurisprudência..." rows="2" style="margin:0; resize:none;"></textarea>
-                                <button class="btn-primary" onclick="executarIA('chat')" style="width:120px; height:50px;">Enviar</button>
+                            <div style="display:flex; gap:10px;">
+                                <textarea id="inp-chat" placeholder="Peça resumos, resoluções profundas, ou jurisprudências..." rows="2" style="margin:0; resize:none;"></textarea>
+                                <button class="btn-primary" onclick="executarIA('chat')" style="width:120px;">Enviar</button>
                             </div>
                         </div>
 
-                        <!-- Sub: Simulador -->
                         <div id="subia-simulador" style="display:none;">
-                            <p style="color:var(--text-muted); font-size:0.95rem; margin-top:-5px;">Gere questões inéditas focadas nos cadernos ou PDFs que você marcou acima.</p>
                             <div style="display:flex; gap:12px; margin-bottom:16px;">
-                                <input type="number" id="ia-qts-num" value="5" min="1" max="15" style="width:80px; margin:0;" title="Nº de Questões">
-                                <input type="text" id="ia-qts-tema" placeholder="Tema específico (Opcional)" style="flex:1; margin:0;">
+                                <input type="number" id="ia-qts-num" value="5" min="1" max="20" style="width:80px; margin:0;" title="Nº">
+                                <input type="text" id="ia-qts-tema" placeholder="Tema específico (Ou deixe em branco para focar nas fontes selecionadas)" style="flex:1; margin:0;">
                             </div>
-                            <button class="btn-primary" onclick="executarIA('questoes')">Gerar Bateria de Questões</button>
+                            <button class="btn-primary" onclick="executarIA('questoes')">Gerar Bateria</button>
                             <div class="chat-box" id="box-qts" style="margin-top:16px; display:none; height:auto; min-height:200px;"></div>
                         </div>
 
-                        <!-- Sub: Flashcards -->
                         <div id="subia-flashcards" style="display:none;">
-                            <div style="display:flex; gap:16px; margin-bottom:16px; flex-wrap:wrap;">
-                                <input type="text" id="fc-mat-dest" placeholder="Salvar em qual Matéria? (Opcional)" list="lista-materias-dl" onchange="atualizarTopicosDatalist('fc-top-dest', this.value)" style="flex:1; min-width:200px;">
-                                <input type="text" id="fc-top-dest" placeholder="Tópico (Opcional)" list="dl-fc-top-dest" style="flex:1; min-width:200px;">
+                            <div style="display:flex; gap:12px; margin-bottom:12px; flex-wrap:wrap;">
+                                <input type="text" id="fc-mat-dest" placeholder="Salvar em qual Matéria? (Opcional)" list="lista-materias-dl" oninput="atualizarTopicosDatalist('fc-top-dest', this.value)" style="flex:1; min-width:150px;">
+                                <input type="text" id="fc-top-dest" placeholder="Tópico (Opcional)" list="dl-fc-top-dest" style="flex:1; min-width:150px;">
                                 <datalist id="dl-fc-top-dest"></datalist>
                             </div>
-                            <textarea id="fc-tema" placeholder="Qual o tema dos Flashcards? A IA analisará suas fontes marcadas para criar." rows="2"></textarea>
-                            <button class="btn-primary" onclick="executarIA('flashcards')">Criar Flashcards</button>
+                            <textarea id="fc-tema" placeholder="Descreva o tema dos flashcards..." rows="2"></textarea>
+                            <button class="btn-primary" onclick="executarIA('flashcards')">Gerar Cartões</button>
                             <div class="chat-box" id="box-fc" style="margin-top:16px; display:none; background:transparent; border:none; padding:0; height:auto; overflow:visible;"></div>
                         </div>
 
-                        <!-- Sub: Edital Inteligente -->
                         <div id="subia-edital" style="display:none;">
-                            <p style="font-size:0.95rem; color:var(--text-muted); margin-top:-5px;">Cole o texto do edital. A IA irá organizar tudo. Pode colar textos gigantes (a IA processa em partes).</p>
-                            <select id="edital-ia-prova" style="margin-bottom:16px;"><option value="">Vincular a qual Prova? (Opcional)</option></select>
-                            <textarea id="edital-texto" placeholder="Cole os conhecimentos básicos e específicos aqui..." rows="6"></textarea>
-                            <button class="btn-primary" onclick="processarEdital(this)">✨ Mapear Edital com IA</button>
+                            <select id="edital-ia-prova"><option value="">Vincular a qual Prova? (Opcional)</option></select>
+                            <textarea id="edital-texto" placeholder="Cole o texto gigante do edital aqui..." rows="6"></textarea>
+                            <button class="btn-primary" onclick="processarEdital(this)">✨ Mapear Estrutura com IA</button>
                         </div>
                     </div>
                 </div>
@@ -413,23 +372,23 @@
             <!-- BIBLIOTECA -->
             <div id="view-biblioteca" style="display:none;">
                 <div class="card">
-                    <h2>Upload de Fontes (Nuvem PRUMA)</h2>
-                    <div style="display:flex; gap:24px; flex-wrap:wrap;">
-                        <div style="flex:1; min-width:250px; background:var(--bg-input); padding:24px; border-radius:var(--radius-md);">
-                            <h3 style="margin-top:0;">Enviar Arquivo (PDF/Texto)</h3>
-                            <input type="text" id="bib-mat-arq" placeholder="Matéria/Assunto (Opcional)">
-                            <input type="file" id="bib-file" accept=".pdf,.txt" style="background:#FFF; padding:8px;">
-                            <button class="btn-primary" onclick="uploadArquivo()">Processar e Salvar</button>
+                    <h2>Nuvem PRUMA (Fontes)</h2>
+                    <div style="display:flex; gap:20px; flex-wrap:wrap;">
+                        <div style="flex:1; min-width:250px; background:var(--bg-input); padding:20px; border-radius:var(--radius-md);">
+                            <h3 style="margin-top:0;">Enviar PDF / Texto</h3>
+                            <input type="text" id="bib-mat-arq" placeholder="Materia (Opcional)">
+                            <input type="file" id="bib-file" accept=".pdf,.txt" style="background:white; padding:8px;">
+                            <button class="btn-primary" onclick="uploadArquivo()">Subir Arquivo</button>
                         </div>
-                        <div style="flex:1; min-width:250px; background:var(--bg-input); padding:24px; border-radius:var(--radius-md);">
-                            <h3 style="margin-top:0;">Salvar Link (Web)</h3>
-                            <input type="text" id="bib-mat-link" placeholder="Matéria/Assunto (Opcional)">
+                        <div style="flex:1; min-width:250px; background:var(--bg-input); padding:20px; border-radius:var(--radius-md);">
+                            <h3 style="margin-top:0;">Salvar Link Web</h3>
+                            <input type="text" id="bib-mat-link" placeholder="Materia (Opcional)">
                             <input type="url" id="bib-link" placeholder="https://...">
-                            <button class="btn-primary" style="background:var(--text-main);" onclick="salvarLink()">Salvar URL</button>
+                            <button class="btn-success" onclick="salvarLink()">Salvar URL</button>
                         </div>
                     </div>
                 </div>
-                <h2>Acervo da Biblioteca</h2>
+                <h2>Arquivos Salvos</h2>
                 <div id="lista-biblioteca"></div>
             </div>
 
@@ -437,17 +396,21 @@
             <div id="view-conta" style="display:none;">
                 <div class="card" style="max-width:500px; margin:0 auto;">
                     <h2>Minha Conta</h2>
-                    <div style="background:var(--bg-input); padding:20px; border-radius:var(--radius-md); margin-bottom:24px;">
-                        <p style="margin:0 0 10px 0; font-size:1rem;"><strong>E-mail:</strong> <span id="conta-email">Carregando...</span></p>
-                        <p style="margin:0 0 10px 0; font-size:1rem;"><strong>Nome do Perfil:</strong> <input type="text" id="conta-nome" style="width:auto; display:inline-block; margin:0; padding:6px 12px;"></p>
-                        <p style="margin:0; font-size:0.9rem; color:var(--text-muted);">Membro desde: <span id="conta-data"></span></p>
-                        <button class="btn-outline" style="margin-top:16px; width:auto; padding:8px 16px; font-size:0.85rem;" onclick="salvarNomePerfil()">Salvar Nome</button>
-                    </div>
                     
-                    <label style="font-weight:600; display:block; margin-bottom:12px;">Paleta de Cores do Sistema (15 Cores):</label>
+                    <div style="background:var(--brand-primary); color:white; padding:20px; border-radius:var(--radius-md); margin-bottom:20px;">
+                        <h3 style="margin-top:0;">Recuperação de Dados Antigos</h3>
+                        <p style="font-size:0.9rem; margin-bottom:12px;">Se você usou a versão antiga do site, seus PDFs e Cadernos podem estar fora da nuvem segura atual.</p>
+                        <button style="background:white; color:var(--brand-primary); border:none; font-weight:800; padding:10px 16px; border-radius:var(--radius-sm); cursor:pointer; width:100%;" onclick="resgatarDadosAntigos()">🔄 Resgatar Dados Antigos</button>
+                    </div>
+
+                    <p><strong>E-mail:</strong> <span id="conta-email">...</span></p>
+                    <p><strong>Nome:</strong> <input type="text" id="conta-nome" style="width:200px; display:inline-block; padding:8px; margin:0;"></p>
+                    <button class="btn-outline" style="width:auto; padding:8px 16px; margin-bottom:20px;" onclick="salvarNomePerfil()">Salvar Nome</button>
+                    
+                    <label style="font-weight:700; display:block; margin-bottom:10px;">Cores do Sistema (15 Opções):</label>
                     <div id="paleta-cores-sistema" style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:30px;"></div>
 
-                    <button class="btn-danger" style="width:100%; padding:14px; font-size:1rem;" onclick="excluirConta()">Excluir Minha Conta (Irreversível)</button>
+                    <button class="btn-danger" style="width:100%; padding:14px; font-size:1rem;" onclick="excluirConta()">Excluir Minha Conta Permanentemente</button>
                 </div>
             </div>
 
@@ -457,65 +420,73 @@
     <!-- Modais -->
     <div id="modal-apikey" class="modal">
         <div class="modal-content">
-            <button class="modal-close" onclick="document.getElementById('modal-apikey').style.display='none'">✖</button>
-            <h2 style="margin-top:0;">🔑 API Key (Gemini)</h2>
-            <p style="color:var(--text-muted); font-size:0.9rem;">Sua chave fica salva no armazenamento local do seu dispositivo.</p>
-            <input type="password" id="input-api-key" placeholder="Cole sua API Key do Google AI Studio">
-            <button class="btn-primary" onclick="salvarApiKey()">Salvar Chave</button>
+            <button class="modal-close" style="position:absolute; top:15px; right:15px; background:transparent; border:none; font-size:1.5rem; cursor:pointer; color:var(--text-muted);" onclick="document.getElementById('modal-apikey').style.display='none'">✖</button>
+            <h2 style="margin-top:0;">🔑 Chave API Gemini</h2>
+            <p style="color:var(--text-muted); font-size:0.9rem;">Fica salva localmente no seu dispositivo.</p>
+            <input type="password" id="input-api-key" placeholder="Cole sua API Key">
+            <button class="btn-primary" onclick="salvarApiKey()">Salvar</button>
         </div>
     </div>
 
     <div id="modal-historico-ia" class="modal">
         <div class="modal-content" style="max-width:700px;">
-            <button class="modal-close" onclick="document.getElementById('modal-historico-ia').style.display='none'">✖</button>
-            <h2 style="margin-top:0;">🔄 Histórico da IA (Últimas 10)</h2>
-            <p style="font-size:0.85rem; color:var(--text-muted); margin-top:-5px;">A IA lembra desse contexto para as próximas respostas.</p>
-            <div id="lista-historico-ia" style="display:flex; flex-direction:column; gap:12px;"></div>
+            <button class="modal-close" style="position:absolute; top:15px; right:15px; background:transparent; border:none; font-size:1.5rem; cursor:pointer; color:var(--text-muted);" onclick="document.getElementById('modal-historico-ia').style.display='none'">✖</button>
+            <h2 style="margin-top:0;">🔄 Últimas 10 Perguntas</h2>
+            <div id="lista-historico-ia" style="display:flex; flex-direction:column; gap:12px; margin-top:16px;"></div>
         </div>
     </div>
 
-    <!-- Script Principal -->
+    <div id="modal-juntar" class="modal">
+        <div class="modal-content">
+            <button class="modal-close" style="position:absolute; top:15px; right:15px; background:transparent; border:none; font-size:1.5rem; cursor:pointer; color:var(--text-muted);" onclick="document.getElementById('modal-juntar').style.display='none'">✖</button>
+            <h2 style="margin-top:0;">🔗 Juntar Tópicos</h2>
+            <p>Mover o tópico <strong id="lbl-topico-origem" style="color:var(--brand-danger)"></strong> para dentro de outro e apagá-lo.</p>
+            <select id="sel-topico-destino"></select>
+            <input type="hidden" id="hid-mat-id">
+            <input type="hidden" id="hid-top-origem">
+            <button class="btn-primary" onclick="confirmarJuncao()">Confirmar Junção</button>
+        </div>
+    </div>
+
     <script>
-        // CONFIGURAÇÃO FIREBASE - SUBSTITUA PELAS SUAS CHAVES
-        const ADMIN_UID = "COLE_SEU_UID_DE_ADMIN_AQUI"; 
+        // CONFIGURAÇÕES FIREBASE OBRIGATÓRIAS
+        const ADMIN_UID = "TyqCjsZaRzdTX6kuvLeXWwhCLG53"; 
         const firebaseConfig = {
             apiKey: "AIzaSyCIPK3YBKulMbjJzm_UahdtQrNjgqLmYho",
             authDomain: "plataforma-de-estudos-98ec8.firebaseapp.com",
             databaseURL: "https://plataforma-de-estudos-98ec8-default-rtdb.firebaseio.com",
             projectId: "plataforma-de-estudos-98ec8",
-            storageBucket: "plataforma-de-estudos-98ec8.firebasestorage.app"
+            storageBucket: "plataforma-de-estudos-98ec8.firebasestorage.app",
+            messagingSenderId: "237117351737",
+            appId: "1:237117351737:web:32a01ded955abc3d302ae8"
         };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database(); const storage = firebase.storage();
 
-        // ESTADO GLOBAL
+        // ESTADOS E VARIÁVEIS GERAIS
         let userAtual = null, refDb = null, refStore = null;
         let dbData = { sessoes: [], provas: [], materias: [], cadernos: [], biblioteca: [], iaHistorico: [] };
         let segundosCronometro = 0, cronometroInterval = null, graficoInstance = null;
         
-        const paleta15 = ['#007AFF','#34C759','#FF9500','#FF3B30','#5856D6','#AF52DE','#FF2D55','#5AC8FA','#E5C07B','#98C379','#E06C75','#C678DD','#56B6C2','#D19A66','#61AFEF'];
+        const paleta15 = ['#1877F2','#31A24C','#E41E3F','#F2A100','#6F42C1','#D63384','#17A2B8','#FD7E14','#20C997','#6610F2','#0D6EFD','#198754','#DC3545','#FFC107','#0DCAF0'];
         let corAtualMateria = paleta15[0];
 
-        // UTILITÁRIOS
         function sanitizeText(str) { return typeof str === 'string' ? DOMPurify.sanitize(str) : ''; }
         function gerarId() { return Date.now().toString(36) + Math.random().toString(36).substr(2); }
         
         function alternarTema() { 
-            let html = document.documentElement; let novoTema = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-            html.setAttribute('data-theme', novoTema); localStorage.setItem('pruma_tema', novoTema);
+            let html = document.documentElement; let novo = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+            html.setAttribute('data-theme', novo); localStorage.setItem('pruma_tema', novo);
             if(document.getElementById('view-estatisticas').style.display === 'block') atualizarEstatisticas();
         }
         if(localStorage.getItem('pruma_tema') === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
 
-        // AUTENTICAÇÃO
         firebase.auth().onAuthStateChanged(user => {
             if(user) {
                 userAtual = user; refDb = db.ref('usuarios/' + user.uid); refStore = storage.ref('usuarios/' + user.uid);
                 document.getElementById('tela-login').style.display = 'none'; document.getElementById('tela-painel').style.display = 'block';
-                
                 document.getElementById('conta-email').textContent = user.email;
-                document.getElementById('conta-data').textContent = new Date(user.metadata.creationTime).toLocaleDateString();
-                document.getElementById('badge-modelo-ia').textContent = (user.uid === ADMIN_UID) ? "Modelo: 3.1 Pro" : "Modelo: 3.8 Flash";
+                document.getElementById('badge-modelo-ia').textContent = (user.uid === ADMIN_UID) ? "(3.1 Pro)" : "(3.8 Flash)";
                 
                 carregarPaletaSistema(); carregarApiKey(); carregarDadosGlobais(); irTela('inicio');
             } else {
@@ -527,160 +498,153 @@
             ['inicio', 'provas', 'materias', 'caderno', 'estatisticas', 'pruma', 'biblioteca', 'conta'].forEach(v => {
                 let el = document.getElementById('view-' + v); if(el) el.style.display = (v === t) ? 'block' : 'none';
             });
-            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-            if(e && e.currentTarget) e.currentTarget.classList.add('active');
+            document.querySelectorAll('.nav-btn').forEach(b => { b.classList.remove('active'); b.style.borderColor='transparent'; b.style.background='transparent'; });
+            if(e && e.currentTarget) {
+                e.currentTarget.classList.add('active');
+                if(e.currentTarget.textContent.includes('PRUMA IA')) { e.currentTarget.style.background='rgba(24,119,242,0.1)'; e.currentTarget.style.borderLeft='4px solid var(--brand-primary)'; }
+            }
             if(window.innerWidth <= 768) document.getElementById('sidebar-menu').classList.remove('open');
             if(t === 'estatisticas') atualizarEstatisticas();
         }
 
-        // MINHA CONTA / API KEY
+        // MINHA CONTA & RECUPERAÇÃO DE DADOS
         function carregarPaletaSistema() {
             let div = document.getElementById('paleta-cores-sistema'); div.innerHTML = '';
             paleta15.forEach(cor => {
-                let dot = document.createElement('div'); dot.className = 'color-dot'; dot.style.backgroundColor = cor;
+                let dot = document.createElement('div'); dot.style.width='30px'; dot.style.height='30px'; dot.style.borderRadius='50%'; dot.style.background=cor; dot.style.cursor='pointer';
                 dot.onclick = () => { document.documentElement.style.setProperty('--brand-primary', cor); localStorage.setItem('pruma_cor_sys', cor); };
                 div.appendChild(dot);
             });
             let salva = localStorage.getItem('pruma_cor_sys'); if(salva) document.documentElement.style.setProperty('--brand-primary', salva);
         }
-        function salvarNomePerfil() { let n = document.getElementById('conta-nome').value.trim(); if(n) refDb.child('perfil/nome').set(n); alert("Nome salvo."); }
-        async function excluirConta() { if(confirm("Certeza? Apagará TUDO.")) { await refDb.remove(); await userAtual.delete(); window.location.reload(); } }
-        
+        function salvarNomePerfil() { let n = document.getElementById('conta-nome').value.trim(); if(n) refDb.child('perfil/nome').set(n); alert("Salvo."); }
+        async function excluirConta() { if(confirm("Apagar tudo?")) { await refDb.remove(); await userAtual.delete(); window.location.reload(); } }
         function salvarApiKey() { let k = document.getElementById('input-api-key').value.trim(); if(k) { localStorage.setItem('pruma_apikey', k); alert("Chave Salva!"); document.getElementById('modal-apikey').style.display='none'; } }
         function carregarApiKey() { let k = localStorage.getItem('pruma_apikey'); if(k) document.getElementById('input-api-key').value = k; }
 
-        // SINCRONIZAÇÃO DE DADOS FIREBASE
+        async function resgatarDadosAntigos() {
+            if(!confirm("Isso procurará dados antigos na raiz do banco e os copiará para sua nuvem segura. Deseja continuar?")) return;
+            try {
+                let dbs = ['pdfs', 'caderno_erros', 'historico_sessoes', 'planejamento', 'concursos'];
+                for(let raiz of dbs) {
+                    let snap = await db.ref(raiz).once('value');
+                    let dados = snap.val();
+                    if(dados) {
+                        if(raiz==='historico_sessoes') await refDb.child('sessoes').update(dados);
+                        if(raiz==='pdfs') { Object.values(dados).forEach(p => refDb.child('biblioteca').push({id:gerarId(), nome:p.nome||'PDF Antigo', tipo:'ARQUIVO', url:p.url, texto:p.texto||'', materia:'Geral', data:p.data||new Date().toLocaleDateString()})); }
+                        if(raiz==='caderno_erros') await refDb.child('cadernos').set(dados);
+                        if(raiz==='concursos') await refDb.child('provas').set(dados);
+                    }
+                }
+                alert("Verificação e resgate concluídos com sucesso! Recarregue a página se necessário.");
+            } catch(e) { alert("Erro: " + e.message); }
+        }
+
+        // CARREGAMENTO DE DADOS
         function carregarDadosGlobais() {
             refDb.child('perfil/nome').on('value', s => { if(s.val()) document.getElementById('conta-nome').value = s.val(); });
-            refDb.child('sessoes').on('value', s => { dbData.sessoes = s.val() ? Object.values(s.val()) : []; renderizarInicio(); calcularTempoTotal(); seTela('estatisticas', atualizarEstatisticas); });
-            refDb.child('provas').on('value', s => { dbData.provas = s.val() || []; renderizarProvas(); atualizarSelectProvas(); });
-            refDb.child('materias').on('value', s => { dbData.materias = s.val() || []; renderizarMaterias(); atualizarDatalists(); });
+            refDb.child('sessoes').on('value', s => { dbData.sessoes = s.val() ? Object.values(s.val()) : []; renderizarInicio(); calcularTempoTotal(); if(document.getElementById('view-estatisticas').style.display==='block') atualizarEstatisticas(); });
+            refDb.child('provas').on('value', s => { dbData.provas = s.val() || []; renderizarProvas(); atualizarSelectsUI(); });
+            refDb.child('materias').on('value', s => { dbData.materias = s.val() || []; renderizarMaterias(); atualizarSelectsUI(); });
             refDb.child('cadernos').on('value', s => { dbData.cadernos = s.val() || []; renderizarCadernos(); atualizarCheckboxesIA(); });
             refDb.child('biblioteca').on('value', s => { dbData.biblioteca = s.val() ? Object.values(s.val()) : []; renderizarBiblioteca(); atualizarCheckboxesIA(); });
             refDb.child('ia_historico').on('value', s => { dbData.iaHistorico = s.val() || []; renderizarHistoricoIA(); });
         }
-        function seTela(t, func) { if(document.getElementById('view-'+t).style.display === 'block') func(); }
 
-        // TEMPO TOTAL & CRONÔMETRO
+        // TEMPO E CRONÔMETRO
         function calcularTempoTotal() {
             let segs = dbData.sessoes.reduce((acc, s) => acc + (s.segundos || 0), 0);
-            let h = Math.floor(segs / 3600), m = Math.floor((segs % 3600) / 60);
-            document.getElementById('side-tempo-total').textContent = `${h}h ${m}m`;
+            document.getElementById('side-tempo-total').textContent = `${Math.floor(segs / 3600)}h ${Math.floor((segs % 3600) / 60)}m`;
         }
-        function iniciarCronometro() { document.getElementById('form-sessao').style.display = 'none'; if(!cronometroInterval) { cronometroInterval = setInterval(() => { segundosCronometro++; atualizarVisorCronometro(); }, 1000); } }
-        function pausarCronometro() { clearInterval(cronometroInterval); cronometroInterval = null; document.getElementById('form-sessao').style.display = 'block'; }
+        function iniciarCronometro() { if(!cronometroInterval) { cronometroInterval = setInterval(() => { segundosCronometro++; atualizarVisorCronometro(); }, 1000); } }
+        function pausarCronometro() { clearInterval(cronometroInterval); cronometroInterval = null; }
         function atualizarVisorCronometro() {
-            let h = Math.floor(segundosCronometro / 3600).toString().padStart(2, '0'), m = Math.floor((segundosCronometro % 3600) / 60).toString().padStart(2, '0'), s = (segundosCronometro % 60).toString().padStart(2, '0');
+            let h = Math.floor(segundosCronometro/3600).toString().padStart(2,'0'), m = Math.floor((segundosCronometro%3600)/60).toString().padStart(2,'0'), s = (segundosCronometro%60).toString().padStart(2,'0');
             document.getElementById('cronometro-visor').textContent = `${h}:${m}:${s}`;
         }
         function toggleCamposDetalhes() {
             let mat = document.getElementById('ses-tipo-mat').value;
-            document.getElementById('campos-pdf').style.display = (mat.includes('PDF')) ? 'flex' : 'none';
-            document.getElementById('campos-video').style.display = (mat === 'Vídeo Aula') ? 'flex' : 'none';
+            document.getElementById('campos-pdf').style.display = mat.includes('PDF') ? 'flex' : 'none';
+            document.getElementById('campos-video').style.display = mat==='Vídeo Aula' ? 'flex' : 'none';
         }
 
-        // INÍCIO & REGISTRO
+        // REGISTRO FIXO E INÍCIO
+        function atualizarTopicosSessao(matNome) {
+            let dl = document.getElementById('dl-ses-top'); if(!dl) return; dl.innerHTML = '';
+            dbData.materias.filter(m => m.nome.toLowerCase() === matNome.toLowerCase()).forEach(m => m.topicos.forEach(t => dl.innerHTML += `<option value="${t}">`));
+        }
+
         function salvarRegistro() {
-            let mat = sanitizeText(document.getElementById('ses-mat').value.trim()), top = sanitizeText(document.getElementById('ses-top').value.trim());
+            let mat = sanitizeText(document.getElementById('ses-mat').value), top = sanitizeText(document.getElementById('ses-top').value);
             if(!mat) return alert("Preencha a matéria.");
             
             let manMin = parseInt(document.getElementById('ses-tempo-manual').value) || 0;
             let segsFinais = manMin > 0 ? (manMin * 60) : segundosCronometro;
             
             let a = parseInt(document.getElementById('ses-acertos').value)||0, e = parseInt(document.getElementById('ses-erros').value)||0;
-            let reg = {
-                id: gerarId(), timestamp: Date.now(), data: new Date().toLocaleDateString(), hora: new Date().toLocaleTimeString().substring(0,5),
-                materia: mat, topico: top, tipoEstudo: document.getElementById('ses-tipo-estudo').value, tipoMat: document.getElementById('ses-tipo-mat').value,
-                segundos: segsFinais, acertos: a, erros: e, totalQts: a+e, obs: sanitizeText(document.getElementById('ses-obs').value)
-            };
+            let reg = { id: gerarId(), timestamp: Date.now(), data: new Date().toLocaleDateString(), hora: new Date().toLocaleTimeString().substring(0,5), materia: mat, topico: top, tipoEstudo: document.getElementById('ses-tipo-estudo').value, tipoMat: document.getElementById('ses-tipo-mat').value, segundos: segsFinais, acertos: a, erros: e, totalQts: a+e, obs: sanitizeText(document.getElementById('ses-obs').value) };
 
-            if(reg.tipoMat.includes('PDF')) { reg.pIni = parseInt(document.getElementById('ses-pdf-ini').value)||0; reg.pFim = parseInt(document.getElementById('ses-pdf-fim').value)||0; reg.paginas = Math.max(0, reg.pFim - reg.pIni + 1); reg.fonte = sanitizeText(document.getElementById('ses-pdf-fonte').value); }
-            if(reg.tipoMat === 'Vídeo Aula') { reg.vIni = parseInt(document.getElementById('ses-vid-ini').value)||0; reg.vFim = parseInt(document.getElementById('ses-vid-fim').value)||0; reg.videos = Math.max(0, reg.vFim - reg.vIni + 1); reg.fonte = sanitizeText(document.getElementById('ses-vid-fonte').value); }
+            if(reg.tipoMat.includes('PDF')) { reg.paginas = Math.max(0, (parseInt(document.getElementById('ses-pdf-fim').value)||0) - (parseInt(document.getElementById('ses-pdf-ini').value)||0) + 1); }
+            if(reg.tipoMat === 'Vídeo Aula') { reg.videos = Math.max(0, (parseInt(document.getElementById('ses-vid-fim').value)||0) - (parseInt(document.getElementById('ses-vid-ini').value)||0) + 1); }
 
-            // Auto-criação de matéria/tópico se não existir
             let idxM = dbData.materias.findIndex(m => m.nome.toLowerCase() === mat.toLowerCase());
             if(idxM === -1) { dbData.materias.push({id: gerarId(), nome: mat, cor: paleta15[0], topicos: top ? [top] : []}); refDb.child('materias').set(dbData.materias); }
             else if(top && !dbData.materias[idxM].topicos.includes(top)) { dbData.materias[idxM].topicos.push(top); refDb.child('materias').set(dbData.materias); }
 
             refDb.child('sessoes/'+reg.id).set(reg);
-            segundosCronometro = 0; atualizarVisorCronometro(); document.getElementById('form-sessao').style.display='none';
-            document.getElementById('ses-mat').value=''; document.getElementById('ses-top').value=''; document.getElementById('ses-acertos').value='0'; document.getElementById('ses-erros').value='0'; document.getElementById('ses-tempo-manual').value='';
+            segundosCronometro = 0; atualizarVisorCronometro();
+            ['ses-mat','ses-top','ses-acertos','ses-erros','ses-tempo-manual','ses-obs','ses-pdf-ini','ses-pdf-fim','ses-vid-ini','ses-vid-fim'].forEach(id=> { if(document.getElementById(id)) document.getElementById(id).value = id.includes('acertos')||id.includes('erros')?'0':''; });
         }
-        function excluirRegistro(id) { if(confirm("Excluir?")) refDb.child('sessoes/'+id).remove(); }
 
         function renderizarInicio() {
-            let hojeQs = 0, hojeA = 0, hojeE = 0, hojeSegs = 0; let dtHoje = new Date().toLocaleDateString();
+            let hjQs=0, hjA=0, hjE=0, hjSegs=0, hjPags=0, hjVids=0; let dtHoje = new Date().toLocaleDateString();
             let divReg = document.getElementById('lista-ultimos-registros'); divReg.innerHTML = '';
-            
             let arr = [...dbData.sessoes].sort((a,b)=> b.timestamp - a.timestamp);
-            if(arr.length === 0) divReg.innerHTML = '<p style="color:var(--text-muted)">Nenhum registro.</p>';
             
-            arr.forEach((s, idx) => {
-                if(s.data === dtHoje) { hojeQs += s.totalQts; hojeA += s.acertos; hojeE += s.erros; hojeSegs += s.segundos; }
-                if(idx < 15) {
-                    let perc = s.totalQts > 0 ? Math.round((s.acertos/s.totalQts)*100) : 0;
-                    let icone = s.tipoMat.includes('PDF') ? '📖' : s.tipoMat === 'Vídeo Aula' ? '🎥' : '📝';
+            arr.forEach((s, i) => {
+                if(s.data === dtHoje) { hjQs+=s.totalQts; hjA+=s.acertos; hjE+=s.erros; hjSegs+=s.segundos; hjPags+=(s.paginas||0); hjVids+=(s.videos||0); }
+                if(i < 15) {
                     divReg.innerHTML += `
-                    <div class="list-item">
-                        <div style="flex:1;">
-                            <div style="display:flex; align-items:center; gap:8px;"><strong>${icone} ${s.materia}</strong><span class="badge">${s.tipoEstudo}</span></div>
-                            <div style="font-size:0.85rem; color:var(--text-muted); margin:4px 0;">${s.topico||'Geral'} | 📅 ${s.data} às ${s.hora}</div>
-                            ${s.obs ? `<div style="font-size:0.85rem; font-style:italic; background:var(--bg-input); padding:6px; border-radius:4px;">"${s.obs}"</div>` : ''}
+                    <div class="registro-curto">
+                        <div class="info">
+                            <strong>${s.tipoMat.includes('PDF')?'📖':s.tipoMat==='Vídeo Aula'?'🎥':'📝'} ${s.materia}</strong>
+                            <span>${s.topico||'Geral'} | ⏱️ ${Math.floor(s.segundos/60)}m | 🎯 ${s.totalQts>0?Math.round((s.acertos/s.totalQts)*100)+'%':'0%'}</span>
                         </div>
-                        <div style="text-align:right;">
-                            <strong style="font-size:1.1rem; color:var(--brand-primary); display:block;">${Math.floor(s.segundos/60)}m</strong>
-                            ${s.totalQts > 0 ? `<div style="font-size:0.8rem; margin-top:4px;"><span style="color:var(--brand-success)">${s.acertos}</span> / <span style="color:var(--brand-danger)">${s.erros}</span> (${perc}%)</div>` : ''}
-                            <button class="btn-icon" onclick="excluirRegistro('${s.id}')">🗑️</button>
-                        </div>
+                        <div class="acoes"><button class="btn-x-vermelho" onclick="if(confirm('Excluir?')) refDb.child('sessoes/${s.id}').remove()">✖</button></div>
                     </div>`;
                 }
             });
-            document.getElementById('hj-tempo').textContent = `${Math.floor(hojeSegs/3600)}h ${Math.floor((hojeSegs%3600)/60)}m`;
-            document.getElementById('hj-qts').textContent = hojeQs; document.getElementById('hj-acertos').textContent = hojeA; document.getElementById('hj-erros').textContent = hojeE;
-            document.getElementById('hj-perc').textContent = hojeQs > 0 ? Math.round((hojeA/hojeQs)*100) + '%' : '0%';
+            document.getElementById('hj-tempo').textContent = `${Math.floor(hjSegs/3600)}h ${Math.floor((hjSegs%3600)/60)}m`;
+            document.getElementById('hj-qts').textContent=hjQs; document.getElementById('hj-acertos').textContent=hjA; document.getElementById('hj-erros').textContent=hjE;
+            document.getElementById('hj-pags').textContent=hjPags; document.getElementById('hj-vids').textContent=hjVids;
         }
 
-        // PROVAS (Máx 5)
+        // PROVAS
         function salvarProva() {
-            if(dbData.provas.length >= 5) return alert("Máximo de 5 provas.");
             let n = sanitizeText(document.getElementById('conc-nome').value), d = document.getElementById('conc-data').value;
             if(!n || !d) return alert("Preencha nome e data.");
-            dbData.provas.push({id: gerarId(), nome: n, data: d}); refDb.child('provas').set(dbData.provas);
+            dbData.provas.push({id: gerarId(), nome: n, data: d}); refDb.child('provas').set(dbData.provas); document.getElementById('conc-nome').value='';
         }
-        function excluirProva(id) { if(confirm("Excluir? As matérias vinculadas não serão apagadas, mas perderão o vínculo.")) { dbData.provas = dbData.provas.filter(p=>p.id!==id); refDb.child('provas').set(dbData.provas); } }
         function renderizarProvas() {
             let div = document.getElementById('lista-provas-div'); div.innerHTML = '';
             dbData.provas.forEach(p => {
                 let dias = Math.ceil((new Date(p.data) - new Date()) / (1000*60*60*24));
-                div.innerHTML += `
-                <div class="stat-card" style="position:relative; overflow:hidden;">
-                    <span style="font-size:1rem; color:var(--text-main);">${p.nome}</span>
-                    <strong style="color:${dias<30?'var(--brand-danger)':'var(--brand-primary)'}; font-size:2.2rem; margin:10px 0;">Faltam ${dias} dias</strong>
-                    <span style="font-size:0.8rem; font-weight:normal;">📅 ${p.data}</span>
-                    <button class="btn-icon" style="position:absolute; top:10px; right:10px;" onclick="excluirProva('${p.id}')">✖</button>
-                </div>`;
+                div.innerHTML += `<div class="stat-card" style="position:relative;"><span>${p.nome}</span><strong style="color:${dias<30?'var(--brand-danger)':'var(--brand-primary)'}; margin:10px 0;">Faltam ${dias} dias</strong><span style="font-weight:normal;">📅 ${p.data}</span><button class="btn-x-vermelho" style="position:absolute; top:5px; right:5px;" onclick="if(confirm('Excluir?')) { dbData.provas=dbData.provas.filter(x=>x.id!=='${p.id}'); refDb.child('provas').set(dbData.provas); }">✖</button></div>`;
             });
         }
-        function atualizarSelectProvas() {
-            let sels = [document.getElementById('mat-prova'), document.getElementById('edital-ia-prova')];
-            sels.forEach(s => { if(s) { s.innerHTML = '<option value="">Vincular a uma Prova? (Opcional)</option>'; dbData.provas.forEach(p => s.innerHTML += `<option value="${p.id}">${p.nome}</option>`); } });
-        }
 
-        // MATÉRIAS
-        let currentCorMateria = paleta15[0];
-        document.getElementById('mat-paleta').innerHTML = paleta15.map(c => `<div class="color-dot" style="background:${c};" onclick="currentCorMateria='${c}'; this.style.borderColor='var(--text-main)'"></div>`).join('');
+        // MATÉRIAS E JUNÇÃO DE TÓPICOS
+        document.getElementById('mat-paleta').innerHTML = paleta15.map(c => `<div style="width:25px; height:25px; border-radius:50%; background:${c}; cursor:pointer;" onclick="corAtualMateria='${c}'; this.style.border='2px solid var(--text-main)';"></div>`).join('');
         
         function salvarMateria() {
             let n = sanitizeText(document.getElementById('mat-nome').value), t = sanitizeText(document.getElementById('mat-topico').value), pId = document.getElementById('mat-prova').value;
             if(!n) return;
             let idx = dbData.materias.findIndex(m => m.nome.toLowerCase() === n.toLowerCase() && m.provaId === pId);
-            if(idx !== -1) { if(t && !dbData.materias[idx].topicos.includes(t)) dbData.materias[idx].topicos.push(t); dbData.materias[idx].cor = currentCorMateria; } 
-            else { dbData.materias.push({id: gerarId(), nome: n, cor: currentCorMateria, topicos: t ? [t] : [], provaId: pId}); }
+            if(idx !== -1) { if(t && !dbData.materias[idx].topicos.includes(t)) dbData.materias[idx].topicos.push(t); dbData.materias[idx].cor = corAtualMateria; } 
+            else { dbData.materias.push({id: gerarId(), nome: n, cor: corAtualMateria, topicos: t ? [t] : [], provaId: pId}); }
             refDb.child('materias').set(dbData.materias); document.getElementById('mat-topico').value = '';
         }
-        function excluirMateriaTopico(mId, tIdx) { dbData.materias.find(m=>m.id===mId).topicos.splice(tIdx, 1); refDb.child('materias').set(dbData.materias); }
-        function excluirMateriaInteira(mId) { if(confirm("Excluir pasta inteira?")) { dbData.materias = dbData.materias.filter(m=>m.id!==mId); refDb.child('materias').set(dbData.materias); } }
-        
+
         function renderizarMaterias() {
             let div = document.getElementById('lista-materias-cadastradas'); div.innerHTML = '';
             let grupos = { 'geral': [] };
@@ -688,70 +652,92 @@
 
             for(let p in grupos) {
                 if(grupos[p].length === 0) continue;
-                let nomeP = p === 'geral' ? 'Geral (Sem Vínculo)' : (dbData.provas.find(x=>x.id===p)?.nome || 'Desconhecida');
-                div.innerHTML += `<h3 style="margin-top:20px; font-size:1.1rem; color:var(--text-muted);">${nomeP}</h3>`;
-                grupos[p].forEach(m => {
-                    let htmlT = m.topicos.map((t, i) => `<div style="padding:8px; display:flex; justify-content:space-between; border-bottom:1px solid var(--border-color);"><span>📄 ${t}</span> <button class="btn-icon" onclick="excluirMateriaTopico('${m.id}', ${i})">✖</button></div>`).join('');
-                    div.innerHTML += `
-                    <div class="pasta">
-                        <div class="pasta-header" style="border-left:5px solid ${m.cor};" onclick="this.nextElementSibling.classList.toggle('aberta')">
-                            <span>📁 ${m.nome} <span style="font-size:0.8rem; font-weight:normal;">(${m.topicos.length})</span></span>
-                            <button class="btn-icon" onclick="event.stopPropagation(); excluirMateriaInteira('${m.id}')">🗑️</button>
-                        </div>
-                        <div class="pasta-body">${htmlT || '<span style="color:var(--text-muted);font-size:0.85rem;">Nenhum tópico.</span>'}</div>
-                    </div>`;
-                });
+                let isGeral = p === 'geral';
+                let nomeP = isGeral ? 'Matérias Gerais (Sem Prova)' : (dbData.provas.find(x=>x.id===p)?.nome || 'Desconhecida');
+                
+                let conteudoMat = grupos[p].map(m => {
+                    let htmlT = m.topicos.map((t, i) => `<div style="padding:6px 0; border-bottom:1px solid var(--border-color); display:flex; justify-content:space-between;"><span>📄 ${t}</span> <div><button style="background:transparent;border:none;cursor:pointer;font-size:1.1rem;" title="Juntar" onclick="abrirModalJuntar('${m.id}', '${sanitizeText(t).replace(/'/g,"\\'")}')">🔗</button> <button class="btn-x-vermelho" onclick="dbData.materias.find(x=>x.id==='${m.id}').topicos.splice(${i},1); refDb.child('materias').set(dbData.materias);">✖</button></div></div>`).join('');
+                    return `<div class="pasta-header" style="border-left:5px solid ${m.cor};" onclick="this.nextElementSibling.classList.toggle('aberta')"><span>📁 ${m.nome} (${m.topicos.length})</span><button class="btn-x-vermelho" onclick="event.stopPropagation(); if(confirm('Apagar Pasta?')) { dbData.materias=dbData.materias.filter(x=>x.id!=='${m.id}'); refDb.child('materias').set(dbData.materias); }">✖</button></div><div class="pasta-body">${htmlT||'<span style="color:var(--text-muted);font-size:0.85rem;">Vazio.</span>'}</div>`;
+                }).join('');
+
+                if(!isGeral) {
+                    div.innerHTML += `<div class="bloco-prova"><div class="bloco-prova-titulo">🎯 ${nomeP}</div>${conteudoMat}</div>`;
+                } else {
+                    div.innerHTML += `<h3 style="color:var(--text-muted); margin-top:20px;">${nomeP}</h3>${conteudoMat}`;
+                }
             }
         }
-        function atualizarDatalists() {
-            let dlMats = document.getElementById('lista-materias-dl'); dlMats.innerHTML = '';
-            let matsUnicas = [...new Set(dbData.materias.map(m=>m.nome))];
-            matsUnicas.forEach(m => dlMats.innerHTML += `<option value="${m}">`);
+
+        function abrirModalJuntar(mId, topOri) {
+            let mat = dbData.materias.find(m => m.id === mId);
+            document.getElementById('lbl-topico-origem').textContent = topOri;
+            document.getElementById('hid-mat-id').value = mId;
+            document.getElementById('hid-top-origem').value = topOri;
+            
+            let sel = document.getElementById('sel-topico-destino'); sel.innerHTML = '';
+            mat.topicos.forEach(t => { if(t !== topOri) sel.innerHTML += `<option value="${t}">${t}</option>`; });
+            if(sel.options.length === 0) return alert("Não há outros tópicos para juntar.");
+            document.getElementById('modal-juntar').style.display='flex';
+        }
+        function confirmarJuncao() {
+            let mId = document.getElementById('hid-mat-id').value, tOri = document.getElementById('hid-top-origem').value, tDest = document.getElementById('sel-topico-destino').value;
+            let mat = dbData.materias.find(m => m.id === mId);
+            mat.topicos = mat.topicos.filter(t => t !== tOri); // Remove origem
+            
+            // Opcional: Atualizar sessões e cadernos
+            let sAtualizadas=0; dbData.sessoes.forEach(s => { if(s.materia===mat.nome && s.topico===tOri) { s.topico = tDest; sAtualizadas++; } });
+            if(sAtualizadas>0) refDb.child('sessoes').set(dbData.sessoes);
+            let cAtualizados=0; dbData.cadernos.forEach(c => { if(c.materia===mat.nome && c.topico===tOri) { c.topico = tDest; cAtualizados++; } });
+            if(cAtualizados>0) refDb.child('cadernos').set(dbData.cadernos);
+
+            refDb.child('materias').set(dbData.materias);
+            document.getElementById('modal-juntar').style.display='none'; alert("Tópicos juntados com sucesso!");
+        }
+
+        function atualizarSelectsUI() {
+            let dlMats = document.getElementById('lista-materias-dl'); if(dlMats) { dlMats.innerHTML = ''; [...new Set(dbData.materias.map(m=>m.nome))].forEach(m => dlMats.innerHTML += `<option value="${m}">`); }
+            let selP = [document.getElementById('mat-prova'), document.getElementById('edital-ia-prova')];
+            selP.forEach(s => { if(s) { s.innerHTML = '<option value="">Vincular a uma Prova? (Opcional)</option>'; dbData.provas.forEach(p => s.innerHTML += `<option value="${p.id}">${p.nome}</option>`); } });
         }
         function atualizarTopicosDatalist(inputId, matNome) {
             let dl = document.getElementById('dl-'+inputId); if(!dl) return; dl.innerHTML = '';
             dbData.materias.filter(m => m.nome.toLowerCase() === matNome.toLowerCase()).forEach(m => m.topicos.forEach(t => dl.innerHTML += `<option value="${t}">`));
         }
 
-        // CADERNO DE ERROS
+        // CADERNOS
         function salvarErro() {
             let m = sanitizeText(document.getElementById('err-mat').value), t = sanitizeText(document.getElementById('err-top').value), txt = sanitizeText(document.getElementById('err-texto').value);
-            if(!m || !txt) return alert("Preencha Matéria e o Texto.");
-            dbData.cadernos.push({id: gerarId(), materia: m, topico: t || 'Geral', texto: txt, timestamp: Date.now(), data: new Date().toLocaleDateString()+' '+new Date().toLocaleTimeString().substring(0,5)});
+            if(!m || !txt) return alert("Preencha Matéria e Texto.");
+            dbData.cadernos.push({id: gerarId(), materia: m, topico: t || 'Geral', texto: txt, timestamp: Date.now(), data: new Date().toLocaleDateString()});
             refDb.child('cadernos').set(dbData.cadernos); document.getElementById('err-texto').value = '';
         }
-        function excluirItemCaderno(id) { dbData.cadernos = dbData.cadernos.filter(c=>c.id!==id); refDb.child('cadernos').set(dbData.cadernos); }
         function renderizarCadernos() {
             let div = document.getElementById('lista-cadernos-div'); div.innerHTML = ''; let agr = {};
             dbData.cadernos.forEach(c => { if(!agr[c.materia]) agr[c.materia] = {}; if(!agr[c.materia][c.topico]) agr[c.materia][c.topico] = []; agr[c.materia][c.topico].push(c); });
-            
             for(let m in agr) {
                 let htmlM = '';
                 for(let t in agr[m]) {
-                    htmlM += `<div style="font-weight:700; color:var(--brand-primary); margin:16px 0 8px 0;">📌 ${t}</div>`;
-                    agr[m][t].forEach(item => { htmlM += `<div style="background:var(--bg-input); padding:12px; border-radius:var(--radius-sm); margin-bottom:8px; display:flex; gap:10px;"><div style="flex:1;"><p style="margin:0 0 8px 0; font-size:0.95rem;">${item.texto}</p><span style="font-size:0.75rem; color:var(--text-muted);">${item.data}</span></div><button class="btn-icon" onclick="excluirItemCaderno('${item.id}')">✖</button></div>`; });
+                    htmlM += `<div style="font-weight:800; color:var(--brand-primary); margin:12px 0 6px 0;">📌 ${t}</div>`;
+                    agr[m][t].forEach(i => { htmlM += `<div style="background:var(--bg-input); padding:10px; border-radius:var(--radius-sm); margin-bottom:6px; display:flex; justify-content:space-between;"><div style="font-size:0.95rem;">${i.texto} <span style="font-size:0.75rem; color:var(--text-muted); display:block;">${i.data}</span></div><button class="btn-x-vermelho" onclick="if(confirm('Excluir?')){ dbData.cadernos=dbData.cadernos.filter(x=>x.id!=='${i.id}'); refDb.child('cadernos').set(dbData.cadernos); }">✖</button></div>`; });
                 }
-                div.innerHTML += `<div class="pasta"><div class="pasta-header" onclick="this.nextElementSibling.classList.toggle('aberta')">📓 ${m}</div><div class="pasta-body">${htmlM}</div></div>`;
+                div.innerHTML += `<div class="pasta-header" onclick="this.nextElementSibling.classList.toggle('aberta')">📓 ${m}</div><div class="pasta-body">${htmlM}</div>`;
             }
         }
 
         // ESTATÍSTICAS
         function atualizarEstatisticas() {
             let per = document.getElementById('est-periodo').value, tipo = document.getElementById('est-tipo-grafico').value;
-            let divCus = document.getElementById('est-custom-dates'); divCus.style.display = (per==='custom') ? 'flex' : 'none';
+            document.getElementById('est-custom-dates').style.display = per==='custom' ? 'flex' : 'none';
             let dtI = document.getElementById('est-dt-ini').value, dtF = document.getElementById('est-dt-fim').value;
+            let agora = Date.now(), tA = 0, tE = 0, tSeg = 0, tPag = 0, tVid = 0; let dadosGraf = {};
             
-            let agora = Date.now(), tA = 0, tE = 0, tSeg = 0, tPag = 0, tVid = 0; let dadosGrafico = {};
-            
-            let filtrados = dbData.sessoes.filter(s => {
+            dbData.sessoes.filter(s => {
                 if(per === 'tudo') return true;
-                if(per === 'custom') { if(!dtI || !dtF) return true; return (s.timestamp >= new Date(dtI).getTime() && s.timestamp <= new Date(dtF).getTime()+86399999); }
+                if(per === 'custom') return (!dtI || !dtF) ? true : (s.timestamp >= new Date(dtI).getTime() && s.timestamp <= new Date(dtF).getTime()+86399999);
                 return (agora - s.timestamp) <= (parseInt(per)*86400000);
-            });
-
-            filtrados.forEach(s => {
+            }).forEach(s => {
                 tA += (s.acertos||0); tE += (s.erros||0); tSeg += (s.segundos||0); tPag += (s.paginas||0); tVid += (s.videos||0);
-                dadosGrafico[s.materia] = (dadosGrafico[s.materia]||0) + (s.segundos/60);
+                dadosGraf[s.materia] = (dadosGraf[s.materia]||0) + (s.segundos/60);
             });
 
             document.getElementById('st-acertos').textContent = tA; document.getElementById('st-erros').textContent = tE;
@@ -759,12 +745,9 @@
             document.getElementById('st-tempo').textContent = `${Math.floor(tSeg/3600)}h ${Math.floor((tSeg%3600)/60)}m`;
             document.getElementById('st-pags').textContent = tPag; document.getElementById('st-vids').textContent = tVid;
 
-            // Chart
             if(graficoInstance) graficoInstance.destroy();
-            let isDark = document.documentElement.getAttribute('data-theme') === 'dark'; let txtCor = isDark ? '#F5F5F7' : '#1D1D1F';
-            let keys = Object.keys(dadosGrafico).length>0 ? Object.keys(dadosGrafico) : ['Sem dados'];
-            let vals = Object.values(dadosGrafico).length>0 ? Object.values(dadosGrafico) : [1];
-            // Match cores das matérias
+            let isDark = document.documentElement.getAttribute('data-theme') === 'dark'; let txtCor = isDark ? '#E4E6EB' : '#1C1E21';
+            let keys = Object.keys(dadosGraf).length>0 ? Object.keys(dadosGraf) : ['Sem dados'], vals = Object.values(dadosGraf).length>0 ? Object.values(dadosGraf) : [1];
             let cores = keys.map(k => { let m = dbData.materias.find(x=>x.nome===k); return m ? m.cor : paleta15[0]; });
 
             graficoInstance = new Chart(document.getElementById('graficoEst').getContext('2d'), {
@@ -773,7 +756,7 @@
             });
         }
 
-        // BIBLIOTECA
+        // BIBLIOTECA E FONTES
         async function uploadArquivo() {
             let f = document.getElementById('bib-file').files[0]; if(!f) return alert("Selecione.");
             let btn = event.currentTarget; let tx = btn.textContent; btn.disabled = true; btn.textContent = "Lendo e Subindo...";
@@ -791,89 +774,62 @@
         }
         function salvarLink() {
             let url = document.getElementById('bib-link').value.trim(); if(!url) return;
-            let m = sanitizeText(document.getElementById('bib-mat-link').value||'Geral');
-            refDb.child('biblioteca').push({ id: gerarId(), nome: new URL(url).hostname, tipo: 'LINK', url: url, texto: "Conteúdo Web referenciado pelo usuário: "+url, materia: m, data: new Date().toLocaleDateString() });
+            refDb.child('biblioteca').push({ id: gerarId(), nome: new URL(url).hostname, tipo: 'LINK', url: url, texto: "Conteúdo Web referenciado: "+url, materia: sanitizeText(document.getElementById('bib-mat-link').value||'Geral'), data: new Date().toLocaleDateString() });
             document.getElementById('bib-link').value = ''; alert("Link Salvo.");
         }
-        async function excluirBib(id, path) { if(confirm("Excluir?")) { let item = Object.entries(dbData.biblioteca).find(e=>e[1].id===id); if(item) { refDb.child('biblioteca/'+item[0]).remove(); if(path) try{ await storage.ref(path).delete(); }catch(e){} } } }
-        
         function renderizarBiblioteca() {
-            let div = document.getElementById('lista-biblioteca'); div.innerHTML = ''; let agr = {};
-            dbData.biblioteca.forEach(b => { if(!agr[b.materia]) agr[b.materia]=[]; agr[b.materia].push(b); });
-            for(let m in agr) {
-                let html = agr[m].map(b => `<div class="list-item" style="background:var(--bg-card); border-radius:var(--radius-sm); border:1px solid var(--border-color); margin-bottom:8px;"><div><strong>${b.tipo==='LINK'?'🌐':'📄'} ${b.nome}</strong><div style="font-size:0.8rem; color:var(--text-muted);">${b.data}</div></div><button class="btn-icon" onclick="excluirBib('${b.id}', '${b.refPath||''}')">✖</button></div>`).join('');
-                div.innerHTML += `<div class="pasta"><div class="pasta-header" onclick="this.nextElementSibling.classList.toggle('aberta')">📁 ${m}</div><div class="pasta-body">${html}</div></div>`;
-            }
+            let div = document.getElementById('lista-biblioteca'); div.innerHTML = '';
+            dbData.biblioteca.forEach(b => { div.innerHTML += `<div class="registro-curto"><div class="info"><strong>${b.tipo==='LINK'?'🌐':'📄'} ${b.nome}</strong><span>${b.materia} | ${b.data}</span></div><button class="btn-x-vermelho" onclick="if(confirm('Excluir?')) { let i = Object.entries(dbData.biblioteca).find(e=>e[1].id==='${b.id}'); if(i) { refDb.child('biblioteca/'+i[0]).remove(); if('${b.refPath||''}') try{ storage.ref('${b.refPath}').delete(); }catch(e){} } }">✖</button></div>`; });
         }
 
-        // PRUMA IA
+        // PRUMA IA - O CÉREBRO
         function mudarSubIa(sub, btn) {
             ['chat', 'simulador', 'flashcards', 'edital'].forEach(s => { let el = document.getElementById('subia-'+s); if(el) el.style.display = (s===sub)?'block':'none'; });
-            document.querySelectorAll('.sub-aba-btn').forEach(b => b.classList.remove('ativa')); if(btn) btn.classList.add('ativa');
-            // Hide font selection for Edital
+            document.querySelectorAll('#view-pruma .btn-outline').forEach(b => { b.style.background='transparent'; b.style.color='var(--text-main)'; });
+            if(btn) { btn.style.background='var(--brand-primary)'; btn.style.color='white'; }
             document.getElementById('caixa-fontes-ia').style.display = (sub==='edital') ? 'none' : 'block';
         }
 
         function atualizarCheckboxesIA() {
             let cBib = document.getElementById('checkboxes-biblioteca'); cBib.innerHTML = '';
-            dbData.biblioteca.forEach(b => { cBib.innerHTML += `<label style="display:flex; gap:8px;"><input type="checkbox" class="ia-chk-bib" value="${b.id}"> ${b.tipo==='LINK'?'🌐':'📄'} ${b.nome} (${b.materia})</label>`; });
-            
-            let cCad = document.getElementById('checkboxes-cadernos'); cCad.innerHTML = ''; let cats = [...new Set(dbData.cadernos.map(c=>c.materia))];
-            cats.forEach(c => { cCad.innerHTML += `<label style="display:flex; gap:8px; color:var(--brand-danger); font-weight:600;"><input type="checkbox" class="ia-chk-cad" value="${c}"> 📓 Caderno: ${c}</label>`; });
+            dbData.biblioteca.forEach(b => { cBib.innerHTML += `<label class="fonte-checkbox"><input type="checkbox" class="ia-chk-bib" value="${b.id}"> ${b.tipo==='LINK'?'🌐':'📄'} ${b.nome}</label>`; });
+            let cCad = document.getElementById('checkboxes-cadernos'); cCad.innerHTML = '';
+            [...new Set(dbData.cadernos.map(c=>c.materia))].forEach(c => { cCad.innerHTML += `<label class="fonte-checkbox" style="color:var(--brand-danger);"><input type="checkbox" class="ia-chk-cad" value="${c}"> 📓 Caderno: ${c}</label>`; });
         }
 
         function renderizarHistoricoIA() {
             let div = document.getElementById('lista-historico-ia'); div.innerHTML = '';
-            if(dbData.iaHistorico.length===0) div.innerHTML = '<p>Vazio.</p>';
+            if(dbData.iaHistorico.length===0) div.innerHTML = '<p>Nenhuma pergunta recente.</p>';
             [...dbData.iaHistorico].reverse().forEach(h => {
-                div.innerHTML += `<div style="background:var(--bg-input); padding:12px; border-radius:var(--radius-sm); border:1px solid var(--border-color); display:flex; justify-content:space-between; gap:10px;"><span style="flex:1; font-size:0.9rem; overflow:hidden; text-overflow:ellipsis;">"${h}"</span><button class="btn-primary" style="width:auto; padding:6px 12px; font-size:0.8rem;" onclick="reEnviarHistoria('${sanitizeText(h).replace(/'/g, "\\'")}')">🔄 Enviar</button></div>`;
+                div.innerHTML += `<div style="background:var(--bg-input); padding:12px; border-radius:var(--radius-sm); border:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center; gap:10px;"><span style="font-size:0.9rem; overflow:hidden;">"${h}"</span><button class="btn-primary" style="width:auto; padding:6px 12px; font-size:0.8rem;" onclick="document.getElementById('modal-historico-ia').style.display='none'; document.getElementById('inp-chat').value = '${sanitizeText(h).replace(/'/g, "\\'")}'; executarIA('chat');">🔄 Reenviar</button></div>`;
             });
         }
-        function reEnviarHistoria(txt) { document.getElementById('modal-historico-ia').style.display='none'; document.getElementById('inp-chat').value = txt; executarIA('chat'); }
 
         function extrairContextoGeral() {
             let ctx = "";
             document.querySelectorAll('.ia-chk-bib:checked').forEach(c => { let b = dbData.biblioteca.find(x=>x.id===c.value); if(b) ctx += `\n[FONTE BIBLIOTECA: ${b.nome}]\n${b.texto}\n`; });
             document.querySelectorAll('.ia-chk-cad:checked').forEach(c => { let errs = dbData.cadernos.filter(x=>x.materia===c.value).map(e=>e.texto).join('\n'); ctx += `\n[MEU CADERNO DE ERROS - ${c.value} (FOQUE NISSO)]:\n${errs}\n`; });
-            if(dbData.iaHistorico.length>0) ctx += `\n[HISTÓRICO DA NOSSA CONVERSA RECENTE]:\n${dbData.iaHistorico.map((h,i)=> `Eu perguntei antes: ${h}`).join('\n')}\n`;
+            if(dbData.iaHistorico.length>0) ctx += `\n[HISTÓRICO DA NOSSA CONVERSA RECENTE]:\n${dbData.iaHistorico.map(h=> `Eu perguntei antes: ${h}`).join('\n')}\n`;
             return ctx;
         }
 
-        function formatarIAResponse(txt) {
-            let l = sanitizeText(txt).replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\*(.*?)\*/g, '<em>$1</em>');
-            l = l.replace(/^([A-E]\)) (.*?)(\[CORRETA\])?$/gm, (m, lt, t, c) => `<div style="padding:10px; background:var(--bg-card); border:1px solid var(--border-color); margin:6px 0; border-radius:var(--radius-sm); cursor:pointer;" onclick="this.style.borderColor='${c?'var(--brand-success)':'var(--brand-danger)'}'">${lt} ${t.trim()}</div>`);
-            return l.replace(/\n/g, '<br>');
-        }
-
-        function baixarPdfResumo(txtBase64) {
-            try {
-                const doc = new window.jspdf.jsPDF();
-                doc.setFont("helvetica"); doc.setFontSize(12);
-                let textLines = doc.splitTextToSize(atob(txtBase64), 180);
-                doc.text(textLines, 15, 15);
-                doc.save("Resumo_PRUMA.pdf");
-            } catch(e) { alert("Erro ao gerar PDF."); }
-        }
-
         async function executarIA(tipo) {
-            let k = localStorage.getItem('pruma_apikey'); if(!k) return alert("Configure a API Key na aba lateral.");
+            let k = localStorage.getItem('pruma_apikey'); if(!k) return alert("Configure a API Key da IA na aba lateral.");
             const modelo = (userAtual.uid === ADMIN_UID) ? "gemini-3.1-pro-preview" : "gemini-3.8-flash";
             
             let p = "", box = null; let ctx = extrairContextoGeral();
-            let baseSys = "Você é a PRUMA IA, especialista em concursos e provas. É rigorosa, direta e não inventa dados (evite alucinações). Use buscas web do google ativas para dados atuais se necessário. Se for pedido um RESUMO de PDF e uma fonte estiver anexada, retorne um resumo focado com no máximo 40% do tamanho original.";
+            let baseSys = "Você é a PRUMA IA, especialista absoluta em provas e concursos. Resolva problemas, aprofunde as explicações e sintetize o conhecimento. OBEDEÇA cegamente às ordens e prompts que o usuário digitar (escrever como especialista em algo, adotar um tom, etc). OBRIGATÓRIO: Ao final de sua resposta, liste/indique a fonte utilizada (seja do Google Search ou dos arquivos/cadernos do usuário).";
 
             if(tipo === 'chat') {
                 p = document.getElementById('inp-chat').value.trim(); if(!p) return;
                 box = document.getElementById('box-chat'); box.innerHTML += `<div class="msg msg-u">${sanitizeText(p)}</div>`; document.getElementById('inp-chat').value=''; box.scrollTop = box.scrollHeight;
-                // Salvar histórico
                 dbData.iaHistorico.push(p); if(dbData.iaHistorico.length>10) dbData.iaHistorico.shift(); refDb.child('ia_historico').set(dbData.iaHistorico);
             } else if(tipo === 'questoes') {
-                let num = document.getElementById('ia-qts-num').value, tma = document.getElementById('ia-qts-tema').value;
-                p = `Crie exatamente ${num} questões inéditas no estilo prova múltipla escolha (A,B,C,D,E) sobre ${tma||'o contexto fornecido'}. Coloque [CORRETA] ao lado da certa.`;
+                p = `Crie exatamente ${document.getElementById('ia-qts-num').value} questões inéditas estilo prova múltipla escolha (A,B,C,D,E) sobre ${document.getElementById('ia-qts-tema').value||'o contexto fornecido'}. Coloque [CORRETA] ao lado da certa e cite a fonte.`;
                 box = document.getElementById('box-qts'); box.style.display='flex'; box.innerHTML='';
             } else if(tipo === 'flashcards') {
-                let t = document.getElementById('fc-tema').value.trim(); if(!t) return alert("Digite o tema.");
-                p = `Crie flashcards sobre: ${t}. Retorne EXATAMENTE UM JSON ARRAY PURO: [{"f":"Pergunta","v":"Resposta"}]. Sem formatação markdown de bloco (\`\`\`).`;
+                if(!document.getElementById('fc-tema').value.trim()) return alert("Digite o tema.");
+                p = `Crie flashcards sobre: ${document.getElementById('fc-tema').value.trim()}. Retorne EXATAMENTE UM JSON ARRAY PURO: [{"f":"Pergunta","v":"Resposta"}]. Sem \`\`\`.`;
                 box = document.getElementById('box-fc'); box.style.display='block'; box.innerHTML='';
             }
 
@@ -883,7 +839,7 @@
 
                 const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelo}:generateContent?key=${k}`, {
                     method:'POST', headers:{'Content-Type':'application/json'},
-                    body:JSON.stringify({ contents:[{parts:[{text: `${baseSys}\n\n${ctx ? "CONTEXTO DE BASE/FONTES/HISTÓRICO:\n"+ctx : ""}\n\nINSTRUÇÃO DO USUÁRIO: ${p}`}]}], tools:[{googleSearch:{}}] })
+                    body:JSON.stringify({ contents:[{parts:[{text: `${baseSys}\n\n${ctx ? "CONTEXTO / FONTES:\n"+ctx : ""}\n\nPROMPT DO USUÁRIO: ${p}`}]}], tools:[{googleSearch:{}}] })
                 });
                 const data = await res.json(); if(data.error) throw new Error(data.error.message);
                 let txtF = data.candidates[0].content.parts[0].text;
@@ -895,55 +851,52 @@
                     json.forEach(c => {
                         let bId = gerarId();
                         box.innerHTML += `<div class="card" style="padding:16px; margin-bottom:12px;">
-                            <strong style="color:var(--brand-primary); display:block; margin-bottom:8px;">FRENTE:</strong><div>${sanitizeText(c.f)}</div>
-                            <strong style="color:var(--brand-success); display:block; margin:12px 0 8px 0; border-top:1px dashed var(--border-color); padding-top:12px;">VERSO:</strong><div>${sanitizeText(c.v)}</div>
-                            <button id="${bId}" class="btn-outline" style="margin-top:16px;" onclick="salvarFc('${mD}', '${tD}', '${sanitizeText(c.f).replace(/'/g,"\\'")} - ${sanitizeText(c.v).replace(/'/g,"\\'")}', this)">Salvar no Caderno de Erros</button>
+                            <strong style="color:var(--brand-primary); display:block; margin-bottom:4px;">FRENTE:</strong><div>${sanitizeText(c.f)}</div>
+                            <strong style="color:var(--brand-success); display:block; margin:12px 0 4px 0;">VERSO:</strong><div>${sanitizeText(c.v)}</div>
+                            <button id="${bId}" class="btn-outline" style="margin-top:12px;" onclick="salvarFc('${mD}', '${tD}', '${sanitizeText(c.f).replace(/'/g,"\\'")} - ${sanitizeText(c.v).replace(/'/g,"\\'")}', this)">Salvar no Caderno</button>
                         </div>`;
                     });
                 } else {
                     let l = document.getElementById('load-ia'); if(l) l.remove();
+                    let lHtml = sanitizeText(txtF).replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\*(.*?)\*/g, '<em>$1</em>').replace(/^([A-E]\)) (.*?)(\[CORRETA\])?$/gm, (m,lt,t,c) => `<div style="padding:10px; background:var(--bg-card); border:1px solid var(--border-color); margin:6px 0; border-radius:var(--radius-sm); cursor:pointer;" onclick="this.style.borderColor='${c?'var(--brand-success)':'var(--brand-danger)'}'">${lt} ${t.trim()}</div>`).replace(/\n/g, '<br>');
                     
-                    // Lógica para Resumo PDF Helper
                     let btnPdf = '';
                     if(p.toLowerCase().includes('resumo') && p.toLowerCase().includes('pdf')) {
-                        let txtBase64 = btoa(unescape(encodeURIComponent(txtF)));
-                        btnPdf = `<br><br><button class="btn-primary" style="width:auto; padding:8px 16px; font-size:0.85rem;" onclick="baixarPdfResumo('${txtBase64}')">📥 Baixar PDF deste Resumo</button>`;
+                        btnPdf = `<br><br><button class="btn-primary" style="width:auto; padding:8px 16px;" onclick="baixarPdfResumo('${btoa(unescape(encodeURIComponent(txtF)))}')">📥 Baixar PDF do Resumo</button>`;
                     }
-
-                    box.innerHTML += `<div class="msg msg-a"><strong>PRUMA:</strong><br>${formatarIAResponse(txtF)}${btnPdf}</div>`; box.scrollTop = box.scrollHeight;
+                    box.innerHTML += `<div class="msg msg-a"><strong>PRUMA:</strong><br>${lHtml}${btnPdf}</div>`; box.scrollTop = box.scrollHeight;
                 }
             } catch(e) { let l = document.getElementById('load-ia'); if(l) l.remove(); if(box) box.innerHTML += `<div class="msg msg-a" style="color:var(--brand-danger);">Erro: ${e.message}</div>`; }
         }
 
         function salvarFc(m, t, txt, btn) {
-            dbData.cadernos.push({id:gerarId(), materia:m||'Flashcards IA', topico:t||'Geral', texto:txt, timestamp:Date.now(), data:new Date().toLocaleDateString()});
-            refDb.child('cadernos').set(dbData.cadernos);
+            dbData.cadernos.push({id:gerarId(), materia:m||'Flashcards IA', topico:t||'Geral', texto:txt, timestamp:Date.now(), data:new Date().toLocaleDateString()}); refDb.child('cadernos').set(dbData.cadernos);
             btn.textContent = "✅ Salvo!"; btn.disabled = true; btn.style.background = 'var(--brand-success)'; btn.style.color = '#FFF'; btn.style.borderColor = 'var(--brand-success)';
         }
 
-        // EDITAL INTELIGENTE
         async function processarEdital(btn) {
             let k = localStorage.getItem('pruma_apikey'); if(!k) return alert("API Key ausente.");
             let txt = document.getElementById('edital-texto').value.trim(); if(!txt) return;
             let pId = document.getElementById('edital-ia-prova').value;
             const modelo = (userAtual.uid === ADMIN_UID) ? "gemini-3.1-pro-preview" : "gemini-3.8-flash";
             
-            let tx = btn.textContent; btn.disabled=true; btn.textContent="Processando blocos com IA...";
-            // O modelo consegue lidar bem com textos longos nativamente graças à grande janela de contexto do Gemini 1.5/3.x.
-            let p = `Organize o edital em JSON puro (array de objetos): [{"disciplina": "Nome", "topicos": ["T1", "T2"]}]. Sem markdown. Edital:\n${txt.substring(0,60000)}`;
+            let tx = btn.textContent; btn.disabled=true; btn.textContent="Processando com IA...";
             try {
-                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelo}:generateContent?key=${k}`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({contents:[{parts:[{text:p}]}]}) });
+                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelo}:generateContent?key=${k}`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({contents:[{parts:[{text:`Organize em JSON PURO: [{"disciplina": "Nome", "topicos": ["T1", "T2"]}]. Sem markdown. Edital:\n${txt.substring(0,60000)}`}]}]}) });
                 const data = await res.json(); if(data.error) throw new Error(data.error.message);
                 let json = JSON.parse(data.candidates[0].content.parts[0].text.match(/\[.*\]/s)[0]);
                 
                 json.forEach(n => {
-                    let obj = {id:gerarId(), nome:n.disciplina, cor:paleta15[0], topicos:n.topicos, provaId:pId};
                     let idx = dbData.materias.findIndex(x=>x.nome.toLowerCase()===n.disciplina.toLowerCase() && x.provaId===pId);
                     if(idx !== -1) { n.topicos.forEach(t=>{ if(!dbData.materias[idx].topicos.includes(t)) dbData.materias[idx].topicos.push(t); }); }
-                    else { dbData.materias.push(obj); }
+                    else { dbData.materias.push({id:gerarId(), nome:n.disciplina, cor:paleta15[0], topicos:n.topicos, provaId:pId}); }
                 });
                 refDb.child('materias').set(dbData.materias); document.getElementById('edital-texto').value=''; alert("Edital mapeado!");
             } catch(e) { alert("Erro: "+e.message); } finally { btn.textContent=tx; btn.disabled=false; }
+        }
+
+        function baixarPdfResumo(txtBase64) {
+            try { const doc = new window.jspdf.jsPDF(); doc.setFont("helvetica"); doc.setFontSize(12); doc.text(doc.splitTextToSize(atob(txtBase64), 180), 15, 15); doc.save("Resumo_PRUMA.pdf"); } catch(e) { alert("Erro ao gerar PDF."); }
         }
     </script>
 </body>
