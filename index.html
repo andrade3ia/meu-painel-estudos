@@ -551,10 +551,10 @@
             const data = await res.json(); if(data.error) throw new Error(data.error.message); return data.candidates[0].content.parts[0].text;
         }
 
-        async function executarPrumaIA(tipo, perguntaForcada = null) {
+       async function executarPrumaIA(tipo, perguntaForcada = null) {
             try {
                 const isAdmin = (userAtual.uid === ADMIN_UID);
-                const modelo = isAdmin ? "gemini-1.5-pro-latest" : "gemini-1.5-flash-latest";
+                const modelo = isAdmin ? "gemini-3.1-pro-preview" : "gemini-3.6-flash";
                 let regraBase = "Aja como tutora especialista. Seja objetiva e clara. Use emojis e setas (->). IMPORTANTE: Pesquise dados atuais na web e SEMPRE cite a fonte das informações. Se criar questões de múltipla escolha, crie 4 alternativas (A, B, C, D) e adicione [CORRETA] ao final exato da certa.";
 
                 if(tipo === 'tutor') {
@@ -570,6 +570,20 @@
                     box.innerHTML += `<div class="msg msg-a"><strong>PRUMA:</strong><br>${formatarRespostaIA(resposta)}</div>`; box.scrollTop = box.scrollHeight;
 
                     if(!perguntaForcada) { historicoChatMemoria.push(pergunta); if(historicoChatMemoria.length > 10) historicoChatMemoria.shift(); atualizarModalHistorico(); }
+                }
+                else if(tipo === 'flashcards') {
+                    const tema = document.getElementById('fc-tema').value.trim();
+                    const pdfId = document.getElementById('select-pdf-fc').value;
+                    const box = document.getElementById('box-fc');
+                    if(!tema) return alert("Informe o tema para os flashcards.");
+
+                    let contexto = pdfId ? `\n\n[Referência: ${meusPdfs.find(p => p.id === pdfId).texto}]` : "";
+                    let prompt = `${regraBase}\n${contexto}\n\nCrie 5 flashcards de memorização ativa sobre o tema: "${tema}" no formato Frente e Verso.`;
+                    
+                    box.style.display = 'block';
+                    box.innerHTML = "Gerando flashcards... ⏳";
+                    let resposta = await chamarApiGeminiEspecifica(prompt, modelo);
+                    box.innerHTML = formatarRespostaIA(resposta);
                 }
                 else if(tipo === 'simulador') {
                     const box = document.getElementById('box-sim'); if(meuCadernoErros.length === 0) return alert("Caderno vazio.");
