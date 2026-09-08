@@ -563,11 +563,37 @@
             const data = await res.json(); if(data.error) throw new Error(data.error.message); return data.candidates[0].content.parts[0].text;
         }
 
-       async function executarPrumaIA(tipo, perguntaForcada = null) {
+       function renderizarFlashcards(respostaIa) {
+            try {
+                let limpo = respostaIa.replace(/```json/g, '').replace(/```/g, '').trim();
+                let match = limpo.match(/\[.*\]/s);
+                if(!match) throw new Error("Formato inválido");
+                let cards = JSON.parse(match[0]);
+                
+                let html = '<div style="display:flex; flex-direction:column; gap:12px;">';
+                cards.forEach((c, idx) => {
+                    html += `
+                        <div style="background:var(--bg-card); border:1px solid var(--border-color); border-radius:8px; padding:15px; cursor:pointer; box-shadow:var(--shadow-sm); user-select:none;" onclick="let v = this.querySelector('.verso-card'); v.style.display = v.style.display === 'none' ? 'block' : 'none';">
+                            <div style="font-size:0.75rem; color:var(--accent); font-weight:bold; margin-bottom:5px; text-transform:uppercase;">Card ${idx+1} 🔄 (Clique para virar)</div>
+                            <div style="font-weight:600; font-size:0.95rem;">❓ ${sanitizeText(c.frente)}</div>
+                            <div class="verso-card" style="display:none; margin-top:10px; padding-top:10px; border-top:1px dashed var(--border-color); color:var(--text-muted); font-size:0.9rem;">
+                                💡 <strong>Verso:</strong> ${sanitizeText(c.verso)}
+                            </div>
+                        </div>
+                    `;
+                });
+                html += '</div>';
+                return html;
+            } catch(e) {
+                return formatarRespostaIA(respostaIa);
+            }
+        }
+
+        async function executarPrumaIA(tipo, perguntaForcada = null) {
             try {
                 const isAdmin = (userAtual.uid === ADMIN_UID);
                 const modelo = isAdmin ? "gemini-3.1-pro-preview" : "gemini-3.6-flash";
-                let regraBase = "Aja como tutora especialista. Seja objetiva e clara. Use emojis e setas (->). IMPORTANTE: Pesquise dados atuais na web e SEMPRE cite a fonte das informações. Se criar questões de múltipla escolha, crie 4 alternativas (A, B, C, D) e adicione [CORRETA] ao final exato da certa.";
+                let regraBase = "Aja como tutora especialista. Seja objetiva e clara. Use emojis e setas (->). IMPORTANTE: Pesquise dados atuais na web e SEMPRE cite a fonte das informações.";
 
                 if(tipo === 'tutor') {
                     const inp = document.getElementById('inp-chat'); const pergunta = perguntaForcada || inp.value.trim();
@@ -590,17 +616,17 @@
                     if(!tema) return alert("Informe o tema para os flashcards.");
 
                     let contexto = pdfId ? `\n\n[Referência: ${meusPdfs.find(p => p.id === pdfId).texto}]` : "";
-                    let prompt = `${regraBase}\n${contexto}\n\nCrie 5 flashcards de memorização ativa sobre o tema: "${tema}" no formato Frente e Verso.`;
+                    let prompt = `${regraBase}\n${contexto}\n\nCrie 5 flashcards de memorização ativa sobre o tema: "${tema}". Retorne EXATAMENTE em formato JSON puro (sem markdown extra nas bordas) como um array de objetos contendo rigorosamente as chaves "frente" e "verso". Exemplo: [{"frente": "Pergunta?", "verso": "Resposta."}]`;
                     
                     box.style.display = 'block';
-                    box.innerHTML = "Gerando flashcards... ⏳";
+                    box.innerHTML = "Gerando flashcards interativos... ⏳";
                     let resposta = await chamarApiGeminiEspecifica(prompt, modelo);
-                    box.innerHTML = formatarRespostaIA(resposta);
+                    box.innerHTML = renderizarFlashcards(resposta);
                 }
                 else if(tipo === 'simulador') {
                     const box = document.getElementById('box-sim'); if(meuCadernoErros.length === 0) return alert("Caderno vazio.");
                     let erros = meuCadernoErros.map(e => `[${e.disciplina}]: ${e.descricao}`).join("\n");
-                    let prompt = `${regraBase}\n\nCrie 2 questões inéditas para corrigir estes erros:\n${erros}`;
+                    let prompt = `${regraBase}\n\nCrie 2 questões inéditas de múltipla escolha (A, B, C, D) com [CORRETA] para corrigir estes erros:\n${erros}`;
                     box.style.display = 'block'; box.innerHTML = "Gerando simulado... ⏳";
                     let resposta = await chamarApiGeminiEspecifica(prompt, modelo); box.innerHTML = formatarRespostaIA(resposta);
                 }
