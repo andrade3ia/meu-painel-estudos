@@ -303,7 +303,16 @@
                     <div style="display:flex; gap:16px; margin-bottom:20px; flex-wrap:wrap;">
                         <select id="est-periodo" onchange="atualizarEstatisticas()" style="flex:1; min-width:140px;"><option value="hoje">Hoje</option><option value="7">Últimos 7 dias</option><option value="30">Últimos 30 dias</option><option value="tudo" selected>Sempre</option><option value="custom">Período Específico...</option></select>
                         <select id="est-tipo-grafico" onchange="atualizarEstatisticas()" style="flex:1; min-width:140px;"><option value="doughnut">Gráfico Rosca</option><option value="bar">Gráfico de Barras</option></select>
-                        <select id="est-modo-visao" onchange="atualizarEstatisticas()" style="flex:1; min-width:140px;"><option value="materia">Visão: Matéria</option><option value="prova">Visão: Prova</option><option value="topico">Visão: Matéria e Tópico</option></select>
+                        <select id="est-modo-visao" onchange="toggleVisaoEstatisticas()" style="flex:1; min-width:140px;">
+                            <option value="prova">Visão: Prova</option>
+                            <option value="materia" selected>Visão: Matéria</option>
+                            <option value="topico">Visão: Tópico</option>
+                        </select>
+                    </div>
+                    <div id="est-materia-container" style="display:none; margin-bottom:20px;">
+                        <select id="est-filtro-materia" onchange="atualizarEstatisticas()" style="width:100%;">
+                            <option value="">Selecione a Matéria para ver os Tópicos...</option>
+                        </select>
                     </div>
                     <div id="est-custom-dates" style="display:none; gap:16px; margin-bottom:20px; background:var(--bg-input); padding:16px; border-radius:var(--radius-sm); flex-wrap:wrap;">
                         <input type="date" id="est-dt-ini" style="margin:0; flex:1; min-width:130px;"><input type="date" id="est-dt-fim" style="margin:0; flex:1; min-width:130px;">
@@ -532,7 +541,12 @@
                 if(e.currentTarget.textContent.includes('PRUMA IA')) { e.currentTarget.style.background='rgba(0,122,255,0.12)'; e.currentTarget.style.borderLeft='4px solid var(--brand-primary)'; }
             }
             if(window.innerWidth <= 768) document.getElementById('sidebar-menu').classList.remove('open');
-            if(t === 'estatisticas') atualizarEstatisticas();
+            if(t === 'estatisticas') {
+                if(document.getElementById('est-modo-visao').value === 'topico') {
+                    atualizarSelectFiltroMateriaEstatisticas();
+                }
+                atualizarEstatisticas();
+            }
         }
 
         // CONTA E RESGATE
@@ -587,9 +601,9 @@
         // DADOS
         function carregarDadosGlobais() {
             refDb.child('perfil/nome').on('value', s => { if(s.val()) document.getElementById('conta-nome').value = s.val(); });
-            refDb.child('sessoes').on('value', s => { dbData.sessoes = s.val() ? Object.values(s.val()) : []; renderizarInicio(); if(document.getElementById('view-estatisticas').style.display==='block') atualizarEstatisticas(); });
+            refDb.child('sessoes').on('value', s => { dbData.sessoes = s.val() ? Object.values(s.val()) : []; renderizarInicio(); if(document.getElementById('view-estatisticas').style.display==='block') { if(document.getElementById('est-modo-visao').value==='topico') atualizarSelectFiltroMateriaEstatisticas(); atualizarEstatisticas(); } });
             refDb.child('provas').on('value', s => { let v = s.val(); dbData.provas = v ? (Array.isArray(v) ? v : Object.values(v)) : []; renderizarProvas(); atualizarSelectsUI(); });
-            refDb.child('materias').on('value', s => { let v = s.val(); dbData.materias = v ? (Array.isArray(v) ? v : Object.values(v)) : []; renderizarMaterias(); atualizarSelectsUI(); });
+            refDb.child('materias').on('value', s => { let v = s.val(); dbData.materias = v ? (Array.isArray(v) ? v : Object.values(v)) : []; renderizarMaterias(); atualizarSelectsUI(); if(document.getElementById('est-modo-visao').value==='topico') atualizarSelectFiltroMateriaEstatisticas(); });
             refDb.child('cadernos').on('value', s => { let v = s.val(); dbData.cadernos = v ? (Array.isArray(v) ? v : Object.values(v)) : []; renderizarCadernos(); });
             refDb.child('biblioteca').on('value', s => { dbData.biblioteca = s.val() ? Object.values(s.val()) : []; renderizarBiblioteca(); });
             refDb.child('ia_historico').on('value', s => { dbData.iaHistorico = s.val() || []; renderizarHistoricoIA(); });
@@ -972,6 +986,9 @@
                     dbData.provas.forEach(p => s.innerHTML += `<option value="${p.id}">${p.nome}</option>`); 
                 } 
             });
+            if(document.getElementById('est-modo-visao') && document.getElementById('est-modo-visao').value === 'topico') {
+                atualizarSelectFiltroMateriaEstatisticas();
+            }
         }
         function atualizarTopicosDatalist(inputId, matNome) {
             let dl = document.getElementById('dl-'+inputId); if(!dl) return; dl.innerHTML = '';
@@ -1003,6 +1020,34 @@
         }
 
         // ESTATÍSTICAS
+        function toggleVisaoEstatisticas() {
+            let modo = document.getElementById('est-modo-visao').value;
+            let container = document.getElementById('est-materia-container');
+            if(modo === 'topico') {
+                container.style.display = 'block';
+                atualizarSelectFiltroMateriaEstatisticas();
+            } else {
+                container.style.display = 'none';
+            }
+            atualizarEstatisticas();
+        }
+
+        function atualizarSelectFiltroMateriaEstatisticas() {
+            let sel = document.getElementById('est-filtro-materia');
+            if(!sel) return;
+            let valAtual = sel.value;
+            sel.innerHTML = '<option value="">Selecione a Matéria para ver os Tópicos...</option>';
+            let materiasSet = new Set();
+            if(Array.isArray(dbData.materias)) {
+                dbData.materias.forEach(m => materiasSet.add(m.nome));
+            }
+            dbData.sessoes.forEach(s => { if(s.materia) materiasSet.add(s.materia); });
+            [...materiasSet].sort().forEach(m => {
+                sel.innerHTML += `<option value="${m}">${m}</option>`;
+            });
+            if(valAtual) sel.value = valAtual;
+        }
+
         function atualizarEstatisticas() {
             let per = document.getElementById('est-periodo').value, tipo = document.getElementById('est-tipo-grafico').value;
             let modoVisao = document.getElementById('est-modo-visao').value;
@@ -1011,6 +1056,8 @@
             let agora = Date.now(), tA = 0, tE = 0, tSeg = 0, tPag = 0, tVid = 0, tQts = 0; let dadosGraf = {};
             let setDias = new Set();
             
+            let filtroMatTopico = document.getElementById('est-filtro-materia') ? document.getElementById('est-filtro-materia').value : '';
+
             dbData.sessoes.filter(s => {
                 if(per === 'tudo') return true;
                 if(per === 'custom') return (!dtI || !dtF) ? true : (s.timestamp >= new Date(dtI).getTime() && s.timestamp <= new Date(dtF).getTime()+86399999);
@@ -1029,10 +1076,16 @@
                         if(pObj) pNome = pObj.nome;
                     }
                     chaveGraf = pNome;
+                    dadosGraf[chaveGraf] = (dadosGraf[chaveGraf]||0) + (s.segundos/60);
+                } else if(modoVisao === 'materia') {
+                    chaveGraf = s.materia;
+                    dadosGraf[chaveGraf] = (dadosGraf[chaveGraf]||0) + (s.segundos/60);
                 } else if(modoVisao === 'topico') {
-                    chaveGraf = `${s.materia} - ${s.topico || 'Geral'}`;
+                    if(filtroMatTopico && s.materia.toLowerCase() === filtroMatTopico.toLowerCase()) {
+                        chaveGraf = s.topico || 'Geral';
+                        dadosGraf[chaveGraf] = (dadosGraf[chaveGraf]||0) + (s.segundos/60);
+                    }
                 }
-                dadosGraf[chaveGraf] = (dadosGraf[chaveGraf]||0) + (s.segundos/60);
             });
 
             document.getElementById('st-tempo').textContent = `${Math.floor(tSeg/3600)}h ${Math.floor((tSeg%3600)/60)}m`;
@@ -1047,7 +1100,16 @@
 
             if(graficoInstance) graficoInstance.destroy();
             let isDark = document.documentElement.getAttribute('data-theme') === 'dark'; let txtCor = isDark ? '#FFFFFF' : '#000000';
-            let keys = Object.keys(dadosGraf).length>0 ? Object.keys(dadosGraf) : ['Sem dados'], vals = Object.values(dadosGraf).length>0 ? Object.values(dadosGraf) : [1];
+            
+            let keys = [], vals = [];
+            if(modoVisao === 'topico' && !filtroMatTopico) {
+                keys = ['Selecione a Matéria'];
+                vals = [1];
+            } else {
+                keys = Object.keys(dadosGraf).length>0 ? Object.keys(dadosGraf) : ['Sem dados'];
+                vals = Object.values(dadosGraf).length>0 ? Object.values(dadosGraf) : [1];
+            }
+
             let cores = keys.map(k => { 
                 if(!Array.isArray(dbData.materias)) dbData.materias = Object.values(dbData.materias || {});
                 let m = dbData.materias.find(x=>x.nome===k || k.startsWith(x.nome)); return m ? m.cor : paleta17[0]; 
@@ -1119,7 +1181,7 @@
 
         function obterPromptDoSistema(tipo) {
             const prompts = {
-                chat: "Você é a PRUMA IA, tutora especialista em vestibulares e concursos. Explique de forma didática, direta e fundamentada cruzando informações com as fontes fornecidas. OBRIGATÓRIO citar a fonte da resposta.",
+                chat: "Você é a PRUMA IA, tutora especialista em vestibulares e concursos. Explique de forma didática, direta e fundamentada cruzando informações com las fontes fornecidas. OBRIGATÓRIO citar a fonte da resposta.",
                 questoes: "Você é a PRUMA IA, uma banca examinadora rigorosa. Crie questões inéditas de múltipla escolha (A, B, C, D, E) com alto rigor técnico. Forneça gabarito comentado justificando o erro e acerto de cada alternativa com base nas fontes.",
                 flashcards: "Você é a PRUMA IA, especialista em memorização ativa. Extraia conceitos-chave e crie pares de perguntas diretas e respostas concisas baseando-se no material fornecido. O foco é alta retenção."
             };
