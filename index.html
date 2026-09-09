@@ -286,7 +286,6 @@
                     <h2>Novo Caderno / Anotação</h2>
                     <div style="display:flex; gap:16px; flex-wrap:wrap;">
                         <input type="text" id="err-mat" placeholder="Matéria *" list="lista-materias-dl" oninput="atualizarTopicosDatalist('err-top', this.value)" style="flex:1; min-width:150px;" onclick="try{this.showPicker()}catch(e){}">
-                        <!-- Tornando Tópico visualmente obrigatório -->
                         <input type="text" id="err-top" placeholder="Tópico *" list="dl-err-top" style="flex:1; min-width:150px;" onclick="try{this.showPicker()}catch(e){}">
                         <datalist id="dl-err-top"></datalist>
                     </div>
@@ -304,13 +303,14 @@
                     <div style="display:flex; gap:16px; margin-bottom:20px; flex-wrap:wrap;">
                         <select id="est-periodo" onchange="atualizarEstatisticas()" style="flex:1; min-width:140px;"><option value="hoje">Hoje</option><option value="7">Últimos 7 dias</option><option value="30">Últimos 30 dias</option><option value="tudo" selected>Sempre</option><option value="custom">Período Específico...</option></select>
                         <select id="est-tipo-grafico" onchange="atualizarEstatisticas()" style="flex:1; min-width:140px;"><option value="doughnut">Gráfico Rosca</option><option value="bar">Gráfico de Barras</option></select>
+                        <select id="est-modo-visao" onchange="atualizarEstatisticas()" style="flex:1; min-width:140px;"><option value="materia">Visão: Matéria</option><option value="prova">Visão: Prova</option><option value="topico">Visão: Matéria e Tópico</option></select>
                     </div>
                     <div id="est-custom-dates" style="display:none; gap:16px; margin-bottom:20px; background:var(--bg-input); padding:16px; border-radius:var(--radius-sm); flex-wrap:wrap;">
                         <input type="date" id="est-dt-ini" style="margin:0; flex:1; min-width:130px;"><input type="date" id="est-dt-fim" style="margin:0; flex:1; min-width:130px;">
                         <button class="btn-success" style="width:auto;" onclick="atualizarEstatisticas()">Filtrar</button>
                     </div>
 
-                    <!-- ORDEM DOS BALÕES ESTATÍSTICAS (Incluindo novas: Ritmo e Dias Estudados) -->
+                    <!-- ORDEM DOS BALÕES ESTATÍSTICAS -->
                     <div class="stats-grid">
                         <div class="stat-card"><span>Tempo Total</span><strong id="st-tempo">0h 0m</strong></div>
                         <div class="stat-card"><span>Questões Totais</span><strong id="st-qts">0</strong></div>
@@ -345,7 +345,7 @@
                             <button class="btn-outline" style="flex:1; min-width:140px;" onclick="mudarSubIa('edital', this)">📚 Edital Inteligente</button>
                         </div>
 
-                        <!-- Selecionador de Fonte (Idêntico ao do Registro de Sessão) -->
+                        <!-- Selecionador de Fonte -->
                         <div id="caixa-fontes-ia" style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:20px; background:var(--bg-input); padding:16px; border-radius:var(--radius-sm); align-items:center;">
                             <div style="flex:1; min-width:140px;">
                                 <label style="font-size:0.75rem; font-weight:700; color:var(--text-muted); display:block; margin-bottom:4px;">MATÉRIA / CONTEXTO</label>
@@ -807,6 +807,27 @@
             let n = sanitizeText(document.getElementById('mat-nome').value), t = sanitizeText(document.getElementById('mat-topico').value), pId = document.getElementById('mat-prova').value;
             if(!n) return;
             if(!Array.isArray(dbData.materias)) dbData.materias = Object.values(dbData.materias || {});
+            
+            let existingSameName = dbData.materias.filter(m => m.nome.toLowerCase() === n.toLowerCase());
+            if(existingSameName.length > 0) {
+                let apenasCor = confirm(`A matéria "${n}" já existe. Deseja alterar somente a cor de todas as pastas com este nome (OK) ou criar uma nova pasta/vincular (Cancelar)?`);
+                if(apenasCor) {
+                    dbData.materias.forEach(m => {
+                        if(m.nome.toLowerCase() === n.toLowerCase()) {
+                            m.cor = corAtualMateria;
+                            if(t && (!m.topicos || !m.topicos.includes(t))) {
+                                if(!Array.isArray(m.topicos)) m.topicos = Object.values(m.topicos || {});
+                                m.topicos.push(t);
+                            }
+                        }
+                    });
+                    refDb.child('materias').set(dbData.materias);
+                    document.getElementById('mat-topico').value = '';
+                    alert("Cor atualizada em todas as pastas com este nome!");
+                    return;
+                }
+            }
+
             let idx = dbData.materias.findIndex(m => m.nome.toLowerCase() === n.toLowerCase() && m.provaId === pId);
             if(idx !== -1) { 
                 if(!Array.isArray(dbData.materias[idx].topicos)) dbData.materias[idx].topicos = Object.values(dbData.materias[idx].topicos || {});
@@ -870,11 +891,20 @@
                     </div><div class="pasta-body">${htmlT||'<span style="color:var(--text-muted);font-size:0.85rem;">Vazio.</span>'}</div>`;
                 }).join('');
 
-                if(!isGeral) div.innerHTML += `<div class="bloco-prova"><div class="bloco-prova-titulo">🎯 ${nomeP}</div>${conteudoMat}</div>`;
-                else div.innerHTML += `<h3 style="color:var(--text-muted); margin-top:20px; font-size:1.1rem;">${nomeP}</h3>${conteudoMat}`;
+                if(!isGeral) {
+                    div.innerHTML += `
+                    <div class="bloco-prova">
+                        <div class="bloco-prova-titulo" style="cursor:pointer; user-select:none; margin-bottom:0; justify-content:space-between;" onclick="let el=this.nextElementSibling; el.style.display = el.style.display==='none'?'block':'none';">
+                            <span>🎯 ${nomeP}</span>
+                            <span style="font-size:0.85rem; font-weight:normal; color:var(--text-muted);">▼ Expandir / Minimizar</span>
+                        </div>
+                        <div style="display:none; margin-top:16px;">${conteudoMat}</div>
+                    </div>`;
+                } else {
+                    div.innerHTML += `<h3 style="color:var(--text-muted); margin-top:20px; font-size:1.1rem;">${nomeP}</h3>${conteudoMat}`;
+                }
             }
 
-            // Restaura pastas que estavam abertas
             statePastas.forEach(id => {
                 let hdr = document.querySelector(`.pasta-header[data-folder-id="${id}"]`);
                 if(hdr && hdr.nextElementSibling) hdr.nextElementSibling.classList.add('aberta');
@@ -975,6 +1005,7 @@
         // ESTATÍSTICAS
         function atualizarEstatisticas() {
             let per = document.getElementById('est-periodo').value, tipo = document.getElementById('est-tipo-grafico').value;
+            let modoVisao = document.getElementById('est-modo-visao').value;
             document.getElementById('est-custom-dates').style.display = per==='custom' ? 'flex' : 'none';
             let dtI = document.getElementById('est-dt-ini').value, dtF = document.getElementById('est-dt-fim').value;
             let agora = Date.now(), tA = 0, tE = 0, tSeg = 0, tPag = 0, tVid = 0, tQts = 0; let dadosGraf = {};
@@ -988,7 +1019,20 @@
                 tA += (s.acertos||0); tE += (s.erros||0); tSeg += (s.segundos||0); tPag += (s.paginas||0); tVid += (s.videos||0);
                 tQts += (s.totalQts !== undefined ? s.totalQts : ((s.acertos||0)+(s.erros||0)));
                 if(s.data) setDias.add(s.data);
-                dadosGraf[s.materia] = (dadosGraf[s.materia]||0) + (s.segundos/60);
+                
+                let chaveGraf = s.materia;
+                if(modoVisao === 'prova') {
+                    let matObj = dbData.materias.find(m => m.nome.toLowerCase() === s.materia.toLowerCase());
+                    let pNome = "Matérias Gerais";
+                    if(matObj && matObj.provaId) {
+                        let pObj = dbData.provas.find(p => p.id === matObj.provaId);
+                        if(pObj) pNome = pObj.nome;
+                    }
+                    chaveGraf = pNome;
+                } else if(modoVisao === 'topico') {
+                    chaveGraf = `${s.materia} - ${s.topico || 'Geral'}`;
+                }
+                dadosGraf[chaveGraf] = (dadosGraf[chaveGraf]||0) + (s.segundos/60);
             });
 
             document.getElementById('st-tempo').textContent = `${Math.floor(tSeg/3600)}h ${Math.floor((tSeg%3600)/60)}m`;
@@ -1006,7 +1050,7 @@
             let keys = Object.keys(dadosGraf).length>0 ? Object.keys(dadosGraf) : ['Sem dados'], vals = Object.values(dadosGraf).length>0 ? Object.values(dadosGraf) : [1];
             let cores = keys.map(k => { 
                 if(!Array.isArray(dbData.materias)) dbData.materias = Object.values(dbData.materias || {});
-                let m = dbData.materias.find(x=>x.nome===k); return m ? m.cor : paleta17[0]; 
+                let m = dbData.materias.find(x=>x.nome===k || k.startsWith(x.nome)); return m ? m.cor : paleta17[0]; 
             });
 
             graficoInstance = new Chart(document.getElementById('graficoEst').getContext('2d'), {
