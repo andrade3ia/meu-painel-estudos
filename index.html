@@ -177,16 +177,18 @@
                         <button class="btn-success" style="width:auto; padding:8px 14px;" onclick="atualizarResumoGeral()">Filtrar</button>
                     </div>
                     <div class="stats-grid" style="margin-bottom:0;">
+                        <div class="stat-card" style="background: linear-gradient(135deg, var(--brand-primary), #0056b3); color: white;">
+                            <span style="color: rgba(255,255,255,0.85);">Tempo Total</span>
+                            <strong id="rg-tempo" style="color: white; font-size: 1.4rem;">00:00:00</strong>
+                        </div>
                         <div class="stat-card"><span>Questões Totais</span><strong id="rg-qts" style="color:var(--brand-primary)">0</strong></div>
                         <div class="stat-card"><span>Acertos</span><strong id="rg-acertos" style="color:var(--brand-success)">0</strong></div>
                         <div class="stat-card"><span>Erros</span><strong id="rg-erros" style="color:var(--brand-danger)">0</strong></div>
                         <div class="stat-card"><span>Aproveitamento</span><strong id="rg-perc">0%</strong></div>
-                        <div class="stat-card"><span>Págs Lidas</span><strong id="rg-pags">0</strong></div>
-                        <div class="stat-card"><span>Vídeos</span><strong id="rg-vids">0</strong></div>
                     </div>
                 </div>
 
-                <!-- Cronômetro, Calendário e Formulário Fixo (CAIXA MÃE) -->
+                <!-- Cronômetro, Calendário e Formulário Fixo -->
                 <div class="card" style="display:flex; flex-wrap:wrap; gap:24px; align-items:flex-start;">
                     <!-- Coluna Esquerda: Cronômetro e Calendário -->
                     <div style="flex:1; min-width:260px; display:flex; flex-direction:column; gap:20px; max-width:100%;">
@@ -595,7 +597,10 @@
 
         function calcularTempoTotal() {
             let segs = dbData.sessoes.reduce((acc, s) => acc + (s.segundos || 0), 0);
-            document.getElementById('side-tempo-total').textContent = `${Math.floor(segs / 3600)}h ${Math.floor((segs % 3600) / 60)}m`;
+            let textoTempo = `${Math.floor(segs / 3600)}h ${Math.floor((segs % 3600) / 60)}m`;
+            document.getElementById('side-tempo-total').textContent = textoTempo;
+            let elRgTempo = document.getElementById('rg-tempo');
+            if(elRgTempo) elRgTempo.textContent = textoTempo;
         }
         function iniciarCronometro() { if(!cronometroInterval) { cronometroInterval = setInterval(() => { segundosCronometro++; atualizarVisorCronometro(); }, 1000); } }
         function pausarCronometro() { clearInterval(cronometroInterval); cronometroInterval = null; }
@@ -622,7 +627,7 @@
             let per = document.getElementById('resumo-geral-periodo').value;
             document.getElementById('resumo-geral-custom-dates').style.display = per==='custom' ? 'flex' : 'none';
             let dtI = document.getElementById('rg-dt-ini').value, dtF = document.getElementById('rg-dt-fim').value;
-            let agora = Date.now(), tQts = 0, tA = 0, tE = 0, tPag = 0, tVid = 0;
+            let agora = Date.now(), tQts = 0, tA = 0, tE = 0, tSeg = 0;
             
             dbData.sessoes.filter(s => {
                 if(per === 'tudo') return true;
@@ -635,16 +640,17 @@
                 tA += ac;
                 tE += er;
                 tQts += (s.totalQts !== undefined ? s.totalQts : (ac + er));
-                tPag += (s.paginas || 0);
-                tVid += (s.videos || 0);
+                tSeg += (s.segundos || 0);
             });
+
+            let hTempo = `${Math.floor(tSeg / 3600)}h ${Math.floor((tSeg % 3600) / 60)}m`;
+            let elRgTempo = document.getElementById('rg-tempo');
+            if(elRgTempo) elRgTempo.textContent = hTempo;
 
             document.getElementById('rg-qts').textContent = tQts;
             document.getElementById('rg-acertos').textContent = tA;
             document.getElementById('rg-erros').textContent = tE;
             document.getElementById('rg-perc').textContent = (tA + tE) > 0 ? Math.round((tA / (tA + tE)) * 100) + '%' : '0%';
-            document.getElementById('rg-pags').textContent = tPag;
-            document.getElementById('rg-vids').textContent = tVid;
         }
 
         function renderizarCalendarioMes() {
