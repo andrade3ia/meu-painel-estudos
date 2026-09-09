@@ -115,7 +115,7 @@
 
     <aside id="sidebar-menu" class="sidebar">
         <div class="sidebar-logo">
-            <h1>👨‍💻 PRUMA</h1>
+            <h1>PRUMA 👨‍💻</h1>
             <span class="sub">Painel de Estudos</span>
         </div>
         
@@ -859,11 +859,12 @@
         // PROVAS
         function salvarProva() {
             let n = sanitizeText(document.getElementById('conc-nome').value), d = document.getElementById('conc-data').value;
-            if(!n || !d) return alert("Preencha nome e data.");
+            if(!n) return alert("Preencha o nome da prova.");
             if(!Array.isArray(dbData.provas)) dbData.provas = Object.values(dbData.provas || {});
-            dbData.provas.push({id: gerarId(), nome: n, data: d}); 
+            dbData.provas.push({id: gerarId(), nome: n, data: d || ''}); 
             refDb.child('provas').set(dbData.provas); 
             document.getElementById('conc-nome').value='';
+            document.getElementById('conc-data').value='';
         }
 
         function excluirProva(pId) {
@@ -888,8 +889,14 @@
             let div = document.getElementById('lista-provas-div'); div.innerHTML = '';
             if(!Array.isArray(dbData.provas)) dbData.provas = Object.values(dbData.provas || {});
             dbData.provas.forEach(p => {
-                let dias = Math.ceil((new Date(p.data) - new Date()) / (1000*60*60*24));
-                div.innerHTML += `<div class="stat-card" style="position:relative;" title="${sanitizeText(p.nome)}"><span>${p.nome}</span><strong style="color:${dias<30?'var(--brand-danger)':'var(--brand-primary)'}; margin:10px 0;">Faltam ${dias} dias</strong><span style="font-weight:normal;">📅 ${p.data}</span><button class="btn-x-vermelho" style="position:absolute; top:8px; right:8px;" onclick="excluirProva('${p.id}')">✖</button></div>`;
+                let diasText = 'Sem data definida';
+                let corD = 'var(--brand-primary)';
+                if(p.data) {
+                    let dias = Math.ceil((new Date(p.data) - new Date()) / (1000*60*60*24));
+                    diasText = `Faltam ${dias} dias`;
+                    if(dias < 30) corD = 'var(--brand-danger)';
+                }
+                div.innerHTML += `<div class="stat-card" style="position:relative;" title="${sanitizeText(p.nome)}"><span>${p.nome}</span><strong style="color:${corD}; margin:10px 0;">${diasText}</strong><span style="font-weight:normal;">📅 ${p.data || 'Sem data'}</span><button class="btn-x-vermelho" style="position:absolute; top:8px; right:8px;" onclick="excluirProva('${p.id}')">✖</button></div>`;
             });
         }
 
@@ -970,13 +977,22 @@
 
             let div = document.getElementById('lista-materias-cadastradas'); div.innerHTML = '';
             if(!Array.isArray(dbData.materias)) dbData.materias = Object.values(dbData.materias || {});
+            if(!Array.isArray(dbData.provas)) dbData.provas = Object.values(dbData.provas || {});
+
             let grupos = { 'geral': [] };
-            dbData.materias.forEach(m => { let p = m.provaId || 'geral'; if(!grupos[p]) grupos[p] = []; grupos[p].push(m); });
+            dbData.materias.forEach(m => {
+                let p = m.provaId;
+                if(!p || !dbData.provas.some(pr => pr.id === p)) {
+                    p = 'geral';
+                }
+                if(!grupos[p]) grupos[p] = [];
+                grupos[p].push(m);
+            });
 
             for(let p in grupos) {
                 if(grupos[p].length === 0) continue;
                 let isGeral = p === 'geral';
-                let nomeP = isGeral ? 'Matérias Gerais' : (dbData.provas.find(x=>x.id===p)?.nome || 'Prova');
+                let nomeP = isGeral ? 'Matérias Gerais' : (dbData.provas.find(x=>x.id===p)?.nome || 'Matérias Gerais');
                 
                 let conteudoMat = grupos[p].map(m => {
                     if(!Array.isArray(m.topicos)) m.topicos = Object.values(m.topicos || {});
