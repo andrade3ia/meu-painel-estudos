@@ -58,71 +58,17 @@
         h2 { margin: 0 0 18px 0; color: var(--text-main); font-size: 1.35rem; font-weight: 700; border-bottom: 1px solid var(--border-color); padding-bottom: 12px; letter-spacing: -0.5px; }
         
         input, select, textarea { width: 100%; padding: 12px 16px; margin-bottom: 12px; background-color: var(--bg-input); border: 1px solid transparent; border-radius: var(--radius-sm); color: var(--text-main); font-size: 0.95rem; outline: none; font-weight: 500; }
-        input:focus, select:focus, textarea:focus { border-color: var(--brand-primary); background-color: var(--bg-card); box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.15); }
+        input:focus, select:focus, textarea:focus { border-color: var(--brand-primary); background-color: var(--bg-card); box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.18); }
         
-        button.btn-primary {
-    background: #007AFF; /* Azul Apple */
-    color: white;
-    border: none;
-    padding: 14px 20px;
-    border-radius: 14px; /* Mais arredondado */
-    font-weight: 600;
-    font-size: 1rem;
-    cursor: pointer;
-    box-shadow: 0 4px 14px rgba(0, 122, 255, 0.3); /* Sombra azulada */
-    transition: all 0.2s ease-in-out;
-}
-
-button.btn-primary:hover {
-    transform: translateY(-2px); /* Levanta quando passa o mouse */
-    box-shadow: 0 6px 20px rgba(0, 122, 255, 0.4);
-}
-
-button.btn-primary:active {
-    transform: scale(0.96); /* Afunda como um botão de verdade ao clicar */
-    box-shadow: 0 2px 8px rgba(0, 122, 255, 0.2);
-}
-
-/* Botão Secundário: Fundo translúcido em vez de borda dura */
-button.btn-outline {
-    background: rgba(142, 142, 147, 0.12); /* Cinza translúcido */
-    color: var(--brand-primary);
-    border: none;
-    padding: 14px 20px;
-    border-radius: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-
-button.btn-outline:hover {
-    background: rgba(142, 142, 147, 0.2); /* Fica mais escuro no hover */
-}
-
-button.btn-outline:active {
-    transform: scale(0.96);
-}
-
-/* Botão de Perigo (Lixeira, Excluir) */
-.btn-x-vermelho {
-    background: rgba(255, 59, 48, 0.1); /* Fundo vermelho bem clarinho */
-    color: #FF3B30; /* Texto vermelho Apple */
-    border: none;
-    border-radius: 50%; /* Faz virar um círculo perfeito */
-    width: 32px;
-    height: 32px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-
-.btn-x-vermelho:hover {
-    background: #FF3B30;
-    color: white;
-    transform: scale(1.1);
-}
+        button.btn-primary { width: 100%; padding: 14px; font-weight: 600; border: none; border-radius: var(--radius-sm); cursor: pointer; background: var(--brand-primary); color: var(--btn-text); font-size: 0.95rem; box-shadow: var(--shadow-sm); }
+        button.btn-primary:active { transform: scale(0.97); }
+        button.btn-outline { width: 100%; padding: 14px; font-weight: 600; border: 1px solid var(--border-color); border-radius: var(--radius-sm); cursor: pointer; background: transparent; color: var(--text-main); font-size: 0.95rem; }
+        button.btn-outline:hover { background: var(--bg-hover); }
+        button.btn-outline:active { transform: scale(0.97); }
+        button.btn-success { background: var(--brand-success); color: white; border: none; padding: 12px 20px; border-radius: var(--radius-sm); font-weight: 600; cursor: pointer; box-shadow: var(--shadow-sm); }
+        button.btn-success:active { transform: scale(0.97); }
+        button.btn-danger { background: var(--brand-danger); color: white; border: none; padding: 10px 16px; border-radius: var(--radius-sm); cursor: pointer; font-size: 0.85rem; font-weight: 600; box-shadow: var(--shadow-sm); }
+        button.btn-danger:active { transform: scale(0.97); }
         
         .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 16px; margin-bottom: 24px; }
         .stat-card { background: var(--bg-card); padding: 20px; border-radius: var(--radius-md); text-align: center; border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); }
@@ -268,10 +214,10 @@ button.btn-outline:active {
                         <div style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:12px; background:var(--bg-input); padding:12px; border-radius:var(--radius-sm);">
                             <div style="flex:1;"><label style="font-size:0.7rem; font-weight:700; color:var(--brand-success);">Acertos</label><input type="number" id="ses-acertos" value="0" style="margin:0;"></div>
                             <div style="flex:1;"><label style="font-size:0.7rem; font-weight:700; color:var(--brand-danger);">Erros</label><input type="number" id="ses-erros" value="0" style="margin:0;"></div>
-                            <!-- Cronômetro Manual em Horas e Minutos -->
-                            <div style="flex:1; display:flex; gap:6px;">
-                                <div><label style="font-size:0.7rem; font-weight:700;">Horas</label><input type="number" id="ses-man-horas" value="0" min="0" style="margin:0;"></div>
-                                <div><label style="font-size:0.7rem; font-weight:700;">Min</label><input type="number" id="ses-man-mins" value="0" min="0" max="59" style="margin:0;"></div>
+                            <!-- Cronômetro Manual com digitação fluida HH:MM via teclado -->
+                            <div style="flex:1;">
+                                <label style="font-size:0.7rem; font-weight:700;">Tempo (HH:MM)</label>
+                                <input type="time" id="ses-man-tempo" value="00:00" style="margin:0;">
                             </div>
                         </div>
                         
@@ -411,7 +357,7 @@ button.btn-outline:active {
                             <div class="chat-box" id="box-qts" style="margin-top:16px; display:none; height:auto; min-height:200px;"></div>
                         </div>
 
-                        <!-- Sub: Flashcards (Sem obrigatoriedade de tema personalizado) -->
+                        <!-- Sub: Flashcards -->
                         <div id="subia-flashcards" style="display:none;">
                             <div style="display:flex; gap:16px; margin-bottom:16px; flex-wrap:wrap;">
                                 <input type="text" id="fc-mat-dest" placeholder="Matéria Alvo *" list="lista-materias-dl" oninput="atualizarTopicosDatalist('fc-top-dest', this.value)" style="flex:1; min-width:200px;">
@@ -500,7 +446,7 @@ button.btn-outline:active {
         </div>
     </div>
 
-   <div id="modal-juntar" class="modal">
+    <div id="modal-juntar" class="modal">
         <div class="modal-content">
             <button class="modal-close" style="position:absolute; top:20px; right:20px; background:transparent; border:none; font-size:1.5rem; cursor:pointer; color:var(--text-muted);" onclick="document.getElementById('modal-juntar').style.display='none'">✖</button>
             <h2 style="margin-top:0;">🔗 Juntar Tópicos</h2>
@@ -512,6 +458,33 @@ button.btn-outline:active {
             <input type="hidden" id="hid-mat-id">
             <input type="hidden" id="hid-top-origem">
             <button class="btn-primary" onclick="confirmarJuncao()">Confirmar e Juntar</button>
+        </div>
+    </div>
+
+    <div id="modal-editar-sessao" class="modal">
+        <div class="modal-content">
+            <button class="modal-close" style="position:absolute; top:20px; right:20px; background:transparent; border:none; font-size:1.5rem; cursor:pointer; color:var(--text-muted);" onclick="document.getElementById('modal-editar-sessao').style.display='none'">✖</button>
+            <h2 style="margin-top:0;">✏️ Editar Registro de Estudo</h2>
+            <input type="hidden" id="edit-ses-id">
+            
+            <label style="font-weight:600; font-size:0.85rem;">Matéria</label>
+            <input type="text" id="edit-ses-mat">
+            
+            <label style="font-weight:600; font-size:0.85rem;">Tópico</label>
+            <input type="text" id="edit-ses-top">
+            
+            <div style="display:flex; gap:12px;">
+                <div style="flex:1;"><label style="font-weight:600; font-size:0.85rem; color:var(--brand-success);">Acertos</label><input type="number" id="edit-ses-acertos" value="0"></div>
+                <div style="flex:1;"><label style="font-weight:600; font-size:0.85rem; color:var(--brand-danger);">Erros</label><input type="number" id="edit-ses-erros" value="0"></div>
+            </div>
+            
+            <label style="font-weight:600; font-size:0.85rem;">Tempo (HH:MM)</label>
+            <input type="time" id="edit-ses-tempo" value="00:00">
+            
+            <label style="font-weight:600; font-size:0.85rem;">Observações</label>
+            <textarea id="edit-ses-obs" rows="2"></textarea>
+            
+            <button class="btn-primary" onclick="salvarEdicaoSessao()">Salvar Alterações</button>
         </div>
     </div>
 
@@ -638,13 +611,15 @@ button.btn-outline:active {
             dbData.materias.filter(m => m.nome.toLowerCase() === matNome.toLowerCase()).forEach(m => m.topicos.forEach(t => dl.innerHTML += `<option value="${t}">`));
         }
 
-        // REGISTRO (Com Horas e Minutos manuais)
+        // REGISTRO (Com tempo manual HH:MM via teclado)
         function salvarRegistro() {
             let mat = sanitizeText(document.getElementById('ses-mat').value), top = sanitizeText(document.getElementById('ses-top').value);
             if(!mat) return alert("Preencha a matéria.");
             
-            let hMan = parseInt(document.getElementById('ses-man-horas').value) || 0;
-            let mMan = parseInt(document.getElementById('ses-man-mins').value) || 0;
+            let tempoStr = document.getElementById('ses-man-tempo').value || "00:00";
+            let partes = tempoStr.split(':');
+            let hMan = parseInt(partes[0]) || 0;
+            let mMan = parseInt(partes[1]) || 0;
             let segsManuais = (hMan * 3600) + (mMan * 60);
             let segsFinais = segsManuais > 0 ? segsManuais : segundosCronometro;
             
@@ -660,7 +635,7 @@ button.btn-outline:active {
 
             refDb.child('sessoes/'+reg.id).set(reg);
             segundosCronometro = 0; atualizarVisorCronometro();
-            ['ses-mat','ses-top','ses-acertos','ses-erros','ses-man-horas','ses-man-mins','ses-obs','ses-pdf-ini','ses-pdf-fim','ses-vid-ini','ses-vid-fim'].forEach(id=> { if(document.getElementById(id)) document.getElementById(id).value = id.includes('acertos')||id.includes('erros')?'0':''; });
+            ['ses-mat','ses-top','ses-acertos','ses-erros','ses-man-tempo','ses-obs','ses-pdf-ini','ses-pdf-fim','ses-vid-ini','ses-vid-fim'].forEach(id=> { if(document.getElementById(id)) document.getElementById(id).value = id.includes('acertos')||id.includes('erros')?'0':id.includes('tempo')?'00:00':''; });
         }
 
         function renderizarInicio() {
@@ -671,19 +646,63 @@ button.btn-outline:active {
             arr.forEach((s, i) => {
                 if(s.data === dtHoje) { hjQs+=s.totalQts; hjA+=s.acertos; hjE+=s.erros; hjSegs+=s.segundos; hjPags+=(s.paginas||0); hjVids+=(s.videos||0); }
                 if(i < 15) {
+                    let perc = s.totalQts > 0 ? Math.round((s.acertos / s.totalQts) * 100) : 0;
                     divReg.innerHTML += `
                     <div class="registro-curto">
                         <div class="info">
                             <strong>${s.tipoMat.includes('PDF')?'📖':s.tipoMat==='Vídeo Aula'?'🎥':'📝'} ${s.materia}</strong>
-                            <span>${s.topico||'Geral'} | ⏱️ ${Math.floor(s.segundos/60)}m | 🎯 ${s.totalQts>0?Math.round((s.acertos/s.totalQts)*100)+'%':'0%'}</span>
+                            <span>${s.topico||'Geral'} | ⏱️ ${Math.floor(s.segundos/3600)}h ${Math.floor((s.segundos%3600)/60)}m | ✅ ${s.acertos} | ❌ ${s.erros} (${perc}%)</span>
                         </div>
-                        <div class="acoes"><button class="btn-x-vermelho" onclick="if(confirm('Excluir?')) refDb.child('sessoes/${s.id}').remove()">✖</button></div>
+                        <div class="acoes" style="display:flex; gap:8px; align-items:center;">
+                            <button style="background:transparent;border:none;cursor:pointer;font-size:1.1rem;" title="Editar" onclick="abrirModalEditarRegistro('${s.id}')">✏️</button>
+                            <button class="btn-x-vermelho" onclick="if(confirm('Excluir?')) refDb.child('sessoes/${s.id}').remove()">✖</button>
+                        </div>
                     </div>`;
                 }
             });
             document.getElementById('hj-tempo').textContent = `${Math.floor(hjSegs/3600)}h ${Math.floor((hjSegs%3600)/60)}m`;
             document.getElementById('hj-qts').textContent=hjQs; document.getElementById('hj-acertos').textContent=hjA; document.getElementById('hj-erros').textContent=hjE;
             document.getElementById('hj-pags').textContent=hjPags; document.getElementById('hj-vids').textContent=hjVids;
+        }
+
+        function abrirModalEditarRegistro(id) {
+            let s = dbData.sessoes.find(x => x.id === id);
+            if(!s) return;
+            document.getElementById('edit-ses-id').value = s.id;
+            document.getElementById('edit-ses-mat').value = s.materia || '';
+            document.getElementById('edit-ses-top').value = s.topico || '';
+            document.getElementById('edit-ses-acertos').value = s.acertos || 0;
+            document.getElementById('edit-ses-erros').value = s.erros || 0;
+            
+            let h = Math.floor((s.segundos || 0) / 3600).toString().padStart(2,'0');
+            let m = Math.floor(((s.segundos || 0) % 3600) / 60).toString().padStart(2,'0');
+            document.getElementById('edit-ses-tempo').value = `${h}:${m}`;
+            document.getElementById('edit-ses-obs').value = s.obs || '';
+            
+            document.getElementById('modal-editar-sessao').style.display = 'flex';
+        }
+
+        function salvarEdicaoSessao() {
+            let id = document.getElementById('edit-ses-id').value;
+            let s = dbData.sessoes.find(x => x.id === id);
+            if(!s) return;
+            
+            s.materia = sanitizeText(document.getElementById('edit-ses-mat').value);
+            s.topico = sanitizeText(document.getElementById('edit-ses-top').value);
+            s.acertos = parseInt(document.getElementById('edit-ses-acertos').value) || 0;
+            s.erros = parseInt(document.getElementById('edit-ses-erros').value) || 0;
+            s.totalQts = s.acertos + s.erros;
+            
+            let tempoStr = document.getElementById('edit-ses-tempo').value || "00:00";
+            let partes = tempoStr.split(':');
+            let h = parseInt(partes[0]) || 0;
+            let m = parseInt(partes[1]) || 0;
+            s.segundos = (h * 3600) + (m * 60);
+            s.obs = sanitizeText(document.getElementById('edit-ses-obs').value);
+            
+            refDb.child('sessoes/' + s.id).set(s);
+            document.getElementById('modal-editar-sessao').style.display = 'none';
+            alert("Registro atualizado com sucesso!");
         }
 
         // PROVAS
@@ -700,7 +719,7 @@ button.btn-outline:active {
             });
         }
 
-        // MATÉRIAS E JUNÇÃO DE TÓPICOS
+        // MATÉRIAS E EDIÇÃO DE TÓPICOS
         document.getElementById('mat-paleta').innerHTML = paleta15.map(c => `<div style="width:28px; height:28px; border-radius:50%; background:${c}; cursor:pointer;" onclick="corAtualMateria='${c}'; this.style.border='2px solid var(--text-main)';"></div>`).join('');
         
         function salvarMateria() {
@@ -723,7 +742,7 @@ button.btn-outline:active {
                 let nomeP = isGeral ? 'Matérias Gerais' : (dbData.provas.find(x=>x.id===p)?.nome || 'Prova');
                 
                 let conteudoMat = grupos[p].map(m => {
-                    let htmlT = m.topicos.map((t, i) => `<div style="padding:8px 0; border-bottom:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center;"><span>📄 ${t}</span> <div><button style="background:transparent;border:none;cursor:pointer;font-size:1.1rem;margin-right:8px;" title="Juntar" onclick="abrirModalJuntar('${m.id}', ${i})">🔗</button> <button class="btn-x-vermelho" onclick="dbData.materias.find(x=>x.id==='${m.id}').topicos.splice(${i},1); refDb.child('materias').set(dbData.materias);">✖</button></div></div>`).join('');
+                    let htmlT = m.topicos.map((t, i) => `<div style="padding:8px 0; border-bottom:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center;"><span>📄 ${t}</span> <div style="display:flex; gap:6px; align-items:center;"><button style="background:transparent;border:none;cursor:pointer;font-size:1.1rem;" title="Editar Tópico" onclick="editarTopico('${m.id}', ${i})">✏️</button><button style="background:transparent;border:none;cursor:pointer;font-size:1.1rem;" title="Juntar" onclick="abrirModalJuntar('${m.id}', ${i})">🔗</button><button class="btn-x-vermelho" onclick="dbData.materias.find(x=>x.id==='${m.id}').topicos.splice(${i},1); refDb.child('materias').set(dbData.materias);">✖</button></div></div>`).join('');
                     return `<div class="pasta-header" style="border-left:5px solid ${m.cor};" onclick="this.nextElementSibling.classList.toggle('aberta')"><span>📁 ${m.nome} (${m.topicos.length})</span><button class="btn-x-vermelho" onclick="event.stopPropagation(); if(confirm('Apagar?')) { dbData.materias=dbData.materias.filter(x=>x.id!=='${m.id}'); refDb.child('materias').set(dbData.materias); }">✖</button></div><div class="pasta-body">${htmlT||'<span style="color:var(--text-muted);font-size:0.85rem;">Vazio.</span>'}</div>`;
                 }).join('');
 
@@ -735,7 +754,26 @@ button.btn-outline:active {
             }
         }
 
-       function abrirModalJuntar(mId, topIndex) {
+        function editarTopico(mId, topIndex) {
+            let mat = dbData.materias.find(m => m.id === mId);
+            let topAntigo = mat.topicos[topIndex];
+            let novoTop = prompt("Editar nome do tópico:", topAntigo);
+            if(!novoTop || !novoTop.trim()) return;
+            novoTop = sanitizeText(novoTop.trim());
+            if(mat.topicos.includes(novoTop)) return alert("Já existe um tópico com esse nome.");
+            
+            mat.topicos[topIndex] = novoTop;
+            
+            dbData.sessoes.forEach(s => { if(s.materia === mat.nome && s.topico === topAntigo) s.topico = novoTop; });
+            refDb.child('sessoes').set(dbData.sessoes);
+            dbData.cadernos.forEach(c => { if(c.materia === mat.nome && c.topico === topAntigo) c.topico = novoTop; });
+            refDb.child('cadernos').set(dbData.cadernos);
+            
+            refDb.child('materias').set(dbData.materias);
+            alert("Tópico atualizado com sucesso!");
+        }
+
+        function abrirModalJuntar(mId, topIndex) {
             let mat = dbData.materias.find(m => m.id === mId);
             let topOri = mat.topicos[topIndex]; 
 
@@ -767,10 +805,8 @@ button.btn-outline:active {
             let mat = dbData.materias.find(m => m.id === mId);
             if(!mat || !tOri || !tDest) return alert("Erro ao identificar os tópicos.");
             
-            // Cria o nome combinado de forma automática (Ex: A.B.)
             let novoNome = tOri + "." + tDest;
             
-            // 1. Atualiza todas as sessões de estudo de ambos para o novo nome unificado
             dbData.sessoes.forEach(s => { 
                 if(s.materia === mat.nome && (s.topico === tOri || s.topico === tDest)) {
                     s.topico = novoNome;
@@ -778,7 +814,6 @@ button.btn-outline:active {
             }); 
             refDb.child('sessoes').set(dbData.sessoes);
             
-            // 2. Atualiza todos os cadernos de erros e flashcards
             dbData.cadernos.forEach(c => { 
                 if(c.materia === mat.nome && (c.topico === tOri || c.topico === tDest)) {
                     c.topico = novoNome;
@@ -786,7 +821,6 @@ button.btn-outline:active {
             }); 
             refDb.child('cadernos').set(dbData.cadernos);
 
-            // 3. Remove os dois tópicos separados da lista e adiciona o unificado
             mat.topicos = mat.topicos.filter(t => t !== tOri && t !== tDest);
             mat.topicos.push(novoNome);
             
@@ -796,6 +830,7 @@ button.btn-outline:active {
             alert(`Tópicos unidos com sucesso!\n\nCriado automaticamente o tópico: "${novoNome}" com todo o histórico combinado.`);
             renderizarInicio();
         }
+
         function atualizarSelectsUI() {
             let dlMats = document.getElementById('lista-materias-dl'); if(dlMats) { dlMats.innerHTML = ''; [...new Set(dbData.materias.map(m=>m.nome))].forEach(m => dlMats.innerHTML += `<option value="${m}">`); }
             let selP = [document.getElementById('mat-prova'), document.getElementById('edital-ia-prova')];
