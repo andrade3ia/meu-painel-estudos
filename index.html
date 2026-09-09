@@ -582,13 +582,13 @@
             } catch(e) { alert("Erro: " + e.message); }
         }
 
-        // DADOS
+        // DADOS (Com conversão segura para evitar que Firebase transforme arrays em objetos corrompidos)
         function carregarDadosGlobais() {
             refDb.child('perfil/nome').on('value', s => { if(s.val()) document.getElementById('conta-nome').value = s.val(); });
             refDb.child('sessoes').on('value', s => { dbData.sessoes = s.val() ? Object.values(s.val()) : []; renderizarInicio(); calcularTempoTotal(); if(document.getElementById('view-estatisticas').style.display==='block') atualizarEstatisticas(); });
-            refDb.child('provas').on('value', s => { dbData.provas = s.val() || []; renderizarProvas(); atualizarSelectsUI(); });
-            refDb.child('materias').on('value', s => { dbData.materias = s.val() || []; renderizarMaterias(); atualizarSelectsUI(); });
-            refDb.child('cadernos').on('value', s => { dbData.cadernos = s.val() || []; renderizarCadernos(); atualizarCheckboxesIA(); });
+            refDb.child('provas').on('value', s => { let v = s.val(); dbData.provas = v ? (Array.isArray(v) ? v : Object.values(v)) : []; renderizarProvas(); atualizarSelectsUI(); });
+            refDb.child('materias').on('value', s => { let v = s.val(); dbData.materias = v ? (Array.isArray(v) ? v : Object.values(v)) : []; renderizarMaterias(); atualizarSelectsUI(); });
+            refDb.child('cadernos').on('value', s => { let v = s.val(); dbData.cadernos = v ? (Array.isArray(v) ? v : Object.values(v)) : []; renderizarCadernos(); atualizarCheckboxesIA(); });
             refDb.child('biblioteca').on('value', s => { dbData.biblioteca = s.val() ? Object.values(s.val()) : []; renderizarBiblioteca(); atualizarCheckboxesIA(); });
             refDb.child('ia_historico').on('value', s => { dbData.iaHistorico = s.val() || []; renderizarHistoricoIA(); });
         }
@@ -611,7 +611,10 @@
 
         function atualizarTopicosSessao(matNome) {
             let dl = document.getElementById('dl-ses-top'); if(!dl) return; dl.innerHTML = '';
-            dbData.materias.filter(m => m.nome.toLowerCase() === matNome.toLowerCase()).forEach(m => m.topicos.forEach(t => dl.innerHTML += `<option value="${t}">`));
+            if(!Array.isArray(dbData.materias)) dbData.materias = Object.values(dbData.materias || {});
+            dbData.materias.filter(m => m.nome.toLowerCase() === matNome.toLowerCase()).forEach(m => {
+                if(Array.isArray(m.topicos)) m.topicos.forEach(t => dl.innerHTML += `<option value="${t}">`);
+            });
         }
 
         // RESUMO GERAL E CALENDÁRIO
@@ -728,9 +731,18 @@
             if(reg.tipoMat.includes('PDF')) { reg.paginas = Math.max(0, (parseInt(document.getElementById('ses-pdf-fim').value)||0) - (parseInt(document.getElementById('ses-pdf-ini').value)||0) + 1); }
             if(reg.tipoMat === 'Vídeo Aula') { reg.videos = Math.max(0, (parseInt(document.getElementById('ses-vid-fim').value)||0) - (parseInt(document.getElementById('ses-vid-ini').value)||0) + 1); }
 
+            if(!Array.isArray(dbData.materias)) dbData.materias = Object.values(dbData.materias || {});
             let idxM = dbData.materias.findIndex(m => m.nome.toLowerCase() === mat.toLowerCase());
-            if(idxM === -1) { dbData.materias.push({id: gerarId(), nome: mat, cor: paleta15[0], topicos: top ? [top] : []}); refDb.child('materias').set(dbData.materias); }
-            else if(top && !dbData.materias[idxM].topicos.includes(top)) { dbData.materias[idxM].topicos.push(top); refDb.child('materias').set(dbData.materias); }
+            if(idxM === -1) { 
+                dbData.materias.push({id: gerarId(), nome: mat, cor: corAtualMateria, topicos: top ? [top] : []}); 
+                refDb.child('materias').set(dbData.materias); 
+            } else if(top) {
+                if(!Array.isArray(dbData.materias[idxM].topicos)) dbData.materias[idxM].topicos = Object.values(dbData.materias[idxM].topicos || {});
+                if(!dbData.materias[idxM].topicos.includes(top)) {
+                    dbData.materias[idxM].topicos.push(top);
+                    refDb.child('materias').set(dbData.materias);
+                }
+            }
 
             refDb.child('sessoes/'+reg.id).set(reg);
             
@@ -798,10 +810,14 @@
         function salvarProva() {
             let n = sanitizeText(document.getElementById('conc-nome').value), d = document.getElementById('conc-data').value;
             if(!n || !d) return alert("Preencha nome e data.");
-            dbData.provas.push({id: gerarId(), nome: n, data: d}); refDb.child('provas').set(dbData.provas); document.getElementById('conc-nome').value='';
+            if(!Array.isArray(dbData.provas)) dbData.provas = Object.values(dbData.provas || {});
+            dbData.provas.push({id: gerarId(), nome: n, data: d}); 
+            refDb.child('provas').set(dbData.provas); 
+            document.getElementById('conc-nome').value='';
         }
         function renderizarProvas() {
             let div = document.getElementById('lista-provas-div'); div.innerHTML = '';
+            if(!Array.isArray(dbData.provas)) dbData.provas = Object.values(dbData.provas || {});
             dbData.provas.forEach(p => {
                 let dias = Math.ceil((new Date(p.data) - new Date()) / (1000*60*60*24));
                 div.innerHTML += `<div class="stat-card" style="position:relative;"><span>${p.nome}</span><strong style="color:${dias<30?'var(--brand-danger)':'var(--brand-primary)'}; margin:10px 0;">Faltam ${dias} dias</strong><span style="font-weight:normal;">📅 ${p.data}</span><button class="btn-x-vermelho" style="position:absolute; top:8px; right:8px;" onclick="if(confirm('Excluir?')) { dbData.provas=dbData.provas.filter(x=>x.id!=='${p.id}'); refDb.child('provas').set(dbData.provas); }">✖</button></div>`;
@@ -814,14 +830,21 @@
         function salvarMateria() {
             let n = sanitizeText(document.getElementById('mat-nome').value), t = sanitizeText(document.getElementById('mat-topico').value), pId = document.getElementById('mat-prova').value;
             if(!n) return;
+            if(!Array.isArray(dbData.materias)) dbData.materias = Object.values(dbData.materias || {});
             let idx = dbData.materias.findIndex(m => m.nome.toLowerCase() === n.toLowerCase() && m.provaId === pId);
-            if(idx !== -1) { if(t && !dbData.materias[idx].topicos.includes(t)) dbData.materias[idx].topicos.push(t); dbData.materias[idx].cor = corAtualMateria; } 
-            else { dbData.materias.push({id: gerarId(), nome: n, cor: corAtualMateria, topicos: t ? [t] : [], provaId: pId}); }
+            if(idx !== -1) { 
+                if(!Array.isArray(dbData.materias[idx].topicos)) dbData.materias[idx].topicos = Object.values(dbData.materias[idx].topicos || {});
+                if(t && !dbData.materias[idx].topicos.includes(t)) dbData.materias[idx].topicos.push(t); 
+                dbData.materias[idx].cor = corAtualMateria; 
+            } else { 
+                dbData.materias.push({id: gerarId(), nome: n, cor: corAtualMateria, topicos: t ? [t] : [], provaId: pId}); 
+            }
             refDb.child('materias').set(dbData.materias); document.getElementById('mat-topico').value = '';
         }
 
         function renderizarMaterias() {
             let div = document.getElementById('lista-materias-cadastradas'); div.innerHTML = '';
+            if(!Array.isArray(dbData.materias)) dbData.materias = Object.values(dbData.materias || {});
             let grupos = { 'geral': [] };
             dbData.materias.forEach(m => { let p = m.provaId || 'geral'; if(!grupos[p]) grupos[p] = []; grupos[p].push(m); });
 
@@ -831,7 +854,8 @@
                 let nomeP = isGeral ? 'Matérias Gerais' : (dbData.provas.find(x=>x.id===p)?.nome || 'Prova');
                 
                 let conteudoMat = grupos[p].map(m => {
-                    let htmlT = m.topicos.map((t, i) => `<div style="padding:8px 0; border-bottom:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center;"><span>📄 ${t}</span> <div><button style="background:transparent;border:none;cursor:pointer;font-size:1rem;margin-right:6px;" title="Editar Tópico" onclick="editarTopico('${m.id}', ${i})">✏️</button> <button style="background:transparent;border:none;cursor:pointer;font-size:1rem;margin-right:6px;" title="Juntar Tópicos" onclick="abrirModalJuntar('${m.id}', '${sanitizeText(t).replace(/'/g,"\\'")}')">🔗</button> <button class="btn-x-vermelho" onclick="dbData.materias.find(x=>x.id==='${m.id}').topicos.splice(${i},1); refDb.child('materias').set(dbData.materias);">✖</button></div></div>`).join('');
+                    if(!Array.isArray(m.topicos)) m.topicos = Object.values(m.topicos || {});
+                    let htmlT = m.topicos.map((t, i) => `<div style="padding:8px 0; border-bottom:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center;"><span>📄 ${t}</span> <div><button style="background:transparent;border:none;cursor:pointer;font-size:1rem;margin-right:6px;" title="Editar Tópico" onclick="editarTopico('${m.id}', ${i})">✏️</button> <button style="background:transparent;border:none;cursor:pointer;font-size:1rem;margin-right:6px;" title="Juntar Tópicos" onclick="abrirModalJuntar('${m.id}', '${sanitizeText(t).replace(/'/g,"\\'")}')">🔗</button> <button class="btn-x-vermelho" onclick="if(!Array.isArray(dbData.materias.find(x=>x.id==='${m.id}').topicos)) dbData.materias.find(x=>x.id==='${m.id}').topicos = Object.values(dbData.materias.find(x=>x.id==='${m.id}').topicos || {}); dbData.materias.find(x=>x.id==='${m.id}').topicos.splice(${i},1); refDb.child('materias').set(dbData.materias);">✖</button></div></div>`).join('');
                     return `<div class="pasta-header" style="border-left:5px solid ${m.cor};" onclick="this.nextElementSibling.classList.toggle('aberta')"><span>📁 ${m.nome} (${m.topicos.length})</span><button class="btn-x-vermelho" onclick="event.stopPropagation(); if(confirm('Apagar?')) { dbData.materias=dbData.materias.filter(x=>x.id!=='${m.id}'); refDb.child('materias').set(dbData.materias); }">✖</button></div><div class="pasta-body">${htmlT||'<span style="color:var(--text-muted);font-size:0.85rem;">Vazio.</span>'}</div>`;
                 }).join('');
 
@@ -844,8 +868,10 @@
         }
 
         function editarTopico(mId, index) {
+            if(!Array.isArray(dbData.materias)) dbData.materias = Object.values(dbData.materias || {});
             let mat = dbData.materias.find(m => m.id === mId);
             if(!mat) return;
+            if(!Array.isArray(mat.topicos)) mat.topicos = Object.values(mat.topicos || {});
             let velhoTop = mat.topicos[index];
             let novoTop = prompt("Editar nome do tópico:", velhoTop);
             if(!novoTop || !novoTop.trim()) return;
@@ -854,7 +880,6 @@
             
             mat.topicos[index] = novoTop;
             
-            // Atualizar sessões e cadernos com segurança
             dbData.sessoes.forEach(s => { if(s.materia === mat.nome && s.topico === velhoTop) s.topico = novoTop; });
             refDb.child('sessoes').set(dbData.sessoes);
             dbData.cadernos.forEach(c => { if(c.materia === mat.nome && c.topico === velhoTop) c.topico = novoTop; });
@@ -865,7 +890,10 @@
         }
 
         function abrirModalJuntar(mId, topOri) {
+            if(!Array.isArray(dbData.materias)) dbData.materias = Object.values(dbData.materias || {});
             let mat = dbData.materias.find(m => m.id === mId);
+            if(!mat) return;
+            if(!Array.isArray(mat.topicos)) mat.topicos = Object.values(mat.topicos || {});
             document.getElementById('lbl-topico-origem').textContent = topOri;
             document.getElementById('hid-mat-id').value = mId;
             document.getElementById('hid-top-origem').value = topOri;
@@ -880,8 +908,10 @@
             let mId = document.getElementById('hid-mat-id').value, tOri = document.getElementById('hid-top-origem').value, tDest = document.getElementById('sel-topico-destino').value;
             if(!tDest || tOri === tDest) return alert("Selecione um destino válido.");
             
+            if(!Array.isArray(dbData.materias)) dbData.materias = Object.values(dbData.materias || {});
             let mat = dbData.materias.find(m => m.id === mId);
             if(!mat) return;
+            if(!Array.isArray(mat.topicos)) mat.topicos = Object.values(mat.topicos || {});
             
             mat.topicos = mat.topicos.filter(t => t !== tOri);
             
@@ -897,13 +927,27 @@
         }
 
         function atualizarSelectsUI() {
-            let dlMats = document.getElementById('lista-materias-dl'); if(dlMats) { dlMats.innerHTML = ''; [...new Set(dbData.materias.map(m=>m.nome))].forEach(m => dlMats.innerHTML += `<option value="${m}">`); }
+            let dlMats = document.getElementById('lista-materias-dl'); 
+            if(dlMats) { 
+                dlMats.innerHTML = ''; 
+                if(!Array.isArray(dbData.materias)) dbData.materias = Object.values(dbData.materias || {});
+                [...new Set(dbData.materias.map(m=>m.nome))].forEach(m => dlMats.innerHTML += `<option value="${m}">`); 
+            }
             let selP = [document.getElementById('mat-prova'), document.getElementById('edital-ia-prova')];
-            selP.forEach(s => { if(s) { s.innerHTML = '<option value="">Vincular a uma Prova? (Opcional)</option>'; dbData.provas.forEach(p => s.innerHTML += `<option value="${p.id}">${p.nome}</option>`); } });
+            selP.forEach(s => { 
+                if(s) { 
+                    s.innerHTML = '<option value="">Vincular a uma Prova? (Opcional)</option>'; 
+                    if(!Array.isArray(dbData.provas)) dbData.provas = Object.values(dbData.provas || {});
+                    dbData.provas.forEach(p => s.innerHTML += `<option value="${p.id}">${p.nome}</option>`); 
+                } 
+            });
         }
         function atualizarTopicosDatalist(inputId, matNome) {
             let dl = document.getElementById('dl-'+inputId); if(!dl) return; dl.innerHTML = '';
-            dbData.materias.filter(m => m.nome.toLowerCase() === matNome.toLowerCase()).forEach(m => m.topicos.forEach(t => dl.innerHTML += `<option value="${t}">`));
+            if(!Array.isArray(dbData.materias)) dbData.materias = Object.values(dbData.materias || {});
+            dbData.materias.filter(m => m.nome.toLowerCase() === matNome.toLowerCase()).forEach(m => {
+                if(Array.isArray(m.topicos)) m.topicos.forEach(t => dl.innerHTML += `<option value="${t}">`);
+            });
         }
 
         // CADERNOS
@@ -915,6 +959,7 @@
         }
         function renderizarCadernos() {
             let div = document.getElementById('lista-cadernos-div'); div.innerHTML = ''; let agr = {};
+            if(!Array.isArray(dbData.cadernos)) dbData.cadernos = Object.values(dbData.cadernos || {});
             dbData.cadernos.forEach(c => { if(!agr[c.materia]) agr[c.materia] = {}; if(!agr[c.materia][c.topico]) agr[c.materia][c.topico] = []; agr[c.materia][c.topico].push(c); });
             for(let m in agr) {
                 let htmlM = '';
@@ -950,7 +995,11 @@
             if(graficoInstance) graficoInstance.destroy();
             let isDark = document.documentElement.getAttribute('data-theme') === 'dark'; let txtCor = isDark ? '#FFFFFF' : '#000000';
             let keys = Object.keys(dadosGraf).length>0 ? Object.keys(dadosGraf) : ['Sem dados'], vals = Object.values(dadosGraf).length>0 ? Object.values(dadosGraf) : [1];
-            let cores = keys.map(k => { let m = dbData.materias.find(x=>x.nome===k); return m ? m.cor : paleta15[0]; });
+            let cores = keys.map(k => { 
+                if(!Array.isArray(dbData.materias)) dbData.materias = Object.values(dbData.materias || {});
+                let m = dbData.materias.find(x=>x.nome===k); 
+                return m ? m.cor : paleta15[0]; 
+            });
 
             graficoInstance = new Chart(document.getElementById('graficoEst').getContext('2d'), {
                 type: tipo, data: { labels: keys, datasets: [{ label: 'Minutos', data: vals, backgroundColor: cores, borderWidth: 0, borderRadius: tipo==='bar'?6:0 }] },
@@ -1100,10 +1149,15 @@
                 const data = await res.json(); if(data.error) throw new Error(data.error.message);
                 let json = JSON.parse(data.candidates[0].content.parts[0].text.match(/\[.*\]/s)[0]);
                 
+                if(!Array.isArray(dbData.materias)) dbData.materias = Object.values(dbData.materias || {});
                 json.forEach(n => {
                     let idx = dbData.materias.findIndex(x=>x.nome.toLowerCase()===n.disciplina.toLowerCase() && x.provaId===pId);
-                    if(idx !== -1) { n.topicos.forEach(t=>{ if(!dbData.materias[idx].topicos.includes(t)) dbData.materias[idx].topicos.push(t); }); }
-                    else { dbData.materias.push({id:gerarId(), nome:n.disciplina, cor:paleta15[0], topicos:n.topicos, provaId:pId}); }
+                    if(idx !== -1) { 
+                        if(!Array.isArray(dbData.materias[idx].topicos)) dbData.materias[idx].topicos = Object.values(dbData.materias[idx].topicos || {});
+                        n.topicos.forEach(t=>{ if(!dbData.materias[idx].topicos.includes(t)) dbData.materias[idx].topicos.push(t); }); 
+                    } else { 
+                        dbData.materias.push({id:gerarId(), nome:n.disciplina, cor:paleta15[0], topicos:n.topicos, provaId:pId}); 
+                    }
                 });
                 refDb.child('materias').set(dbData.materias); document.getElementById('edital-texto').value=''; alert("Edital mapeado!");
             } catch(e) { alert("Erro: "+e.message); } finally { btn.textContent=tx; btn.disabled=false; }
