@@ -45,10 +45,6 @@
         .nav-btn:hover { background: var(--bg-hover); transform: translateX(2px); }
         .nav-btn.active { background: rgba(0, 122, 255, 0.12); color: var(--brand-primary); font-weight: 600; border-left: 4px solid var(--brand-primary); }
 
-        .tempo-total-box { background: linear-gradient(135deg, var(--brand-primary), #0056b3); padding: 20px; border-radius: var(--radius-md); text-align: center; margin-bottom: 16px; color: white; box-shadow: var(--shadow-md); }
-        .tempo-total-box span { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; opacity: 0.85; letter-spacing: 0.8px; }
-        .tempo-total-box strong { display: block; font-size: 1.6rem; font-weight: 700; margin-top: 4px; font-variant-numeric: tabular-nums; }
-
         .main-content { flex: 1; padding: 32px; overflow-y: auto; scroll-behavior: smooth; }
         .container-interno { max-width: 1020px; margin: 0 auto; padding-bottom: 80px; width: 100%; }
         
@@ -122,11 +118,6 @@
         <div class="sidebar-logo">
             <h1>PRUMA</h1>
             <span class="sub">Painel de Estudos</span>
-        </div>
-        
-        <div class="tempo-total-box">
-            <span>Tempo Total</span>
-            <strong id="side-tempo-total">00:00:00</strong>
         </div>
         
         <button class="nav-btn active" onclick="irTela('inicio', event)">🏠 Início</button>
@@ -598,7 +589,6 @@
         function calcularTempoTotal() {
             let segs = dbData.sessoes.reduce((acc, s) => acc + (s.segundos || 0), 0);
             let textoTempo = `${Math.floor(segs / 3600)}h ${Math.floor((segs % 3600) / 60)}m`;
-            document.getElementById('side-tempo-total').textContent = textoTempo;
             let elRgTempo = document.getElementById('rg-tempo');
             if(elRgTempo) elRgTempo.textContent = textoTempo;
         }
