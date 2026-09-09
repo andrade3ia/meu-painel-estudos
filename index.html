@@ -303,17 +303,28 @@
                     <div style="display:flex; gap:16px; margin-bottom:20px; flex-wrap:wrap;">
                         <select id="est-periodo" onchange="atualizarEstatisticas()" style="flex:1; min-width:140px;"><option value="hoje">Hoje</option><option value="7">Últimos 7 dias</option><option value="30">Últimos 30 dias</option><option value="tudo" selected>Sempre</option><option value="custom">Período Específico...</option></select>
                         <select id="est-tipo-grafico" onchange="atualizarEstatisticas()" style="flex:1; min-width:140px;"><option value="doughnut">Gráfico Rosca</option><option value="bar">Gráfico de Barras</option></select>
-                        <select id="est-modo-visao" onchange="toggleVisaoEstatisticas()" style="flex:1; min-width:140px;">
-                            <option value="prova">Visão: Prova</option>
-                            <option value="materia" selected>Visão: Matéria</option>
-                            <option value="topico">Visão: Tópico</option>
-                        </select>
                     </div>
-                    <div id="est-materia-container" style="display:none; margin-bottom:20px;">
-                        <select id="est-filtro-materia" onchange="atualizarEstatisticas()" style="width:100%;">
-                            <option value="">Selecione a Matéria para ver os Tópicos...</option>
-                        </select>
+
+                    <!-- FILTROS MULTI-SELEÇÃO POR PROVA, MATÉRIA E TÓPICO -->
+                    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:16px; margin-bottom:20px; background:var(--bg-input); padding:16px; border-radius:var(--radius-sm);">
+                        <div>
+                            <label style="font-size:0.75rem; font-weight:700; color:var(--text-muted); display:block; margin-bottom:8px;">FILTRAR PROVAS</label>
+                            <div id="est-filtro-provas-list" style="max-height:120px; overflow-y:auto; display:flex; flex-direction:column; gap:6px; background:var(--bg-card); padding:8px; border-radius:var(--radius-sm); border:1px solid var(--border-color);"></div>
+                        </div>
+                        <div>
+                            <label style="font-size:0.75rem; font-weight:700; color:var(--text-muted); display:block; margin-bottom:8px;">FILTRAR MATÉRIAS</label>
+                            <div id="est-filtro-materias-list" style="max-height:120px; overflow-y:auto; display:flex; flex-direction:column; gap:6px; background:var(--bg-card); padding:8px; border-radius:var(--radius-sm); border:1px solid var(--border-color);"></div>
+                        </div>
+                        <div>
+                            <label style="font-size:0.75rem; font-weight:700; color:var(--text-muted); display:block; margin-bottom:8px;">FILTRAR TÓPICOS</label>
+                            <div id="est-filtro-topicos-list" style="max-height:120px; overflow-y:auto; display:flex; flex-direction:column; gap:6px; background:var(--bg-card); padding:8px; border-radius:var(--radius-sm); border:1px solid var(--border-color);">
+                                <span style="font-size:0.85rem; color:var(--text-muted);">Selecione matérias acima</span>
+                            </div>
+                        </div>
                     </div>
+
+                    <div id="est-topic-info" style="font-size:0.9rem; font-weight:600; color:var(--brand-primary); margin-bottom:16px; display:none;"></div>
+
                     <div id="est-custom-dates" style="display:none; gap:16px; margin-bottom:20px; background:var(--bg-input); padding:16px; border-radius:var(--radius-sm); flex-wrap:wrap;">
                         <input type="date" id="est-dt-ini" style="margin:0; flex:1; min-width:130px;"><input type="date" id="est-dt-fim" style="margin:0; flex:1; min-width:130px;">
                         <button class="btn-success" style="width:auto;" onclick="atualizarEstatisticas()">Filtrar</button>
@@ -542,9 +553,7 @@
             }
             if(window.innerWidth <= 768) document.getElementById('sidebar-menu').classList.remove('open');
             if(t === 'estatisticas') {
-                if(document.getElementById('est-modo-visao').value === 'topico') {
-                    atualizarSelectFiltroMateriaEstatisticas();
-                }
+                renderizarFiltrosEstatisticas();
                 atualizarEstatisticas();
             }
         }
@@ -601,9 +610,9 @@
         // DADOS
         function carregarDadosGlobais() {
             refDb.child('perfil/nome').on('value', s => { if(s.val()) document.getElementById('conta-nome').value = s.val(); });
-            refDb.child('sessoes').on('value', s => { dbData.sessoes = s.val() ? Object.values(s.val()) : []; renderizarInicio(); if(document.getElementById('view-estatisticas').style.display==='block') { if(document.getElementById('est-modo-visao').value==='topico') atualizarSelectFiltroMateriaEstatisticas(); atualizarEstatisticas(); } });
-            refDb.child('provas').on('value', s => { let v = s.val(); dbData.provas = v ? (Array.isArray(v) ? v : Object.values(v)) : []; renderizarProvas(); atualizarSelectsUI(); });
-            refDb.child('materias').on('value', s => { let v = s.val(); dbData.materias = v ? (Array.isArray(v) ? v : Object.values(v)) : []; renderizarMaterias(); atualizarSelectsUI(); if(document.getElementById('est-modo-visao').value==='topico') atualizarSelectFiltroMateriaEstatisticas(); });
+            refDb.child('sessoes').on('value', s => { dbData.sessoes = s.val() ? Object.values(s.val()) : []; renderizarInicio(); if(document.getElementById('view-estatisticas').style.display==='block') { renderizarFiltrosEstatisticas(); atualizarEstatisticas(); } });
+            refDb.child('provas').on('value', s => { let v = s.val(); dbData.provas = v ? (Array.isArray(v) ? v : Object.values(v)) : []; renderizarProvas(); atualizarSelectsUI(); if(document.getElementById('view-estatisticas').style.display==='block') renderizarFiltrosEstatisticas(); });
+            refDb.child('materias').on('value', s => { let v = s.val(); dbData.materias = v ? (Array.isArray(v) ? v : Object.values(v)) : []; renderizarMaterias(); atualizarSelectsUI(); if(document.getElementById('view-estatisticas').style.display==='block') renderizarFiltrosEstatisticas(); });
             refDb.child('cadernos').on('value', s => { let v = s.val(); dbData.cadernos = v ? (Array.isArray(v) ? v : Object.values(v)) : []; renderizarCadernos(); });
             refDb.child('biblioteca').on('value', s => { dbData.biblioteca = s.val() ? Object.values(s.val()) : []; renderizarBiblioteca(); });
             refDb.child('ia_historico').on('value', s => { dbData.iaHistorico = s.val() || []; renderizarHistoricoIA(); });
@@ -986,9 +995,6 @@
                     dbData.provas.forEach(p => s.innerHTML += `<option value="${p.id}">${p.nome}</option>`); 
                 } 
             });
-            if(document.getElementById('est-modo-visao') && document.getElementById('est-modo-visao').value === 'topico') {
-                atualizarSelectFiltroMateriaEstatisticas();
-            }
         }
         function atualizarTopicosDatalist(inputId, matNome) {
             let dl = document.getElementById('dl-'+inputId); if(!dl) return; dl.innerHTML = '';
@@ -1020,73 +1026,161 @@
         }
 
         // ESTATÍSTICAS
-        function toggleVisaoEstatisticas() {
-            let modo = document.getElementById('est-modo-visao').value;
-            let container = document.getElementById('est-materia-container');
-            if(modo === 'topico') {
-                container.style.display = 'block';
-                atualizarSelectFiltroMateriaEstatisticas();
-            } else {
-                container.style.display = 'none';
+        function renderizarFiltrosEstatisticas() {
+            let divProvas = document.getElementById('est-filtro-provas-list');
+            if(divProvas) {
+                let htmlP = `<label style="font-size:0.85rem; display:flex; align-items:center; gap:6px; cursor:pointer;"><input type="checkbox" value="geral" onchange="atualizarEstatisticas()"> Matérias Gerais</label>`;
+                if(!Array.isArray(dbData.provas)) dbData.provas = Object.values(dbData.provas || {});
+                dbData.provas.forEach(p => {
+                    htmlP += `<label style="font-size:0.85rem; display:flex; align-items:center; gap:6px; cursor:pointer;"><input type="checkbox" value="${p.id}" onchange="atualizarEstatisticas()"> ${p.nome}</label>`;
+                });
+                divProvas.innerHTML = htmlP;
             }
+
+            let divMaterias = document.getElementById('est-filtro-materias-list');
+            if(divMaterias) {
+                let matsSet = new Set();
+                if(Array.isArray(dbData.materias)) dbData.materias.forEach(m => matsSet.add(m.nome));
+                dbData.sessoes.forEach(s => { if(s.materia) matsSet.add(s.materia); });
+                let htmlM = '';
+                [...matsSet].sort().forEach(m => {
+                    htmlM += `<label style="font-size:0.85rem; display:flex; align-items:center; gap:6px; cursor:pointer;"><input type="checkbox" value="${sanitizeText(m)}" onchange="onMateriasFilterChange()"> ${m}</label>`;
+                });
+                divMaterias.innerHTML = htmlM || '<span style="font-size:0.85rem; color:var(--text-muted);">Nenhuma matéria</span>';
+            }
+            renderizarTopicosEstatisticas();
+        }
+
+        function onMateriasFilterChange() {
+            renderizarTopicosEstatisticas();
             atualizarEstatisticas();
         }
 
-        function atualizarSelectFiltroMateriaEstatisticas() {
-            let sel = document.getElementById('est-filtro-materia');
-            if(!sel) return;
-            let valAtual = sel.value;
-            sel.innerHTML = '<option value="">Selecione a Matéria para ver os Tópicos...</option>';
-            let materiasSet = new Set();
-            if(Array.isArray(dbData.materias)) {
-                dbData.materias.forEach(m => materiasSet.add(m.nome));
-            }
-            dbData.sessoes.forEach(s => { if(s.materia) materiasSet.add(s.materia); });
-            [...materiasSet].sort().forEach(m => {
-                sel.innerHTML += `<option value="${m}">${m}</option>`;
+        function renderizarTopicosEstatisticas() {
+            let divTopicos = document.getElementById('est-filtro-topicos-list');
+            if(!divTopicos) return;
+
+            let selectedMaterias = [];
+            document.querySelectorAll('#est-filtro-materias-list input[type="checkbox"]:checked').forEach(cb => {
+                selectedMaterias.push(cb.value.toLowerCase());
             });
-            if(valAtual) sel.value = valAtual;
+
+            if(selectedMaterias.length === 0) {
+                divTopicos.innerHTML = '<span style="font-size:0.85rem; color:var(--text-muted);">Selecione matérias acima</span>';
+                return;
+            }
+
+            let topicosSet = new Set();
+            if(Array.isArray(dbData.materias)) {
+                dbData.materias.forEach(m => {
+                    if(selectedMaterias.includes(m.nome.toLowerCase()) && Array.isArray(m.topicos)) {
+                        m.topicos.forEach(t => topicosSet.add(t));
+                    }
+                });
+            }
+            dbData.sessoes.forEach(s => {
+                if(s.materia && selectedMaterias.includes(s.materia.toLowerCase()) && s.topico) {
+                    topicosSet.add(s.topico);
+                }
+            });
+
+            if(topicosSet.size === 0) {
+                divTopicos.innerHTML = '<span style="font-size:0.85rem; color:var(--text-muted);">Sem tópicos cadastrados</span>';
+                return;
+            }
+
+            let htmlT = '';
+            [...topicosSet].sort().forEach(t => {
+                htmlT += `<label style="font-size:0.85rem; display:flex; align-items:center; gap:6px; cursor:pointer;"><input type="checkbox" value="${sanitizeText(t)}" onchange="atualizarEstatisticas()"> ${t}</label>`;
+            });
+            divTopicos.innerHTML = htmlT;
         }
 
         function atualizarEstatisticas() {
             let per = document.getElementById('est-periodo').value, tipo = document.getElementById('est-tipo-grafico').value;
-            let modoVisao = document.getElementById('est-modo-visao').value;
             document.getElementById('est-custom-dates').style.display = per==='custom' ? 'flex' : 'none';
             let dtI = document.getElementById('est-dt-ini').value, dtF = document.getElementById('est-dt-fim').value;
             let agora = Date.now(), tA = 0, tE = 0, tSeg = 0, tPag = 0, tVid = 0, tQts = 0; let dadosGraf = {};
             let setDias = new Set();
-            
-            let filtroMatTopico = document.getElementById('est-filtro-materia') ? document.getElementById('est-filtro-materia').value : '';
 
-            dbData.sessoes.filter(s => {
-                if(per === 'tudo') return true;
-                if(per === 'custom') return (!dtI || !dtF) ? true : (s.timestamp >= new Date(dtI).getTime() && s.timestamp <= new Date(dtF).getTime()+86399999);
-                return (agora - s.timestamp) <= (parseInt(per)*86400000);
-            }).forEach(s => {
+            let provasChecked = [];
+            document.querySelectorAll('#est-filtro-provas-list input[type="checkbox"]:checked').forEach(cb => provasChecked.push(cb.value));
+
+            let materiasChecked = [];
+            document.querySelectorAll('#est-filtro-materias-list input[type="checkbox"]:checked').forEach(cb => materiasChecked.push(cb.value.toLowerCase()));
+
+            let topicosChecked = [];
+            document.querySelectorAll('#est-filtro-topicos-list input[type="checkbox"]:checked').forEach(cb => topicosChecked.push(cb.value.toLowerCase()));
+
+            let filteredSessoes = dbData.sessoes.filter(s => {
+                if(per !== 'tudo') {
+                    if(per === 'hoje') {
+                        if(s.data !== new Date().toLocaleDateString()) return false;
+                    } else if(per === 'custom') {
+                        if(dtI && dtF) {
+                            let tMin = new Date(dtI).getTime();
+                            let tMax = new Date(dtF).getTime() + 86399999;
+                            if(s.timestamp < tMin || s.timestamp > tMax) return false;
+                        }
+                    } else {
+                        if((agora - s.timestamp) > (parseInt(per)*86400000)) return false;
+                    }
+                }
+
+                if(provasChecked.length > 0) {
+                    let matObj = dbData.materias.find(m => m.nome.toLowerCase() === s.materia.toLowerCase());
+                    let pId = matObj && matObj.provaId ? matObj.provaId : 'geral';
+                    if(!provasChecked.includes(pId)) return false;
+                }
+
+                if(materiasChecked.length > 0) {
+                    if(!materiasChecked.includes(s.materia.toLowerCase())) return false;
+                }
+
+                if(topicosChecked.length > 0) {
+                    let sTop = s.topico ? s.topico.toLowerCase() : '';
+                    if(!topicosChecked.includes(sTop)) return false;
+                }
+
+                return true;
+            });
+
+            filteredSessoes.forEach(s => {
                 tA += (s.acertos||0); tE += (s.erros||0); tSeg += (s.segundos||0); tPag += (s.paginas||0); tVid += (s.videos||0);
                 tQts += (s.totalQts !== undefined ? s.totalQts : ((s.acertos||0)+(s.erros||0)));
                 if(s.data) setDias.add(s.data);
-                
+
                 let chaveGraf = s.materia;
-                if(modoVisao === 'prova') {
-                    let matObj = dbData.materias.find(m => m.nome.toLowerCase() === s.materia.toLowerCase());
-                    let pNome = "Matérias Gerais";
-                    if(matObj && matObj.provaId) {
-                        let pObj = dbData.provas.find(p => p.id === matObj.provaId);
-                        if(pObj) pNome = pObj.nome;
-                    }
-                    chaveGraf = pNome;
-                    dadosGraf[chaveGraf] = (dadosGraf[chaveGraf]||0) + (s.segundos/60);
-                } else if(modoVisao === 'materia') {
+                if(topicosChecked.length > 0) {
+                    chaveGraf = s.topico || 'Geral';
+                } else if(materiasChecked.length > 0) {
                     chaveGraf = s.materia;
-                    dadosGraf[chaveGraf] = (dadosGraf[chaveGraf]||0) + (s.segundos/60);
-                } else if(modoVisao === 'topico') {
-                    if(filtroMatTopico && s.materia.toLowerCase() === filtroMatTopico.toLowerCase()) {
-                        chaveGraf = s.topico || 'Geral';
-                        dadosGraf[chaveGraf] = (dadosGraf[chaveGraf]||0) + (s.segundos/60);
-                    }
+                } else {
+                    chaveGraf = s.materia;
                 }
+                dadosGraf[chaveGraf] = (dadosGraf[chaveGraf]||0) + (s.segundos/60);
             });
+
+            let topicInfoEl = document.getElementById('est-topic-info');
+            if(topicInfoEl) {
+                if(topicosChecked.length === 1) {
+                    let topName = "";
+                    document.querySelectorAll('#est-filtro-topicos-list input[type="checkbox"]:checked').forEach(cb => { topName = cb.value; });
+                    let parentMat = "Desconhecida";
+                    if(Array.isArray(dbData.materias)) {
+                        let mFound = dbData.materias.find(m => Array.isArray(m.topicos) && m.topicos.some(t => t.toLowerCase() === topName.toLowerCase()));
+                        if(mFound) parentMat = mFound.nome;
+                    }
+                    if(parentMat === "Desconhecida") {
+                        let sFound = dbData.sessoes.find(s => s.topico && s.topico.toLowerCase() === topName.toLowerCase());
+                        if(sFound) parentMat = sFound.materia;
+                    }
+                    topicInfoEl.style.display = 'block';
+                    topicInfoEl.textContent = `📌 Tópico: "${topName}" (Pertence à Matéria: ${parentMat})`;
+                } else {
+                    topicInfoEl.style.display = 'none';
+                }
+            }
 
             document.getElementById('st-tempo').textContent = `${Math.floor(tSeg/3600)}h ${Math.floor((tSeg%3600)/60)}m`;
             document.getElementById('st-qts').textContent = tQts;
@@ -1100,19 +1194,10 @@
 
             if(graficoInstance) graficoInstance.destroy();
             let isDark = document.documentElement.getAttribute('data-theme') === 'dark'; let txtCor = isDark ? '#FFFFFF' : '#000000';
-            
-            let keys = [], vals = [];
-            if(modoVisao === 'topico' && !filtroMatTopico) {
-                keys = ['Selecione a Matéria'];
-                vals = [1];
-            } else {
-                keys = Object.keys(dadosGraf).length>0 ? Object.keys(dadosGraf) : ['Sem dados'];
-                vals = Object.values(dadosGraf).length>0 ? Object.values(dadosGraf) : [1];
-            }
-
+            let keys = Object.keys(dadosGraf).length>0 ? Object.keys(dadosGraf) : ['Sem dados'], vals = Object.values(dadosGraf).length>0 ? Object.values(dadosGraf) : [1];
             let cores = keys.map(k => { 
                 if(!Array.isArray(dbData.materias)) dbData.materias = Object.values(dbData.materias || {});
-                let m = dbData.materias.find(x=>x.nome===k || k.startsWith(x.nome)); return m ? m.cor : paleta17[0]; 
+                let m = dbData.materias.find(x=>x.nome===k || (Array.isArray(x.topicos) && x.topicos.includes(k))); return m ? m.cor : paleta17[0]; 
             });
 
             graficoInstance = new Chart(document.getElementById('graficoEst').getContext('2d'), {
@@ -1181,7 +1266,7 @@
 
         function obterPromptDoSistema(tipo) {
             const prompts = {
-                chat: "Você é a PRUMA IA, tutora especialista em vestibulares e concursos. Explique de forma didática, direta e fundamentada cruzando informações com las fontes fornecidas. OBRIGATÓRIO citar a fonte da resposta.",
+                chat: "Você é a PRUMA IA, tutora especialista em vestibulares e concursos. Explique de forma didática, direta e fundamentada cruzando informações com as fontes fornecidas. OBRIGATÓRIO citar a fonte da resposta.",
                 questoes: "Você é a PRUMA IA, uma banca examinadora rigorosa. Crie questões inéditas de múltipla escolha (A, B, C, D, E) com alto rigor técnico. Forneça gabarito comentado justificando o erro e acerto de cada alternativa com base nas fontes.",
                 flashcards: "Você é a PRUMA IA, especialista em memorização ativa. Extraia conceitos-chave e crie pares de perguntas diretas e respostas concisas baseando-se no material fornecido. O foco é alta retenção."
             };
