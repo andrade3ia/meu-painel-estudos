@@ -27,7 +27,7 @@
             --shadow-md: 0 12px 32px rgba(0,0,0,0.45);
         }
 
-        * { box-sizing: border-box; transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease, transform 0.15s ease; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif; }
+        * { box-sizing: border-box; transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease, transform 0.15s ease; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif; min-width: 0; }
         body { background-color: var(--bg-body); color: var(--text-main); margin: 0; display: flex; height: 100vh; overflow: hidden; font-size: 15px; -webkit-font-smoothing: antialiased; }
         ::-webkit-scrollbar { width: 8px; height: 8px; }
         ::-webkit-scrollbar-track { background: transparent; }
@@ -41,7 +41,7 @@
         .sidebar-logo h1 { font-size: 1.8rem; margin: 0; font-weight: 700; color: var(--brand-primary); letter-spacing: -0.5px; }
         .sidebar-logo span.sub { font-size: 0.7rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 1.2px; }
         
-        .nav-btn { background: transparent; color: var(--text-main); border: none; text-align: left; padding: 12px 14px; font-size: 0.95rem; border-radius: var(--radius-sm); cursor: pointer; font-weight: 500; display: flex; align-items: center; gap: 12px; }
+        .nav-btn { background: transparent; color: var(--text-main); border: none; text-align: left; padding: 12px 14px; font-size: 0.95rem; border-radius: var(--radius-sm); cursor: pointer; font-weight: 500; display: flex; align-items: center; gap: 12px; width: 100%; }
         .nav-btn:hover { background: var(--bg-hover); transform: translateX(2px); }
         .nav-btn.active { background: rgba(0, 122, 255, 0.12); color: var(--brand-primary); font-weight: 600; border-left: 4px solid var(--brand-primary); }
 
@@ -50,12 +50,12 @@
         .tempo-total-box strong { display: block; font-size: 1.6rem; font-weight: 700; margin-top: 4px; font-variant-numeric: tabular-nums; }
 
         .main-content { flex: 1; padding: 32px; overflow-y: auto; scroll-behavior: smooth; }
-        .container-interno { max-width: 1020px; margin: 0 auto; padding-bottom: 80px; }
+        .container-interno { max-width: 1020px; margin: 0 auto; padding-bottom: 80px; width: 100%; }
         
-        .card { background-color: var(--bg-card); border-radius: var(--radius-md); padding: 24px; margin-bottom: 24px; border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); backdrop-filter: blur(10px); }
+        .card { background-color: var(--bg-card); border-radius: var(--radius-md); padding: 24px; margin-bottom: 24px; border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); backdrop-filter: blur(10px); width: 100%; overflow: hidden; }
         h2 { margin: 0 0 18px 0; color: var(--text-main); font-size: 1.35rem; font-weight: 700; border-bottom: 1px solid var(--border-color); padding-bottom: 12px; letter-spacing: -0.5px; }
         
-        input, select, textarea { width: 100%; padding: 12px 16px; margin-bottom: 12px; background-color: var(--bg-input); border: 1px solid var(--border-color); border-radius: var(--radius-sm); color: var(--text-main); font-size: 0.95rem; outline: none; font-weight: 500; }
+        input, select, textarea { width: 100%; max-width: 100%; padding: 12px 16px; margin-bottom: 12px; background-color: var(--bg-input); border: 1px solid var(--border-color); border-radius: var(--radius-sm); color: var(--text-main); font-size: 0.95rem; outline: none; font-weight: 500; }
         input:focus, select:focus, textarea:focus { border-color: var(--brand-primary); background-color: var(--bg-card); box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.15); }
         
         button.btn-primary { width: 100%; padding: 14px; font-weight: 600; border: none; border-radius: var(--radius-sm); cursor: pointer; background: var(--brand-primary); color: var(--btn-text); font-size: 0.95rem; box-shadow: var(--shadow-sm); }
@@ -65,32 +65,32 @@
         button.btn-success { background: var(--brand-success); color: white; border: none; padding: 12px 20px; border-radius: var(--radius-sm); font-weight: 600; cursor: pointer; box-shadow: var(--shadow-sm); }
         button.btn-danger { background: var(--brand-danger); color: white; border: none; padding: 10px 16px; border-radius: var(--radius-sm); cursor: pointer; font-size: 0.85rem; font-weight: 600; box-shadow: var(--shadow-sm); }
         
-        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 16px; margin-bottom: 24px; }
-        .stat-card { background: var(--bg-card); padding: 20px; border-radius: var(--radius-md); text-align: center; border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); }
-        .stat-card span { display: block; font-size: 0.7rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 16px; margin-bottom: 24px; width: 100%; }
+        .stat-card { background: var(--bg-card); padding: 20px; border-radius: var(--radius-md); text-align: center; border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); min-width: 0; }
+        .stat-card span { display: block; font-size: 0.7rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .stat-card strong { display: block; font-size: 1.6rem; color: var(--text-main); font-weight: 700; margin-top: 6px; }
 
-        .registro-curto { display: flex; justify-content: space-between; align-items: center; background: var(--bg-input); padding: 12px 16px; border-radius: var(--radius-sm); margin-bottom: 10px; border: 1px solid var(--border-color); }
-        .registro-curto .info { display: flex; flex-direction: column; gap: 4px; }
-        .registro-curto .info strong { font-size: 0.95rem; color: var(--text-main); font-weight: 600; }
-        .registro-curto .info span { font-size: 0.8rem; color: var(--text-muted); font-weight: 500; }
-        .acoes-reg { display: flex; align-items: center; gap: 8px; }
+        .registro-curto { display: flex; justify-content: space-between; align-items: center; background: var(--bg-input); padding: 12px 16px; border-radius: var(--radius-sm); margin-bottom: 10px; border: 1px solid var(--border-color); width: 100%; gap: 10px; }
+        .registro-curto .info { display: flex; flex-direction: column; gap: 4px; min-width: 0; flex: 1; }
+        .registro-curto .info strong { font-size: 0.95rem; color: var(--text-main); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .registro-curto .info span { font-size: 0.8rem; color: var(--text-muted); font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .acoes-reg { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
         .btn-x-vermelho { background: transparent; border: none; color: var(--brand-danger); font-size: 1.2rem; cursor: pointer; font-weight: 700; padding: 0 4px; }
         .btn-x-vermelho:hover { transform: scale(1.15); }
         
-        .bloco-prova { background: var(--bg-input); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 20px; margin-bottom: 20px; box-shadow: var(--shadow-sm); }
+        .bloco-prova { background: var(--bg-input); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 20px; margin-bottom: 20px; box-shadow: var(--shadow-sm); width: 100%; }
         .bloco-prova-titulo { font-size: 1.25rem; font-weight: 700; color: var(--brand-primary); margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
-        .pasta-header { background: var(--bg-card); padding: 14px 18px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-weight: 600; border-radius: var(--radius-sm); border: 1px solid var(--border-color); margin-bottom: 8px; box-shadow: var(--shadow-sm); }
+        .pasta-header { background: var(--bg-card); padding: 14px 18px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-weight: 600; border-radius: var(--radius-sm); border: 1px solid var(--border-color); margin-bottom: 8px; box-shadow: var(--shadow-sm); width: 100%; }
         .pasta-header:hover { background: var(--bg-hover); }
-        .pasta-body { padding: 8px 18px; display: none; border-left: 3px solid var(--brand-primary); margin-left: 12px; margin-bottom: 12px; }
+        .pasta-body { padding: 8px 18px; display: none; border-left: 3px solid var(--brand-primary); margin-left: 12px; margin-bottom: 12px; width: calc(100% - 12px); }
         .pasta-body.aberta { display: block; }
 
-        .grid-fontes { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
-        .fonte-checkbox { display: flex; align-items: center; gap: 8px; background: var(--bg-card); padding: 12px; border-radius: var(--radius-sm); border: 1px solid var(--border-color); cursor: pointer; font-size: 0.85rem; font-weight: 500; }
+        .grid-fontes { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; width: 100%; }
+        .fonte-checkbox { display: flex; align-items: center; gap: 8px; background: var(--bg-card); padding: 12px; border-radius: var(--radius-sm); border: 1px solid var(--border-color); cursor: pointer; font-size: 0.85rem; font-weight: 500; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .fonte-checkbox:hover { border-color: var(--brand-primary); background: var(--bg-hover); }
 
-        .chat-box { border: 1px solid var(--border-color); border-radius: var(--radius-md); height: 500px; overflow-y: auto; padding: 20px; background: var(--bg-body); display: flex; flex-direction: column; gap: 16px; margin-bottom: 16px; }
-        .msg { padding: 14px 18px; border-radius: 18px; max-width: 85%; line-height: 1.5; font-size: 0.95rem; }
+        .chat-box { border: 1px solid var(--border-color); border-radius: var(--radius-md); height: 500px; overflow-y: auto; padding: 20px; background: var(--bg-body); display: flex; flex-direction: column; gap: 16px; margin-bottom: 16px; width: 100%; }
+        .msg { padding: 14px 18px; border-radius: 18px; max-width: 85%; line-height: 1.5; font-size: 0.95rem; word-break: break-word; }
         .msg-u { background: var(--brand-primary); color: white; align-self: flex-end; font-weight: 500; border-bottom-right-radius: 4px; box-shadow: var(--shadow-sm); }
         .msg-a { background: var(--bg-card); border: 1px solid var(--border-color); align-self: flex-start; color: var(--text-main); box-shadow: var(--shadow-sm); border-bottom-left-radius: 4px; }
 
@@ -172,8 +172,8 @@
                             <option value="custom">Período Específico...</option>
                         </select>
                     </div>
-                    <div id="resumo-geral-custom-dates" style="display:none; gap:12px; margin-bottom:16px; background:var(--bg-input); padding:12px; border-radius:var(--radius-sm);">
-                        <input type="date" id="rg-dt-ini" style="margin:0;"><input type="date" id="rg-dt-fim" style="margin:0;">
+                    <div id="resumo-geral-custom-dates" style="display:none; gap:12px; margin-bottom:16px; background:var(--bg-input); padding:12px; border-radius:var(--radius-sm); flex-wrap:wrap;">
+                        <input type="date" id="rg-dt-ini" style="margin:0; flex:1; min-width:130px;"><input type="date" id="rg-dt-fim" style="margin:0; flex:1; min-width:130px;">
                         <button class="btn-success" style="width:auto; padding:8px 14px;" onclick="atualizarResumoGeral()">Filtrar</button>
                     </div>
                     <div class="stats-grid" style="margin-bottom:0;">
@@ -186,67 +186,67 @@
                     </div>
                 </div>
 
-                <!-- Cronômetro, Calendário e Formulário Fixo -->
+                <!-- Cronômetro, Calendário e Formulário Fixo (CAIXA MÃE) -->
                 <div class="card" style="display:flex; flex-wrap:wrap; gap:24px; align-items:flex-start;">
                     <!-- Coluna Esquerda: Cronômetro e Calendário -->
-                    <div style="flex:1; min-width:280px; display:flex; flex-direction:column; gap:20px;">
-                        <div style="text-align:center; background:var(--bg-input); padding:20px; border-radius:var(--radius-md);">
+                    <div style="flex:1; min-width:260px; display:flex; flex-direction:column; gap:20px; max-width:100%;">
+                        <div style="text-align:center; background:var(--bg-input); padding:20px; border-radius:var(--radius-md); width:100%;">
                             <div style="font-size: 0.7rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.8px;">Cronômetro</div>
-                            <div id="cronometro-visor" style="font-size: 3.5rem; color: var(--brand-primary); font-weight: 700; font-variant-numeric: tabular-nums; margin: 8px 0; letter-spacing:-1px;">00:00:00</div>
-                            <div style="display:flex; justify-content:center; gap:12px;">
-                                <button class="btn-success" onclick="iniciarCronometro()">▶ Iniciar</button>
-                                <button class="btn-outline" style="width:auto; padding:10px 14px;" onclick="pausarCronometro()">⏸ Pausar</button>
+                            <div id="cronometro-visor" style="font-size: 3rem; color: var(--brand-primary); font-weight: 700; font-variant-numeric: tabular-nums; margin: 8px 0; letter-spacing:-1px; word-break:break-all;">00:00:00</div>
+                            <div style="display:flex; justify-content:center; gap:12px; flex-wrap:wrap;">
+                                <button class="btn-success" onclick="iniciarCronometro()" style="flex:1; min-width:100px;">▶ Iniciar</button>
+                                <button class="btn-outline" style="flex:1; min-width:100px; padding:10px 14px;" onclick="pausarCronometro()">⏸ Pausar</button>
                             </div>
                         </div>
 
                         <!-- Calendário do Mês com ✅ e ❌ -->
-                        <div style="background:var(--bg-input); padding:16px; border-radius:var(--radius-md);">
+                        <div style="background:var(--bg-input); padding:16px; border-radius:var(--radius-md); width:100%;">
                             <div id="calendario-titulo" style="font-weight:700; text-align:center; margin-bottom:12px; font-size:0.95rem; color:var(--text-main);">Calendário de Estudos</div>
-                            <div id="calendario-grid" style="display:grid; grid-template-columns: repeat(7, 1fr); gap:6px; text-align:center; font-size:0.85rem;"></div>
+                            <div id="calendario-grid" style="display:grid; grid-template-columns: repeat(7, 1fr); gap:6px; text-align:center; font-size:0.85rem; width:100%;"></div>
                         </div>
                     </div>
 
                     <!-- Coluna Direita: Formulário de Sessão -->
-                    <div style="flex:2; min-width:320px;">
+                    <div style="flex:1.5; min-width:280px; max-width:100%;">
                         <h3 style="margin-top:0; color:var(--text-main); font-size:1.1rem; font-weight:700;" id="form-titulo-sessao">Registrar Sessão</h3>
-                        <div style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:4px;">
-                            <div style="flex:1; min-width:140px;">
+                        <div style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:4px; width:100%;">
+                            <div style="flex:1; min-width:120px;">
                                 <input type="text" id="ses-mat" placeholder="Matéria" list="lista-materias-dl" oninput="atualizarTopicosSessao(this.value)">
                                 <datalist id="lista-materias-dl"></datalist>
                             </div>
-                            <div style="flex:1; min-width:140px;">
+                            <div style="flex:1; min-width:120px;">
                                 <input type="text" id="ses-top" placeholder="Tópico" list="dl-ses-top">
                                 <datalist id="dl-ses-top"></datalist>
                             </div>
                         </div>
-                        <div style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:4px;">
-                            <select id="ses-tipo-estudo" style="flex:1;"><option value="Teoria">Teoria</option><option value="Questões">Questões</option><option value="Revisão">Revisão</option></select>
-                            <select id="ses-tipo-mat" style="flex:1;" onchange="toggleCamposDetalhes()">
+                        <div style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:4px; width:100%;">
+                            <select id="ses-tipo-estudo" style="flex:1; min-width:120px;"><option value="Teoria">Teoria</option><option value="Questões">Questões</option><option value="Revisão">Revisão</option></select>
+                            <select id="ses-tipo-mat" style="flex:1; min-width:120px;" onchange="toggleCamposDetalhes()">
                                 <option value="Questões">📝 Questões</option><option value="PDF/Lei Seca">📖 PDF / Lei Seca</option><option value="Vídeo Aula">🎥 Vídeo Aula</option>
                             </select>
                         </div>
 
-                        <div id="campos-pdf" style="display:none; gap:12px; margin-bottom:4px;">
-                            <input type="number" id="ses-pdf-ini" placeholder="Pág Inicial" style="flex:1;"><input type="number" id="ses-pdf-fim" placeholder="Pág Final" style="flex:1;"><input type="text" id="ses-pdf-fonte" placeholder="Fonte" style="flex:1;">
+                        <div id="campos-pdf" style="display:none; gap:8px; margin-bottom:4px; flex-wrap:wrap; width:100%;">
+                            <input type="number" id="ses-pdf-ini" placeholder="Pág Inicial" style="flex:1; min-width:80px;"><input type="number" id="ses-pdf-fim" placeholder="Pág Final" style="flex:1; min-width:80px;"><input type="text" id="ses-pdf-fonte" placeholder="Fonte" style="flex:1; min-width:80px;">
                         </div>
-                        <div id="campos-video" style="display:none; gap:12px; margin-bottom:4px;">
-                            <input type="number" id="ses-vid-ini" placeholder="Vídeo Ini" style="flex:1;"><input type="number" id="ses-vid-fim" placeholder="Vídeo Fim (Opc)" style="flex:1;"><input type="text" id="ses-vid-fonte" placeholder="Plataforma" style="flex:1;">
+                        <div id="campos-video" style="display:none; gap:8px; margin-bottom:4px; flex-wrap:wrap; width:100%;">
+                            <input type="number" id="ses-vid-ini" placeholder="Vídeo Ini" style="flex:1; min-width:80px;"><input type="number" id="ses-vid-fim" placeholder="Vídeo Fim (Opc)" style="flex:1; min-width:80px;"><input type="text" id="ses-vid-fonte" placeholder="Plataforma" style="flex:1; min-width:80px;">
                         </div>
 
                         <!-- Caixas de Acertos e Erros Compactas -->
-                        <div style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:12px; background:var(--bg-input); padding:10px; border-radius:var(--radius-sm);">
-                            <div style="flex:1;"><label style="font-size:0.7rem; font-weight:700; color:var(--brand-success);">Acertos</label><input type="number" id="ses-acertos" placeholder="" value="" style="margin:0; padding:6px 10px; font-size:0.9rem;" onkeydown="if(event.key==='Enter'){event.preventDefault(); document.getElementById('ses-erros').focus();}"></div>
-                            <div style="flex:1;"><label style="font-size:0.7rem; font-weight:700; color:var(--brand-danger);">Erros</label><input type="number" id="ses-erros" placeholder="" value="" style="margin:0; padding:6px 10px; font-size:0.9rem;" onkeydown="if(event.key==='Enter'){event.preventDefault(); document.getElementById('ses-man-horas').focus();}"></div>
-                            <div style="flex:1; display:flex; gap:6px;">
-                                <div><label style="font-size:0.7rem; font-weight:700;">Horas</label><input type="number" id="ses-man-horas" value="0" min="0" style="margin:0; padding:6px 6px; font-size:0.9rem;" onkeydown="if(event.key==='Enter'){event.preventDefault(); document.getElementById('ses-man-mins').focus();}"></div>
-                                <div><label style="font-size:0.7rem; font-weight:700;">Min</label><input type="number" id="ses-man-mins" value="0" min="0" max="59" style="margin:0; padding:6px 6px; font-size:0.9rem;" onkeydown="if(event.key==='Enter'){event.preventDefault(); document.getElementById('ses-obs').focus();}"></div>
+                        <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px; background:var(--bg-input); padding:10px; border-radius:var(--radius-sm); width:100%;">
+                            <div style="flex:1; min-width:65px;"><label style="font-size:0.65rem; font-weight:700; color:var(--brand-success);">Acertos</label><input type="number" id="ses-acertos" placeholder="" value="" style="margin:0; padding:6px 8px; font-size:0.9rem;" onkeydown="if(event.key==='Enter'){event.preventDefault(); document.getElementById('ses-erros').focus();}"></div>
+                            <div style="flex:1; min-width:65px;"><label style="font-size:0.65rem; font-weight:700; color:var(--brand-danger);">Erros</label><input type="number" id="ses-erros" placeholder="" value="" style="margin:0; padding:6px 8px; font-size:0.9rem;" onkeydown="if(event.key==='Enter'){event.preventDefault(); document.getElementById('ses-man-horas').focus();}"></div>
+                            <div style="flex:1.5; display:flex; gap:4px; min-width:120px;">
+                                <div style="flex:1;"><label style="font-size:0.65rem; font-weight:700;">Horas</label><input type="number" id="ses-man-horas" value="0" min="0" style="margin:0; padding:6px 4px; font-size:0.9rem;" onkeydown="if(event.key==='Enter'){event.preventDefault(); document.getElementById('ses-man-mins').focus();}"></div>
+                                <div style="flex:1;"><label style="font-size:0.65rem; font-weight:700;">Min</label><input type="number" id="ses-man-mins" value="0" min="0" max="59" style="margin:0; padding:6px 4px; font-size:0.9rem;" onkeydown="if(event.key==='Enter'){event.preventDefault(); document.getElementById('ses-obs').focus();}"></div>
                             </div>
                         </div>
                         
-                        <textarea id="ses-obs" rows="1" placeholder="Observações..." style="margin-bottom:12px;" onkeydown="if(event.key==='Enter' && !event.shiftKey){event.preventDefault(); salvarRegistro();}"></textarea>
-                        <div style="display:flex; gap:10px;">
-                            <button class="btn-primary" id="btn-salvar-sessao" onclick="salvarRegistro()">💾 Salvar Sessão</button>
-                            <button class="btn-outline" id="btn-cancelar-edicao" style="display:none; width:auto; padding:14px;" onclick="cancelarEdicaoRegistro()">Cancelar</button>
+                        <textarea id="ses-obs" rows="1" placeholder="Observações..." style="margin-bottom:12px; width:100%;" onkeydown="if(event.key==='Enter' && !event.shiftKey){event.preventDefault(); salvarRegistro();}"></textarea>
+                        <div style="display:flex; gap:10px; flex-wrap:wrap; width:100%;">
+                            <button class="btn-primary" id="btn-salvar-sessao" onclick="salvarRegistro()" style="flex:1; min-width:130px;">💾 Salvar Sessão</button>
+                            <button class="btn-outline" id="btn-cancelar-edicao" style="display:none; width:auto; padding:14px; flex:1;" onclick="cancelarEdicaoRegistro()">Cancelar</button>
                         </div>
                     </div>
                 </div>
@@ -262,9 +262,9 @@
                 <div class="card">
                     <h2>Nova Prova / Concurso</h2>
                     <div style="display:flex; gap:16px; flex-wrap:wrap;">
-                        <input type="text" id="conc-nome" placeholder="Nome (Ex: TRF-1)" style="flex:2; min-width:200px;">
-                        <input type="date" id="conc-data" style="flex:1; min-width:150px;">
-                        <button class="btn-primary" style="flex:1; min-width:150px;" onclick="salvarProva()">Adicionar (Máx 5)</button>
+                        <input type="text" id="conc-nome" placeholder="Nome (Ex: TRF-1)" style="flex:2; min-width:180px;">
+                        <input type="date" id="conc-data" style="flex:1; min-width:140px;">
+                        <button class="btn-primary" style="flex:1; min-width:140px;" onclick="salvarProva()">Adicionar (Máx 5)</button>
                     </div>
                 </div>
                 <div id="lista-provas-div" class="stats-grid"></div>
@@ -275,9 +275,9 @@
                 <div class="card">
                     <h2>Criar Matéria / Tópico</h2>
                     <div style="display:flex; gap:16px; flex-wrap:wrap; margin-bottom:12px;">
-                        <input type="text" id="mat-nome" placeholder="Nome da Matéria" style="flex:1; min-width:150px;" list="lista-materias-dl">
-                        <input type="text" id="mat-topico" placeholder="Novo Tópico (Opcional)" style="flex:1; min-width:150px;">
-                        <select id="mat-prova" style="flex:1; min-width:150px;"><option value="">Vincular a uma Prova? (Opcional)</option></select>
+                        <input type="text" id="mat-nome" placeholder="Nome da Matéria" style="flex:1; min-width:140px;" list="lista-materias-dl">
+                        <input type="text" id="mat-topico" placeholder="Novo Tópico (Opcional)" style="flex:1; min-width:140px;">
+                        <select id="mat-prova" style="flex:1; min-width:140px;"><option value="">Vincular a uma Prova? (Opcional)</option></select>
                     </div>
                     <label style="font-size:0.8rem; font-weight:700; display:block; margin-bottom:8px;">Cor:</label>
                     <div id="mat-paleta" style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px;"></div>
@@ -292,8 +292,8 @@
                 <div class="card">
                     <h2>Novo Caderno / Anotação</h2>
                     <div style="display:flex; gap:16px; flex-wrap:wrap;">
-                        <input type="text" id="err-mat" placeholder="Matéria" list="lista-materias-dl" oninput="atualizarTopicosDatalist('err-top', this.value)" style="flex:1; min-width:180px;">
-                        <input type="text" id="err-top" placeholder="Tópico" list="dl-err-top" style="flex:1; min-width:180px;">
+                        <input type="text" id="err-mat" placeholder="Matéria" list="lista-materias-dl" oninput="atualizarTopicosDatalist('err-top', this.value)" style="flex:1; min-width:150px;">
+                        <input type="text" id="err-top" placeholder="Tópico" list="dl-err-top" style="flex:1; min-width:150px;">
                         <datalist id="dl-err-top"></datalist>
                     </div>
                     <textarea id="err-texto" placeholder="Cole a questão, lei ou comentário..." rows="4"></textarea>
@@ -308,11 +308,11 @@
                 <div class="card">
                     <h2>Métricas e Gráficos</h2>
                     <div style="display:flex; gap:16px; margin-bottom:20px; flex-wrap:wrap;">
-                        <select id="est-periodo" onchange="atualizarEstatisticas()" style="flex:1;"><option value="hoje">Hoje</option><option value="7">Últimos 7 dias</option><option value="30">Últimos 30 dias</option><option value="tudo" selected>Sempre</option><option value="custom">Período Específico...</option></select>
-                        <select id="est-tipo-grafico" onchange="atualizarEstatisticas()" style="flex:1;"><option value="doughnut">Gráfico Rosca</option><option value="bar">Gráfico de Barras</option></select>
+                        <select id="est-periodo" onchange="atualizarEstatisticas()" style="flex:1; min-width:140px;"><option value="hoje">Hoje</option><option value="7">Últimos 7 dias</option><option value="30">Últimos 30 dias</option><option value="tudo" selected>Sempre</option><option value="custom">Período Específico...</option></select>
+                        <select id="est-tipo-grafico" onchange="atualizarEstatisticas()" style="flex:1; min-width:140px;"><option value="doughnut">Gráfico Rosca</option><option value="bar">Gráfico de Barras</option></select>
                     </div>
-                    <div id="est-custom-dates" style="display:none; gap:16px; margin-bottom:20px; background:var(--bg-input); padding:16px; border-radius:var(--radius-sm);">
-                        <input type="date" id="est-dt-ini" style="margin:0;"><input type="date" id="est-dt-fim" style="margin:0;">
+                    <div id="est-custom-dates" style="display:none; gap:16px; margin-bottom:20px; background:var(--bg-input); padding:16px; border-radius:var(--radius-sm); flex-wrap:wrap;">
+                        <input type="date" id="est-dt-ini" style="margin:0; flex:1; min-width:130px;"><input type="date" id="est-dt-fim" style="margin:0; flex:1; min-width:130px;">
                         <button class="btn-success" style="width:auto;" onclick="atualizarEstatisticas()">Filtrar</button>
                     </div>
 
@@ -334,23 +334,23 @@
             <!-- PRUMA IA -->
             <div id="view-pruma" style="display:none;">
                 <div class="card" style="padding:0; overflow:hidden; border:2px solid var(--brand-primary);">
-                    <div style="background:var(--brand-primary); padding:20px; display:flex; justify-content:space-between; align-items:center;">
+                    <div style="background:var(--brand-primary); padding:20px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
                         <h2 style="color:white; margin:0; border:none; padding:0;">✨ PRUMA IA <span id="badge-modelo-ia" style="font-size:0.8rem; font-weight:normal; opacity:0.85; margin-left:10px;"></span></h2>
                         <button class="btn-outline" style="width:auto; padding:8px 14px; border-color:white; color:white; font-size:0.85rem;" onclick="document.getElementById('modal-historico-ia').style.display='flex'">Ver Histórico (10 Últimas)</button>
                     </div>
                     
                     <div style="padding:24px;">
-                        <div style="display:flex; gap:10px; margin-bottom:24px; overflow-x:auto;">
-                            <button class="btn-outline" style="flex:1; border-color:var(--brand-primary); color:var(--brand-primary);" onclick="mudarSubIa('chat', this)">💬 Chat Especialista</button>
-                            <button class="btn-outline" style="flex:1;" onclick="mudarSubIa('simulador', this)">🎯 Gerar Questões</button>
-                            <button class="btn-outline" style="flex:1;" onclick="mudarSubIa('flashcards', this)">⚡ Flashcards</button>
-                            <button class="btn-outline" style="flex:1;" onclick="mudarSubIa('edital', this)">📚 Edital Inteligente</button>
+                        <div style="display:flex; gap:10px; margin-bottom:24px; overflow-x:auto; padding-bottom:4px;">
+                            <button class="btn-outline" style="flex:1; min-width:140px; border-color:var(--brand-primary); color:var(--brand-primary);" onclick="mudarSubIa('chat', this)">💬 Chat Especialista</button>
+                            <button class="btn-outline" style="flex:1; min-width:140px;" onclick="mudarSubIa('simulador', this)">🎯 Gerar Questões</button>
+                            <button class="btn-outline" style="flex:1; min-width:140px;" onclick="mudarSubIa('flashcards', this)">⚡ Flashcards</button>
+                            <button class="btn-outline" style="flex:1; min-width:140px;" onclick="mudarSubIa('edital', this)">📚 Edital Inteligente</button>
                         </div>
 
                         <!-- Menu Retrátil Elegante para Seleção de Fontes -->
                         <div id="caixa-fontes-ia" style="position:relative; margin-bottom:20px;">
                             <button class="btn-outline" onclick="toggleDropdownFontes()" style="display:flex; justify-content:space-between; align-items:center; background:var(--bg-input); font-weight:600;">
-                                <span>📚 Selecionar Fontes e Cadernos (<span id="contador-fontes-sel">0</span> ativas)</span>
+                                <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">📚 Selecionar Fontes e Cadernos (<span id="contador-fontes-sel">0</span> ativas)</span>
                                 <span>▼</span>
                             </button>
                             <div id="dropdown-fontes-menu" style="display:none; position:absolute; top:100%; left:0; width:100%; background:var(--bg-card); border:1px solid var(--border-color); border-radius:var(--radius-sm); padding:16px; z-index:100; box-shadow:var(--shadow-md); max-height:240px; overflow-y:auto; margin-top:4px;">
@@ -366,17 +366,17 @@
                             <div class="chat-box" id="box-chat">
                                 <div class="msg msg-a"><strong>PRUMA:</strong> Olá! Selecione suas fontes acima e envie sua dúvida. Sou especialista em provas e concursos. O que estudaremos hoje?</div>
                             </div>
-                            <div style="display:flex; gap:12px;">
-                                <textarea id="inp-chat" placeholder="Peça resumos de PDFs, resoluções profundas ou jurisprudência..." rows="2" style="margin:0; resize:none;"></textarea>
+                            <div style="display:flex; gap:12px; flex-wrap:wrap;">
+                                <textarea id="inp-chat" placeholder="Peça resumos de PDFs, resoluções profundas ou jurisprudência..." rows="2" style="margin:0; resize:none; flex:1; min-width:200px;"></textarea>
                                 <button class="btn-primary" onclick="executarIA('chat')" style="width:120px;">Enviar</button>
                             </div>
                         </div>
 
                         <!-- Sub: Simulador -->
                         <div id="subia-simulador" style="display:none;">
-                            <div style="display:flex; gap:16px; margin-bottom:16px;">
+                            <div style="display:flex; gap:16px; margin-bottom:16px; flex-wrap:wrap;">
                                 <input type="number" id="ia-qts-num" value="5" min="1" max="20" style="width:90px; margin:0;" title="Nº de Questões">
-                                <input type="text" id="ia-qts-tema" placeholder="Tema específico (Ou deixe em branco para focar nas fontes selecionadas)" style="flex:1; margin:0;">
+                                <input type="text" id="ia-qts-tema" placeholder="Tema específico (Ou deixe em branco para focar nas fontes selecionadas)" style="flex:1; margin:0; min-width:200px;">
                             </div>
                             <button class="btn-primary" onclick="executarIA('questoes')">Gerar Bateria de Questões</button>
                             <div class="chat-box" id="box-qts" style="margin-top:16px; display:none; height:auto; min-height:200px;"></div>
@@ -385,8 +385,8 @@
                         <!-- Sub: Flashcards -->
                         <div id="subia-flashcards" style="display:none;">
                             <div style="display:flex; gap:16px; margin-bottom:16px; flex-wrap:wrap;">
-                                <input type="text" id="fc-mat-dest" placeholder="Matéria Alvo *" list="lista-materias-dl" oninput="atualizarTopicosDatalist('fc-top-dest', this.value)" style="flex:1; min-width:200px;">
-                                <input type="text" id="fc-top-dest" placeholder="Tópico Alvo *" list="dl-fc-top-dest" style="flex:1; min-width:200px;">
+                                <input type="text" id="fc-mat-dest" placeholder="Matéria Alvo *" list="lista-materias-dl" oninput="atualizarTopicosDatalist('fc-top-dest', this.value)" style="flex:1; min-width:180px;">
+                                <input type="text" id="fc-top-dest" placeholder="Tópico Alvo *" list="dl-fc-top-dest" style="flex:1; min-width:180px;">
                                 <datalist id="dl-fc-top-dest"></datalist>
                             </div>
                             <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:16px;">A IA criará flashcards inteligentes baseados na Matéria, Tópico e nas fontes marcadas acima.</p>
@@ -439,7 +439,7 @@
                     </div>
 
                     <p><strong>E-mail:</strong> <span id="conta-email">...</span></p>
-                    <p><strong>Nome:</strong> <input type="text" id="conta-nome" style="width:220px; display:inline-block; padding:8px; margin:0;"></p>
+                    <p><strong>Nome:</strong> <input type="text" id="conta-nome" style="width:220px; display:inline-block; padding:8px; margin:0; max-width:100%;"></p>
                     <button class="btn-outline" style="width:auto; padding:8px 16px; margin-bottom:24px;" onclick="salvarNomePerfil()">Salvar Nome</button>
                     
                     <label style="font-weight:700; display:block; margin-bottom:10px;">Paleta de Cores do Sistema (15 Opções):</label>
@@ -824,7 +824,7 @@
             });
         }
 
-        // MATÉRIAS, EDIÇÃO E JUNÇÃO DE TÓPICOS (A. B.)
+        // MATÉRIAS, EDIÇÃO E JUNÇÃO DE TÓPICOS
         document.getElementById('mat-paleta').innerHTML = paleta15.map(c => `<div style="width:28px; height:28px; border-radius:50%; background:${c}; cursor:pointer;" onclick="corAtualMateria='${c}'; this.style.border='2px solid var(--text-main)';"></div>`).join('');
         
         function salvarMateria() {
@@ -855,8 +855,8 @@
                 
                 let conteudoMat = grupos[p].map(m => {
                     if(!Array.isArray(m.topicos)) m.topicos = Object.values(m.topicos || {});
-                    let htmlT = m.topicos.map((t, i) => `<div style="padding:8px 0; border-bottom:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center;"><span>📄 ${t}</span> <div><button style="background:transparent;border:none;cursor:pointer;font-size:1rem;margin-right:6px;" title="Editar Tópico" onclick="editarTopico('${m.id}', ${i})">✏️</button> <button style="background:transparent;border:none;cursor:pointer;font-size:1rem;margin-right:6px;" title="Juntar Tópicos" onclick="abrirModalJuntar('${m.id}', '${sanitizeText(t).replace(/'/g,"\\'")}')">🔗</button> <button class="btn-x-vermelho" onclick="if(!Array.isArray(dbData.materias.find(x=>x.id==='${m.id}').topicos)) dbData.materias.find(x=>x.id==='${m.id}').topicos = Object.values(dbData.materias.find(x=>x.id==='${m.id}').topicos || {}); dbData.materias.find(x=>x.id==='${m.id}').topicos.splice(${i},1); refDb.child('materias').set(dbData.materias);">✖</button></div></div>`).join('');
-                    return `<div class="pasta-header" style="border-left:5px solid ${m.cor};" onclick="this.nextElementSibling.classList.toggle('aberta')"><span>📁 ${m.nome} (${m.topicos.length})</span><button class="btn-x-vermelho" onclick="event.stopPropagation(); if(confirm('Apagar?')) { dbData.materias=dbData.materias.filter(x=>x.id!=='${m.id}'); refDb.child('materias').set(dbData.materias); }">✖</button></div><div class="pasta-body">${htmlT||'<span style="color:var(--text-muted);font-size:0.85rem;">Vazio.</span>'}</div>`;
+                    let htmlT = m.topicos.map((t, i) => `<div style="padding:8px 0; border-bottom:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center; gap:8px;"><span style="overflow:hidden; text-overflow:ellipsis; min-width:0; flex:1;">📄 ${t}</span> <div style="display:flex; align-items:center; gap:6px; flex-shrink:0;"><button style="background:transparent;border:none;cursor:pointer;font-size:1rem;" title="Editar Tópico" onclick="editarTopico('${m.id}', ${i})">✏️</button> <button style="background:transparent;border:none;cursor:pointer;font-size:1rem;" title="Juntar Tópicos" onclick="abrirModalJuntar('${m.id}', '${sanitizeText(t).replace(/'/g,"\\'")}')">🔗</button> <button class="btn-x-vermelho" onclick="if(!Array.isArray(dbData.materias.find(x=>x.id==='${m.id}').topicos)) dbData.materias.find(x=>x.id==='${m.id}').topicos = Object.values(dbData.materias.find(x=>x.id==='${m.id}').topicos || {}); dbData.materias.find(x=>x.id==='${m.id}').topicos.splice(${i},1); refDb.child('materias').set(dbData.materias);">✖</button></div></div>`).join('');
+                    return `<div class="pasta-header" style="border-left:5px solid ${m.cor};" onclick="this.nextElementSibling.classList.toggle('aberta')"><span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1; min-width:0;">📁 ${m.nome} (${m.topicos.length})</span><button class="btn-x-vermelho" style="flex-shrink:0;" onclick="event.stopPropagation(); if(confirm('Apagar?')) { dbData.materias=dbData.materias.filter(x=>x.id!=='${m.id}'); refDb.child('materias').set(dbData.materias); }">✖</button></div><div class="pasta-body">${htmlT||'<span style="color:var(--text-muted);font-size:0.85rem;">Vazio.</span>'}</div>`;
                 }).join('');
 
                 if(!isGeral) {
@@ -915,14 +915,11 @@
             if(!mat) return;
             if(!Array.isArray(mat.topicos)) mat.topicos = Object.values(mat.topicos || {});
             
-            // Juntar no formato A. B. (Ex: Destino. Origem)
             let novoTopico = `${tDest}. ${tOri}`;
             
-            // Remove os dois tópicos separados e adiciona a união (A. B.)
             mat.topicos = mat.topicos.filter(t => t !== tOri && t !== tDest);
             mat.topicos.push(novoTopico);
             
-            // Atualiza sessoes e cadernos vinculados
             dbData.sessoes.forEach(s => { 
                 if(s.materia === mat.nome && (s.topico === tOri || s.topico === tDest)) s.topico = novoTopico; 
             });
@@ -977,9 +974,9 @@
                 let htmlM = '';
                 for(let t in agr[m]) {
                     htmlM += `<div style="font-weight:700; color:var(--brand-primary); margin:10px 0 4px 0;">📌 ${t}</div>`;
-                    agr[m][t].forEach(i => { htmlM += `<div style="background:var(--bg-input); padding:10px; border-radius:var(--radius-sm); margin-bottom:6px; display:flex; justify-content:space-between; align-items:flex-start;"><div style="font-size:0.95rem;">${i.texto} <span style="font-size:0.75rem; color:var(--text-muted); display:block;">${i.data}</span></div><button class="btn-x-vermelho" onclick="if(confirm('Excluir?')){ dbData.cadernos=dbData.cadernos.filter(x=>x.id!=='${i.id}'); refDb.child('cadernos').set(dbData.cadernos); }">✖</button></div>`; });
+                    agr[m][t].forEach(i => { htmlM += `<div style="background:var(--bg-input); padding:10px; border-radius:var(--radius-sm); margin-bottom:6px; display:flex; justify-content:space-between; align-items:flex-start; gap:8px;"><div style="font-size:0.95rem; min-width:0; flex:1; word-break:break-word;">${i.texto} <span style="font-size:0.75rem; color:var(--text-muted); display:block;">${i.data}</span></div><button class="btn-x-vermelho" style="flex-shrink:0;" onclick="if(confirm('Excluir?')){ dbData.cadernos=dbData.cadernos.filter(x=>x.id!=='${i.id}'); refDb.child('cadernos').set(dbData.cadernos); }">✖</button></div>`; });
                 }
-                div.innerHTML += `<div class="pasta-header" onclick="this.nextElementSibling.classList.toggle('aberta')">📓 ${m}</div><div class="pasta-body">${htmlM}</div>`;
+                div.innerHTML += `<div class="pasta-header" onclick="this.nextElementSibling.classList.toggle('aberta')"><span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1; min-width:0;">📓 ${m}</span></div><div class="pasta-body">${htmlM}</div>`;
             }
         }
 
