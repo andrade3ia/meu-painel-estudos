@@ -45,6 +45,10 @@
         .nav-btn:hover { background: var(--bg-hover); transform: translateX(2px); }
         .nav-btn.active { background: rgba(0, 122, 255, 0.12); color: var(--brand-primary); font-weight: 600; border-left: 4px solid var(--brand-primary); }
 
+        .tempo-total-box { background: linear-gradient(135deg, var(--brand-primary), #0056b3); padding: 20px; border-radius: var(--radius-md); text-align: center; margin-bottom: 16px; color: white; box-shadow: var(--shadow-md); }
+        .tempo-total-box span { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; opacity: 0.85; letter-spacing: 0.8px; }
+        .tempo-total-box strong { display: block; font-size: 1.6rem; font-weight: 700; margin-top: 4px; font-variant-numeric: tabular-nums; }
+
         .main-content { flex: 1; padding: 32px; overflow-y: auto; scroll-behavior: smooth; }
         .container-interno { max-width: 1020px; margin: 0 auto; padding-bottom: 80px; width: 100%; }
         
@@ -54,7 +58,7 @@
         input, select, textarea { width: 100%; max-width: 100%; padding: 12px 16px; margin-bottom: 12px; background-color: var(--bg-input); border: 1px solid var(--border-color); border-radius: var(--radius-sm); color: var(--text-main); font-size: 0.95rem; outline: none; font-weight: 500; }
         input:focus, select:focus, textarea:focus { border-color: var(--brand-primary); background-color: var(--bg-card); box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.15); }
         
-        button.btn-primary { width: 100%; padding: 14px; font-weight: 600; border: none; border-radius: var(--radius-sm); cursor: pointer; background: var(--brand-primary); color: var(--btn-text); font-size: 0.95rem; box-shadow: var(--shadow-sm); }
+        button.btn-primary { width: 100%; padding: 14px; font-weight: 600; border: none; border-radius: var(--radius-sm); cursor: pointer; background: var(--brand-primary); color: var(--btn-text, #FFFFFF); font-size: 0.95rem; box-shadow: var(--shadow-sm); }
         button.btn-primary:active { transform: scale(0.97); }
         button.btn-outline { width: 100%; padding: 14px; font-weight: 600; border: 1px solid var(--border-color); border-radius: var(--radius-sm); cursor: pointer; background: transparent; color: var(--text-main); font-size: 0.95rem; }
         button.btn-outline:hover { background: var(--bg-hover); }
@@ -69,7 +73,6 @@
         .registro-curto { display: flex; justify-content: space-between; align-items: center; background: var(--bg-input); padding: 12px 16px; border-radius: var(--radius-sm); margin-bottom: 10px; border: 1px solid var(--border-color); width: 100%; gap: 10px; }
         .registro-curto .info { display: flex; flex-direction: column; gap: 4px; min-width: 0; flex: 1; }
         .registro-curto .info strong { font-size: 0.95rem; color: var(--text-main); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .registro-curto .info span { font-size: 0.8rem; color: var(--text-muted); font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .acoes-reg { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
         .btn-x-vermelho { background: transparent; border: none; color: var(--brand-danger); font-size: 1.2rem; cursor: pointer; font-weight: 700; padding: 0 4px; }
         .btn-x-vermelho:hover { transform: scale(1.15); }
@@ -80,10 +83,6 @@
         .pasta-header:hover { background: var(--bg-hover); }
         .pasta-body { padding: 8px 18px; display: none; border-left: 3px solid var(--brand-primary); margin-left: 12px; margin-bottom: 12px; width: calc(100% - 12px); }
         .pasta-body.aberta { display: block; }
-
-        .grid-fontes { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; width: 100%; }
-        .fonte-checkbox { display: flex; align-items: center; gap: 8px; background: var(--bg-card); padding: 12px; border-radius: var(--radius-sm); border: 1px solid var(--border-color); cursor: pointer; font-size: 0.85rem; font-weight: 500; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        .fonte-checkbox:hover { border-color: var(--brand-primary); background: var(--bg-hover); }
 
         .chat-box { border: 1px solid var(--border-color); border-radius: var(--radius-md); height: 500px; overflow-y: auto; padding: 20px; background: var(--bg-body); display: flex; flex-direction: column; gap: 16px; margin-bottom: 16px; width: 100%; }
         .msg { padding: 14px 18px; border-radius: 18px; max-width: 85%; line-height: 1.5; font-size: 0.95rem; word-break: break-word; }
@@ -167,21 +166,22 @@
                         <input type="date" id="rg-dt-ini" style="margin:0; flex:1; min-width:130px;"><input type="date" id="rg-dt-fim" style="margin:0; flex:1; min-width:130px;">
                         <button class="btn-success" style="width:auto; padding:8px 14px;" onclick="atualizarResumoGeral()">Filtrar</button>
                     </div>
+                    <!-- BALÕES DE RESUMO GERAL NA ORDEM SOLICITADA -->
                     <div class="stats-grid" style="margin-bottom:0;">
-                        <div class="stat-card" style="background: linear-gradient(135deg, var(--brand-primary), #0056b3); color: white;">
-                            <span style="color: rgba(255,255,255,0.85);">Tempo Total</span>
+                        <div class="stat-card" style="background: linear-gradient(135deg, var(--brand-primary), var(--border-color));">
+                            <span style="color: rgba(255,255,255,0.9);">Tempo Total</span>
                             <strong id="rg-tempo" style="color: white; font-size: 1.4rem;">00:00:00</strong>
                         </div>
-                        <div class="stat-card"><span>Questões Totais</span><strong id="rg-qts" style="color:var(--brand-primary)">0</strong></div>
+                        <div class="stat-card"><span>Questões Totais</span><strong id="rg-qts" style="color:var(--text-main)">0</strong></div>
+                        <div class="stat-card"><span>Aproveitamento</span><strong id="rg-perc" style="color:var(--brand-primary)">0%</strong></div>
                         <div class="stat-card"><span>Acertos</span><strong id="rg-acertos" style="color:var(--brand-success)">0</strong></div>
                         <div class="stat-card"><span>Erros</span><strong id="rg-erros" style="color:var(--brand-danger)">0</strong></div>
-                        <div class="stat-card"><span>Aproveitamento</span><strong id="rg-perc">0%</strong></div>
                     </div>
                 </div>
 
                 <!-- Cronômetro, Calendário e Formulário Fixo -->
                 <div class="card" style="display:flex; flex-wrap:wrap; gap:24px; align-items:flex-start;">
-                    <!-- Coluna Esquerda: Cronômetro e Calendário -->
+                    <!-- Coluna Esquerda -->
                     <div style="flex:1; min-width:260px; display:flex; flex-direction:column; gap:20px; max-width:100%;">
                         <div style="text-align:center; background:var(--bg-input); padding:20px; border-radius:var(--radius-md); width:100%;">
                             <div style="font-size: 0.7rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.8px;">Cronômetro</div>
@@ -192,7 +192,7 @@
                             </div>
                         </div>
 
-                        <!-- Calendário do Mês com ✅ e ❌ -->
+                        <!-- Calendário -->
                         <div style="background:var(--bg-input); padding:16px; border-radius:var(--radius-md); width:100%;">
                             <div id="calendario-titulo" style="font-weight:700; text-align:center; margin-bottom:12px; font-size:0.95rem; color:var(--text-main);">Calendário de Estudos</div>
                             <div id="calendario-grid" style="display:grid; grid-template-columns: repeat(7, 1fr); gap:6px; text-align:center; font-size:0.85rem; width:100%;"></div>
@@ -204,11 +204,11 @@
                         <h3 style="margin-top:0; color:var(--text-main); font-size:1.1rem; font-weight:700;" id="form-titulo-sessao">Registrar Sessão</h3>
                         <div style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:4px; width:100%;">
                             <div style="flex:1; min-width:120px;">
-                                <input type="text" id="ses-mat" placeholder="Matéria" list="lista-materias-dl" oninput="atualizarTopicosSessao(this.value)">
+                                <input type="text" id="ses-mat" placeholder="Matéria" list="lista-materias-dl" oninput="atualizarTopicosSessao(this.value)" onclick="try{this.showPicker()}catch(e){}">
                                 <datalist id="lista-materias-dl"></datalist>
                             </div>
                             <div style="flex:1; min-width:120px;">
-                                <input type="text" id="ses-top" placeholder="Tópico" list="dl-ses-top">
+                                <input type="text" id="ses-top" placeholder="Tópico" list="dl-ses-top" onclick="try{this.showPicker()}catch(e){}">
                                 <datalist id="dl-ses-top"></datalist>
                             </div>
                         </div>
@@ -226,13 +226,13 @@
                             <input type="number" id="ses-vid-ini" placeholder="Vídeo Ini" style="flex:1; min-width:80px;"><input type="number" id="ses-vid-fim" placeholder="Vídeo Fim (Opc)" style="flex:1; min-width:80px;"><input type="text" id="ses-vid-fonte" placeholder="Plataforma" style="flex:1; min-width:80px;">
                         </div>
 
-                        <!-- Caixas de Acertos e Erros Compactas -->
+                        <!-- Caixas de Acertos e Erros (Sem Zero Padrão e com Salto no Enter) -->
                         <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px; background:var(--bg-input); padding:10px; border-radius:var(--radius-sm); width:100%;">
-                            <div style="flex:1; min-width:65px;"><label style="font-size:0.65rem; font-weight:700; color:var(--brand-success);">Acertos</label><input type="number" id="ses-acertos" placeholder="" value="" style="margin:0; padding:6px 8px; font-size:0.9rem;" onkeydown="if(event.key==='Enter'){event.preventDefault(); document.getElementById('ses-erros').focus();}"></div>
-                            <div style="flex:1; min-width:65px;"><label style="font-size:0.65rem; font-weight:700; color:var(--brand-danger);">Erros</label><input type="number" id="ses-erros" placeholder="" value="" style="margin:0; padding:6px 8px; font-size:0.9rem;" onkeydown="if(event.key==='Enter'){event.preventDefault(); document.getElementById('ses-man-horas').focus();}"></div>
+                            <div style="flex:1; min-width:65px;"><label style="font-size:0.65rem; font-weight:700; color:var(--brand-success);">Acertos</label><input type="number" id="ses-acertos" placeholder="Ex: 10" value="" style="margin:0; padding:6px 8px; font-size:0.9rem;" onkeydown="if(event.key==='Enter'){event.preventDefault(); document.getElementById('ses-erros').focus();}"></div>
+                            <div style="flex:1; min-width:65px;"><label style="font-size:0.65rem; font-weight:700; color:var(--brand-danger);">Erros</label><input type="number" id="ses-erros" placeholder="Ex: 2" value="" style="margin:0; padding:6px 8px; font-size:0.9rem;" onkeydown="if(event.key==='Enter'){event.preventDefault(); document.getElementById('ses-man-horas').focus();}"></div>
                             <div style="flex:1.5; display:flex; gap:4px; min-width:120px;">
-                                <div style="flex:1;"><label style="font-size:0.65rem; font-weight:700;">Horas</label><input type="number" id="ses-man-horas" value="0" min="0" style="margin:0; padding:6px 4px; font-size:0.9rem;" onkeydown="if(event.key==='Enter'){event.preventDefault(); document.getElementById('ses-man-mins').focus();}"></div>
-                                <div style="flex:1;"><label style="font-size:0.65rem; font-weight:700;">Min</label><input type="number" id="ses-man-mins" value="0" min="0" max="59" style="margin:0; padding:6px 4px; font-size:0.9rem;" onkeydown="if(event.key==='Enter'){event.preventDefault(); document.getElementById('ses-obs').focus();}"></div>
+                                <div style="flex:1;"><label style="font-size:0.65rem; font-weight:700;">Horas</label><input type="number" id="ses-man-horas" placeholder="0" min="0" value="" style="margin:0; padding:6px 4px; font-size:0.9rem;" onkeydown="if(event.key==='Enter'){event.preventDefault(); document.getElementById('ses-man-mins').focus();}"></div>
+                                <div style="flex:1;"><label style="font-size:0.65rem; font-weight:700;">Min</label><input type="number" id="ses-man-mins" placeholder="0" min="0" max="59" value="" style="margin:0; padding:6px 4px; font-size:0.9rem;" onkeydown="if(event.key==='Enter'){event.preventDefault(); document.getElementById('ses-obs').focus();}"></div>
                             </div>
                         </div>
                         
@@ -268,7 +268,7 @@
                 <div class="card">
                     <h2>Criar Matéria / Tópico</h2>
                     <div style="display:flex; gap:16px; flex-wrap:wrap; margin-bottom:12px;">
-                        <input type="text" id="mat-nome" placeholder="Nome da Matéria" style="flex:1; min-width:140px;" list="lista-materias-dl">
+                        <input type="text" id="mat-nome" placeholder="Nome da Matéria" style="flex:1; min-width:140px;" list="lista-materias-dl" onclick="try{this.showPicker()}catch(e){}">
                         <input type="text" id="mat-topico" placeholder="Novo Tópico (Opcional)" style="flex:1; min-width:140px;">
                         <select id="mat-prova" style="flex:1; min-width:140px;"><option value="">Vincular a uma Prova? (Opcional)</option></select>
                     </div>
@@ -285,8 +285,9 @@
                 <div class="card">
                     <h2>Novo Caderno / Anotação</h2>
                     <div style="display:flex; gap:16px; flex-wrap:wrap;">
-                        <input type="text" id="err-mat" placeholder="Matéria" list="lista-materias-dl" oninput="atualizarTopicosDatalist('err-top', this.value)" style="flex:1; min-width:150px;">
-                        <input type="text" id="err-top" placeholder="Tópico" list="dl-err-top" style="flex:1; min-width:150px;">
+                        <input type="text" id="err-mat" placeholder="Matéria *" list="lista-materias-dl" oninput="atualizarTopicosDatalist('err-top', this.value)" style="flex:1; min-width:150px;" onclick="try{this.showPicker()}catch(e){}">
+                        <!-- Tornando Tópico visualmente obrigatório -->
+                        <input type="text" id="err-top" placeholder="Tópico *" list="dl-err-top" style="flex:1; min-width:150px;" onclick="try{this.showPicker()}catch(e){}">
                         <datalist id="dl-err-top"></datalist>
                     </div>
                     <textarea id="err-texto" placeholder="Cole a questão, lei ou comentário..." rows="4"></textarea>
@@ -309,13 +310,17 @@
                         <button class="btn-success" style="width:auto;" onclick="atualizarEstatisticas()">Filtrar</button>
                     </div>
 
+                    <!-- ORDEM DOS BALÕES ESTATÍSTICAS (Incluindo novas: Ritmo e Dias Estudados) -->
                     <div class="stats-grid">
+                        <div class="stat-card"><span>Tempo Total</span><strong id="st-tempo">0h 0m</strong></div>
+                        <div class="stat-card"><span>Questões Totais</span><strong id="st-qts">0</strong></div>
+                        <div class="stat-card"><span>Acertos</span><strong id="st-acertos" style="color:var(--brand-success)">0</strong></div>
+                        <div class="stat-card"><span>Erros</span><strong id="st-erros" style="color:var(--brand-danger)">0</strong></div>
                         <div class="stat-card"><span>Aproveitamento</span><strong id="st-perc" style="color:var(--brand-primary)">0%</strong></div>
-                        <div class="stat-card"><span>Tempo Líquido</span><strong id="st-tempo">0h</strong></div>
-                        <div class="stat-card"><span>Acertos Totais</span><strong id="st-acertos" style="color:var(--brand-success)">0</strong></div>
-                        <div class="stat-card"><span>Erros Totais</span><strong id="st-erros" style="color:var(--brand-danger)">0</strong></div>
                         <div class="stat-card"><span>Páginas Lidas</span><strong id="st-pags">0</strong></div>
-                        <div class="stat-card"><span>Vídeos Vistos</span><strong id="st-vids">0</strong></div>
+                        <div class="stat-card"><span>Videoaulas</span><strong id="st-vids">0</strong></div>
+                        <div class="stat-card"><span>Ritmo (Qts/h)</span><strong id="st-ritmo" style="color:var(--brand-warning)">0/h</strong></div>
+                        <div class="stat-card"><span>Dias Estudados</span><strong id="st-dias" style="color:var(--text-main)">0</strong></div>
                     </div>
 
                     <div style="position: relative; height:350px; width:100%; margin-top:20px;">
@@ -340,24 +345,23 @@
                             <button class="btn-outline" style="flex:1; min-width:140px;" onclick="mudarSubIa('edital', this)">📚 Edital Inteligente</button>
                         </div>
 
-                        <!-- Menu Retrátil Elegante para Seleção de Fontes -->
-                        <div id="caixa-fontes-ia" style="position:relative; margin-bottom:20px;">
-                            <button class="btn-outline" onclick="toggleDropdownFontes()" style="display:flex; justify-content:space-between; align-items:center; background:var(--bg-input); font-weight:600;">
-                                <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">📚 Selecionar Fontes e Cadernos (<span id="contador-fontes-sel">0</span> ativas)</span>
-                                <span>▼</span>
-                            </button>
-                            <div id="dropdown-fontes-menu" style="display:none; position:absolute; top:100%; left:0; width:100%; background:var(--bg-card); border:1px solid var(--border-color); border-radius:var(--radius-sm); padding:16px; z-index:100; box-shadow:var(--shadow-md); max-height:240px; overflow-y:auto; margin-top:4px;">
-                                <div style="font-weight:700; font-size:0.7rem; color:var(--text-muted); text-transform:uppercase; margin-bottom:8px; letter-spacing:0.8px;">Arquivos da Biblioteca</div>
-                                <div id="checkboxes-biblioteca" class="grid-fontes" style="margin-bottom:12px;"></div>
-                                <div style="font-weight:700; font-size:0.7rem; color:var(--brand-danger); text-transform:uppercase; margin-bottom:8px; letter-spacing:0.8px;">Cadernos de Erros</div>
-                                <div id="checkboxes-cadernos" class="grid-fontes"></div>
+                        <!-- Selecionador de Fonte (Idêntico ao do Registro de Sessão) -->
+                        <div id="caixa-fontes-ia" style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:20px; background:var(--bg-input); padding:16px; border-radius:var(--radius-sm); align-items:center;">
+                            <div style="flex:1; min-width:140px;">
+                                <label style="font-size:0.75rem; font-weight:700; color:var(--text-muted); display:block; margin-bottom:4px;">MATÉRIA / CONTEXTO</label>
+                                <input type="text" id="ia-fonte-mat" placeholder="Matéria (Fonte da Biblioteca/Caderno)" list="lista-materias-dl" oninput="atualizarTopicosDatalist('ia-fonte-top', this.value)" style="margin:0;" onclick="try{this.showPicker()}catch(e){}">
+                            </div>
+                            <div style="flex:1; min-width:140px;">
+                                <label style="font-size:0.75rem; font-weight:700; color:var(--text-muted); display:block; margin-bottom:4px;">TÓPICO ALVO (OPCIONAL)</label>
+                                <input type="text" id="ia-fonte-top" placeholder="Tópico (Opcional)" list="dl-ia-fonte-top" style="margin:0;" onclick="try{this.showPicker()}catch(e){}">
+                                <datalist id="dl-ia-fonte-top"></datalist>
                             </div>
                         </div>
 
                         <!-- Sub: Chat -->
                         <div id="subia-chat">
                             <div class="chat-box" id="box-chat">
-                                <div class="msg msg-a"><strong>PRUMA:</strong> Olá! Selecione suas fontes acima e envie sua dúvida. Sou especialista em provas e concursos. O que estudaremos hoje?</div>
+                                <div class="msg msg-a"><strong>PRUMA:</strong> Olá! Selecione a Matéria/Tópico acima e envie sua dúvida. Sou especialista em provas e concursos. O que estudaremos hoje?</div>
                             </div>
                             <div style="display:flex; gap:12px; flex-wrap:wrap;">
                                 <textarea id="inp-chat" placeholder="Peça resumos de PDFs, resoluções profundas ou jurisprudência..." rows="2" style="margin:0; resize:none; flex:1; min-width:200px;"></textarea>
@@ -369,7 +373,7 @@
                         <div id="subia-simulador" style="display:none;">
                             <div style="display:flex; gap:16px; margin-bottom:16px; flex-wrap:wrap;">
                                 <input type="number" id="ia-qts-num" value="5" min="1" max="20" style="width:90px; margin:0;" title="Nº de Questões">
-                                <input type="text" id="ia-qts-tema" placeholder="Tema específico (Ou deixe em branco para focar nas fontes selecionadas)" style="flex:1; margin:0; min-width:200px;">
+                                <input type="text" id="ia-qts-tema" placeholder="Tema específico (Ou deixe em branco para focar na Matéria selecionada)" style="flex:1; margin:0; min-width:200px;">
                             </div>
                             <button class="btn-primary" onclick="executarIA('questoes')">Gerar Bateria de Questões</button>
                             <div class="chat-box" id="box-qts" style="margin-top:16px; display:none; height:auto; min-height:200px;"></div>
@@ -377,12 +381,7 @@
 
                         <!-- Sub: Flashcards -->
                         <div id="subia-flashcards" style="display:none;">
-                            <div style="display:flex; gap:16px; margin-bottom:16px; flex-wrap:wrap;">
-                                <input type="text" id="fc-mat-dest" placeholder="Matéria Alvo *" list="lista-materias-dl" oninput="atualizarTopicosDatalist('fc-top-dest', this.value)" style="flex:1; min-width:180px;">
-                                <input type="text" id="fc-top-dest" placeholder="Tópico Alvo *" list="dl-fc-top-dest" style="flex:1; min-width:180px;">
-                                <datalist id="dl-fc-top-dest"></datalist>
-                            </div>
-                            <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:16px;">A IA criará flashcards inteligentes baseados na Matéria, Tópico e nas fontes marcadas acima.</p>
+                            <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:16px;">A IA criará flashcards inteligentes baseados na Matéria e Tópico marcados acima.</p>
                             <button class="btn-primary" onclick="executarIA('flashcards')">Gerar Flashcards Automáticos</button>
                             <div class="chat-box" id="box-fc" style="margin-top:16px; display:none; background:transparent; border:none; padding:0; height:auto; overflow:visible;"></div>
                         </div>
@@ -404,13 +403,13 @@
                     <div style="display:flex; gap:20px; flex-wrap:wrap;">
                         <div style="flex:1; min-width:250px; background:var(--bg-input); padding:20px; border-radius:var(--radius-md);">
                             <h3 style="margin-top:0; font-size:1.1rem;">Enviar PDF / Texto</h3>
-                            <input type="text" id="bib-mat-arq" placeholder="Matéria (Opcional)">
+                            <input type="text" id="bib-mat-arq" placeholder="Matéria/Assunto (Opcional)" list="lista-materias-dl" onclick="try{this.showPicker()}catch(e){}">
                             <input type="file" id="bib-file" accept=".pdf,.txt" style="background:var(--bg-card); padding:8px;">
                             <button class="btn-primary" onclick="uploadArquivo()">Subir Arquivo</button>
                         </div>
                         <div style="flex:1; min-width:250px; background:var(--bg-input); padding:20px; border-radius:var(--radius-md);">
                             <h3 style="margin-top:0; font-size:1.1rem;">Salvar Link Web</h3>
-                            <input type="text" id="bib-mat-link" placeholder="Matéria (Opcional)">
+                            <input type="text" id="bib-mat-link" placeholder="Matéria/Assunto (Opcional)" list="lista-materias-dl" onclick="try{this.showPicker()}catch(e){}">
                             <input type="url" id="bib-link" placeholder="https://...">
                             <button class="btn-success" onclick="salvarLink()">Salvar URL</button>
                         </div>
@@ -435,7 +434,7 @@
                     <p><strong>Nome:</strong> <input type="text" id="conta-nome" style="width:220px; display:inline-block; padding:8px; margin:0; max-width:100%;"></p>
                     <button class="btn-outline" style="width:auto; padding:8px 16px; margin-bottom:24px;" onclick="salvarNomePerfil()">Salvar Nome</button>
                     
-                    <label style="font-weight:700; display:block; margin-bottom:10px;">Paleta de Cores do Sistema (15 Opções):</label>
+                    <label style="font-weight:700; display:block; margin-bottom:10px;">Paleta de Cores do Sistema (17 Opções):</label>
                     <div id="paleta-cores-sistema" style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:30px;"></div>
 
                     <button class="btn-danger" style="width:100%; padding:14px; font-size:1rem;" onclick="excluirConta()">Excluir Minha Conta Permanentemente</button>
@@ -496,8 +495,9 @@
         let segundosCronometro = 0, cronometroInterval = null, graficoInstance = null;
         let editandoRegistroId = null;
         
-        const paleta15 = ['#007AFF','#34C759','#FF3B30','#FF9500','#5856D6','#AF52DE','#5AC8FA','#FF2D55','#E5C07B','#98C379','#E06C75','#C678DD','#56B6C2','#D19A66','#61AFEF'];
-        let corAtualMateria = paleta15[0];
+        // PALETA ATUALIZADA (com Preto e Branco)
+        const paleta17 = ['#007AFF','#34C759','#FF3B30','#FF9500','#5856D6','#AF52DE','#5AC8FA','#FF2D55','#E5C07B','#98C379','#E06C75','#C678DD','#56B6C2','#D19A66','#61AFEF', '#000000', '#FFFFFF'];
+        let corAtualMateria = paleta17[0];
 
         function sanitizeText(str) { return typeof str === 'string' ? DOMPurify.sanitize(str) : ''; }
         function gerarId() { return Date.now().toString(36) + Math.random().toString(36).substr(2); }
@@ -536,22 +536,31 @@
         }
 
         // CONTA E RESGATE
+        function aplicarCorSistema(cor) {
+            document.documentElement.style.setProperty('--brand-primary', cor); 
+            if (cor === '#FFFFFF') {
+                document.documentElement.style.setProperty('--btn-text', '#000000');
+                document.documentElement.style.setProperty('--border-color', '#CCCCCC');
+            } else if (cor === '#000000') {
+                document.documentElement.style.setProperty('--btn-text', '#FFFFFF');
+                document.documentElement.style.setProperty('--border-color', '#333333');
+            } else {
+                document.documentElement.style.setProperty('--btn-text', '#FFFFFF');
+                document.documentElement.style.setProperty('--border-color', cor + '55');
+            }
+            localStorage.setItem('pruma_cor_sys', cor);
+        }
+
         function carregarPaletaSistema() {
             let div = document.getElementById('paleta-cores-sistema'); div.innerHTML = '';
-            paleta15.forEach(cor => {
-                let dot = document.createElement('div'); dot.style.width='32px'; dot.style.height='32px'; dot.style.borderRadius='50%'; dot.style.background=cor; dot.style.cursor='pointer';
-                dot.onclick = () => { 
-                    document.documentElement.style.setProperty('--brand-primary', cor); 
-                    document.documentElement.style.setProperty('--border-color', cor + '55'); 
-                    localStorage.setItem('pruma_cor_sys', cor); 
-                };
+            paleta17.forEach(cor => {
+                let dot = document.createElement('div'); dot.style.width='32px'; dot.style.height='32px'; dot.style.borderRadius='50%'; 
+                dot.style.background = cor; dot.style.cursor='pointer'; dot.style.border = '1px solid #CCC';
+                dot.onclick = () => aplicarCorSistema(cor);
                 div.appendChild(dot);
             });
             let salva = localStorage.getItem('pruma_cor_sys'); 
-            if(salva) {
-                document.documentElement.style.setProperty('--brand-primary', salva);
-                document.documentElement.style.setProperty('--border-color', salva + '55');
-            }
+            if(salva) aplicarCorSistema(salva);
         }
         function salvarNomePerfil() { let n = document.getElementById('conta-nome').value.trim(); if(n) refDb.child('perfil/nome').set(n); alert("Salvo."); }
         async function excluirConta() { if(confirm("Apagar tudo?")) { await refDb.remove(); await userAtual.delete(); window.location.reload(); } }
@@ -578,20 +587,14 @@
         // DADOS
         function carregarDadosGlobais() {
             refDb.child('perfil/nome').on('value', s => { if(s.val()) document.getElementById('conta-nome').value = s.val(); });
-            refDb.child('sessoes').on('value', s => { dbData.sessoes = s.val() ? Object.values(s.val()) : []; renderizarInicio(); calcularTempoTotal(); if(document.getElementById('view-estatisticas').style.display==='block') atualizarEstatisticas(); });
+            refDb.child('sessoes').on('value', s => { dbData.sessoes = s.val() ? Object.values(s.val()) : []; renderizarInicio(); if(document.getElementById('view-estatisticas').style.display==='block') atualizarEstatisticas(); });
             refDb.child('provas').on('value', s => { let v = s.val(); dbData.provas = v ? (Array.isArray(v) ? v : Object.values(v)) : []; renderizarProvas(); atualizarSelectsUI(); });
             refDb.child('materias').on('value', s => { let v = s.val(); dbData.materias = v ? (Array.isArray(v) ? v : Object.values(v)) : []; renderizarMaterias(); atualizarSelectsUI(); });
-            refDb.child('cadernos').on('value', s => { let v = s.val(); dbData.cadernos = v ? (Array.isArray(v) ? v : Object.values(v)) : []; renderizarCadernos(); atualizarCheckboxesIA(); });
-            refDb.child('biblioteca').on('value', s => { dbData.biblioteca = s.val() ? Object.values(s.val()) : []; renderizarBiblioteca(); atualizarCheckboxesIA(); });
+            refDb.child('cadernos').on('value', s => { let v = s.val(); dbData.cadernos = v ? (Array.isArray(v) ? v : Object.values(v)) : []; renderizarCadernos(); });
+            refDb.child('biblioteca').on('value', s => { dbData.biblioteca = s.val() ? Object.values(s.val()) : []; renderizarBiblioteca(); });
             refDb.child('ia_historico').on('value', s => { dbData.iaHistorico = s.val() || []; renderizarHistoricoIA(); });
         }
 
-        function calcularTempoTotal() {
-            let segs = dbData.sessoes.reduce((acc, s) => acc + (s.segundos || 0), 0);
-            let textoTempo = `${Math.floor(segs / 3600)}h ${Math.floor((segs % 3600) / 60)}m`;
-            let elRgTempo = document.getElementById('rg-tempo');
-            if(elRgTempo) elRgTempo.textContent = textoTempo;
-        }
         function iniciarCronometro() { if(!cronometroInterval) { cronometroInterval = setInterval(() => { segundosCronometro++; atualizarVisorCronometro(); }, 1000); } }
         function pausarCronometro() { clearInterval(cronometroInterval); cronometroInterval = null; }
         function atualizarVisorCronometro() {
@@ -625,15 +628,17 @@
                 if(per === 'custom') return (!dtI || !dtF) ? true : (s.timestamp >= new Date(dtI).getTime() && s.timestamp <= new Date(dtF).getTime()+86399999);
                 return (agora - s.timestamp) <= (parseInt(per)*86400000);
             }).forEach(s => {
-                let ac = s.acertos || 0;
-                let er = s.erros || 0;
-                tA += ac;
-                tE += er;
+                let ac = s.acertos || 0, er = s.erros || 0;
+                tA += ac; tE += er;
                 tQts += (s.totalQts !== undefined ? s.totalQts : (ac + er));
                 tSeg += (s.segundos || 0);
             });
 
-            let hTempo = `${Math.floor(tSeg / 3600)}h ${Math.floor((tSeg % 3600) / 60)}m`;
+            let hh = Math.floor(tSeg / 3600).toString().padStart(2,'0');
+            let mm = Math.floor((tSeg % 3600) / 60).toString().padStart(2,'0');
+            let ss = (tSeg % 60).toString().padStart(2,'0');
+            let hTempo = `${hh}:${mm}:${ss}`;
+
             let elRgTempo = document.getElementById('rg-tempo');
             if(elRgTempo) elRgTempo.textContent = hTempo;
 
@@ -649,9 +654,7 @@
             grid.innerHTML = '';
             
             let agora = new Date();
-            let ano = agora.getFullYear();
-            let mes = agora.getMonth();
-
+            let ano = agora.getFullYear(), mes = agora.getMonth();
             const nomesMeses = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
             document.getElementById('calendario-titulo').textContent = `Estudos em ${nomesMeses[mes]} ${ano}`;
 
@@ -662,36 +665,19 @@
             let primeiroDiaDoMes = new Date(ano, mes, 1).getDay();
             let ultimoDiaDoMes = new Date(ano, mes + 1, 0).getDate();
 
-            for(let i=0; i<primeiroDiaDoMes; i++) {
-                grid.innerHTML += `<div></div>`;
-            }
+            for(let i=0; i<primeiroDiaDoMes; i++) grid.innerHTML += `<div></div>`;
 
             for(let dia=1; dia<=ultimoDiaDoMes; dia++) {
                 let dObj = new Date(ano, mes, dia);
                 let isPassadoOuHoje = dObj <= new Date(agora.getFullYear(), agora.getMonth(), agora.getDate());
-                
-                let temEstudo = dbData.sessoes.some(s => {
-                    let sDate = new Date(s.timestamp);
-                    return sDate.getFullYear() === ano && sDate.getMonth() === mes && sDate.getDate() === dia;
-                });
+                let temEstudo = dbData.sessoes.some(s => { let sDate = new Date(s.timestamp); return sDate.getFullYear() === ano && sDate.getMonth() === mes && sDate.getDate() === dia; });
 
-                let icone = '';
-                let corFundo = 'var(--bg-card)';
+                let icone = '', corFundo = 'var(--bg-card)';
                 if(isPassadoOuHoje) {
-                    if(temEstudo) {
-                        icone = '✅';
-                        corFundo = 'rgba(52, 199, 89, 0.12)';
-                    } else {
-                        icone = '❌';
-                        corFundo = 'rgba(255, 59, 48, 0.12)';
-                    }
+                    if(temEstudo) { icone = '✅'; corFundo = 'rgba(52, 199, 89, 0.12)'; } 
+                    else { icone = '❌'; corFundo = 'rgba(255, 59, 48, 0.12)'; }
                 }
-
-                grid.innerHTML += `
-                <div style="background:${corFundo}; border:1px solid var(--border-color); border-radius:8px; padding:6px 2px; display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:42px;">
-                    <span style="font-size:0.8rem; font-weight:600; color:var(--text-main);">${dia}</span>
-                    <span style="font-size:0.85rem; margin-top:2px;">${icone}</span>
-                </div>`;
+                grid.innerHTML += `<div style="background:${corFundo}; border:1px solid var(--border-color); border-radius:8px; padding:6px 2px; display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:42px;"><span style="font-size:0.8rem; font-weight:600; color:var(--text-main);">${dia}</span><span style="font-size:0.85rem; margin-top:2px;">${icone}</span></div>`;
             }
         }
 
@@ -713,19 +699,13 @@
                 timestamp: editandoRegistroId ? (dbData.sessoes.find(x=>x.id===editandoRegistroId)?.timestamp || Date.now()) : Date.now(), 
                 data: editandoRegistroId ? (dbData.sessoes.find(x=>x.id===editandoRegistroId)?.data || new Date().toLocaleDateString()) : new Date().toLocaleDateString(), 
                 hora: new Date().toLocaleTimeString().substring(0,5), 
-                materia: mat, 
-                topico: top, 
-                tipoEstudo: document.getElementById('ses-tipo-estudo').value, 
-                tipoMat: document.getElementById('ses-tipo-mat').value, 
-                segundos: segsFinais, 
-                acertos: a, 
-                erros: e, 
-                totalQts: a+e, 
-                obs: sanitizeText(document.getElementById('ses-obs').value) 
+                materia: mat, topico: top, tipoEstudo: document.getElementById('ses-tipo-estudo').value, 
+                tipoMat: document.getElementById('ses-tipo-mat').value, segundos: segsFinais, 
+                acertos: a, erros: e, totalQts: a+e, obs: sanitizeText(document.getElementById('ses-obs').value) 
             };
 
-            if(reg.tipoMat.includes('PDF')) { reg.paginas = Math.max(0, (parseInt(document.getElementById('ses-pdf-fim').value)||0) - (parseInt(document.getElementById('ses-pdf-ini').value)||0) + 1); }
-            if(reg.tipoMat === 'Vídeo Aula') { reg.videos = Math.max(0, (parseInt(document.getElementById('ses-vid-fim').value)||0) - (parseInt(document.getElementById('ses-vid-ini').value)||0) + 1); }
+            if(reg.tipoMat.includes('PDF')) reg.paginas = Math.max(0, (parseInt(document.getElementById('ses-pdf-fim').value)||0) - (parseInt(document.getElementById('ses-pdf-ini').value)||0) + 1);
+            if(reg.tipoMat === 'Vídeo Aula') reg.videos = Math.max(0, (parseInt(document.getElementById('ses-vid-fim').value)||0) - (parseInt(document.getElementById('ses-vid-ini').value)||0) + 1);
 
             if(!Array.isArray(dbData.materias)) dbData.materias = Object.values(dbData.materias || {});
             let idxM = dbData.materias.findIndex(m => m.nome.toLowerCase() === mat.toLowerCase());
@@ -734,22 +714,16 @@
                 refDb.child('materias').set(dbData.materias); 
             } else if(top) {
                 if(!Array.isArray(dbData.materias[idxM].topicos)) dbData.materias[idxM].topicos = Object.values(dbData.materias[idxM].topicos || {});
-                if(!dbData.materias[idxM].topicos.includes(top)) {
-                    dbData.materias[idxM].topicos.push(top);
-                    refDb.child('materias').set(dbData.materias);
-                }
+                if(!dbData.materias[idxM].topicos.includes(top)) { dbData.materias[idxM].topicos.push(top); refDb.child('materias').set(dbData.materias); }
             }
-
             refDb.child('sessoes/'+reg.id).set(reg);
             
-            cancelarEdicaoRegistro();
-            segundosCronometro = 0; atualizarVisorCronometro();
-            ['ses-mat','ses-top','ses-acertos','ses-erros','ses-man-horas','ses-man-mins','ses-obs','ses-pdf-ini','ses-pdf-fim','ses-vid-ini','ses-vid-fim'].forEach(id=> { if(document.getElementById(id)) document.getElementById(id).value = id.includes('horas')||id.includes('mins')?'0':''; });
+            cancelarEdicaoRegistro(); segundosCronometro = 0; atualizarVisorCronometro();
+            ['ses-mat','ses-top','ses-acertos','ses-erros','ses-man-horas','ses-man-mins','ses-obs','ses-pdf-ini','ses-pdf-fim','ses-vid-ini','ses-vid-fim'].forEach(id=> { if(document.getElementById(id)) document.getElementById(id).value = ''; });
         }
 
         function editarRegistro(id) {
-            let s = dbData.sessoes.find(x => x.id === id);
-            if(!s) return;
+            let s = dbData.sessoes.find(x => x.id === id); if(!s) return;
             editandoRegistroId = id;
             document.getElementById('ses-mat').value = s.materia || '';
             document.getElementById('ses-top').value = s.topico || '';
@@ -758,11 +732,9 @@
             toggleCamposDetalhes();
             document.getElementById('ses-acertos').value = s.acertos || '';
             document.getElementById('ses-erros').value = s.erros || '';
-            
-            let hrs = Math.floor((s.segundos || 0) / 3600);
-            let mins = Math.floor(((s.segundos || 0) % 3600) / 60);
-            document.getElementById('ses-man-horas').value = hrs;
-            document.getElementById('ses-man-mins').value = mins;
+            let hrs = Math.floor((s.segundos || 0) / 3600), mins = Math.floor(((s.segundos || 0) % 3600) / 60);
+            document.getElementById('ses-man-horas').value = hrs || '';
+            document.getElementById('ses-man-mins').value = mins || '';
             document.getElementById('ses-obs').value = s.obs || '';
             
             document.getElementById('form-titulo-sessao').textContent = "✏️ Editando Sessão";
@@ -776,7 +748,7 @@
             document.getElementById('form-titulo-sessao').textContent = "Registrar Sessão";
             document.getElementById('btn-salvar-sessao').textContent = "💾 Salvar Sessão";
             document.getElementById('btn-cancelar-edicao').style.display = 'none';
-            ['ses-mat','ses-top','ses-acertos','ses-erros','ses-man-horas','ses-man-mins','ses-obs','ses-pdf-ini','ses-pdf-fim','ses-vid-ini','ses-vid-fim'].forEach(id=> { if(document.getElementById(id)) document.getElementById(id).value = id.includes('horas')||id.includes('mins')?'0':''; });
+            ['ses-mat','ses-top','ses-acertos','ses-erros','ses-man-horas','ses-man-mins','ses-obs','ses-pdf-ini','ses-pdf-fim','ses-vid-ini','ses-vid-fim'].forEach(id=> { if(document.getElementById(id)) document.getElementById(id).value = ''; });
         }
 
         function renderizarInicio() {
@@ -785,11 +757,19 @@
             
             arr.forEach((s, i) => {
                 if(i < 15) {
+                    let ht = Math.floor(s.segundos/3600), mt = Math.floor((s.segundos%3600)/60), st = s.segundos%60;
+                    let timeStr = `${ht}h ${mt}m ${st}s`;
+                    let perc = s.totalQts > 0 ? Math.round((s.acertos/s.totalQts)*100)+'%' : '0%';
+                    let accStr = `${perc} (${s.acertos||0}/${s.totalQts||0})`;
+
                     divReg.innerHTML += `
                     <div class="registro-curto">
                         <div class="info">
                             <strong>${s.tipoMat.includes('PDF')?'📖':s.tipoMat==='Vídeo Aula'?'🎥':'📝'} ${s.materia}</strong>
-                            <span>${s.topico||'Geral'} | ⏱️ ${Math.floor(s.segundos/60)}m | 🎯 ${s.totalQts>0?Math.round((s.acertos/s.totalQts)*100)+'%':'0%'}</span>
+                            <span style="display:flex; align-items:center; gap:6px; font-size:0.8rem; color:var(--text-muted); min-width:0; max-width:100%;">
+                                <span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; flex:1; max-width:140px;" title="${s.topico||'Geral'}">${s.topico||'Geral'}</span>
+                                <span style="flex-shrink:0;">| ⏱️ ${timeStr} | 🎯 ${accStr}</span>
+                            </span>
                         </div>
                         <div class="acoes-reg">
                             <button style="background:transparent;border:none;cursor:pointer;font-size:1rem;" title="Editar" onclick="editarRegistro('${s.id}')">✏️</button>
@@ -821,7 +801,7 @@
         }
 
         // MATÉRIAS, EDIÇÃO E JUNÇÃO DE TÓPICOS
-        document.getElementById('mat-paleta').innerHTML = paleta15.map(c => `<div style="width:28px; height:28px; border-radius:50%; background:${c}; cursor:pointer;" onclick="corAtualMateria='${c}'; this.style.border='2px solid var(--text-main)';"></div>`).join('');
+        document.getElementById('mat-paleta').innerHTML = paleta17.map(c => `<div style="width:28px; height:28px; border-radius:50%; background:${c}; border:1px solid #CCC; cursor:pointer;" onclick="corAtualMateria='${c}'; this.style.border='2px solid var(--text-main)';"></div>`).join('');
         
         function salvarMateria() {
             let n = sanitizeText(document.getElementById('mat-nome').value), t = sanitizeText(document.getElementById('mat-topico').value), pId = document.getElementById('mat-prova').value;
@@ -838,7 +818,35 @@
             refDb.child('materias').set(dbData.materias); document.getElementById('mat-topico').value = '';
         }
 
+        function moverMateriaParaProva(id) {
+            let txt = dbData.provas.map((pr, i) => `${i+1} - ${pr.nome}`).join('\n');
+            let res = prompt("Digite o número correspondente à Prova para vincular esta matéria:\n0 - Matérias Gerais\n" + txt);
+            if(res !== null) {
+                let num = parseInt(res);
+                let m = dbData.materias.find(x => x.id === id);
+                if(num === 0) m.provaId = "";
+                else if(num > 0 && num <= dbData.provas.length) m.provaId = dbData.provas[num-1].id;
+                else return alert("Opção inválida.");
+                refDb.child('materias').set(dbData.materias);
+            }
+        }
+
+        function excluirTopicoMateria(mId, i) {
+            if(!confirm('Tem certeza que deseja excluir o tópico?')) return;
+            let m = dbData.materias.find(x=>x.id===mId);
+            if(m && m.topicos) {
+                m.topicos.splice(i,1);
+                refDb.child('materias').set(dbData.materias);
+            }
+        }
+
         function renderizarMaterias() {
+            let statePastas = [];
+            document.querySelectorAll('.pasta-body.aberta').forEach(el => {
+                let id = el.previousElementSibling.getAttribute('data-folder-id');
+                if(id) statePastas.push(id);
+            });
+
             let div = document.getElementById('lista-materias-cadastradas'); div.innerHTML = '';
             if(!Array.isArray(dbData.materias)) dbData.materias = Object.values(dbData.materias || {});
             let grupos = { 'geral': [] };
@@ -851,44 +859,46 @@
                 
                 let conteudoMat = grupos[p].map(m => {
                     if(!Array.isArray(m.topicos)) m.topicos = Object.values(m.topicos || {});
-                    let htmlT = m.topicos.map((t, i) => `<div style="padding:8px 0; border-bottom:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center; gap:8px;"><span style="overflow:hidden; text-overflow:ellipsis; min-width:0; flex:1;">📄 ${t}</span> <div style="display:flex; align-items:center; gap:6px; flex-shrink:0;"><button style="background:transparent;border:none;cursor:pointer;font-size:1rem;" title="Editar Tópico" onclick="editarTopico('${m.id}', ${i})">✏️</button> <button style="background:transparent;border:none;cursor:pointer;font-size:1rem;" title="Juntar Tópicos" onclick="abrirModalJuntar('${m.id}', '${sanitizeText(t).replace(/'/g,"\\'")}')">🔗</button> <button class="btn-x-vermelho" onclick="if(!Array.isArray(dbData.materias.find(x=>x.id==='${m.id}').topicos)) dbData.materias.find(x=>x.id==='${m.id}').topicos = Object.values(dbData.materias.find(x=>x.id==='${m.id}').topicos || {}); dbData.materias.find(x=>x.id==='${m.id}').topicos.splice(${i},1); refDb.child('materias').set(dbData.materias);">✖</button></div></div>`).join('');
-                    return `<div class="pasta-header" style="border-left:5px solid ${m.cor};" onclick="this.nextElementSibling.classList.toggle('aberta')"><span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1; min-width:0;">📁 ${m.nome} (${m.topicos.length})</span><button class="btn-x-vermelho" style="flex-shrink:0;" onclick="event.stopPropagation(); if(confirm('Apagar?')) { dbData.materias=dbData.materias.filter(x=>x.id!=='${m.id}'); refDb.child('materias').set(dbData.materias); }">✖</button></div><div class="pasta-body">${htmlT||'<span style="color:var(--text-muted);font-size:0.85rem;">Vazio.</span>'}</div>`;
+                    let htmlT = m.topicos.map((t, i) => `<div style="padding:8px 0; border-bottom:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center; gap:8px;"><span style="overflow:hidden; text-overflow:ellipsis; min-width:0; flex:1;">📄 ${t}</span> <div style="display:flex; align-items:center; gap:6px; flex-shrink:0;"><button style="background:transparent;border:none;cursor:pointer;font-size:1rem;" title="Editar Tópico" onclick="editarTopico('${m.id}', ${i})">✏️</button> <button style="background:transparent;border:none;cursor:pointer;font-size:1rem;" title="Juntar Tópicos" onclick="abrirModalJuntar('${m.id}', '${sanitizeText(t).replace(/'/g,"\\'")}')">🔗</button> <button class="btn-x-vermelho" onclick="excluirTopicoMateria('${m.id}', ${i})">✖</button></div></div>`).join('');
+                    
+                    return `<div class="pasta-header" data-folder-id="${m.id}" style="border-left:5px solid ${m.cor};" onclick="this.nextElementSibling.classList.toggle('aberta')">
+                        <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1; min-width:0;">📁 ${m.nome} (${m.topicos.length})</span>
+                        <div style="display:flex; gap:8px; align-items:center;">
+                            <button style="background:transparent;border:none;cursor:pointer;font-size:1.1rem;" title="Mover para Prova" onclick="event.stopPropagation(); moverMateriaParaProva('${m.id}')">🔄</button>
+                            <button class="btn-x-vermelho" style="flex-shrink:0;" onclick="event.stopPropagation(); if(confirm('Apagar matéria inteira?')) { dbData.materias=dbData.materias.filter(x=>x.id!=='${m.id}'); refDb.child('materias').set(dbData.materias); }">✖</button>
+                        </div>
+                    </div><div class="pasta-body">${htmlT||'<span style="color:var(--text-muted);font-size:0.85rem;">Vazio.</span>'}</div>`;
                 }).join('');
 
-                if(!isGeral) {
-                    div.innerHTML += `<div class="bloco-prova"><div class="bloco-prova-titulo">🎯 ${nomeP}</div>${conteudoMat}</div>`;
-                } else {
-                    div.innerHTML += `<h3 style="color:var(--text-muted); margin-top:20px; font-size:1.1rem;">${nomeP}</h3>${conteudoMat}`;
-                }
+                if(!isGeral) div.innerHTML += `<div class="bloco-prova"><div class="bloco-prova-titulo">🎯 ${nomeP}</div>${conteudoMat}</div>`;
+                else div.innerHTML += `<h3 style="color:var(--text-muted); margin-top:20px; font-size:1.1rem;">${nomeP}</h3>${conteudoMat}`;
             }
+
+            // Restaura pastas que estavam abertas
+            statePastas.forEach(id => {
+                let hdr = document.querySelector(`.pasta-header[data-folder-id="${id}"]`);
+                if(hdr && hdr.nextElementSibling) hdr.nextElementSibling.classList.add('aberta');
+            });
         }
 
         function editarTopico(mId, index) {
             if(!Array.isArray(dbData.materias)) dbData.materias = Object.values(dbData.materias || {});
-            let mat = dbData.materias.find(m => m.id === mId);
-            if(!mat) return;
+            let mat = dbData.materias.find(m => m.id === mId); if(!mat) return;
             if(!Array.isArray(mat.topicos)) mat.topicos = Object.values(mat.topicos || {});
-            let velhoTop = mat.topicos[index];
-            let novoTop = prompt("Editar nome do tópico:", velhoTop);
+            let velhoTop = mat.topicos[index], novoTop = prompt("Editar nome do tópico:", velhoTop);
             if(!novoTop || !novoTop.trim()) return;
             novoTop = sanitizeText(novoTop.trim());
             if(mat.topicos.includes(novoTop)) return alert("Já existe um tópico com esse nome.");
             
             mat.topicos[index] = novoTop;
-            
-            dbData.sessoes.forEach(s => { if(s.materia === mat.nome && s.topico === velhoTop) s.topico = novoTop; });
-            refDb.child('sessoes').set(dbData.sessoes);
-            dbData.cadernos.forEach(c => { if(c.materia === mat.nome && c.topico === velhoTop) c.topico = novoTop; });
-            refDb.child('cadernos').set(dbData.cadernos);
-            
-            refDb.child('materias').set(dbData.materias);
-            alert("Tópico atualizado com sucesso!");
+            dbData.sessoes.forEach(s => { if(s.materia === mat.nome && s.topico === velhoTop) s.topico = novoTop; }); refDb.child('sessoes').set(dbData.sessoes);
+            dbData.cadernos.forEach(c => { if(c.materia === mat.nome && c.topico === velhoTop) c.topico = novoTop; }); refDb.child('cadernos').set(dbData.cadernos);
+            refDb.child('materias').set(dbData.materias); alert("Tópico atualizado com sucesso!");
         }
 
         function abrirModalJuntar(mId, topOri) {
             if(!Array.isArray(dbData.materias)) dbData.materias = Object.values(dbData.materias || {});
-            let mat = dbData.materias.find(m => m.id === mId);
-            if(!mat) return;
+            let mat = dbData.materias.find(m => m.id === mId); if(!mat) return;
             if(!Array.isArray(mat.topicos)) mat.topicos = Object.values(mat.topicos || {});
             document.getElementById('lbl-topico-origem').textContent = topOri;
             document.getElementById('hid-mat-id').value = mId;
@@ -901,33 +911,19 @@
         }
 
         function confirmarJuncao() {
-            let mId = document.getElementById('hid-mat-id').value;
-            let tOri = document.getElementById('hid-top-origem').value;
-            let tDest = document.getElementById('sel-topico-destino').value;
+            let mId = document.getElementById('hid-mat-id').value, tOri = document.getElementById('hid-top-origem').value, tDest = document.getElementById('sel-topico-destino').value;
             if(!tDest || tOri === tDest) return alert("Selecione um tópico de destino válido.");
             
             if(!Array.isArray(dbData.materias)) dbData.materias = Object.values(dbData.materias || {});
-            let mat = dbData.materias.find(m => m.id === mId);
-            if(!mat) return;
+            let mat = dbData.materias.find(m => m.id === mId); if(!mat) return;
             if(!Array.isArray(mat.topicos)) mat.topicos = Object.values(mat.topicos || {});
-            
             let novoTopico = `${tDest}. ${tOri}`;
             
-            mat.topicos = mat.topicos.filter(t => t !== tOri && t !== tDest);
-            mat.topicos.push(novoTopico);
-            
-            dbData.sessoes.forEach(s => { 
-                if(s.materia === mat.nome && (s.topico === tOri || s.topico === tDest)) s.topico = novoTopico; 
-            });
-            refDb.child('sessoes').set(dbData.sessoes);
-            
-            dbData.cadernos.forEach(c => { 
-                if(c.materia === mat.nome && (c.topico === tOri || c.topico === tDest)) c.topico = novoTopico; 
-            });
-            refDb.child('cadernos').set(dbData.cadernos);
+            mat.topicos = mat.topicos.filter(t => t !== tOri && t !== tDest); mat.topicos.push(novoTopico);
+            dbData.sessoes.forEach(s => { if(s.materia === mat.nome && (s.topico === tOri || s.topico === tDest)) s.topico = novoTopico; }); refDb.child('sessoes').set(dbData.sessoes);
+            dbData.cadernos.forEach(c => { if(c.materia === mat.nome && (c.topico === tOri || c.topico === tDest)) c.topico = novoTopico; }); refDb.child('cadernos').set(dbData.cadernos);
 
-            refDb.child('materias').set(dbData.materias);
-            document.getElementById('modal-juntar').style.display='none'; 
+            refDb.child('materias').set(dbData.materias); document.getElementById('modal-juntar').style.display='none'; 
             alert(`Tópicos juntados com sucesso como "${novoTopico}"!`);
         }
 
@@ -958,8 +954,8 @@
         // CADERNOS
         function salvarErro() {
             let m = sanitizeText(document.getElementById('err-mat').value), t = sanitizeText(document.getElementById('err-top').value), txt = sanitizeText(document.getElementById('err-texto').value);
-            if(!m || !txt) return alert("Preencha Matéria e Texto.");
-            dbData.cadernos.push({id: gerarId(), materia: m, topico: t || 'Geral', texto: txt, timestamp: Date.now(), data: new Date().toLocaleDateString()});
+            if(!m || !t || !txt) return alert("Preencha Matéria, Tópico e o Texto.");
+            dbData.cadernos.push({id: gerarId(), materia: m, topico: t, texto: txt, timestamp: Date.now(), data: new Date().toLocaleDateString()});
             refDb.child('cadernos').set(dbData.cadernos); document.getElementById('err-texto').value = '';
         }
         function renderizarCadernos() {
@@ -981,7 +977,8 @@
             let per = document.getElementById('est-periodo').value, tipo = document.getElementById('est-tipo-grafico').value;
             document.getElementById('est-custom-dates').style.display = per==='custom' ? 'flex' : 'none';
             let dtI = document.getElementById('est-dt-ini').value, dtF = document.getElementById('est-dt-fim').value;
-            let agora = Date.now(), tA = 0, tE = 0, tSeg = 0, tPag = 0, tVid = 0; let dadosGraf = {};
+            let agora = Date.now(), tA = 0, tE = 0, tSeg = 0, tPag = 0, tVid = 0, tQts = 0; let dadosGraf = {};
+            let setDias = new Set();
             
             dbData.sessoes.filter(s => {
                 if(per === 'tudo') return true;
@@ -989,21 +986,27 @@
                 return (agora - s.timestamp) <= (parseInt(per)*86400000);
             }).forEach(s => {
                 tA += (s.acertos||0); tE += (s.erros||0); tSeg += (s.segundos||0); tPag += (s.paginas||0); tVid += (s.videos||0);
+                tQts += (s.totalQts !== undefined ? s.totalQts : ((s.acertos||0)+(s.erros||0)));
+                if(s.data) setDias.add(s.data);
                 dadosGraf[s.materia] = (dadosGraf[s.materia]||0) + (s.segundos/60);
             });
 
+            document.getElementById('st-tempo').textContent = `${Math.floor(tSeg/3600)}h ${Math.floor((tSeg%3600)/60)}m`;
+            document.getElementById('st-qts').textContent = tQts;
             document.getElementById('st-acertos').textContent = tA; document.getElementById('st-erros').textContent = tE;
             document.getElementById('st-perc').textContent = (tA+tE)>0 ? Math.round((tA/(tA+tE))*100)+'%' : '0%';
-            document.getElementById('st-tempo').textContent = `${Math.floor(tSeg/3600)}h ${Math.floor((tSeg%3600)/60)}m`;
             document.getElementById('st-pags').textContent = tPag; document.getElementById('st-vids').textContent = tVid;
+            
+            let ritmo = (tSeg > 0) ? Math.round(tQts / (tSeg/3600)) : 0;
+            document.getElementById('st-ritmo').textContent = ritmo + '/h';
+            document.getElementById('st-dias').textContent = setDias.size;
 
             if(graficoInstance) graficoInstance.destroy();
             let isDark = document.documentElement.getAttribute('data-theme') === 'dark'; let txtCor = isDark ? '#FFFFFF' : '#000000';
             let keys = Object.keys(dadosGraf).length>0 ? Object.keys(dadosGraf) : ['Sem dados'], vals = Object.values(dadosGraf).length>0 ? Object.values(dadosGraf) : [1];
             let cores = keys.map(k => { 
                 if(!Array.isArray(dbData.materias)) dbData.materias = Object.values(dbData.materias || {});
-                let m = dbData.materias.find(x=>x.nome===k); 
-                return m ? m.cor : paleta15[0]; 
+                let m = dbData.materias.find(x=>x.nome===k); return m ? m.cor : paleta17[0]; 
             });
 
             graficoInstance = new Chart(document.getElementById('graficoEst').getContext('2d'), {
@@ -1043,25 +1046,7 @@
             ['chat', 'simulador', 'flashcards', 'edital'].forEach(s => { let el = document.getElementById('subia-'+s); if(el) el.style.display = (s===sub)?'block':'none'; });
             document.querySelectorAll('#view-pruma .btn-outline').forEach(b => { b.style.background='transparent'; b.style.color='var(--text-main)'; });
             if(btn) { btn.style.background='var(--brand-primary)'; btn.style.color='white'; }
-            document.getElementById('caixa-fontes-ia').style.display = (sub==='edital') ? 'none' : 'block';
-        }
-
-        function toggleDropdownFontes() {
-            let m = document.getElementById('dropdown-fontes-menu');
-            m.style.display = m.style.display === 'block' ? 'none' : 'block';
-        }
-
-        function atualizarCheckboxesIA() {
-            let cBib = document.getElementById('checkboxes-biblioteca'); cBib.innerHTML = '';
-            dbData.biblioteca.forEach(b => { cBib.innerHTML += `<label class="fonte-checkbox"><input type="checkbox" class="ia-chk-bib" value="${b.id}" onchange="atualizarContadorFontes()"> ${b.tipo==='LINK'?'🌐':'📄'} ${b.nome}</label>`; });
-            let cCad = document.getElementById('checkboxes-cadernos'); cCad.innerHTML = '';
-            [...new Set(dbData.cadernos.map(c=>c.materia))].forEach(c => { cCad.innerHTML += `<label class="fonte-checkbox" style="color:var(--brand-danger);"><input type="checkbox" class="ia-chk-cad" value="${c}" onchange="atualizarContadorFontes()"> 📓 Caderno: ${c}</label>`; });
-            atualizarContadorFontes();
-        }
-
-        function atualizarContadorFontes() {
-            let total = document.querySelectorAll('.ia-chk-bib:checked, .ia-chk-cad:checked').length;
-            document.getElementById('contador-fontes-sel').textContent = total;
+            document.getElementById('caixa-fontes-ia').style.display = (sub==='edital') ? 'none' : 'flex';
         }
 
         function renderizarHistoricoIA() {
@@ -1074,10 +1059,27 @@
 
         function extrairContextoGeral() {
             let ctx = "";
-            document.querySelectorAll('.ia-chk-bib:checked').forEach(c => { let b = dbData.biblioteca.find(x=>x.id===c.value); if(b) ctx += `\n[FONTE BIBLIOTECA: ${b.nome}]\n${b.texto}\n`; });
-            document.querySelectorAll('.ia-chk-cad:checked').forEach(c => { let errs = dbData.cadernos.filter(x=>x.materia===c.value).map(e=>e.texto).join('\n'); ctx += `\n[MEU CADERNO DE ERROS - ${c.value}]:\n${errs}\n`; });
+            let mat = sanitizeText(document.getElementById('ia-fonte-mat').value).toLowerCase();
+            let top = sanitizeText(document.getElementById('ia-fonte-top').value).toLowerCase();
+            
+            if (mat) {
+                dbData.biblioteca.forEach(b => { 
+                    if(b.materia && b.materia.toLowerCase() === mat) { ctx += `\n[FONTE BIBLIOTECA: ${b.nome}]\n${b.texto}\n`; }
+                });
+                let errs = dbData.cadernos.filter(x => x.materia.toLowerCase() === mat && (!top || x.topico.toLowerCase() === top)).map(e => e.texto).join('\n');
+                if(errs) ctx += `\n[MEU CADERNO DE ERROS - ${mat.toUpperCase()}]:\n${errs}\n`;
+            }
             if(dbData.iaHistorico.length>0) ctx += `\n[HISTÓRICO RECENTE]:\n${dbData.iaHistorico.map(h=> `Eu perguntei: ${h}`).join('\n')}\n`;
             return ctx;
+        }
+
+        function obterPromptDoSistema(tipo) {
+            const prompts = {
+                chat: "Você é a PRUMA IA, tutora especialista em vestibulares e concursos. Explique de forma didática, direta e fundamentada cruzando informações com as fontes fornecidas. OBRIGATÓRIO citar a fonte da resposta.",
+                questoes: "Você é a PRUMA IA, uma banca examinadora rigorosa. Crie questões inéditas de múltipla escolha (A, B, C, D, E) com alto rigor técnico. Forneça gabarito comentado justificando o erro e acerto de cada alternativa com base nas fontes.",
+                flashcards: "Você é a PRUMA IA, especialista em memorização ativa. Extraia conceitos-chave e crie pares de perguntas diretas e respostas concisas baseando-se no material fornecido. O foco é alta retenção."
+            };
+            return prompts[tipo] || "Você é a PRUMA IA, assistente de estudos.";
         }
 
         async function executarIA(tipo) {
@@ -1085,19 +1087,20 @@
             const modelo = (userAtual.uid === ADMIN_UID) ? "gemini-3.1-pro-preview" : "gemini-3.8-flash";
             
             let p = "", box = null; let ctx = extrairContextoGeral();
-            let baseSys = "Você é a PRUMA IA, especialista absoluta em provas e concursos. Resolva problemas, aprofunde explicações e sintetize o conhecimento. OBEDEÇA cegamente às ordens e prompts que o usuário digitar. OBRIGATÓRIO: Ao final de sua resposta, indique claramente a fonte utilizada.";
+            let baseSys = obterPromptDoSistema(tipo);
 
             if(tipo === 'chat') {
                 p = document.getElementById('inp-chat').value.trim(); if(!p) return;
                 box = document.getElementById('box-chat'); box.innerHTML += `<div class="msg msg-u">${sanitizeText(p)}</div>`; document.getElementById('inp-chat').value=''; box.scrollTop = box.scrollHeight;
                 dbData.iaHistorico.push(p); if(dbData.iaHistorico.length>10) dbData.iaHistorico.shift(); refDb.child('ia_historico').set(dbData.iaHistorico);
             } else if(tipo === 'questoes') {
-                p = `Crie exatamente ${document.getElementById('ia-qts-num').value} questões inéditas estilo prova múltipla escolha (A,B,C,D,E) sobre ${document.getElementById('ia-qts-tema').value||'o contexto das fontes selecionadas'}. Coloque [CORRETA] ao lado da certa e cite a fonte.`;
+                let t = document.getElementById('ia-qts-tema').value || 'o contexto da matéria e tópico marcados acima';
+                p = `Crie exatamente ${document.getElementById('ia-qts-num').value} questões inéditas sobre: ${t}. Coloque [CORRETA] ao lado da alternativa certa e cite a fonte no comentário.`;
                 box = document.getElementById('box-qts'); box.style.display='flex'; box.innerHTML='';
             } else if(tipo === 'flashcards') {
-                let mSel = document.getElementById('fc-mat-dest').value.trim(), tSel = document.getElementById('fc-top-dest').value.trim();
-                if(!mSel) return alert("Selecione ao menos a Matéria alvo.");
-                p = `Crie flashcards de estudo focados na Matéria: ${mSel} ${tSel?'e Tópico: '+tSel:''} com base nas fontes e cadernos selecionados. Retorne EXATAMENTE UM JSON ARRAY PURO: [{"f":"Pergunta","v":"Resposta"}]. Sem \`\`\`.`;
+                let mSel = document.getElementById('ia-fonte-mat').value.trim();
+                if(!mSel) return alert("Selecione no campo acima qual é a Matéria para extrair os Flashcards.");
+                p = `Baseado nas fontes extraídas, retorne EXATAMENTE UM JSON ARRAY PURO: [{"f":"Pergunta","v":"Resposta"}]. Sem blocos como \`\`\`.`;
                 box = document.getElementById('box-fc'); box.style.display='block'; box.innerHTML='';
             }
 
@@ -1114,7 +1117,7 @@
 
                 if(tipo === 'flashcards') {
                     let json = JSON.parse(txtF.replace(/```json/g,'').replace(/```/g,'').match(/\[.*\]/s)[0]);
-                    let mD = sanitizeText(document.getElementById('fc-mat-dest').value), tD = sanitizeText(document.getElementById('fc-top-dest').value);
+                    let mD = sanitizeText(document.getElementById('ia-fonte-mat').value), tD = sanitizeText(document.getElementById('ia-fonte-top').value);
                     box.innerHTML = '';
                     json.forEach(c => {
                         let bId = gerarId();
@@ -1161,7 +1164,7 @@
                         if(!Array.isArray(dbData.materias[idx].topicos)) dbData.materias[idx].topicos = Object.values(dbData.materias[idx].topicos || {});
                         n.topicos.forEach(t=>{ if(!dbData.materias[idx].topicos.includes(t)) dbData.materias[idx].topicos.push(t); }); 
                     } else { 
-                        dbData.materias.push({id:gerarId(), nome:n.disciplina, cor:paleta15[0], topicos:n.topicos, provaId:pId}); 
+                        dbData.materias.push({id:gerarId(), nome:n.disciplina, cor:paleta17[0], topicos:n.topicos, provaId:pId}); 
                     }
                 });
                 refDb.child('materias').set(dbData.materias); document.getElementById('edital-texto').value=''; alert("Edital mapeado!");
