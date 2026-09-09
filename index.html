@@ -14,17 +14,15 @@
 
     <style>
         :root {
-            /* Apple iOS Human Interface & Soft UI Palette - Light */
             --bg-body: #F2F2F7; --bg-card: #FFFFFF; --text-main: #000000; --text-muted: #8E8E93;
-            --border-color: #D1D1D6; --bg-input: #E5E5EA; --bg-hover: #D1D1D6;
+            --border-color: rgba(0, 122, 255, 0.25); --bg-input: #E5E5EA; --bg-hover: #D1D1D6;
             --brand-primary: #007AFF; --brand-success: #34C759; --brand-danger: #FF3B30; --brand-warning: #FF9500;
             --btn-text: #FFFFFF; --shadow-sm: 0 4px 16px rgba(0,0,0,0.03); --shadow-md: 0 12px 32px rgba(0,0,0,0.07);
             --radius-sm: 12px; --radius-md: 18px; --radius-lg: 24px;
         }
         [data-theme="dark"] {
-            /* Apple iOS Human Interface & Soft UI Palette - Dark Space Gray */
             --bg-body: #000000; --bg-card: #1C1C1E; --text-main: #FFFFFF; --text-muted: #8E8E93;
-            --border-color: #38383A; --bg-input: #2C2C2E; --bg-hover: #3A3A3C;
+            --border-color: rgba(10, 132, 255, 0.3); --bg-input: #2C2C2E; --bg-hover: #3A3A3C;
             --brand-primary: #0A84FF; --brand-success: #30D158; --brand-danger: #FF453A; --brand-warning: #FF9F0A;
             --shadow-md: 0 12px 32px rgba(0,0,0,0.45);
         }
@@ -57,7 +55,7 @@
         .card { background-color: var(--bg-card); border-radius: var(--radius-md); padding: 24px; margin-bottom: 24px; border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); backdrop-filter: blur(10px); }
         h2 { margin: 0 0 18px 0; color: var(--text-main); font-size: 1.35rem; font-weight: 700; border-bottom: 1px solid var(--border-color); padding-bottom: 12px; letter-spacing: -0.5px; }
         
-        input, select, textarea { width: 100%; padding: 12px 16px; margin-bottom: 12px; background-color: var(--bg-input); border: 1px solid transparent; border-radius: var(--radius-sm); color: var(--text-main); font-size: 0.95rem; outline: none; font-weight: 500; }
+        input, select, textarea { width: 100%; padding: 12px 16px; margin-bottom: 12px; background-color: var(--bg-input); border: 1px solid var(--border-color); border-radius: var(--radius-sm); color: var(--text-main); font-size: 0.95rem; outline: none; font-weight: 500; }
         input:focus, select:focus, textarea:focus { border-color: var(--brand-primary); background-color: var(--bg-card); box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.15); }
         
         button.btn-primary { width: 100%; padding: 14px; font-weight: 600; border: none; border-radius: var(--radius-sm); cursor: pointer; background: var(--brand-primary); color: var(--btn-text); font-size: 0.95rem; box-shadow: var(--shadow-sm); }
@@ -76,6 +74,7 @@
         .registro-curto .info { display: flex; flex-direction: column; gap: 4px; }
         .registro-curto .info strong { font-size: 0.95rem; color: var(--text-main); font-weight: 600; }
         .registro-curto .info span { font-size: 0.8rem; color: var(--text-muted); font-weight: 500; }
+        .acoes-reg { display: flex; align-items: center; gap: 8px; }
         .btn-x-vermelho { background: transparent; border: none; color: var(--brand-danger); font-size: 1.2rem; cursor: pointer; font-weight: 700; padding: 0 4px; }
         .btn-x-vermelho:hover { transform: scale(1.15); }
         
@@ -152,7 +151,7 @@
         <div id="tela-login" class="card" style="max-width:400px; margin:80px auto; text-align:center;">
             <h1 style="color:var(--brand-primary); font-size:2.8rem; margin:0 0 5px 0; font-weight:700;">PRUMA</h1>
             <p style="color:var(--text-muted); margin-bottom:30px; font-weight:500;">Painel de Estudos</p>
-            <button class="btn-outline" style="display:flex; align-items:center; justify-content:center; gap:10px; border-color:var(--border-color);" onclick="firebase.auth().signInWithPopup(new firebase.auth.GoogleAuthProvider())">
+            <button class="btn-outline" style="display:flex; align-items:center; justify-content:center; gap:10px;" onclick="firebase.auth().signInWithPopup(new firebase.auth.GoogleAuthProvider())">
                 <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" width="20" alt=""> Entrar com Google
             </button>
         </div>
@@ -209,7 +208,7 @@
 
                     <!-- Coluna Direita: Formulário de Sessão -->
                     <div style="flex:2; min-width:320px;">
-                        <h3 style="margin-top:0; color:var(--text-main); font-size:1.1rem; font-weight:700;">Registrar Sessão</h3>
+                        <h3 style="margin-top:0; color:var(--text-main); font-size:1.1rem; font-weight:700;" id="form-titulo-sessao">Registrar Sessão</h3>
                         <div style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:4px;">
                             <div style="flex:1; min-width:140px;">
                                 <input type="text" id="ses-mat" placeholder="Matéria" list="lista-materias-dl" oninput="atualizarTopicosSessao(this.value)">
@@ -234,17 +233,21 @@
                             <input type="number" id="ses-vid-ini" placeholder="Vídeo Ini" style="flex:1;"><input type="number" id="ses-vid-fim" placeholder="Vídeo Fim (Opc)" style="flex:1;"><input type="text" id="ses-vid-fonte" placeholder="Plataforma" style="flex:1;">
                         </div>
 
-                        <div style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:12px; background:var(--bg-input); padding:12px; border-radius:var(--radius-sm);">
-                            <div style="flex:1;"><label style="font-size:0.7rem; font-weight:700; color:var(--brand-success);">Acertos</label><input type="number" id="ses-acertos" placeholder="" value="" style="margin:0;" onkeydown="if(event.key==='Enter'){event.preventDefault(); document.getElementById('ses-erros').focus();}"></div>
-                            <div style="flex:1;"><label style="font-size:0.7rem; font-weight:700; color:var(--brand-danger);">Erros</label><input type="number" id="ses-erros" placeholder="" value="" style="margin:0;" onkeydown="if(event.key==='Enter'){event.preventDefault(); document.getElementById('ses-man-horas').focus();}"></div>
+                        <!-- Caixas de Acertos e Erros Compactas -->
+                        <div style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:12px; background:var(--bg-input); padding:10px; border-radius:var(--radius-sm);">
+                            <div style="flex:1;"><label style="font-size:0.7rem; font-weight:700; color:var(--brand-success);">Acertos</label><input type="number" id="ses-acertos" placeholder="" value="" style="margin:0; padding:6px 10px; font-size:0.9rem;" onkeydown="if(event.key==='Enter'){event.preventDefault(); document.getElementById('ses-erros').focus();}"></div>
+                            <div style="flex:1;"><label style="font-size:0.7rem; font-weight:700; color:var(--brand-danger);">Erros</label><input type="number" id="ses-erros" placeholder="" value="" style="margin:0; padding:6px 10px; font-size:0.9rem;" onkeydown="if(event.key==='Enter'){event.preventDefault(); document.getElementById('ses-man-horas').focus();}"></div>
                             <div style="flex:1; display:flex; gap:6px;">
-                                <div><label style="font-size:0.7rem; font-weight:700;">Horas</label><input type="number" id="ses-man-horas" value="0" min="0" style="margin:0;" onkeydown="if(event.key==='Enter'){event.preventDefault(); document.getElementById('ses-man-mins').focus();}"></div>
-                                <div><label style="font-size:0.7rem; font-weight:700;">Min</label><input type="number" id="ses-man-mins" value="0" min="0" max="59" style="margin:0;" onkeydown="if(event.key==='Enter'){event.preventDefault(); document.getElementById('ses-obs').focus();}"></div>
+                                <div><label style="font-size:0.7rem; font-weight:700;">Horas</label><input type="number" id="ses-man-horas" value="0" min="0" style="margin:0; padding:6px 6px; font-size:0.9rem;" onkeydown="if(event.key==='Enter'){event.preventDefault(); document.getElementById('ses-man-mins').focus();}"></div>
+                                <div><label style="font-size:0.7rem; font-weight:700;">Min</label><input type="number" id="ses-man-mins" value="0" min="0" max="59" style="margin:0; padding:6px 6px; font-size:0.9rem;" onkeydown="if(event.key==='Enter'){event.preventDefault(); document.getElementById('ses-obs').focus();}"></div>
                             </div>
                         </div>
                         
                         <textarea id="ses-obs" rows="1" placeholder="Observações..." style="margin-bottom:12px;" onkeydown="if(event.key==='Enter' && !event.shiftKey){event.preventDefault(); salvarRegistro();}"></textarea>
-                        <button class="btn-primary" onclick="salvarRegistro()">💾 Salvar Sessão</button>
+                        <div style="display:flex; gap:10px;">
+                            <button class="btn-primary" id="btn-salvar-sessao" onclick="salvarRegistro()">💾 Salvar Sessão</button>
+                            <button class="btn-outline" id="btn-cancelar-edicao" style="display:none; width:auto; padding:14px;" onclick="cancelarEdicaoRegistro()">Cancelar</button>
+                        </div>
                     </div>
                 </div>
 
@@ -498,6 +501,7 @@
         let userAtual = null, refDb = null, refStore = null;
         let dbData = { sessoes: [], provas: [], materias: [], cadernos: [], biblioteca: [], iaHistorico: [] };
         let segundosCronometro = 0, cronometroInterval = null, graficoInstance = null;
+        let editandoRegistroId = null;
         
         const paleta15 = ['#007AFF','#34C759','#FF3B30','#FF9500','#5856D6','#AF52DE','#5AC8FA','#FF2D55','#E5C07B','#98C379','#E06C75','#C678DD','#56B6C2','#D19A66','#61AFEF'];
         let corAtualMateria = paleta15[0];
@@ -543,10 +547,18 @@
             let div = document.getElementById('paleta-cores-sistema'); div.innerHTML = '';
             paleta15.forEach(cor => {
                 let dot = document.createElement('div'); dot.style.width='32px'; dot.style.height='32px'; dot.style.borderRadius='50%'; dot.style.background=cor; dot.style.cursor='pointer';
-                dot.onclick = () => { document.documentElement.style.setProperty('--brand-primary', cor); localStorage.setItem('pruma_cor_sys', cor); };
+                dot.onclick = () => { 
+                    document.documentElement.style.setProperty('--brand-primary', cor); 
+                    document.documentElement.style.setProperty('--border-color', cor + '55'); 
+                    localStorage.setItem('pruma_cor_sys', cor); 
+                };
                 div.appendChild(dot);
             });
-            let salva = localStorage.getItem('pruma_cor_sys'); if(salva) document.documentElement.style.setProperty('--brand-primary', salva);
+            let salva = localStorage.getItem('pruma_cor_sys'); 
+            if(salva) {
+                document.documentElement.style.setProperty('--brand-primary', salva);
+                document.documentElement.style.setProperty('--border-color', salva + '55');
+            }
         }
         function salvarNomePerfil() { let n = document.getElementById('conta-nome').value.trim(); if(n) refDb.child('perfil/nome').set(n); alert("Salvo."); }
         async function excluirConta() { if(confirm("Apagar tudo?")) { await refDb.remove(); await userAtual.delete(); window.location.reload(); } }
@@ -602,7 +614,7 @@
             dbData.materias.filter(m => m.nome.toLowerCase() === matNome.toLowerCase()).forEach(m => m.topicos.forEach(t => dl.innerHTML += `<option value="${t}">`));
         }
 
-        // RESUMO GERAL (COM FILTRO POR PERÍODO) E CALENDÁRIO
+        // RESUMO GERAL E CALENDÁRIO
         function atualizarResumoGeral() {
             let per = document.getElementById('resumo-geral-periodo').value;
             document.getElementById('resumo-geral-custom-dates').style.display = per==='custom' ? 'flex' : 'none';
@@ -684,7 +696,7 @@
             }
         }
 
-        // REGISTRO
+        // SALVAR E EDITAR REGISTRO DE SESSÃO
         function salvarRegistro() {
             let mat = sanitizeText(document.getElementById('ses-mat').value), top = sanitizeText(document.getElementById('ses-top').value);
             if(!mat) return alert("Preencha a matéria.");
@@ -695,7 +707,23 @@
             let segsFinais = segsManuais > 0 ? segsManuais : segundosCronometro;
             
             let a = parseInt(document.getElementById('ses-acertos').value)||0, e = parseInt(document.getElementById('ses-erros').value)||0;
-            let reg = { id: gerarId(), timestamp: Date.now(), data: new Date().toLocaleDateString(), hora: new Date().toLocaleTimeString().substring(0,5), materia: mat, topico: top, tipoEstudo: document.getElementById('ses-tipo-estudo').value, tipoMat: document.getElementById('ses-tipo-mat').value, segundos: segsFinais, acertos: a, erros: e, totalQts: a+e, obs: sanitizeText(document.getElementById('ses-obs').value) };
+            
+            let regId = editandoRegistroId ? editandoRegistroId : gerarId();
+            let reg = { 
+                id: regId, 
+                timestamp: editandoRegistroId ? (dbData.sessoes.find(x=>x.id===editandoRegistroId)?.timestamp || Date.now()) : Date.now(), 
+                data: editandoRegistroId ? (dbData.sessoes.find(x=>x.id===editandoRegistroId)?.data || new Date().toLocaleDateString()) : new Date().toLocaleDateString(), 
+                hora: new Date().toLocaleTimeString().substring(0,5), 
+                materia: mat, 
+                topico: top, 
+                tipoEstudo: document.getElementById('ses-tipo-estudo').value, 
+                tipoMat: document.getElementById('ses-tipo-mat').value, 
+                segundos: segsFinais, 
+                acertos: a, 
+                erros: e, 
+                totalQts: a+e, 
+                obs: sanitizeText(document.getElementById('ses-obs').value) 
+            };
 
             if(reg.tipoMat.includes('PDF')) { reg.paginas = Math.max(0, (parseInt(document.getElementById('ses-pdf-fim').value)||0) - (parseInt(document.getElementById('ses-pdf-ini').value)||0) + 1); }
             if(reg.tipoMat === 'Vídeo Aula') { reg.videos = Math.max(0, (parseInt(document.getElementById('ses-vid-fim').value)||0) - (parseInt(document.getElementById('ses-vid-ini').value)||0) + 1); }
@@ -705,8 +733,42 @@
             else if(top && !dbData.materias[idxM].topicos.includes(top)) { dbData.materias[idxM].topicos.push(top); refDb.child('materias').set(dbData.materias); }
 
             refDb.child('sessoes/'+reg.id).set(reg);
+            
+            cancelarEdicaoRegistro();
             segundosCronometro = 0; atualizarVisorCronometro();
-            ['ses-mat','ses-top','ses-acertos','ses-erros','ses-man-horas','ses-man-mins','ses-obs','ses-pdf-ini','ses-pdf-fim','ses-vid-ini','ses-vid-fim'].forEach(id=> { if(document.getElementById(id)) document.getElementById(id).value = id.includes('horas')||id.includes('mins')?id.includes('horas')?'0':'0':''; });
+            ['ses-mat','ses-top','ses-acertos','ses-erros','ses-man-horas','ses-man-mins','ses-obs','ses-pdf-ini','ses-pdf-fim','ses-vid-ini','ses-vid-fim'].forEach(id=> { if(document.getElementById(id)) document.getElementById(id).value = id.includes('horas')||id.includes('mins')?'0':''; });
+        }
+
+        function editarRegistro(id) {
+            let s = dbData.sessoes.find(x => x.id === id);
+            if(!s) return;
+            editandoRegistroId = id;
+            document.getElementById('ses-mat').value = s.materia || '';
+            document.getElementById('ses-top').value = s.topico || '';
+            document.getElementById('ses-tipo-estudo').value = s.tipoEstudo || 'Teoria';
+            document.getElementById('ses-tipo-mat').value = s.tipoMat || 'Questões';
+            toggleCamposDetalhes();
+            document.getElementById('ses-acertos').value = s.acertos || '';
+            document.getElementById('ses-erros').value = s.erros || '';
+            
+            let hrs = Math.floor((s.segundos || 0) / 3600);
+            let mins = Math.floor(((s.segundos || 0) % 3600) / 60);
+            document.getElementById('ses-man-horas').value = hrs;
+            document.getElementById('ses-man-mins').value = mins;
+            document.getElementById('ses-obs').value = s.obs || '';
+            
+            document.getElementById('form-titulo-sessao').textContent = "✏️ Editando Sessão";
+            document.getElementById('btn-salvar-sessao').textContent = "💾 Atualizar Sessão";
+            document.getElementById('btn-cancelar-edicao').style.display = 'block';
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function cancelarEdicaoRegistro() {
+            editandoRegistroId = null;
+            document.getElementById('form-titulo-sessao').textContent = "Registrar Sessão";
+            document.getElementById('btn-salvar-sessao').textContent = "💾 Salvar Sessão";
+            document.getElementById('btn-cancelar-edicao').style.display = 'none';
+            ['ses-mat','ses-top','ses-acertos','ses-erros','ses-man-horas','ses-man-mins','ses-obs','ses-pdf-ini','ses-pdf-fim','ses-vid-ini','ses-vid-fim'].forEach(id=> { if(document.getElementById(id)) document.getElementById(id).value = id.includes('horas')||id.includes('mins')?'0':''; });
         }
 
         function renderizarInicio() {
@@ -721,7 +783,10 @@
                             <strong>${s.tipoMat.includes('PDF')?'📖':s.tipoMat==='Vídeo Aula'?'🎥':'📝'} ${s.materia}</strong>
                             <span>${s.topico||'Geral'} | ⏱️ ${Math.floor(s.segundos/60)}m | 🎯 ${s.totalQts>0?Math.round((s.acertos/s.totalQts)*100)+'%':'0%'}</span>
                         </div>
-                        <div class="acoes"><button class="btn-x-vermelho" onclick="if(confirm('Excluir?')) refDb.child('sessoes/${s.id}').remove()">✖</button></div>
+                        <div class="acoes-reg">
+                            <button style="background:transparent;border:none;cursor:pointer;font-size:1rem;" title="Editar" onclick="editarRegistro('${s.id}')">✏️</button>
+                            <button class="btn-x-vermelho" onclick="if(confirm('Excluir?')) refDb.child('sessoes/${s.id}').remove()">✖</button>
+                        </div>
                     </div>`;
                 }
             });
@@ -743,7 +808,7 @@
             });
         }
 
-        // MATÉRIAS E JUNÇÃO DE TÓPICOS
+        // MATÉRIAS, EDIÇÃO E JUNÇÃO DE TÓPICOS
         document.getElementById('mat-paleta').innerHTML = paleta15.map(c => `<div style="width:28px; height:28px; border-radius:50%; background:${c}; cursor:pointer;" onclick="corAtualMateria='${c}'; this.style.border='2px solid var(--text-main)';"></div>`).join('');
         
         function salvarMateria() {
@@ -766,7 +831,7 @@
                 let nomeP = isGeral ? 'Matérias Gerais' : (dbData.provas.find(x=>x.id===p)?.nome || 'Prova');
                 
                 let conteudoMat = grupos[p].map(m => {
-                    let htmlT = m.topicos.map((t, i) => `<div style="padding:8px 0; border-bottom:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center;"><span>📄 ${t}</span> <div><button style="background:transparent;border:none;cursor:pointer;font-size:1.1rem;margin-right:8px;" title="Juntar" onclick="abrirModalJuntar('${m.id}', '${sanitizeText(t).replace(/'/g,"\\'")}')">🔗</button> <button class="btn-x-vermelho" onclick="dbData.materias.find(x=>x.id==='${m.id}').topicos.splice(${i},1); refDb.child('materias').set(dbData.materias);">✖</button></div></div>`).join('');
+                    let htmlT = m.topicos.map((t, i) => `<div style="padding:8px 0; border-bottom:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center;"><span>📄 ${t}</span> <div><button style="background:transparent;border:none;cursor:pointer;font-size:1rem;margin-right:6px;" title="Editar Tópico" onclick="editarTopico('${m.id}', ${i})">✏️</button> <button style="background:transparent;border:none;cursor:pointer;font-size:1rem;margin-right:6px;" title="Juntar Tópicos" onclick="abrirModalJuntar('${m.id}', '${sanitizeText(t).replace(/'/g,"\\'")}')">🔗</button> <button class="btn-x-vermelho" onclick="dbData.materias.find(x=>x.id==='${m.id}').topicos.splice(${i},1); refDb.child('materias').set(dbData.materias);">✖</button></div></div>`).join('');
                     return `<div class="pasta-header" style="border-left:5px solid ${m.cor};" onclick="this.nextElementSibling.classList.toggle('aberta')"><span>📁 ${m.nome} (${m.topicos.length})</span><button class="btn-x-vermelho" onclick="event.stopPropagation(); if(confirm('Apagar?')) { dbData.materias=dbData.materias.filter(x=>x.id!=='${m.id}'); refDb.child('materias').set(dbData.materias); }">✖</button></div><div class="pasta-body">${htmlT||'<span style="color:var(--text-muted);font-size:0.85rem;">Vazio.</span>'}</div>`;
                 }).join('');
 
@@ -778,6 +843,27 @@
             }
         }
 
+        function editarTopico(mId, index) {
+            let mat = dbData.materias.find(m => m.id === mId);
+            if(!mat) return;
+            let velhoTop = mat.topicos[index];
+            let novoTop = prompt("Editar nome do tópico:", velhoTop);
+            if(!novoTop || !novoTop.trim()) return;
+            novoTop = sanitizeText(novoTop.trim());
+            if(mat.topicos.includes(novoTop)) return alert("Já existe um tópico com esse nome.");
+            
+            mat.topicos[index] = novoTop;
+            
+            // Atualizar sessões e cadernos com segurança
+            dbData.sessoes.forEach(s => { if(s.materia === mat.nome && s.topico === velhoTop) s.topico = novoTop; });
+            refDb.child('sessoes').set(dbData.sessoes);
+            dbData.cadernos.forEach(c => { if(c.materia === mat.nome && c.topico === velhoTop) c.topico = novoTop; });
+            refDb.child('cadernos').set(dbData.cadernos);
+            
+            refDb.child('materias').set(dbData.materias);
+            alert("Tópico atualizado com sucesso!");
+        }
+
         function abrirModalJuntar(mId, topOri) {
             let mat = dbData.materias.find(m => m.id === mId);
             document.getElementById('lbl-topico-origem').textContent = topOri;
@@ -786,19 +872,28 @@
             
             let sel = document.getElementById('sel-topico-destino'); sel.innerHTML = '';
             mat.topicos.forEach(t => { if(t !== topOri) sel.innerHTML += `<option value="${t}">${t}</option>`; });
-            if(sel.options.length === 0) return alert("Não há outros tópicos.");
+            if(sel.options.length === 0) return alert("Não há outros tópicos para juntar.");
             document.getElementById('modal-juntar').style.display='flex';
         }
+
         function confirmarJuncao() {
             let mId = document.getElementById('hid-mat-id').value, tOri = document.getElementById('hid-top-origem').value, tDest = document.getElementById('sel-topico-destino').value;
+            if(!tDest || tOri === tDest) return alert("Selecione um destino válido.");
+            
             let mat = dbData.materias.find(m => m.id === mId);
+            if(!mat) return;
+            
             mat.topicos = mat.topicos.filter(t => t !== tOri);
             
-            dbData.sessoes.forEach(s => { if(s.materia===mat.nome && s.topico===tOri) s.topico = tDest; }); refDb.child('sessoes').set(dbData.sessoes);
-            dbData.cadernos.forEach(c => { if(c.materia===mat.nome && c.topico===tOri) c.topico = tDest; }); refDb.child('cadernos').set(dbData.cadernos);
+            dbData.sessoes.forEach(s => { if(s.materia === mat.nome && s.topico === tOri) s.topico = tDest; });
+            refDb.child('sessoes').set(dbData.sessoes);
+            
+            dbData.cadernos.forEach(c => { if(c.materia === mat.nome && c.topico === tOri) c.topico = tDest; });
+            refDb.child('cadernos').set(dbData.cadernos);
 
             refDb.child('materias').set(dbData.materias);
-            document.getElementById('modal-juntar').style.display='none'; alert("Tópicos juntados com sucesso!");
+            document.getElementById('modal-juntar').style.display='none'; 
+            alert("Tópicos juntados com sucesso!");
         }
 
         function atualizarSelectsUI() {
