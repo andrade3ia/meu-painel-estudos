@@ -719,7 +719,7 @@ button.btn-outline:active {
                 let nomeP = isGeral ? 'Matérias Gerais' : (dbData.provas.find(x=>x.id===p)?.nome || 'Prova');
                 
                 let conteudoMat = grupos[p].map(m => {
-                    let htmlT = m.topicos.map((t, i) => `<div style="padding:8px 0; border-bottom:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center;"><span>📄 ${t}</span> <div><button style="background:transparent;border:none;cursor:pointer;font-size:1.1rem;margin-right:8px;" title="Juntar" onclick="abrirModalJuntar('${m.id}', '${sanitizeText(t).replace(/'/g,"\\'")}')">🔗</button> <button class="btn-x-vermelho" onclick="dbData.materias.find(x=>x.id==='${m.id}').topicos.splice(${i},1); refDb.child('materias').set(dbData.materias);">✖</button></div></div>`).join('');
+                    let htmlT = m.topicos.map((t, i) => `<div style="padding:8px 0; border-bottom:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center;"><span>📄 ${t}</span> <div><button style="background:transparent;border:none;cursor:pointer;font-size:1.1rem;margin-right:8px;" title="Juntar" onclick="abrirModalJuntar('${m.id}', ${i})">🔗</button> <button class="btn-x-vermelho" onclick="dbData.materias.find(x=>x.id==='${m.id}').topicos.splice(${i},1); refDb.child('materias').set(dbData.materias);">✖</button></div></div>`).join('');
                     return `<div class="pasta-header" style="border-left:5px solid ${m.cor};" onclick="this.nextElementSibling.classList.toggle('aberta')"><span>📁 ${m.nome} (${m.topicos.length})</span><button class="btn-x-vermelho" onclick="event.stopPropagation(); if(confirm('Apagar?')) { dbData.materias=dbData.materias.filter(x=>x.id!=='${m.id}'); refDb.child('materias').set(dbData.materias); }">✖</button></div><div class="pasta-body">${htmlT||'<span style="color:var(--text-muted);font-size:0.85rem;">Vazio.</span>'}</div>`;
                 }).join('');
 
@@ -731,27 +731,62 @@ button.btn-outline:active {
             }
         }
 
-        function abrirModalJuntar(mId, topOri) {
+        function abrirModalJuntar(mId, topIndex) {
             let mat = dbData.materias.find(m => m.id === mId);
+            let topOri = mat.topicos[topIndex]; // Pega o nome blindado pela posição
+
             document.getElementById('lbl-topico-origem').textContent = topOri;
             document.getElementById('hid-mat-id').value = mId;
             document.getElementById('hid-top-origem').value = topOri;
             
-            let sel = document.getElementById('sel-topico-destino'); sel.innerHTML = '';
-            mat.topicos.forEach(t => { if(t !== topOri) sel.innerHTML += `<option value="${t}">${t}</option>`; });
-            if(sel.options.length === 0) return alert("Não há outros tópicos.");
-            document.getElementById('modal-juntar').style.display='flex';
+            let sel = document.getElementById('sel-topico-destino'); 
+            sel.innerHTML = '';
+            
+            // Constrói a lista protegendo caracteres especiais (sem usar HTML em texto)
+            mat.topicos.forEach(t => { 
+                if(t !== topOri) {
+                    let opt = document.createElement('option');
+                    opt.value = t;
+                    opt.textContent = t;
+                    sel.appendChild(opt);
+                }
+            });
+            
+            if(sel.options.length === 0) return alert("Não há outros tópicos para juntar.");
+            document.getElementById('modal-juntar').style.display = 'flex';
         }
         function confirmarJuncao() {
-            let mId = document.getElementById('hid-mat-id').value, tOri = document.getElementById('hid-top-origem').value, tDest = document.getElementById('sel-topico-destino').value;
-            let mat = dbData.materias.find(m => m.id === mId);
-            mat.topicos = mat.topicos.filter(t => t !== tOri);
+            let mId = document.getElementById('hid-mat-id').value, 
+                tOri = document.getElementById('hid-top-origem').value, 
+                tDest = document.getElementById('sel-topico-destino').value;
             
-            dbData.sessoes.forEach(s => { if(s.materia===mat.nome && s.topico===tOri) s.topico = tDest; }); refDb.child('sessoes').set(dbData.sessoes);
-            dbData.cadernos.forEach(c => { if(c.materia===mat.nome && c.topico===tOri) c.topico = tDest; }); refDb.child('cadernos').set(dbData.cadernos);
+            let mat = dbData.materias.find(m => m.id === mId);
+            if(!mat || !tOri || !tDest) return alert("Erro ao identificar os tópicos.");
+            
+            let sCount = 0;
+            dbData.sessoes.forEach(s => { 
+                if(s.materia === mat.nome && s.topico === tOri) {
+                    s.topico = tDest;
+                    sCount++;
+                }
+            }); 
+            if(sCount > 0) refDb.child('sessoes').set(dbData.sessoes);
+            
+            let cCount = 0;
+            dbData.cadernos.forEach(c => { 
+                if(c.materia === mat.nome && c.topico === tOri) {
+                    c.topico = tDest;
+                    cCount++;
+                }
+            }); 
+            if(cCount > 0) refDb.child('cadernos').set(dbData.cadernos);
 
-            refDb.child('materias').set(dbData.materias);
-            document.getElementById('modal-juntar').style.display='none'; alert("Tópicos juntados com sucesso!");
+            document.getElementById('modal-juntar').style.display = 'none'; 
+            
+            alert(`Sucesso! ${sCount} sessões e ${cCount} anotações de erros foram transferidas de "${tOri}" para "${tDest}".\n\nO tópico original foi mantido na sua lista.`);
+            
+            // Atualiza a tela de início para refletir imediatamente as mudanças
+            renderizarInicio();
         }
 
         function atualizarSelectsUI() {
