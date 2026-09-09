@@ -202,6 +202,10 @@
                     <!-- Coluna Direita: Formulário de Sessão -->
                     <div style="flex:1.5; min-width:280px; max-width:100%;">
                         <h3 style="margin-top:0; color:var(--text-main); font-size:1.1rem; font-weight:700;" id="form-titulo-sessao">Registrar Sessão</h3>
+                        <div style="margin-bottom:12px;">
+                            <label style="font-size:0.75rem; font-weight:700; color:var(--text-muted); display:block; margin-bottom:4px;">DATA DA SESSÃO</label>
+                            <input type="date" id="ses-data" style="margin:0;">
+                        </div>
                         <div style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:4px; width:100%;">
                             <div style="flex:1; min-width:120px;">
                                 <input type="text" id="ses-mat" placeholder="Matéria" list="lista-materias-dl" oninput="atualizarTopicosSessao(this.value)" onclick="try{this.showPicker()}catch(e){}">
@@ -365,21 +369,17 @@
 
                         <!-- Selecionador de Fonte -->
                         <div id="caixa-fontes-ia" style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:20px; background:var(--bg-input); padding:16px; border-radius:var(--radius-sm); align-items:center;">
-                            <div style="flex:1; min-width:140px;">
-                                <label style="font-size:0.75rem; font-weight:700; color:var(--text-muted); display:block; margin-bottom:4px;">MATÉRIA / CONTEXTO</label>
-                                <input type="text" id="ia-fonte-mat" placeholder="Matéria (Fonte da Biblioteca/Caderno)" list="lista-materias-dl" oninput="atualizarTopicosDatalist('ia-fonte-top', this.value)" style="margin:0;" onclick="try{this.showPicker()}catch(e){}">
-                            </div>
-                            <div style="flex:1; min-width:140px;">
-                                <label style="font-size:0.75rem; font-weight:700; color:var(--text-muted); display:block; margin-bottom:4px;">TÓPICO ALVO (OPCIONAL)</label>
-                                <input type="text" id="ia-fonte-top" placeholder="Tópico (Opcional)" list="dl-ia-fonte-top" style="margin:0;" onclick="try{this.showPicker()}catch(e){}">
-                                <datalist id="dl-ia-fonte-top"></datalist>
+                            <div style="flex:1; min-width:200px;">
+                                <label style="font-size:0.75rem; font-weight:700; color:var(--text-muted); display:block; margin-bottom:4px;">FONTE</label>
+                                <input type="text" id="ia-fonte" placeholder="Selecione a fonte da biblioteca..." list="dl-ia-fontes" style="margin:0;" onclick="try{this.showPicker()}catch(e){}">
+                                <datalist id="dl-ia-fontes"></datalist>
                             </div>
                         </div>
 
                         <!-- Sub: Chat -->
                         <div id="subia-chat">
                             <div class="chat-box" id="box-chat">
-                                <div class="msg msg-a"><strong>PRUMA:</strong> Olá! Selecione a Matéria/Tópico acima e envie sua dúvida. Sou especialista em provas e concursos. O que estudaremos hoje?</div>
+                                <div class="msg msg-a"><strong>PRUMA:</strong> Olá! Selecione a Fonte acima e envie sua dúvida. Sou especialista em provas e concursos. O que estudaremos hoje?</div>
                             </div>
                             <div style="display:flex; gap:12px; flex-wrap:wrap;">
                                 <textarea id="inp-chat" placeholder="Peça resumos de PDFs, resoluções profundas ou jurisprudência..." rows="2" style="margin:0; resize:none; flex:1; min-width:200px;"></textarea>
@@ -391,7 +391,7 @@
                         <div id="subia-simulador" style="display:none;">
                             <div style="display:flex; gap:16px; margin-bottom:16px; flex-wrap:wrap;">
                                 <input type="number" id="ia-qts-num" value="5" min="1" max="20" style="width:90px; margin:0;" title="Nº de Questões">
-                                <input type="text" id="ia-qts-tema" placeholder="Tema específico (Ou deixe em branco para focar na Matéria selecionada)" style="flex:1; margin:0; min-width:200px;">
+                                <input type="text" id="ia-qts-tema" placeholder="Tema específico (Ou deixe em branco para focar na Fonte selecionada)" style="flex:1; margin:0; min-width:200px;">
                             </div>
                             <button class="btn-primary" onclick="executarIA('questoes')">Gerar Bateria de Questões</button>
                             <div class="chat-box" id="box-qts" style="margin-top:16px; display:none; height:auto; min-height:200px;"></div>
@@ -399,7 +399,7 @@
 
                         <!-- Sub: Flashcards -->
                         <div id="subia-flashcards" style="display:none;">
-                            <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:16px;">A IA criará flashcards inteligentes baseados na Matéria e Tópico marcados acima.</p>
+                            <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:16px;">A IA criará flashcards inteligentes baseados na Fonte marcada acima.</p>
                             <button class="btn-primary" onclick="executarIA('flashcards')">Gerar Flashcards Automáticos</button>
                             <div class="chat-box" id="box-fc" style="margin-top:16px; display:none; background:transparent; border:none; padding:0; height:auto; overflow:visible;"></div>
                         </div>
@@ -535,6 +535,9 @@
                 document.getElementById('badge-modelo-ia').textContent = (user.uid === ADMIN_UID) ? "(3.1 Pro)" : "(3.8 Flash)";
                 
                 carregarPaletaSistema(); carregarApiKey(); carregarDadosGlobais(); irTela('inicio');
+                
+                let sesDataEl = document.getElementById('ses-data');
+                if(sesDataEl && !sesDataEl.value) sesDataEl.value = new Date().toISOString().split('T')[0];
             } else {
                 userAtual = null; document.getElementById('tela-login').style.display = 'block'; document.getElementById('tela-painel').style.display = 'none';
             }
@@ -612,7 +615,7 @@
             refDb.child('provas').on('value', s => { let v = s.val(); dbData.provas = v ? (Array.isArray(v) ? v : Object.values(v)) : []; renderizarProvas(); atualizarSelectsUI(); if(document.getElementById('view-estatisticas').style.display==='block') renderizarFiltrosEstatisticas(); });
             refDb.child('materias').on('value', s => { let v = s.val(); dbData.materias = v ? (Array.isArray(v) ? v : Object.values(v)) : []; renderizarMaterias(); atualizarSelectsUI(); if(document.getElementById('view-estatisticas').style.display==='block') renderizarFiltrosEstatisticas(); });
             refDb.child('cadernos').on('value', s => { let v = s.val(); dbData.cadernos = v ? (Array.isArray(v) ? v : Object.values(v)) : []; renderizarCadernos(); });
-            refDb.child('biblioteca').on('value', s => { dbData.biblioteca = s.val() ? Object.values(s.val()) : []; renderizarBiblioteca(); });
+            refDb.child('biblioteca').on('value', s => { dbData.biblioteca = s.val() ? Object.values(s.val()) : []; renderizarBiblioteca(); atualizarSelectsUI(); });
             refDb.child('ia_historico').on('value', s => { dbData.iaHistorico = s.val() || []; renderizarHistoricoIA(); });
         }
 
@@ -707,6 +710,11 @@
             let mat = sanitizeText(document.getElementById('ses-mat').value), top = sanitizeText(document.getElementById('ses-top').value);
             if(!mat) return alert("Preencha a matéria.");
             
+            let sesDataVal = document.getElementById('ses-data').value;
+            let dObj = sesDataVal ? new Date(sesDataVal + 'T00:00:00') : new Date();
+            let timestamp = dObj.getTime();
+            let dataStr = dObj.toLocaleDateString();
+
             let hMan = parseInt(document.getElementById('ses-man-horas').value) || 0;
             let mMan = parseInt(document.getElementById('ses-man-mins').value) || 0;
             let segsManuais = (hMan * 3600) + (mMan * 60);
@@ -715,11 +723,14 @@
             let a = parseInt(document.getElementById('ses-acertos').value)||0, e = parseInt(document.getElementById('ses-erros').value)||0;
             
             let regId = editandoRegistroId ? editandoRegistroId : gerarId();
+            let existingReg = dbData.sessoes.find(x => x.id === regId);
+            let horaAdicao = editandoRegistroId && existingReg ? (existingReg.hora || new Date().toLocaleTimeString().substring(0,5)) : new Date().toLocaleTimeString().substring(0,5);
+
             let reg = { 
                 id: regId, 
-                timestamp: editandoRegistroId ? (dbData.sessoes.find(x=>x.id===editandoRegistroId)?.timestamp || Date.now()) : Date.now(), 
-                data: editandoRegistroId ? (dbData.sessoes.find(x=>x.id===editandoRegistroId)?.data || new Date().toLocaleDateString()) : new Date().toLocaleDateString(), 
-                hora: new Date().toLocaleTimeString().substring(0,5), 
+                timestamp: timestamp, 
+                data: dataStr, 
+                hora: horaAdicao, 
                 materia: mat, topico: top, tipoEstudo: document.getElementById('ses-tipo-estudo').value, 
                 tipoMat: document.getElementById('ses-tipo-mat').value, segundos: segsFinais, 
                 acertos: a, erros: e, totalQts: a+e, obs: sanitizeText(document.getElementById('ses-obs').value) 
@@ -741,11 +752,21 @@
             
             cancelarEdicaoRegistro(); segundosCronometro = 0; atualizarVisorCronometro();
             ['ses-mat','ses-top','ses-acertos','ses-erros','ses-man-horas','ses-man-mins','ses-obs','ses-pdf-ini','ses-pdf-fim','ses-vid-ini','ses-vid-fim'].forEach(id=> { if(document.getElementById(id)) document.getElementById(id).value = ''; });
+            document.getElementById('ses-data').value = new Date().toISOString().split('T')[0];
         }
 
         function editarRegistro(id) {
             let s = dbData.sessoes.find(x => x.id === id); if(!s) return;
             editandoRegistroId = id;
+            if(s.timestamp) {
+                let sDate = new Date(s.timestamp);
+                let year = sDate.getFullYear();
+                let month = String(sDate.getMonth() + 1).padStart(2, '0');
+                let day = String(sDate.getDate()).padStart(2, '0');
+                document.getElementById('ses-data').value = `${year}-${month}-${day}`;
+            } else {
+                document.getElementById('ses-data').value = new Date().toISOString().split('T')[0];
+            }
             document.getElementById('ses-mat').value = s.materia || '';
             document.getElementById('ses-top').value = s.topico || '';
             document.getElementById('ses-tipo-estudo').value = s.tipoEstudo || 'Teoria';
@@ -770,6 +791,7 @@
             document.getElementById('btn-salvar-sessao').textContent = "💾 Salvar Sessão";
             document.getElementById('btn-cancelar-edicao').style.display = 'none';
             ['ses-mat','ses-top','ses-acertos','ses-erros','ses-man-horas','ses-man-mins','ses-obs','ses-pdf-ini','ses-pdf-fim','ses-vid-ini','ses-vid-fim'].forEach(id=> { if(document.getElementById(id)) document.getElementById(id).value = ''; });
+            document.getElementById('ses-data').value = new Date().toISOString().split('T')[0];
         }
 
         function renderizarInicio() {
@@ -782,12 +804,12 @@
                     let timeStr = `${ht}h ${mt}m ${st}s`;
                     let perc = s.totalQts > 0 ? Math.round((s.acertos/s.totalQts)*100)+'%' : '0%';
                     let accStr = `${perc} (${s.acertos||0}/${s.totalQts||0})`;
-                    let tooltipText = `${s.materia} - ${s.topico||'Geral'} | ⏱️ ${timeStr} | 🎯 ${accStr}${s.obs ? ' | ' + s.obs : ''}`;
+                    let tooltipText = `Estudado em: ${s.data} | Lançado às: ${s.hora||'--:--'} | ${s.materia} - ${s.topico||'Geral'} | ⏱️ ${timeStr} | 🎯 ${accStr}${s.obs ? ' | ' + s.obs : ''}`;
 
                     divReg.innerHTML += `
                     <div class="registro-curto" title="${sanitizeText(tooltipText)}">
                         <div class="info">
-                            <strong title="${sanitizeText(s.materia)}">${s.tipoMat.includes('PDF')?'📖':s.tipoMat==='Vídeo Aula'?'🎥':'📝'} ${s.materia}</strong>
+                            <strong title="${sanitizeText(s.materia)}">${s.tipoMat.includes('PDF')?'📖':s.tipoMat==='Vídeo Aula'?'🎥':'📝'} ${s.materia} <span style="font-size:0.75rem; color:var(--text-muted); font-weight:normal;">(${s.data} - Lançado às ${s.hora||'--:--'})</span></strong>
                             <span style="display:flex; align-items:center; gap:6px; font-size:0.8rem; color:var(--text-muted); min-width:0; max-width:100%;">
                                 <span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; flex:1; max-width:140px;" title="${sanitizeText(s.topico||'Geral')}">${s.topico||'Geral'}</span>
                                 <span style="flex-shrink:0;">| ⏱️ ${timeStr} | 🎯 ${accStr}</span>
@@ -818,7 +840,7 @@
             if(!Array.isArray(dbData.provas)) dbData.provas = Object.values(dbData.provas || {});
             dbData.provas.forEach(p => {
                 let dias = Math.ceil((new Date(p.data) - new Date()) / (1000*60*60*24));
-                div.innerHTML += `<div class="stat-card" style="position:relative;"><span>${p.nome}</span><strong style="color:${dias<30?'var(--brand-danger)':'var(--brand-primary)'}; margin:10px 0;">Faltam ${dias} dias</strong><span style="font-weight:normal;">📅 ${p.data}</span><button class="btn-x-vermelho" style="position:absolute; top:8px; right:8px;" onclick="if(confirm('Excluir?')) { dbData.provas=dbData.provas.filter(x=>x.id!=='${p.id}'); refDb.child('provas').set(dbData.provas); }">✖</button></div>`;
+                div.innerHTML += `<div class="stat-card" style="position:relative;" title="${sanitizeText(p.nome)}"><span>${p.nome}</span><strong style="color:${dias<30?'var(--brand-danger)':'var(--brand-primary)'}; margin:10px 0;">Faltam ${dias} dias</strong><span style="font-weight:normal;">📅 ${p.data}</span><button class="btn-x-vermelho" style="position:absolute; top:8px; right:8px;" onclick="if(confirm('Excluir?')) { dbData.provas=dbData.provas.filter(x=>x.id!=='${p.id}'); refDb.child('provas').set(dbData.provas); }">✖</button></div>`;
             });
         }
 
@@ -902,9 +924,9 @@
                 
                 let conteudoMat = grupos[p].map(m => {
                     if(!Array.isArray(m.topicos)) m.topicos = Object.values(m.topicos || {});
-                    let htmlT = m.topicos.map((t, i) => `<div style="padding:8px 0; border-bottom:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center; gap:8px;"><span style="overflow:hidden; text-overflow:ellipsis; min-width:0; flex:1;" title="${sanitizeText(t)}">📄 ${t}</span> <div style="display:flex; align-items:center; gap:6px; flex-shrink:0;"><button style="background:transparent;border:none;cursor:pointer;font-size:1rem;" title="Editar Tópico" onclick="editarTopico('${m.id}', ${i})">✏️</button> <button style="background:transparent;border:none;cursor:pointer;font-size:1rem;" title="Juntar Tópicos" onclick="abrirModalJuntar('${m.id}', '${sanitizeText(t).replace(/'/g,"\\'")}')">🔗</button> <button class="btn-x-vermelho" onclick="excluirTopicoMateria('${m.id}', ${i})">✖</button></div></div>`).join('');
+                    let htmlT = m.topicos.map((t, i) => `<div style="padding:8px 0; border-bottom:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center; gap:8px;" title="${sanitizeText(t)}"><span style="overflow:hidden; text-overflow:ellipsis; min-width:0; flex:1;" title="${sanitizeText(t)}">📄 ${t}</span> <div style="display:flex; align-items:center; gap:6px; flex-shrink:0;"><button style="background:transparent;border:none;cursor:pointer;font-size:1rem;" title="Editar Tópico" onclick="editarTopico('${m.id}', ${i})">✏️</button> <button style="background:transparent;border:none;cursor:pointer;font-size:1rem;" title="Juntar Tópicos" onclick="abrirModalJuntar('${m.id}', '${sanitizeText(t).replace(/'/g,"\\'")}')">🔗</button> <button class="btn-x-vermelho" onclick="excluirTopicoMateria('${m.id}', ${i})">✖</button></div></div>`).join('');
                     
-                    return `<div class="pasta-header" data-folder-id="${m.id}" style="border-left:5px solid ${m.cor};" onclick="this.nextElementSibling.classList.toggle('aberta')">
+                    return `<div class="pasta-header" data-folder-id="${m.id}" style="border-left:5px solid ${m.cor};" onclick="this.nextElementSibling.classList.toggle('aberta')" title="${sanitizeText(m.nome)}">
                         <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1; min-width:0;" title="${sanitizeText(m.nome)}">📁 ${m.nome} (${m.topicos.length})</span>
                         <div style="display:flex; gap:8px; align-items:center;">
                             <button style="background:transparent;border:none;cursor:pointer;font-size:1.1rem;" title="Mover para Prova" onclick="event.stopPropagation(); moverMateriaParaProva('${m.id}')">🔄</button>
@@ -916,14 +938,14 @@
                 if(!isGeral) {
                     div.innerHTML += `
                     <div class="bloco-prova">
-                        <div class="bloco-prova-titulo" style="cursor:pointer; user-select:none; margin-bottom:0; justify-content:space-between;" onclick="let el=this.nextElementSibling; el.style.display = el.style.display==='none'?'block':'none';">
+                        <div class="bloco-prova-titulo" style="cursor:pointer; user-select:none; margin-bottom:0; justify-content:space-between;" onclick="let el=this.nextElementSibling; el.style.display = el.style.display==='none'?'block':'none';" title="${sanitizeText(nomeP)}">
                             <span>🎯 ${nomeP}</span>
                             <span style="font-size:0.85rem; font-weight:normal; color:var(--text-muted);">▼ Expandir / Minimizar</span>
                         </div>
                         <div style="display:none; margin-top:16px;">${conteudoMat}</div>
                     </div>`;
                 } else {
-                    div.innerHTML += `<h3 style="color:var(--text-muted); margin-top:20px; font-size:1.1rem;">${nomeP}</h3>${conteudoMat}`;
+                    div.innerHTML += `<h3 style="color:var(--text-muted); margin-top:20px; font-size:1.1rem;" title="${sanitizeText(nomeP)}">${nomeP}</h3>${conteudoMat}`;
                 }
             }
 
@@ -994,6 +1016,14 @@
                     dbData.provas.forEach(p => s.innerHTML += `<option value="${p.id}">${p.nome}</option>`); 
                 } 
             });
+
+            let dlFontes = document.getElementById('dl-ia-fontes');
+            if(dlFontes) {
+                dlFontes.innerHTML = '';
+                if(Array.isArray(dbData.biblioteca)) {
+                    dbData.biblioteca.forEach(b => dlFontes.innerHTML += `<option value="${sanitizeText(b.nome)}">`);
+                }
+            }
         }
         function atualizarTopicosDatalist(inputId, matNome) {
             let dl = document.getElementById('dl-'+inputId); if(!dl) return; dl.innerHTML = '';
@@ -1037,6 +1067,19 @@
 
         function onEstMateriasInput() {
             atualizarTopicosFiltroEstatisticas();
+            let matInput = document.getElementById('est-filtro-materias').value.trim();
+            let mats = matInput ? matInput.split(',').map(x => x.trim()).filter(Boolean) : [];
+            let topInputEl = document.getElementById('est-filtro-topicos');
+            if(topInputEl) {
+                if(mats.length === 1) {
+                    topInputEl.disabled = false;
+                    topInputEl.placeholder = "Todos (sep. por vírgula)";
+                } else {
+                    topInputEl.value = '';
+                    topInputEl.disabled = true;
+                    topInputEl.placeholder = mats.length > 1 ? "Disponível apenas para 1 matéria" : "Todos (sep. por vírgula)";
+                }
+            }
             atualizarEstatisticas();
         }
 
@@ -1047,16 +1090,17 @@
             let matInput = document.getElementById('est-filtro-materias').value.trim().toLowerCase();
             if(!matInput) return;
             let mats = matInput.split(',').map(m => m.trim()).filter(Boolean);
+            if(mats.length !== 1) return; // Only for 1 material at a time
             
             let topicosSet = new Set();
             if(!Array.isArray(dbData.materias)) dbData.materias = Object.values(dbData.materias || {});
             dbData.materias.forEach(m => {
-                if(mats.some(mat => m.nome.toLowerCase().includes(mat)) && Array.isArray(m.topicos)) {
+                if(mats.some(mat => m.nome.toLowerCase() === mat) && Array.isArray(m.topicos)) {
                     m.topicos.forEach(t => topicosSet.add(t));
                 }
             });
             dbData.sessoes.forEach(s => {
-                if(s.materia && mats.some(mat => s.materia.toLowerCase().includes(mat)) && s.topico) {
+                if(s.materia && mats.some(mat => s.materia.toLowerCase() === mat) && s.topico) {
                     topicosSet.add(s.topico);
                 }
             });
@@ -1077,7 +1121,7 @@
             let materiasArr = materiasInput ? materiasInput.split(',').map(x => x.trim()).filter(Boolean) : [];
 
             let topicosInput = document.getElementById('est-filtro-topicos').value.trim().toLowerCase();
-            let topicosArr = topicosInput ? topicosInput.split(',').map(x => x.trim()).filter(Boolean) : [];
+            let topicosArr = (materiasArr.length === 1 && topicosInput) ? topicosInput.split(',').map(x => x.trim()).filter(Boolean) : [];
 
             let filteredSessoes = dbData.sessoes.filter(s => {
                 if(per !== 'tudo') {
@@ -1105,12 +1149,12 @@
                 }
 
                 if(materiasArr.length > 0) {
-                    if(!materiasArr.some(m => s.materia.toLowerCase().includes(m))) return false;
+                    if(!materiasArr.some(m => s.materia.toLowerCase() === m)) return false;
                 }
 
                 if(topicosArr.length > 0) {
                     let sTop = s.topico ? s.topico.toLowerCase() : '';
-                    if(!topicosArr.some(t => sTop.includes(t))) return false;
+                    if(!topicosArr.some(t => sTop === t)) return false;
                 }
 
                 return true;
@@ -1206,15 +1250,12 @@
 
         function extrairContextoGeral() {
             let ctx = "";
-            let mat = sanitizeText(document.getElementById('ia-fonte-mat').value).toLowerCase();
-            let top = sanitizeText(document.getElementById('ia-fonte-top').value).toLowerCase();
+            let fonteSel = sanitizeText(document.getElementById('ia-fonte').value).toLowerCase();
             
-            if (mat) {
+            if (fonteSel) {
                 dbData.biblioteca.forEach(b => { 
-                    if(b.materia && b.materia.toLowerCase() === mat) { ctx += `\n[FONTE BIBLIOTECA: ${b.nome}]\n${b.texto}\n`; }
+                    if(b.nome && b.nome.toLowerCase().includes(fonteSel)) { ctx += `\n[FONTE BIBLIOTECA: ${b.nome}]\n${b.texto}\n`; }
                 });
-                let errs = dbData.cadernos.filter(x => x.materia.toLowerCase() === mat && (!top || x.topico.toLowerCase() === top)).map(e => e.texto).join('\n');
-                if(errs) ctx += `\n[MEU CADERNO DE ERROS - ${mat.toUpperCase()}]:\n${errs}\n`;
             }
             if(dbData.iaHistorico.length>0) ctx += `\n[HISTÓRICO RECENTE]:\n${dbData.iaHistorico.map(h=> `Eu perguntei: ${h}`).join('\n')}\n`;
             return ctx;
@@ -1241,12 +1282,12 @@
                 box = document.getElementById('box-chat'); box.innerHTML += `<div class="msg msg-u">${sanitizeText(p)}</div>`; document.getElementById('inp-chat').value=''; box.scrollTop = box.scrollHeight;
                 dbData.iaHistorico.push(p); if(dbData.iaHistorico.length>10) dbData.iaHistorico.shift(); refDb.child('ia_historico').set(dbData.iaHistorico);
             } else if(tipo === 'questoes') {
-                let t = document.getElementById('ia-qts-tema').value || 'o contexto da matéria e tópico marcados acima';
+                let t = document.getElementById('ia-qts-tema').value || 'o contexto da fonte marcada acima';
                 p = `Crie exatamente ${document.getElementById('ia-qts-num').value} questões inéditas sobre: ${t}. Coloque [CORRETA] ao lado da alternativa certa e cite a fonte no comentário.`;
                 box = document.getElementById('box-qts'); box.style.display='flex'; box.innerHTML='';
             } else if(tipo === 'flashcards') {
-                let mSel = document.getElementById('ia-fonte-mat').value.trim();
-                if(!mSel) return alert("Selecione no campo acima qual é a Matéria para extrair os Flashcards.");
+                let fSel = document.getElementById('ia-fonte').value.trim();
+                if(!fSel) return alert("Selecione no campo acima qual é a Fonte para extrair os Flashcards.");
                 p = `Baseado nas fontes extraídas, retorne EXATAMENTE UM JSON ARRAY PURO: [{"f":"Pergunta","v":"Resposta"}]. Sem blocos como \`\`\`.`;
                 box = document.getElementById('box-fc'); box.style.display='block'; box.innerHTML='';
             }
@@ -1264,14 +1305,14 @@
 
                 if(tipo === 'flashcards') {
                     let json = JSON.parse(txtF.replace(/```json/g,'').replace(/```/g,'').match(/\[.*\]/s)[0]);
-                    let mD = sanitizeText(document.getElementById('ia-fonte-mat').value), tD = sanitizeText(document.getElementById('ia-fonte-top').value);
+                    let fD = sanitizeText(document.getElementById('ia-fonte').value);
                     box.innerHTML = '';
                     json.forEach(c => {
                         let bId = gerarId();
                         box.innerHTML += `<div class="card" style="padding:16px; margin-bottom:12px;">
                             <strong style="color:var(--brand-primary); display:block; margin-bottom:4px;">FRENTE:</strong><div>${sanitizeText(c.f)}</div>
                             <strong style="color:var(--brand-success); display:block; margin:12px 0 4px 0;">VERSO:</strong><div>${sanitizeText(c.v)}</div>
-                            <button id="${bId}" class="btn-outline" style="margin-top:12px;" onclick="salvarFc('${mD}', '${tD}', '${sanitizeText(c.f).replace(/'/g,"\\'")} - ${sanitizeText(c.v).replace(/'/g,"\\'")}', this)">Salvar no Caderno</button>
+                            <button id="${bId}" class="btn-outline" style="margin-top:12px;" onclick="salvarFc('${fD}', 'Geral', '${sanitizeText(c.f).replace(/'/g,"\\'")} - ${sanitizeText(c.v).replace(/'/g,"\\'")}', this)">Salvar no Caderno</button>
                         </div>`;
                     });
                 } else {
