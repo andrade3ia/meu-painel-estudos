@@ -45,9 +45,9 @@
         
         .nav-btn { background: transparent; color: var(--text-main); border: none; text-align: left; padding: 12px 14px; font-size: 0.95rem; border-radius: var(--radius-sm); cursor: pointer; font-weight: 500; display: flex; align-items: center; gap: 12px; }
         .nav-btn:hover { background: var(--bg-hover); transform: translateX(2px); }
-        .nav-btn.active { background: rgba(0, 122, 255, 0.12); color: var(--brand-primary); font-weight: 600; border-left: 4px solid var(--brand-primary); }
+        .nav-btn.active { background: color-mix(in srgb, var(--brand-primary) 15%, transparent); color: var(--brand-primary); font-weight: 600; border-left: 4px solid var(--brand-primary); }
 
-        .tempo-total-box { background: linear-gradient(135deg, var(--brand-primary), #0056b3); padding: 20px; border-radius: var(--radius-md); text-align: center; margin-bottom: 16px; color: white; box-shadow: var(--shadow-md); }
+        .tempo-total-box { background: linear-gradient(135deg, var(--brand-primary), color-mix(in srgb, var(--brand-primary) 70%, black)); padding: 20px; border-radius: var(--radius-md); text-align: center; margin-bottom: 16px; color: white; box-shadow: var(--shadow-md); }
         .tempo-total-box span { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; opacity: 0.85; letter-spacing: 0.8px; }
         .tempo-total-box strong { display: block; font-size: 1.6rem; font-weight: 700; margin-top: 4px; font-variant-numeric: tabular-nums; }
 
@@ -58,22 +58,26 @@
         h2 { margin: 0 0 18px 0; color: var(--text-main); font-size: 1.35rem; font-weight: 700; border-bottom: 1px solid var(--border-color); padding-bottom: 12px; letter-spacing: -0.5px; }
         
         input, select, textarea { width: 100%; padding: 12px 16px; margin-bottom: 12px; background-color: var(--bg-input); border: 1px solid transparent; border-radius: var(--radius-sm); color: var(--text-main); font-size: 0.95rem; outline: none; font-weight: 500; }
-        input:focus, select:focus, textarea:focus { border-color: var(--brand-primary); background-color: var(--bg-card); box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.18); }
+        input:focus, select:focus, textarea:focus { border-color: var(--brand-primary); background-color: var(--bg-card); box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand-primary) 25%, transparent); }
         
-        button.btn-primary { width: 100%; padding: 14px; font-weight: 600; border: none; border-radius: var(--radius-sm); cursor: pointer; background: var(--brand-primary); color: var(--btn-text); font-size: 0.95rem; box-shadow: var(--shadow-sm); }
+        /* Botões com cores dinâmicas baseadas na paleta escolhida pelo usuário */
+        button.btn-primary { width: 100%; padding: 14px; font-weight: 600; border: none; border-radius: var(--radius-sm); cursor: pointer; background: linear-gradient(135deg, var(--brand-primary), color-mix(in srgb, var(--brand-primary) 80%, black)); color: var(--btn-text); font-size: 0.95rem; box-shadow: 0 4px 16px color-mix(in srgb, var(--brand-primary) 35%, transparent); }
         button.btn-primary:active { transform: scale(0.97); }
-        button.btn-outline { width: 100%; padding: 14px; font-weight: 600; border: 1px solid var(--border-color); border-radius: var(--radius-sm); cursor: pointer; background: transparent; color: var(--text-main); font-size: 0.95rem; }
-        button.btn-outline:hover { background: var(--bg-hover); }
+        
+        button.btn-outline { width: 100%; padding: 14px; font-weight: 600; border: 2px solid var(--brand-primary); border-radius: var(--radius-sm); cursor: pointer; background: color-mix(in srgb, var(--brand-primary) 8%, transparent); color: var(--brand-primary); font-size: 0.95rem; }
+        button.btn-outline:hover { background: color-mix(in srgb, var(--brand-primary) 15%, transparent); }
         button.btn-outline:active { transform: scale(0.97); }
+        
         button.btn-success { background: var(--brand-success); color: white; border: none; padding: 12px 20px; border-radius: var(--radius-sm); font-weight: 600; cursor: pointer; box-shadow: var(--shadow-sm); }
         button.btn-success:active { transform: scale(0.97); }
+        
         button.btn-danger { background: var(--brand-danger); color: white; border: none; padding: 10px 16px; border-radius: var(--radius-sm); cursor: pointer; font-size: 0.85rem; font-weight: 600; box-shadow: var(--shadow-sm); }
         button.btn-danger:active { transform: scale(0.97); }
         
-        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 16px; margin-bottom: 24px; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 16px; margin-bottom: 24px; }
         .stat-card { background: var(--bg-card); padding: 20px; border-radius: var(--radius-md); text-align: center; border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); }
         .stat-card span { display: block; font-size: 0.7rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; }
-        .stat-card strong { display: block; font-size: 1.6rem; color: var(--text-main); font-weight: 700; margin-top: 6px; }
+        .stat-card strong { display: block; font-size: 1.5rem; color: var(--text-main); font-weight: 700; margin-top: 6px; }
 
         .registro-curto { display: flex; justify-content: space-between; align-items: center; background: var(--bg-input); padding: 12px 16px; border-radius: var(--radius-sm); margin-bottom: 10px; border: 1px solid var(--border-color); }
         .registro-curto .info { display: flex; flex-direction: column; gap: 4px; }
@@ -155,7 +159,7 @@
         <div id="tela-login" class="card" style="max-width:400px; margin:80px auto; text-align:center;">
             <h1 style="color:var(--brand-primary); font-size:2.8rem; margin:0 0 5px 0; font-weight:700;">PRUMA</h1>
             <p style="color:var(--text-muted); margin-bottom:30px; font-weight:500;">Painel de Estudos</p>
-            <button class="btn-outline" style="display:flex; align-items:center; justify-content:center; gap:10px; border-color:var(--border-color);" onclick="firebase.auth().signInWithPopup(new firebase.auth.GoogleAuthProvider())">
+            <button class="btn-outline" style="display:flex; align-items:center; justify-content:center; gap:10px;" onclick="firebase.auth().signInWithPopup(new firebase.auth.GoogleAuthProvider())">
                 <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" width="20" alt=""> Entrar com Google
             </button>
         </div>
@@ -168,6 +172,7 @@
                 <div class="stats-grid">
                     <div class="stat-card"><span>Estudo</span><strong id="hj-tempo" style="color:var(--brand-primary);">0h 0m</strong></div>
                     <div class="stat-card"><span>Questões</span><strong id="hj-qts">0</strong></div>
+                    <div class="stat-card"><span>Aproveitamento</span><strong id="hj-perc" style="color:var(--brand-primary);">0%</strong></div>
                     <div class="stat-card"><span>Acertos</span><strong id="hj-acertos" style="color:var(--brand-success)">0</strong></div>
                     <div class="stat-card"><span>Erros</span><strong id="hj-erros" style="color:var(--brand-danger)">0</strong></div>
                     <div class="stat-card"><span>Págs Lidas</span><strong id="hj-pags">0</strong></div>
@@ -541,7 +546,7 @@
             document.querySelectorAll('.nav-btn').forEach(b => { b.classList.remove('active'); b.style.borderColor='transparent'; b.style.background='transparent'; });
             if(e && e.currentTarget) {
                 e.currentTarget.classList.add('active');
-                if(e.currentTarget.textContent.includes('PRUMA IA')) { e.currentTarget.style.background='rgba(0,122,255,0.12)'; e.currentTarget.style.borderLeft='4px solid var(--brand-primary)'; }
+                if(e.currentTarget.textContent.includes('PRUMA IA')) { e.currentTarget.style.background='color-mix(in srgb, var(--brand-primary) 15%, transparent)'; e.currentTarget.style.borderLeft='4px solid var(--brand-primary)'; }
             }
             if(window.innerWidth <= 768) document.getElementById('sidebar-menu').classList.remove('open');
             if(t === 'estatisticas') atualizarEstatisticas();
@@ -660,6 +665,8 @@
                     </div>`;
                 }
             });
+            let hjPerc = (hjA + hjE) > 0 ? Math.round((hjA / (hjA + hjE)) * 100) + '%' : '0%';
+            document.getElementById('hj-perc').textContent = hjPerc;
             document.getElementById('hj-tempo').textContent = `${Math.floor(hjSegs/3600)}h ${Math.floor((hjSegs%3600)/60)}m`;
             document.getElementById('hj-qts').textContent=hjQs; document.getElementById('hj-acertos').textContent=hjA; document.getElementById('hj-erros').textContent=hjE;
             document.getElementById('hj-pags').textContent=hjPags; document.getElementById('hj-vids').textContent=hjVids;
@@ -922,8 +929,8 @@
         // PRUMA IA
         function mudarSubIa(sub, btn) {
             ['chat', 'simulador', 'flashcards', 'edital'].forEach(s => { let el = document.getElementById('subia-'+s); if(el) el.style.display = (s===sub)?'block':'none'; });
-            document.querySelectorAll('#view-pruma .btn-outline').forEach(b => { b.style.background='transparent'; b.style.color='var(--text-main)'; });
-            if(btn) { btn.style.background='var(--brand-primary)'; btn.style.color='white'; }
+            document.querySelectorAll('#view-pruma .btn-outline').forEach(b => { b.style.background='transparent'; b.style.color='var(--brand-primary)'; });
+            if(btn) { btn.style.background='color-mix(in srgb, var(--brand-primary) 15%, transparent)'; btn.style.color='var(--brand-primary)'; }
             document.getElementById('caixa-fontes-ia').style.display = (sub==='edital') ? 'none' : 'block';
         }
 
