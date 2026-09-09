@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="pt-BR" data-theme="light">
 <head>
     <meta charset="UTF-8">
@@ -614,7 +614,7 @@
             refDb.child('sessoes').on('value', s => { dbData.sessoes = s.val() ? Object.values(s.val()) : []; renderizarInicio(); if(document.getElementById('view-estatisticas').style.display==='block') { renderizarFiltrosEstatisticas(); atualizarEstatisticas(); } });
             refDb.child('provas').on('value', s => { let v = s.val(); dbData.provas = v ? (Array.isArray(v) ? v : Object.values(v)) : []; renderizarProvas(); atualizarSelectsUI(); if(document.getElementById('view-estatisticas').style.display==='block') renderizarFiltrosEstatisticas(); });
             refDb.child('materias').on('value', s => { let v = s.val(); dbData.materias = v ? (Array.isArray(v) ? v : Object.values(v)) : []; renderizarMaterias(); atualizarSelectsUI(); if(document.getElementById('view-estatisticas').style.display==='block') renderizarFiltrosEstatisticas(); });
-            refDb.child('cadernos').on('value', s => { let v = s.val(); dbData.cadernos = v ? (Array.isArray(v) ? v : Object.values(v)) : []; renderizarCadernos(); });
+            refDb.child('cadernos').on('value', s => { let v = s.val(); dbData.cadernos = v ? (Array.isArray(v) ? v : Object.values(v)) : []; renderizarCadernos(); atualizarSelectsUI(); });
             refDb.child('biblioteca').on('value', s => { dbData.biblioteca = s.val() ? Object.values(s.val()) : []; renderizarBiblioteca(); atualizarSelectsUI(); });
             refDb.child('ia_historico').on('value', s => { dbData.iaHistorico = s.val() || []; renderizarHistoricoIA(); });
         }
@@ -889,14 +889,19 @@
             let div = document.getElementById('lista-provas-div'); div.innerHTML = '';
             if(!Array.isArray(dbData.provas)) dbData.provas = Object.values(dbData.provas || {});
             dbData.provas.forEach(p => {
-                let diasText = 'Sem data definida';
-                let corD = 'var(--brand-primary)';
+                let diasText = 'data indefinida';
+                let corD = 'var(--text-muted)';
                 if(p.data) {
                     let dias = Math.ceil((new Date(p.data) - new Date()) / (1000*60*60*24));
                     diasText = `Faltam ${dias} dias`;
-                    if(dias < 30) corD = 'var(--brand-danger)';
+                    corD = (dias < 30) ? 'var(--brand-danger)' : 'var(--brand-primary)';
                 }
-                div.innerHTML += `<div class="stat-card" style="position:relative;" title="${sanitizeText(p.nome)}"><span>${p.nome}</span><strong style="color:${corD}; margin:10px 0;">${diasText}</strong><span style="font-weight:normal;">📅 ${p.data || 'Sem data'}</span><button class="btn-x-vermelho" style="position:absolute; top:8px; right:8px;" onclick="excluirProva('${p.id}')">✖</button></div>`;
+                div.innerHTML += `<div class="stat-card" style="position:relative;" title="${sanitizeText(p.nome)}">
+                    <strong style="font-size: 1.5rem; color: var(--text-main); display: block; margin: 4px 0 8px 0; word-break: break-word;">${sanitizeText(p.nome)}</strong>
+                    <span style="font-size: 1.1rem; font-weight: 700; color: ${corD}; display: block; margin-bottom: 6px;">${diasText}</span>
+                    <span style="font-weight: normal; font-size: 0.8rem; color: var(--text-muted);">📅 ${p.data || 'data indefinida'}</span>
+                    <button class="btn-x-vermelho" style="position:absolute; top:8px; right:8px;" onclick="excluirProva('${p.id}')">✖</button>
+                </div>`;
             });
         }
 
@@ -1089,7 +1094,13 @@
             if(dlMats) { 
                 dlMats.innerHTML = ''; 
                 if(!Array.isArray(dbData.materias)) dbData.materias = Object.values(dbData.materias || {});
-                [...new Set(dbData.materias.map(m=>m.nome))].forEach(m => dlMats.innerHTML += `<option value="${m}">`); 
+                if(!Array.isArray(dbData.cadernos)) dbData.cadernos = Object.values(dbData.cadernos || {});
+                
+                let setNomes = new Set();
+                dbData.materias.forEach(m => { if(m.nome) setNomes.add(m.nome); });
+                dbData.cadernos.forEach(c => { if(c.materia) setNomes.add(c.materia); });
+                
+                [...setNomes].forEach(m => dlMats.innerHTML += `<option value="${m}">`); 
             }
             let selP = [document.getElementById('mat-prova'), document.getElementById('edital-ia-prova')];
             selP.forEach(s => { 
@@ -1352,7 +1363,7 @@
             let div = document.getElementById('lista-historico-ia'); div.innerHTML = '';
             if(dbData.iaHistorico.length===0) div.innerHTML = '<p>Vazio.</p>';
             [...dbData.iaHistorico].reverse().forEach(h => {
-                div.innerHTML += `<div style="background:var(--bg-input); padding:12px; border-radius:var(--radius-sm); border:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center; gap:10px;" title="${sanitizeText(h)}"><span style="font-size:0.9rem;">"${h}"</span><button class="btn-primary" style="width:auto; padding:6px 12px; font-size:0.8rem;" onclick="document.getElementById('modal-historico-ia').style.display='none'; document.getElementById('inp-chat').value = '${sanitizeText(h).replace(/'/g, "\\'")}'; executarIA('chat');">🔄 Reenviar</button></div>`;
+                div.innerHTML += `<div style="background:var(--bg-input); padding:12px; border-radius:var(--radius-sm); border:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center; gap:10px;" title="${sanitizeText(h)}"><span style="font-size:0.9rem;">"${h}"</span><button class="btn-primary" style="width:auto; padding:6px 12px; font-size:0.8rem;" onclick="document.getElementById('modal-historico-ia').style.display='none'; document.getElementById('inp-chat').value = '${sanitizeText(h).replace(/'/g, "\\ me")}'; executarIA('chat');">🔄 Reenviar</button></div>`;
             });
         }
 
