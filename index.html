@@ -1,4 +1,4 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt-BR" data-theme="light">
 <head>
     <meta charset="UTF-8">
@@ -494,7 +494,6 @@
 
     <script>
         // CONFIGURAÇÕES FIREBASE OBRIGATÓRIAS
-        const ADMIN_UID = "TyqCjsZaRzdTX6kuvLeXWwhCLG53"; 
         const firebaseConfig = {
             apiKey: "AIzaSyCIPK3YBKulMbjJzm_UahdtQrNjgqLmYho",
             authDomain: "plataforma-de-estudos-98ec8.firebaseapp.com",
@@ -508,7 +507,7 @@
         const db = firebase.database(); const storage = firebase.storage();
 
         // ESTADOS GERAIS
-        let userAtual = null, refDb = null, refStore = null;
+        let userAtual = null, refDb = null, refStore = null, isAdmin = false;
         let dbData = { sessoes: [], provas: [], materias: [], cadernos: [], biblioteca: [], iaHistorico: [] };
         let segundosCronometro = 0, cronometroInterval = null, graficoInstance = null;
         let editandoRegistroId = null;
@@ -527,19 +526,26 @@
         }
         if(localStorage.getItem('pruma_tema') === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
 
-        firebase.auth().onAuthStateChanged(user => {
+        firebase.auth().onAuthStateChanged(async user => {
             if(user) {
                 userAtual = user; refDb = db.ref('usuarios/' + user.uid); refStore = storage.ref('usuarios/' + user.uid);
                 document.getElementById('tela-login').style.display = 'none'; document.getElementById('tela-painel').style.display = 'block';
                 document.getElementById('conta-email').textContent = user.email;
-                document.getElementById('badge-modelo-ia').textContent = (user.uid === ADMIN_UID) ? "(3.1 Pro)" : "(3.8 Flash)";
+                
+                // Validação de Admin no Banco de Dados
+                try {
+                    let adminSnap = await db.ref('admins/' + user.uid).once('value');
+                    isAdmin = adminSnap.val() === true;
+                } catch(e) { isAdmin = false; }
+                
+                document.getElementById('badge-modelo-ia').textContent = isAdmin ? "(3.1 Pro)" : "(3.8 Flash)";
                 
                 carregarPaletaSistema(); carregarApiKey(); carregarDadosGlobais(); irTela('inicio');
                 
                 let sesDataEl = document.getElementById('ses-data');
                 if(sesDataEl && !sesDataEl.value) sesDataEl.value = new Date().toISOString().split('T')[0];
             } else {
-                userAtual = null; document.getElementById('tela-login').style.display = 'block'; document.getElementById('tela-painel').style.display = 'none';
+                userAtual = null; isAdmin = false; document.getElementById('tela-login').style.display = 'block'; document.getElementById('tela-painel').style.display = 'none';
             }
         });
 
@@ -1328,6 +1334,7 @@
         // BIBLIOTECA
         async function uploadArquivo() {
             let f = document.getElementById('bib-file').files[0]; if(!f) return alert("Selecione.");
+            if(f.size > 100 * 1024 * 1024) return alert("O arquivo não pode ser maior que 100MB.");
             let btn = event.currentTarget; let tx = btn.textContent; btn.disabled = true; btn.textContent = "Lendo...";
             try {
                 let refF = refStore.child('biblioteca/'+gerarId()+'_'+f.name); await refF.put(f); let url = await refF.getDownloadURL();
@@ -1391,7 +1398,7 @@
 
         async function executarIA(tipo) {
             let k = localStorage.getItem('pruma_apikey'); if(!k) return alert("Configure a API Key na aba lateral.");
-            const modelo = (userAtual.uid === ADMIN_UID) ? "gemini-3.1-pro-preview" : "gemini-3.8-flash";
+            const modelo = isAdmin ? "gemini-3.1-pro-preview" : "gemini-3.8-flash";
             
             let p = "", box = null; let ctx = extrairContextoGeral();
             let baseSys = obterPromptDoSistema(tipo);
@@ -1436,7 +1443,14 @@
                     });
                 } else {
                     let l = document.getElementById('load-ia'); if(l) l.remove();
-                    let lHtml = sanitizeText(txtF).replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\*(.*?)\*/g, '<em>$1</em>').replace(/^([A-E]\)) (.*?)(\[CORRETA\])?$/gm, (m,lt,t,c) => `<div style="padding:10px; background:var(--bg-card); border:1px solid var(--border-color); margin:6px 0; border-radius:var(--radius-sm); cursor:pointer;" onclick="this.style.borderColor='${c?'var(--brand-success)':'var(--brand-danger)'}'">${lt} ${t.trim()}</div>`).replace(/\n/g, '<br>');
+                    
+                    // PASSO 3: Inversão da lógica de Sanitização. Primeiro gera o HTML, depois o DOMPurify limpa a string final.
+                    let rawHtml = txtF.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                                      .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                                      .replace(/^([A-E]\)) (.*?)(\[CORRETA\])?$/gm, (m,lt,t,c) => `<div style="padding:10px; background:var(--bg-card); border:1px solid var(--border-color); margin:6px 0; border-radius:var(--radius-sm); cursor:pointer;" onclick="this.style.borderColor='${c?'var(--brand-success)':'var(--brand-danger)'}'">${lt} ${t.trim()}</div>`)
+                                      .replace(/\n/g, '<br>');
+                    
+                    let lHtml = sanitizeText(rawHtml);
                     
                     let btnPdf = '';
                     if(p.toLowerCase().includes('resumo') && p.toLowerCase().includes('pdf')) {
@@ -1456,7 +1470,7 @@
             let k = localStorage.getItem('pruma_apikey'); if(!k) return alert("API Key ausente.");
             let txt = document.getElementById('edital-texto').value.trim(); if(!txt) return;
             let pId = document.getElementById('edital-ia-prova').value;
-            const modelo = (userAtual.uid === ADMIN_UID) ? "gemini-3.1-pro-preview" : "gemini-3.8-flash";
+            const modelo = isAdmin ? "gemini-3.1-pro-preview" : "gemini-3.8-flash";
             
             let tx = btn.textContent; btn.disabled=true; btn.textContent="Processando com IA...";
             try {
