@@ -475,10 +475,10 @@
         <div class="modal-content">
             <button class="modal-close" style="position:absolute; top:20px; right:20px; background:transparent; border:none; font-size:1.5rem; cursor:pointer; color:var(--text-muted);" onclick="document.getElementById('modal-juntar').style.display='none'">✖</button>
             <h2 style="margin-top:0;">🔗 Juntar Tópicos</h2>
-            <p>Mover o tópico <strong id="lbl-topico-origem" style="color:var(--brand-danger)"></strong> para dentro de outro e excluí-lo.</p>
+            <p>Juntar o tópico <strong id="lbl-topico-origem" style="color:var(--brand-primary)"></strong> com outro (Resultado: A. B.).</p>
             <select id="sel-topico-destino" style="margin-bottom:16px;"></select>
             <input type="hidden" id="hid-mat-id"><input type="hidden" id="hid-top-origem">
-            <button class="btn-primary" onclick="confirmarJuncao()">Confirmar Junção</button>
+            <button class="btn-primary" onclick="confirmarJuncao()">Confirmar Junção (A. B.)</button>
         </div>
     </div>
 
@@ -582,7 +582,7 @@
             } catch(e) { alert("Erro: " + e.message); }
         }
 
-        // DADOS (Com conversão segura para evitar que Firebase transforme arrays em objetos corrompidos)
+        // DADOS
         function carregarDadosGlobais() {
             refDb.child('perfil/nome').on('value', s => { if(s.val()) document.getElementById('conta-nome').value = s.val(); });
             refDb.child('sessoes').on('value', s => { dbData.sessoes = s.val() ? Object.values(s.val()) : []; renderizarInicio(); calcularTempoTotal(); if(document.getElementById('view-estatisticas').style.display==='block') atualizarEstatisticas(); });
@@ -824,7 +824,7 @@
             });
         }
 
-        // MATÉRIAS, EDIÇÃO E JUNÇÃO DE TÓPICOS
+        // MATÉRIAS, EDIÇÃO E JUNÇÃO DE TÓPICOS (A. B.)
         document.getElementById('mat-paleta').innerHTML = paleta15.map(c => `<div style="width:28px; height:28px; border-radius:50%; background:${c}; cursor:pointer;" onclick="corAtualMateria='${c}'; this.style.border='2px solid var(--text-main)';"></div>`).join('');
         
         function salvarMateria() {
@@ -905,25 +905,37 @@
         }
 
         function confirmarJuncao() {
-            let mId = document.getElementById('hid-mat-id').value, tOri = document.getElementById('hid-top-origem').value, tDest = document.getElementById('sel-topico-destino').value;
-            if(!tDest || tOri === tDest) return alert("Selecione um destino válido.");
+            let mId = document.getElementById('hid-mat-id').value;
+            let tOri = document.getElementById('hid-top-origem').value;
+            let tDest = document.getElementById('sel-topico-destino').value;
+            if(!tDest || tOri === tDest) return alert("Selecione um tópico de destino válido.");
             
             if(!Array.isArray(dbData.materias)) dbData.materias = Object.values(dbData.materias || {});
             let mat = dbData.materias.find(m => m.id === mId);
             if(!mat) return;
             if(!Array.isArray(mat.topicos)) mat.topicos = Object.values(mat.topicos || {});
             
-            mat.topicos = mat.topicos.filter(t => t !== tOri);
+            // Juntar no formato A. B. (Ex: Destino. Origem)
+            let novoTopico = `${tDest}. ${tOri}`;
             
-            dbData.sessoes.forEach(s => { if(s.materia === mat.nome && s.topico === tOri) s.topico = tDest; });
+            // Remove os dois tópicos separados e adiciona a união (A. B.)
+            mat.topicos = mat.topicos.filter(t => t !== tOri && t !== tDest);
+            mat.topicos.push(novoTopico);
+            
+            // Atualiza sessoes e cadernos vinculados
+            dbData.sessoes.forEach(s => { 
+                if(s.materia === mat.nome && (s.topico === tOri || s.topico === tDest)) s.topico = novoTopico; 
+            });
             refDb.child('sessoes').set(dbData.sessoes);
             
-            dbData.cadernos.forEach(c => { if(c.materia === mat.nome && c.topico === tOri) c.topico = tDest; });
+            dbData.cadernos.forEach(c => { 
+                if(c.materia === mat.nome && (c.topico === tOri || c.topico === tDest)) c.topico = novoTopico; 
+            });
             refDb.child('cadernos').set(dbData.cadernos);
 
             refDb.child('materias').set(dbData.materias);
             document.getElementById('modal-juntar').style.display='none'; 
-            alert("Tópicos juntados com sucesso!");
+            alert(`Tópicos juntados com sucesso como "${novoTopico}"!`);
         }
 
         function atualizarSelectsUI() {
