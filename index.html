@@ -208,11 +208,11 @@
                         </div>
                         <div style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:4px; width:100%;">
                             <div style="flex:1; min-width:120px;">
-                                <input type="text" id="ses-mat" placeholder="Matéria" list="lista-materias-dl" oninput="atualizarTopicosSessao(this.value)" onclick="try{this.showPicker()}catch(e){}">
+                                <input type="text" id="ses-mat" placeholder="Matéria" list="lista-materias-dl" oninput="this.title=this.value; atualizarTopicosSessao(this.value)" onmouseenter="this.title=this.value" onfocus="this.select()" onclick="this.select(); try{this.showPicker()}catch(e){}">
                                 <datalist id="lista-materias-dl"></datalist>
                             </div>
                             <div style="flex:1; min-width:120px;">
-                                <input type="text" id="ses-top" placeholder="Tópico" list="dl-ses-top" onclick="try{this.showPicker()}catch(e){}">
+                                <input type="text" id="ses-top" placeholder="Tópico" list="dl-ses-top" oninput="this.title=this.value" onmouseenter="this.title=this.value" onfocus="this.select()" onclick="this.select(); try{this.showPicker()}catch(e){}">
                                 <datalist id="dl-ses-top"></datalist>
                             </div>
                         </div>
@@ -289,11 +289,11 @@
                 <div class="card">
                     <h2>Novo Caderno / Anotação</h2>
                     <div style="display:flex; gap:16px; flex-wrap:wrap;">
-                        <input type="text" id="err-mat" placeholder="Matéria *" list="lista-materias-dl" oninput="atualizarTopicosDatalist('err-top', this.value)" style="flex:1; min-width:150px;" onclick="try{this.showPicker()}catch(e){}">
-                        <input type="text" id="err-top" placeholder="Tópico *" list="dl-err-top" style="flex:1; min-width:150px;" onclick="try{this.showPicker()}catch(e){}">
+                        <input type="text" id="err-mat" placeholder="Matéria (Opcional)" list="lista-materias-dl" oninput="atualizarTopicosDatalist('err-top', this.value)" style="flex:1; min-width:150px;" onclick="try{this.showPicker()}catch(e){}">
+                        <input type="text" id="err-top" placeholder="Tópico (Opcional)" list="dl-err-top" style="flex:1; min-width:150px;" onclick="try{this.showPicker()}catch(e){}">
                         <datalist id="dl-err-top"></datalist>
                     </div>
-                    <textarea id="err-texto" placeholder="Cole a questão, lei ou comentário..." rows="4"></textarea>
+                    <textarea id="err-texto" placeholder="Cole a questão, lei ou comentário (Opcional)..." rows="4"></textarea>
                     <button class="btn-primary" onclick="salvarErro()">Salvar no Caderno</button>
                 </div>
                 <h2>Meus Cadernos</h2>
@@ -318,11 +318,11 @@
                         </div>
                         <div style="flex:1; min-width:140px;">
                             <label style="font-size:0.75rem; font-weight:700; color:var(--text-muted); display:block; margin-bottom:4px;">MATÉRIA(S)</label>
-                            <input type="text" id="est-filtro-materias" placeholder="Todas (sep. por vírgula)" list="lista-materias-dl" oninput="onEstMateriasInput()" style="margin:0;" onclick="try{this.showPicker()}catch(e){}">
+                            <input type="text" id="est-filtro-materias" placeholder="Várias matérias (sep. por vírgula)" list="lista-materias-dl" oninput="onEstMateriasInput()" style="margin:0;" onclick="try{this.showPicker()}catch(e){}">
                         </div>
                         <div style="flex:1; min-width:140px;">
                             <label style="font-size:0.75rem; font-weight:700; color:var(--text-muted); display:block; margin-bottom:4px;">TÓPICO(S)</label>
-                            <input type="text" id="est-filtro-topicos" placeholder="Todos (sep. por vírgula)" list="dl-est-topicos" oninput="atualizarEstatisticas()" style="margin:0;" onclick="try{this.showPicker()}catch(e){}">
+                            <input type="text" id="est-filtro-topicos" placeholder="Todos (apenas se 1 matéria)" list="dl-est-topicos" oninput="atualizarEstatisticas()" style="margin:0;" onclick="try{this.showPicker()}catch(e){}">
                             <datalist id="dl-est-topicos"></datalist>
                         </div>
                     </div>
@@ -769,6 +769,8 @@
             }
             document.getElementById('ses-mat').value = s.materia || '';
             document.getElementById('ses-top').value = s.topico || '';
+            document.getElementById('ses-mat').title = s.materia || '';
+            document.getElementById('ses-top').title = s.topico || '';
             document.getElementById('ses-tipo-estudo').value = s.tipoEstudo || 'Teoria';
             document.getElementById('ses-tipo-mat').value = s.tipoMat || 'Questões';
             toggleCamposDetalhes();
@@ -790,7 +792,7 @@
             document.getElementById('form-titulo-sessao').textContent = "Registrar Sessão";
             document.getElementById('btn-salvar-sessao').textContent = "💾 Salvar Sessão";
             document.getElementById('btn-cancelar-edicao').style.display = 'none';
-            ['ses-mat','ses-top','ses-acertos','ses-erros','ses-man-horas','ses-man-mins','ses-obs','ses-pdf-ini','ses-pdf-fim','ses-vid-ini','ses-vid-fim'].forEach(id=> { if(document.getElementById(id)) document.getElementById(id).value = ''; });
+            ['ses-mat','ses-top','ses-acertos','ses-erros','ses-man-horas','ses-man-mins','ses-obs','ses-pdf-ini','ses-pdf-fim','ses-vid-ini','ses-vid-fim'].forEach(id=> { if(document.getElementById(id)) { document.getElementById(id).value = ''; document.getElementById(id).title = ''; } });
             document.getElementById('ses-data').value = new Date().toISOString().split('T')[0];
         }
 
@@ -798,18 +800,41 @@
             let divReg = document.getElementById('lista-ultimos-registros'); divReg.innerHTML = '';
             let arr = [...dbData.sessoes].sort((a,b)=> b.timestamp - a.timestamp);
             
-            arr.forEach((s, i) => {
-                if(i < 15) {
+            if(!arr.length) {
+                divReg.innerHTML = 'Nenhum registro.';
+                atualizarResumoGeral();
+                renderizarCalendarioMes();
+                return;
+            }
+
+            let agrupadoPorData = {};
+            arr.forEach(s => {
+                let d = s.data || new Date(s.timestamp).toLocaleDateString();
+                if(!agrupadoPorData[d]) agrupadoPorData[d] = [];
+                agrupadoPorData[d].push(s);
+            });
+
+            let count = 0;
+            for(let dataStr in agrupadoPorData) {
+                if(count >= 15) break;
+                let sessoesDoDia = agrupadoPorData[dataStr];
+                
+                let headerHtml = `<div style="font-weight:700; color:var(--brand-primary); font-size:0.95rem; margin:16px 0 8px 0; border-bottom:1px solid var(--border-color); padding-bottom:4px; display:flex; align-items:center; gap:6px;">📅 ${dataStr}</div>`;
+                let sessoesHtml = '';
+                
+                sessoesDoDia.forEach(s => {
+                    if(count >= 15) return;
+                    count++;
                     let ht = Math.floor(s.segundos/3600), mt = Math.floor((s.segundos%3600)/60), st = s.segundos%60;
                     let timeStr = `${ht}h ${mt}m ${st}s`;
                     let perc = s.totalQts > 0 ? Math.round((s.acertos/s.totalQts)*100)+'%' : '0%';
                     let accStr = `${perc} (${s.acertos||0}/${s.totalQts||0})`;
-                    let tooltipText = `Estudado em: ${s.data} | Lançado às: ${s.hora||'--:--'} | ${s.materia} - ${s.topico||'Geral'} | ⏱️ ${timeStr} | 🎯 ${accStr}${s.obs ? ' | ' + s.obs : ''}`;
+                    let tooltipText = `${s.materia} - ${s.topico||'Geral'} | Lançado às: ${s.hora||'--:--'} | ⏱️ ${timeStr} | 🎯 ${accStr}${s.obs ? ' | ' + s.obs : ''}`;
 
-                    divReg.innerHTML += `
+                    sessoesHtml += `
                     <div class="registro-curto" title="${sanitizeText(tooltipText)}">
                         <div class="info">
-                            <strong title="${sanitizeText(s.materia)}">${s.tipoMat.includes('PDF')?'📖':s.tipoMat==='Vídeo Aula'?'🎥':'📝'} ${s.materia} <span style="font-size:0.75rem; color:var(--text-muted); font-weight:normal;">(${s.data} - Lançado às ${s.hora||'--:--'})</span></strong>
+                            <strong title="${sanitizeText(s.materia)}">${s.tipoMat.includes('PDF')?'📖':s.tipoMat==='Vídeo Aula'?'🎥':'📝'} ${s.materia} <span style="font-size:0.75rem; color:var(--text-muted); font-weight:normal;">(Lançado às ${s.hora||'--:--'})</span></strong>
                             <span style="display:flex; align-items:center; gap:6px; font-size:0.8rem; color:var(--text-muted); min-width:0; max-width:100%;">
                                 <span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; flex:1; max-width:140px;" title="${sanitizeText(s.topico||'Geral')}">${s.topico||'Geral'}</span>
                                 <span style="flex-shrink:0;">| ⏱️ ${timeStr} | 🎯 ${accStr}</span>
@@ -820,8 +845,13 @@
                             <button class="btn-x-vermelho" onclick="if(confirm('Excluir?')) refDb.child('sessoes/${s.id}').remove()">✖</button>
                         </div>
                     </div>`;
+                });
+                
+                if(sessoesHtml) {
+                    divReg.innerHTML += headerHtml + sessoesHtml;
                 }
-            });
+            }
+
             atualizarResumoGeral();
             renderizarCalendarioMes();
         }
@@ -835,12 +865,31 @@
             refDb.child('provas').set(dbData.provas); 
             document.getElementById('conc-nome').value='';
         }
+
+        function excluirProva(pId) {
+            if(!confirm('Excluir esta prova? As matérias vinculadas serão mantidas no acervo geral.')) return;
+            dbData.provas = dbData.provas.filter(x => x.id !== pId);
+            refDb.child('provas').set(dbData.provas);
+            
+            if(!Array.isArray(dbData.materias)) dbData.materias = Object.values(dbData.materias || {});
+            let mudou = false;
+            dbData.materias.forEach(m => {
+                if(m.provaId === pId) {
+                    m.provaId = "";
+                    mudou = true;
+                }
+            });
+            if(mudou) {
+                refDb.child('materias').set(dbData.materias);
+            }
+        }
+
         function renderizarProvas() {
             let div = document.getElementById('lista-provas-div'); div.innerHTML = '';
             if(!Array.isArray(dbData.provas)) dbData.provas = Object.values(dbData.provas || {});
             dbData.provas.forEach(p => {
                 let dias = Math.ceil((new Date(p.data) - new Date()) / (1000*60*60*24));
-                div.innerHTML += `<div class="stat-card" style="position:relative;" title="${sanitizeText(p.nome)}"><span>${p.nome}</span><strong style="color:${dias<30?'var(--brand-danger)':'var(--brand-primary)'}; margin:10px 0;">Faltam ${dias} dias</strong><span style="font-weight:normal;">📅 ${p.data}</span><button class="btn-x-vermelho" style="position:absolute; top:8px; right:8px;" onclick="if(confirm('Excluir?')) { dbData.provas=dbData.provas.filter(x=>x.id!=='${p.id}'); refDb.child('provas').set(dbData.provas); }">✖</button></div>`;
+                div.innerHTML += `<div class="stat-card" style="position:relative;" title="${sanitizeText(p.nome)}"><span>${p.nome}</span><strong style="color:${dias<30?'var(--brand-danger)':'var(--brand-primary)'}; margin:10px 0;">Faltam ${dias} dias</strong><span style="font-weight:normal;">📅 ${p.data}</span><button class="btn-x-vermelho" style="position:absolute; top:8px; right:8px;" onclick="excluirProva('${p.id}')">✖</button></div>`;
             });
         }
 
@@ -908,8 +957,15 @@
         function renderizarMaterias() {
             let statePastas = [];
             document.querySelectorAll('.pasta-body.aberta').forEach(el => {
-                let id = el.previousElementSibling.getAttribute('data-folder-id');
+                let id = el.previousElementSibling ? el.previousElementSibling.getAttribute('data-folder-id') : null;
                 if(id) statePastas.push(id);
+            });
+
+            let stateBlocos = [];
+            document.querySelectorAll('.bloco-prova').forEach(bp => {
+                let content = bp.querySelector('.bloco-prova-content');
+                let bId = bp.getAttribute('data-prova-id');
+                if(content && content.style.display !== 'none' && bId) stateBlocos.push(bId);
             });
 
             let div = document.getElementById('lista-materias-cadastradas'); div.innerHTML = '';
@@ -926,23 +982,26 @@
                     if(!Array.isArray(m.topicos)) m.topicos = Object.values(m.topicos || {});
                     let htmlT = m.topicos.map((t, i) => `<div style="padding:8px 0; border-bottom:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center; gap:8px;" title="${sanitizeText(t)}"><span style="overflow:hidden; text-overflow:ellipsis; min-width:0; flex:1;" title="${sanitizeText(t)}">📄 ${t}</span> <div style="display:flex; align-items:center; gap:6px; flex-shrink:0;"><button style="background:transparent;border:none;cursor:pointer;font-size:1rem;" title="Editar Tópico" onclick="editarTopico('${m.id}', ${i})">✏️</button> <button style="background:transparent;border:none;cursor:pointer;font-size:1rem;" title="Juntar Tópicos" onclick="abrirModalJuntar('${m.id}', '${sanitizeText(t).replace(/'/g,"\\'")}')">🔗</button> <button class="btn-x-vermelho" onclick="excluirTopicoMateria('${m.id}', ${i})">✖</button></div></div>`).join('');
                     
+                    let vazioOpcao = `<div style="color:var(--text-muted);font-size:0.85rem; padding:6px 0; display:flex; justify-content:space-between; align-items:center;"><span>Sem tópicos.</span> <button class="btn-danger" style="padding:4px 8px; font-size:0.75rem;" onclick="if(confirm('Excluir esta matéria sem tópicos?')){ dbData.materias=dbData.materias.filter(x=>x.id!='${m.id}'); refDb.child('materias').set(dbData.materias); }">Excluir Matéria</button></div>`;
+
                     return `<div class="pasta-header" data-folder-id="${m.id}" style="border-left:5px solid ${m.cor};" onclick="this.nextElementSibling.classList.toggle('aberta')" title="${sanitizeText(m.nome)}">
                         <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1; min-width:0;" title="${sanitizeText(m.nome)}">📁 ${m.nome} (${m.topicos.length})</span>
                         <div style="display:flex; gap:8px; align-items:center;">
                             <button style="background:transparent;border:none;cursor:pointer;font-size:1.1rem;" title="Mover para Prova" onclick="event.stopPropagation(); moverMateriaParaProva('${m.id}')">🔄</button>
                             <button class="btn-x-vermelho" style="flex-shrink:0;" onclick="event.stopPropagation(); if(confirm('Apagar matéria inteira?')) { dbData.materias=dbData.materias.filter(x=>x.id!=='${m.id}'); refDb.child('materias').set(dbData.materias); }">✖</button>
                         </div>
-                    </div><div class="pasta-body">${htmlT||'<span style="color:var(--text-muted);font-size:0.85rem;">Vazio.</span>'}</div>`;
+                    </div><div class="pasta-body">${htmlT || vazioOpcao}</div>`;
                 }).join('');
 
                 if(!isGeral) {
+                    let isBlockOpen = stateBlocos.includes(p);
                     div.innerHTML += `
-                    <div class="bloco-prova">
-                        <div class="bloco-prova-titulo" style="cursor:pointer; user-select:none; margin-bottom:0; justify-content:space-between;" onclick="let el=this.nextElementSibling; el.style.display = el.style.display==='none'?'block':'none';" title="${sanitizeText(nomeP)}">
+                    <div class="bloco-prova" data-prova-id="${p}">
+                        <div class="bloco-prova-titulo" style="cursor:pointer; user-select:none; margin-bottom:0; justify-content:space-between;" onclick="let el=this.nextElementSibling; el.style.display = (el.style.display==='none'||!el.style.display)?'block':'none';" title="${sanitizeText(nomeP)}">
                             <span>🎯 ${nomeP}</span>
                             <span style="font-size:0.85rem; font-weight:normal; color:var(--text-muted);">▼ Expandir / Minimizar</span>
                         </div>
-                        <div style="display:none; margin-top:16px;">${conteudoMat}</div>
+                        <div class="bloco-prova-content" style="display:${isBlockOpen?'block':'none'}; margin-top:16px;">${conteudoMat}</div>
                     </div>`;
                 } else {
                     div.innerHTML += `<h3 style="color:var(--text-muted); margin-top:20px; font-size:1.1rem;" title="${sanitizeText(nomeP)}">${nomeP}</h3>${conteudoMat}`;
@@ -993,7 +1052,15 @@
             if(!Array.isArray(mat.topicos)) mat.topicos = Object.values(mat.topicos || {});
             let novoTopico = `${tDest}. ${tOri}`;
             
-            mat.topicos = mat.topicos.filter(t => t !== tOri && t !== tDest); mat.topicos.push(novoTopico);
+            let idxDest = mat.topicos.indexOf(tDest);
+            if(idxDest !== -1) {
+                mat.topicos[idxDest] = novoTopico;
+                mat.topicos = mat.topicos.filter(t => t !== tOri);
+            } else {
+                mat.topicos = mat.topicos.filter(t => t !== tOri && t !== tDest);
+                mat.topicos.push(novoTopico);
+            }
+
             dbData.sessoes.forEach(s => { if(s.materia === mat.nome && (s.topico === tOri || s.topico === tDest)) s.topico = novoTopico; }); refDb.child('sessoes').set(dbData.sessoes);
             dbData.cadernos.forEach(c => { if(c.materia === mat.nome && (c.topico === tOri || c.topico === tDest)) c.topico = novoTopico; }); refDb.child('cadernos').set(dbData.cadernos);
 
@@ -1035,10 +1102,16 @@
 
         // CADERNOS
         function salvarErro() {
-            let m = sanitizeText(document.getElementById('err-mat').value), t = sanitizeText(document.getElementById('err-top').value), txt = sanitizeText(document.getElementById('err-texto').value);
-            if(!m || !t || !txt) return alert("Preencha Matéria, Tópico e o Texto.");
+            let m = sanitizeText(document.getElementById('err-mat').value) || 'Geral';
+            let t = sanitizeText(document.getElementById('err-top').value) || 'Geral';
+            let txt = sanitizeText(document.getElementById('err-texto').value) || '(Sem anotação)';
+            
             dbData.cadernos.push({id: gerarId(), materia: m, topico: t, texto: txt, timestamp: Date.now(), data: new Date().toLocaleDateString()});
-            refDb.child('cadernos').set(dbData.cadernos); document.getElementById('err-texto').value = '';
+            refDb.child('cadernos').set(dbData.cadernos);
+            document.getElementById('err-texto').value = '';
+            document.getElementById('err-mat').value = '';
+            document.getElementById('err-top').value = '';
+            alert("Caderno salvo com sucesso!");
         }
         function renderizarCadernos() {
             let div = document.getElementById('lista-cadernos-div'); div.innerHTML = ''; let agr = {};
@@ -1090,7 +1163,7 @@
             let matInput = document.getElementById('est-filtro-materias').value.trim().toLowerCase();
             if(!matInput) return;
             let mats = matInput.split(',').map(m => m.trim()).filter(Boolean);
-            if(mats.length !== 1) return; // Only for 1 material at a time
+            if(mats.length !== 1) return;
             
             let topicosSet = new Set();
             if(!Array.isArray(dbData.materias)) dbData.materias = Object.values(dbData.materias || {});
@@ -1171,7 +1244,7 @@
                 } else {
                     chaveGraf = s.materia;
                 }
-                dadosGraf[chaveGraf] = (dadosGraf[chaveGraf]||0) + (s.segundos/60);
+                dadosGraf[chaveGraf] = (dadosGraf[chaveGraf]||0) + s.segundos;
             });
 
             let thh = Math.floor(tSeg / 3600);
@@ -1201,8 +1274,27 @@
             });
 
             graficoInstance = new Chart(document.getElementById('graficoEst').getContext('2d'), {
-                type: tipo, data: { labels: keys, datasets: [{ label: 'Minutos', data: vals, backgroundColor: cores, borderWidth: 0, borderRadius: tipo==='bar'?6:0 }] },
-                options: { responsive: true, maintainAspectRatio: false, color: txtCor, plugins: { legend: { labels: { color: txtCor } } }, scales: tipo==='bar' ? { x:{ticks:{color:txtCor}}, y:{ticks:{color:txtCor}} } : {} }
+                type: tipo, data: { labels: keys, datasets: [{ label: 'Tempo', data: vals, backgroundColor: cores, borderWidth: 0, borderRadius: tipo==='bar'?6:0 }] },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    color: txtCor,
+                    plugins: {
+                        legend: { labels: { color: txtCor } },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let totalSeg = context.raw || 0;
+                                    let h = Math.floor(totalSeg / 3600);
+                                    let m = Math.floor((totalSeg % 3600) / 60);
+                                    let s = totalSeg % 60;
+                                    return ` ${context.label || ''}: ${h}h ${m}m ${s}s`;
+                                }
+                            }
+                        }
+                    },
+                    scales: tipo==='bar' ? { x:{ticks:{color:txtCor}}, y:{ticks:{color:txtCor}} } : {}
+                }
             });
         }
 
