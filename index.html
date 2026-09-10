@@ -357,7 +357,7 @@
                 <div class="card" style="padding:0; overflow:hidden; border:2px solid var(--brand-primary);">
                     <div style="background:var(--brand-primary); padding:20px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
                         <h2 style="color:white; margin:0; border:none; padding:0;">✨ PRUMA IA</h2>
-                        <button class="btn-outline" style="width:auto; padding:8px 14px; border-color:white; color:white; font-size:0.85rem;" onclick="document.getElementById('modal-historico-ia').style.display='flex'">Ver Histórico (10 Últimas)</button>
+                        <button class="btn-outline" style="width:auto; padding:8px 14px; border-color:white; color:white; font-size:0.85rem;" onclick="document.getElementById('modal-historico-ia').style.display='flex'">Ver Histórico (Perfil)</button>
                     </div>
                     
                     <div style="padding:24px;">
@@ -366,6 +366,12 @@
                             <button class="btn-outline" style="flex:1; min-width:140px;" onclick="mudarSubIa('simulador', this)">🎯 Gerar Questões</button>
                             <button class="btn-outline" style="flex:1; min-width:140px;" onclick="mudarSubIa('flashcards', this)">⚡ Flashcards</button>
                             <button class="btn-outline" style="flex:1; min-width:140px;" onclick="mudarSubIa('edital', this)">📚 Edital Inteligente</button>
+                        </div>
+
+                        <!-- Histórico dos últimos 5 filtros por aba -->
+                        <div id="historico-filtros-ia-container" style="margin-bottom:16px; background:var(--bg-input); padding:12px; border-radius:var(--radius-sm); display:none;">
+                            <label style="font-size:0.75rem; font-weight:700; color:var(--text-muted); display:block; margin-bottom:6px;">📌 ÚLTIMOS 5 FILTROS / CONSULTAS (CLIQUE PARA REEXIBIR RESPOSTA SALVA)</label>
+                            <div id="lista-ultimos-filtros-ia" style="display:flex; gap:8px; flex-wrap:wrap;"></div>
                         </div>
 
                         <!-- Selecionador de Fonte (Geral para Chat / Simulador) -->
@@ -399,6 +405,14 @@
                                     <label style="font-size:0.75rem; font-weight:700; color:var(--text-muted); display:block; margin-bottom:4px;">TEMA / BANCA</label>
                                     <input type="text" id="ia-qts-tema" placeholder="Ex: FGV Direito Administrativo" style="margin:0;">
                                 </div>
+                                <div style="flex:1; min-width:150px;">
+                                    <label style="font-size:0.75rem; font-weight:700; color:var(--text-muted); display:block; margin-bottom:4px;">TIPO DE QUESTÃO</label>
+                                    <select id="ia-tipo-q" style="margin:0;">
+                                        <option value="multipla">Múltipla Escolha</option>
+                                        <option value="ce">Certo / Errado (C/E)</option>
+                                        <option value="ambas">Ambas</option>
+                                    </select>
+                                </div>
                             </div>
                             <!-- Seletor de Nível Limpo e Flexível -->
                             <div style="margin-bottom:16px; background:var(--bg-input); padding:14px; border-radius:var(--radius-sm);">
@@ -415,14 +429,14 @@
 
                         <!-- Sub: Flashcards -->
                         <div id="subia-flashcards" style="display:none;">
-                            <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:16px;">⚡ Escolha abaixo a quantidade, matéria, assunto e/ou fonte para gerar seus flashcards cirúrgicos.</p>
+                            <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:16px;">⚡ Escolha abaixo a quantidade, matéria (opcional), assunto e/ou fonte (opcional) para gerar seus flashcards cirúrgicos.</p>
                             <div style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:16px; background:var(--bg-input); padding:16px; border-radius:var(--radius-sm);">
                                 <div style="width:110px; min-width:110px;">
                                     <label style="font-size:0.75rem; font-weight:700; color:var(--text-muted); display:block; margin-bottom:4px;">QUANTIDADE</label>
                                     <input type="number" id="fc-num" value="5" min="1" max="30" style="margin:0;">
                                 </div>
                                 <div style="flex:1; min-width:130px;">
-                                    <label style="font-size:0.75rem; font-weight:700; color:var(--text-muted); display:block; margin-bottom:4px;">MATÉRIA</label>
+                                    <label style="font-size:0.75rem; font-weight:700; color:var(--text-muted); display:block; margin-bottom:4px;">MATÉRIA (OPCIONAL)</label>
                                     <input type="text" id="fc-mat" placeholder="Ex: Direito Constitucional" list="lista-materias-dl" style="margin:0;" onclick="try{this.showPicker()}catch(e){}">
                                 </div>
                                 <div style="flex:1; min-width:130px;">
@@ -508,7 +522,7 @@
     <!-- Modais -->
     <div id="modal-apikey" class="modal">
         <div class="modal-content" style="max-width:560px;">
-            <button class="modal-close" style="position:absolute; top:20px; right:20px; background:transparent; border:none; font-size:1.5rem; cursor:pointer; color:var(--text-muted);" onclick="document.getElementById('modal-apikey').style.display='none'">✖</button>
+            <button class="modal-close" style="position:absolute; top:16px; right:16px; background:transparent; border:none; font-size:1.5rem; cursor:pointer; color:var(--brand-danger); font-weight:700; z-index:10;" onclick="document.getElementById('modal-apikey').style.display='none'">✖</button>
             <div style="display:flex; align-items:flex-start; gap:16px; margin-bottom:20px;">
                 <div style="font-size:2.5rem; background:var(--bg-input); padding:10px; border-radius:50%; line-height:1; flex-shrink:0;">👨‍💻</div>
                 <div style="background:var(--bg-input); padding:16px; border-radius:var(--radius-md); border:1px solid var(--border-color); flex:1; position:relative; font-size:0.95rem; line-height:1.4;">
@@ -530,7 +544,7 @@
 
     <div id="modal-historico-ia" class="modal">
         <div class="modal-content" style="max-width:700px;">
-            <button class="modal-close" style="position:absolute; top:20px; right:20px; background:transparent; border:none; font-size:1.5rem; cursor:pointer; color:var(--text-muted);" onclick="document.getElementById('modal-historico-ia').style.display='none'">✖</button>
+            <button class="modal-close" style="position:absolute; top:16px; right:16px; background:transparent; border:none; font-size:1.5rem; cursor:pointer; color:var(--brand-danger); font-weight:700; z-index:10;" onclick="document.getElementById('modal-historico-ia').style.display='none'">✖</button>
             <h2 style="margin-top:0;">🔄 Perfil e Últimas Perguntas</h2>
             <p style="font-size:0.85rem; color:var(--text-muted);">As perguntas abaixo ajudam a IA a entender seu perfil, dores e jornada de estudos.</p>
             <div id="lista-historico-ia" style="display:flex; flex-direction:column; gap:12px; margin-top:16px;"></div>
@@ -539,7 +553,7 @@
 
     <div id="modal-juntar" class="modal">
         <div class="modal-content">
-            <button class="modal-close" style="position:absolute; top:20px; right:20px; background:transparent; border:none; font-size:1.5rem; cursor:pointer; color:var(--text-muted);" onclick="document.getElementById('modal-juntar').style.display='none'">✖</button>
+            <button class="modal-close" style="position:absolute; top:16px; right:16px; background:transparent; border:none; font-size:1.5rem; cursor:pointer; color:var(--brand-danger); font-weight:700; z-index:10;" onclick="document.getElementById('modal-juntar').style.display='none'">✖</button>
             <h2 style="margin-top:0;">🔗 Juntar Tópicos</h2>
             <p>Juntar o tópico <strong id="lbl-topico-origem" style="color:var(--brand-primary)"></strong> com outro (Resultado: A. B.).</p>
             <select id="sel-topico-destino" style="margin-bottom:16px;"></select>
@@ -562,11 +576,12 @@
         const db = firebase.database(); const storage = firebase.storage();
 
         let userAtual = null, refDb = null, refStore = null, isAdmin = false;
-        let dbData = { sessoes: [], provas: [], materias: [], cadernos: [], biblioteca: [], iaHistorico: [] };
+        let dbData = { sessoes: [], provas: [], materias: [], cadernos: [], biblioteca: [], iaHistorico: [], iaFiltrosHistorico: [] };
         let segundosCronometro = 0, cronometroInterval = null, graficoInstance = null;
         let segundosPausa = 0, pausaInterval = null;
         let editandoRegistroId = null;
         let calMesOff = 0;
+        let subIaAtual = 'chat';
         
         const paleta17 = ['#007AFF','#34C759','#FF3B30','#FF9500','#5856D6','#AF52DE','#5AC8FA','#FF2D55','#E5C07B','#98C379','#E06C75','#C678DD','#56B6C2','#D19A66','#61AFEF', '#000000', '#FFFFFF'];
         let corAtualMateria = paleta17[0];
@@ -671,6 +686,7 @@
                 atualizarSelectsUI(); 
             });
             refDb.child('ia_historico').on('value', s => { dbData.iaHistorico = s.val() || []; renderizarHistoricoIA(); });
+            refDb.child('ia_filtros_historico').on('value', s => { dbData.iaFiltrosHistorico = s.val() || []; renderizarFiltrosIAHistorico(); });
         }
 
         function iniciarCronometro() { 
@@ -1018,13 +1034,29 @@
         }
 
         function renderizarCadernos() {
+            let stateCadernos = []; document.querySelectorAll('#lista-cadernos-div .pasta-body.aberta').forEach(el => { let id = el.previousElementSibling ? el.previousElementSibling.getAttribute('data-caderno-folder') : null; if(id) stateCadernos.push(id); });
             let div = document.getElementById('lista-cadernos-div'); div.innerHTML = ''; let agr = {};
             if(!Array.isArray(dbData.cadernos)) dbData.cadernos = Object.values(dbData.cadernos || {});
             dbData.cadernos.forEach(c => { if(!agr[c.materia]) agr[c.materia] = {}; if(!agr[c.materia][c.topico]) agr[c.materia][c.topico] = []; agr[c.materia][c.topico].push(c); });
+            let cIndex = 0;
             for(let m in agr) {
-                let htmlM = ''; for(let t in agr[m]) { htmlM += `<div style="font-weight:700; color:var(--brand-primary); margin:10px 0 4px 0;" title="${sanitizeText(t)}">📌 ${t}</div>`; agr[m][t].forEach(i => { htmlM += `<div style="background:var(--bg-input); padding:10px; border-radius:var(--radius-sm); margin-bottom:6px; display:flex; justify-content:space-between; align-items:flex-start; gap:8px;" title="${sanitizeText(i.texto)}"><div style="font-size:0.95rem; min-width:0; flex:1; word-break:break-word;">${i.texto} <span style="font-size:0.75rem; color:var(--text-muted); display:block;">${i.data}</span></div><button class="btn-x-vermelho" style="flex-shrink:0;" onclick="if(confirm('Excluir?')){ dbData.cadernos=dbData.cadernos.filter(x=>x.id!=='${i.id}'); refDb.child('cadernos').set(dbData.cadernos); }">✖</button></div>`; }); }
-                div.innerHTML += `<div class="pasta-header" onclick="this.nextElementSibling.classList.toggle('aberta')"><span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1; min-width:0;" title="${sanitizeText(m)}">📓 ${m}</span></div><div class="pasta-body">${htmlM}</div>`;
+                let folderKey = 'cad_' + (cIndex++);
+                let htmlM = ''; for(let t in agr[m]) { htmlM += `<div style="font-weight:700; color:var(--brand-primary); margin:10px 0 4px 0;" title="${sanitizeText(t)}">📌 ${t}</div>`; agr[m][t].forEach(i => { 
+                    let textoCompleto = sanitizeText(i.texto);
+                    let isLongo = textoCompleto.length > 180;
+                    let textoExibido = isLongo ? textoCompleto.substring(0, 180) + '...' : textoCompleto;
+                    htmlM += `<div style="background:var(--bg-input); padding:10px; border-radius:var(--radius-sm); margin-bottom:6px; display:flex; justify-content:space-between; align-items:flex-start; gap:8px;">
+                        <div style="font-size:0.95rem; min-width:0; flex:1; word-break:break-word;">
+                            <span class="cad-txt-span" data-full="${encodeURIComponent(textoCompleto)}">${textoExibido}</span>
+                            ${isLongo ? `<button style="background:none;border:none;color:var(--brand-primary);cursor:pointer;font-weight:700;font-size:0.8rem;display:block;margin-top:4px;" onclick="let span=this.previousElementSibling; if(span.textContent.endsWith('...')){ span.textContent=decodeURIComponent(span.getAttribute('data-full')); this.textContent='(Mostrar menos)'; }else{ span.textContent=decodeURIComponent(span.getAttribute('data-full')).substring(0,180)+'...'; this.textContent='(Ler mais)'; }">Ler mais</button>` : ''}
+                            <span style="font-size:0.75rem; color:var(--text-muted); display:block; margin-top:4px;">${i.data}</span>
+                        </div>
+                        <button class="btn-x-vermelho" style="flex-shrink:0;" onclick="if(confirm('Excluir?')){ dbData.cadernos=dbData.cadernos.filter(x=>x.id!=='${i.id}'); refDb.child('cadernos').set(dbData.cadernos); }">✖</button>
+                    </div>`; 
+                }); }
+                div.innerHTML += `<div class="pasta-header" data-caderno-folder="${folderKey}" onclick="this.nextElementSibling.classList.toggle('aberta')"><span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1; min-width:0;" title="${sanitizeText(m)}">📓 ${m}</span></div><div class="pasta-body">${htmlM}</div>`;
             }
+            stateCadernos.forEach(id => { let hdr = document.querySelector(`.pasta-header[data-caderno-folder="${id}"]`); if(hdr && hdr.nextElementSibling) hdr.nextElementSibling.classList.add('aberta'); });
         }
         function renderizarFiltrosEstatisticas() {
             let dlProvas = document.getElementById('dl-est-provas'); if(dlProvas) { dlProvas.innerHTML = ''; if(!Array.isArray(dbData.provas)) dbData.provas = Object.values(dbData.provas || {}); dbData.provas.forEach(p => dlProvas.innerHTML += `<option value="${p.nome}">`); }
@@ -1077,8 +1109,69 @@
         }
 
         function mudarSubIa(sub, btn) {
-            ['chat', 'simulador', 'flashcards', 'edital'].forEach(s => { let el = document.getElementById('subia-'+s); if(el) el.style.display = (s===sub)?'block':'none'; }); document.querySelectorAll('#view-pruma .btn-outline').forEach(b => { b.style.background='transparent'; b.style.color='var(--text-main)'; }); if(btn) { btn.style.background='var(--brand-primary)'; btn.style.color='white'; } document.getElementById('caixa-fontes-ia').style.display = (sub==='edital' || sub==='flashcards') ? 'none' : 'flex';
+            subIaAtual = sub;
+            ['chat', 'simulador', 'flashcards', 'edital'].forEach(s => { let el = document.getElementById('subia-'+s); if(el) el.style.display = (s===sub)?'block':'none'; }); 
+            document.querySelectorAll('#view-pruma .btn-outline').forEach(b => { b.style.background='transparent'; b.style.color='var(--text-main)'; }); 
+            if(btn) { btn.style.background='var(--brand-primary)'; btn.style.color='white'; } 
+            document.getElementById('caixa-fontes-ia').style.display = (sub==='edital' || sub==='flashcards') ? 'none' : 'flex';
+            renderizarFiltrosIAHistorico();
         }
+
+        function renderizarFiltrosIAHistorico() {
+            let container = document.getElementById('historico-filtros-ia-container');
+            let lista = document.getElementById('lista-ultimos-filtros-ia');
+            if(!container || !lista) return;
+
+            let filtrados = dbData.iaFiltrosHistorico.filter(item => item.tipo === subIaAtual);
+            if(filtrados.length === 0) {
+                container.style.display = 'none';
+                return;
+            }
+            container.style.display = 'block';
+            lista.innerHTML = '';
+            filtrados.forEach((item, index) => {
+                let btn = document.createElement('button');
+                btn.className = 'btn-outline';
+                btn.style.width = 'auto';
+                btn.style.padding = '6px 12px';
+                btn.style.fontSize = '0.8rem';
+                btn.textContent = `📌 ${item.resumo || item.params}`;
+                btn.onclick = () => carregarRespostaSalvaHistorico(item);
+                lista.appendChild(btn);
+            });
+        }
+
+        function salvarFiltroHistorico(tipo, params, resumo, respostaHtml) {
+            if(!Array.isArray(dbData.iaFiltrosHistorico)) dbData.iaFiltrosHistorico = [];
+            dbData.iaFiltrosHistorico.push({ tipo, params, resumo, respostaHtml, timestamp: Date.now() });
+            if(dbData.iaFiltrosHistorico.filter(x => x.tipo === tipo).length > 5) {
+                let firstIndex = dbData.iaFiltrosHistorico.findIndex(x => x.tipo === tipo);
+                if(firstIndex !== -1) dbData.iaFiltrosHistorico.splice(firstIndex, 1);
+            }
+            refDb.child('ia_filtros_historico').set(dbData.iaFiltrosHistorico);
+            renderizarFiltrosIAHistorico();
+        }
+
+        function carregarRespostaSalvaHistorico(item) {
+            if(item.tipo === 'chat') {
+                let box = document.getElementById('box-chat');
+                box.innerHTML = `<div class="msg msg-u">${sanitizeText(item.params)}</div><div class="msg msg-a" style="max-width:100%; width:100%;">${item.respostaHtml}</div>`;
+                box.scrollTop = box.scrollHeight;
+            } else if(item.tipo === 'questoes') {
+                document.getElementById('ia-qts-tema').value = item.params.tema || '';
+                let box = document.getElementById('box-qts');
+                box.style.display = 'block';
+                box.innerHTML = `<div class="msg msg-a" style="max-width:100%; width:100%;">${item.respostaHtml}</div>`;
+                box.scrollTop = box.scrollHeight;
+            } else if(item.tipo === 'flashcards') {
+                document.getElementById('fc-mat').value = item.params.mat || '';
+                document.getElementById('fc-top').value = item.params.top || '';
+                let box = document.getElementById('box-fc');
+                box.style.display = 'block';
+                box.innerHTML = item.respostaHtml;
+            }
+        }
+
         function renderizarHistoricoIA() {
             let div = document.getElementById('lista-historico-ia'); div.innerHTML = ''; if(dbData.iaHistorico.length===0) div.innerHTML = '<p>Seu perfil de aprendizado está sendo mapeado com base nas suas dúvidas relevantes...</p>';
             [...dbData.iaHistorico].reverse().forEach(h => { div.innerHTML += `<div style="background:var(--bg-input); padding:12px; border-radius:var(--radius-sm); border:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center; gap:10px;" title="${sanitizeText(h)}"><span style="font-size:0.9rem;">"${h}"</span><button class="btn-primary" style="width:auto; padding:6px 12px; font-size:0.8rem;" onclick="document.getElementById('modal-historico-ia').style.display='none'; document.getElementById('inp-chat').value = '${sanitizeText(h).replace(/'/g, "\\'")}'; executarIA('chat');">🔄 Reenviar</button></div>`; });
@@ -1103,11 +1196,11 @@
             let bancaInstrucao = bancaDetectada ? `\n\n🎯 BANCA: Adapte ao estilo da banca ${bancaDetectada}.` : "";
             let profundidadeInstrucao = isFacil ? `\n\n💡 PERGUNTA SIMPLES DETECTADA: A questão/pergunta é simples. Seja extremamente conciso, vá direto à explicação essencial sem aprofundamentos desnecessários ou contextos longos.` : "";
 
-            const instrucaoFormatacao = `\n\n📌 REGRA RIGOROSA DE FORMATAÇÃO: 
+            const instrucaoFormatacao = `\n\n📌 REGRA RIGOROSA DE FORMATAÇÃO E INTERATIVIDADE: 
 - NUNCA use asteriscos triplos (###), asteriscos duplos (***) ou traços excessivos (---).
-- OBRIGATÓRIO: Emojis, setas (➔, ➡) e indicadores DEVEM iniciar sempre novas linhas (em início de linha). NUNCA coloque emojis ou setas perdidos no meio de frases ou emendados com linhas anteriores. Mantenha o texto perfeitamente alinhado e limpo.`;
+- OBRIGATÓRIO: Emojis, setas (➔, ➡), subitens e indicadores DEVEM iniciar SEMPRE novas linhas (em início de linha), servindo estritamente de orientação, destaque e organização visual. NUNCA coloque emojis ou setas perdidos no meio de frases ou emendados com linhas anteriores. Mantenha o texto perfeitamente alinhado e limpo.`;
 
-            const basePersona = "Você é a PRUMA IA, mentora especialista em concursos. VÁ DIRETO AO PONTO. Sem saudações longas, sem introduções vazias, sem motivação excessiva. Responda com máxima concisão e precisão técnica." + profundidadeInstrucao + instrucaoFormatacao;
+            const basePersona = "Você é a PRUMA IA, mentora especialista em concursos. VÁ DIRETO AO PONTO. Sem saudações longas, sem introduções vazias, sem motivação excessiva. Responda com máxima concisão e precisão técnica, estruturando explicações interativas e dinâmicas." + profundidadeInstrucao + instrucaoFormatacao;
             
             const prompts = {
                 chat: `${basePersona} Explique com clareza cirúrgica e objetividade.${bancaInstrucao}`,
@@ -1117,7 +1210,8 @@
             return prompts[tipo] || basePersona;
         }
 
-        function definirModeloIdeal(prompt, tipo) {
+        function definirModeloIdeal(prompt, tipo, querAprofundar = false) {
+            if(querAprofundar) return "gemini-3.1-pro-preview";
             if(tipo === 'questoes' || tipo === 'edital') return "gemini-3.1-pro-preview";
             if(tipo === 'flashcards') return "gemini-3.8-flash";
             let pLow = prompt.toLowerCase();
@@ -1126,7 +1220,7 @@
             return "gemini-3.8-flash";
         }
 
-        async function executarIA(tipo) {
+        async function executarIA(tipo, promptEspecifico = null, querAprofundar = false) {
             let k = localStorage.getItem('pruma_apikey'); if(!k) return alert("Configure a API Key na aba lateral.");
             let p = "", box = null; let ctx = extrairContextoGeral();
 
@@ -1136,7 +1230,15 @@
                 if(niveisSelecionados.length === 0) return alert("Selecione ao menos um nível de dificuldade.");
                 let qtd = document.getElementById('ia-qts-num').value || '5';
                 let t = document.getElementById('ia-qts-tema').value || 'o contexto geral';
-                p = `Crie exatamente ${qtd} questões inéditas sobre: ${t}. Níveis permitidos: ${niveisSelecionados.join(', ')}. Cada questão deve iniciar com o nível correspondente, as alternativas A, B, C, D, E, indicação da correta e comentário conciso.`;
+                let tipoQVal = document.getElementById('ia-tipo-q').value;
+                let instrucaoTipoQ = tipoQVal === 'ce' ? "Formato estrito Certo / Errado (C/E)." : (tipoQVal === 'ambas' ? "Misture questões de múltipla escolha e Certo/Errado." : "Múltipla escolha.");
+                
+                // Chat / Student info check for 4 or 5 alternatives
+                let numAlts = 5;
+                let historicoTexto = dbData.iaHistorico.join(' ').toLowerCase();
+                if(historicoTexto.includes('4 alternativas') || historicoTexto.includes('banca com 4')) numAlts = 4;
+
+                p = `Crie exatamente ${qtd} questões inéditas sobre: ${t}. ${instrucaoTipoQ} Com ${numAlts} alternativas por questão se for múltipla escolha. Níveis permitidos: ${niveisSelecionados.join(', ')}. Cada questão deve iniciar com o nível correspondente, as alternativas, indicação da correta e comentário conciso.`;
                 box = document.getElementById('box-qts'); box.style.display='flex'; box.innerHTML='';
             } else if(tipo === 'flashcards') {
                 document.querySelectorAll('.chk-nivel-fc:checked').forEach(el => niveisSelecionados.push(el.value));
@@ -1147,10 +1249,13 @@
                 p = `Gere exatamente ${qtd} flashcards de alta retenção para a Matéria: "${m}" e Tópico: "${tp}". Níveis permitidos: ${niveisSelecionados.join(', ')}. Retorne EXATAMENTE UM JSON ARRAY PURO: [{"f":"Pergunta","v":"Resposta","nivel":"Fácil/Médio/Difícil"}]. Sem markdowns como \`\`\`.`;
                 box = document.getElementById('box-fc'); box.style.display='block'; box.innerHTML='';
             } else if(tipo === 'chat') {
-                p = document.getElementById('inp-chat').value.trim(); if(!p) return;
+                p = promptEspecifico || document.getElementById('inp-chat').value.trim(); if(!p) return;
                 box = document.getElementById('box-chat'); 
-                box.innerHTML += `<div class="msg msg-u">${sanitizeText(p)}</div>`; 
-                document.getElementById('inp-chat').value=''; box.scrollTop = box.scrollHeight;
+                if(!promptEspecifico) {
+                    box.innerHTML += `<div class="msg msg-u">${sanitizeText(p)}</div>`; 
+                    document.getElementById('inp-chat').value=''; 
+                }
+                box.scrollTop = box.scrollHeight;
                 
                 let pLow = p.toLowerCase();
                 let isRevelador = ['estudo para', 'foco em', 'tenho dificuldade', 'minha rotina', 'concurso', 'banca', 'como eu', 'preciso melhorar', 'sou ', 'minha meta', 'cargo', 'cronograma', 'cebraspe', 'fgv', 'fcc', 'vunesp'].some(w => pLow.includes(w));
@@ -1161,8 +1266,20 @@
 
             let isPerguntaFacil = p.length < 50 && !p.toLowerCase().includes('jurisprudência') && !p.toLowerCase().includes('aprofundado');
             let baseSys = obterPromptDoSistema(tipo, p, isPerguntaFacil);
-            let modeloAtual = definirModeloIdeal(p, tipo);
+            let modeloAtual = definirModeloIdeal(p, tipo, querAprofundar);
             let loadInt = null;
+
+            // Roteamento de modelos e fallback de cota diária
+            let todayStr = new Date().toDateString();
+            let lastQuotaDate = localStorage.getItem('pruma_quota_date') || '';
+            if(lastQuotaDate !== todayStr) {
+                localStorage.setItem('pruma_quota_date', todayStr);
+                localStorage.setItem('pruma_pro_exhausted', 'false');
+            }
+            let proExhausted = localStorage.getItem('pruma_pro_exhausted') === 'true';
+            if(proExhausted && modeloAtual.includes('pro')) {
+                modeloAtual = "gemini-3.8-flash";
+            }
 
             try {
                 if(tipo!=='flashcards') { 
@@ -1184,10 +1301,25 @@
                 }
 
                 let txtF;
-                try { txtF = await chamarGemini(modeloAtual); } 
+                try { 
+                    txtF = await chamarGemini(modeloAtual); 
+                } 
                 catch(err) {
-                    if(err.message === 'QUOTA_EXCEEDED' && modeloAtual.includes('pro')) {
-                        modeloAtual = "gemini-3.8-flash"; txtF = await chamarGemini(modeloAtual); 
+                    if(err.message === 'QUOTA_EXCEEDED') {
+                        if(modeloAtual.includes('pro')) {
+                            localStorage.setItem('pruma_pro_exhausted', 'true');
+                            modeloAtual = "gemini-3.8-flash";
+                            try {
+                                txtF = await chamarGemini(modeloAtual);
+                            } catch(errFlash) {
+                                if(errFlash.message === 'QUOTA_EXCEEDED') {
+                                    throw new Error('LIMIT_EXCEEDED_ALL');
+                                }
+                                throw errFlash;
+                            }
+                        } else {
+                            throw new Error('LIMIT_EXCEEDED_ALL');
+                        }
                     } else { throw err; }
                 }
 
@@ -1199,20 +1331,24 @@
                     let topNome = sanitizeText(document.getElementById('fc-top').value) || 'Geral';
                     box.innerHTML = '';
                     
+                    let htmlFCResult = '';
                     json.forEach(c => {
                         let bId = gerarId();
-                        box.innerHTML += `
+                        let itemHtml = `
                         <div class="pasta-header" onclick="this.nextElementSibling.classList.toggle('aberta')" style="border-left:4px solid var(--brand-warning); cursor:pointer; margin-bottom:0;">
                             <span style="font-weight:700; color:var(--text-main);">❓ ${sanitizeText(c.f)} <span style="font-size:0.75rem; font-weight:normal; opacity:0.8;">(📌 ${c.nivel || 'Geral'})</span></span>
                         </div>
                         <div class="pasta-body" style="background:var(--bg-card); border:1px solid var(--border-color); border-top:none; margin-top:0; border-radius: 0 0 var(--radius-sm) var(--radius-sm);">
                             <div style="margin-bottom:12px; color:var(--text-main); font-size:1rem; padding-top:8px;">💡 Resposta: ${sanitizeText(c.v)}</div>
                             <div style="display:flex; gap:10px; flex-wrap:wrap;">
-                                <button id="${bId}" class="btn-outline" style="width:auto; padding:6px 12px; font-size:0.8rem;" onclick="salvarFc('${matNome}', '${topNome}', '${sanitizeText(c.f).replace(/'/g,"\\'")} - ${sanitizeText(c.v).replace(/'/g,"\\'")}', this)">💾 Salvar no Caderno</button>
+                                <button id="${bId}" class="btn-outline" style="width:auto; padding:6px 12px; font-size:0.8rem;" onclick="salvarFc('${matNome}', '${topNome}', '${sanitizeText(c.f).replace(/'/g,"\\'")} - ${sanitizeText(c.v).replace(/'/g,"\\йтесь")}', this)">💾 Salvar no Caderno</button>
                             </div>
                         </div>
                         <div style="margin-bottom:12px;"></div>`;
+                        box.innerHTML += itemHtml;
+                        htmlFCResult += itemHtml;
                     });
+                    salvarFiltroHistorico('flashcards', {mat: matNome, top: topNome}, `${matNome} - ${topNome}`, htmlFCResult);
                 } else {
                     let l = document.getElementById('load-ia'); if(l) l.remove();
                     
@@ -1261,33 +1397,44 @@
                             htmlQ += `<div style="background:var(--bg-input); padding:16px; border-radius:var(--radius-sm); border:1px solid var(--border-color);">
                                 <div style="font-weight:700; margin-bottom:10px; font-size:0.95rem;">🎯 Questão ${qIdx+1}</div>
                                 <div style="margin-bottom:12px; font-size:0.95rem; line-height:1.5;">${textoEnunciado || sanitizeText(bloco)}</div>
-                                <div style="display:flex; flex-direction:column; gap:4px; margin-bottom:12px;">${altHtml}</div>
-                                ${textoExplicacao ? `<div style="font-size:0.85rem; color:var(--text-muted); margin-top:8px; padding-top:8px; border-top:1px solid var(--border-color);">💡 Comentário: ${textoExplicacao}</div>` : ''}
-                                <button class="btn-primary" style="margin-top:12px; width:auto; padding:6px 14px; font-size:0.8rem;" onclick="enviarParaCadernoErros('Simulador IA', 'Questões', ${JSON.stringify(bloco).replace(/"/g, '&quot;')})">📚 Enviar Questão para Caderno de Erros</button>
+                                <div style="display:flex; flex-direction:column; gap:4px; margin-bottom:12px;" class="bloco-alternativas-qst">${altHtml}</div>
+                                <div class="bloco-explicacao-qst" style="display:none; margin-top:8px;">
+                                    ${textoExplicacao ? `<div style="font-size:0.85rem; color:var(--text-muted); padding-top:8px; border-top:1px solid var(--border-color);">💡 Comentário: ${textoExplicacao}</div>` : ''}
+                                    <button class="btn-primary" style="margin-top:12px; width:auto; padding:6px 14px; font-size:0.8rem;" onclick="enviarParaCadernoErros('Simulador IA', 'Questões', ${JSON.stringify(bloco).replace(/"/g, '&quot;')})">📚 Enviar Questão para Caderno de Erros</button>
+                                </div>
                             </div>`;
                         });
 
                         htmlQ += `</div>`;
-                        box.innerHTML += `<div class="msg msg-a" style="max-width:100%; width:100%;">${htmlQ}</div>`;
+                        let finalQstHtml = `<div class="msg msg-a" style="max-width:100%; width:100%;">${htmlQ}</div>`;
+                        box.innerHTML += finalQstHtml;
+                        let temaStr = document.getElementById('ia-qts-tema').value || 'Questões IA';
+                        salvarFiltroHistorico('questoes', {tema: temaStr}, temaStr, htmlQ);
                     } else {
                         let rawHtml = txtF.replace(/\n/g, '<br>');
                         let lHtml = sanitizeText(rawHtml);
-                        box.innerHTML += `<div class="msg msg-a" style="max-width:100%; width:100%;">${lHtml}<br><br><button class="btn-primary" style="width:auto; padding:8px 16px; font-size:0.85rem;" onclick="enviarParaCadernoErros('Chat Especialista', 'Dúvida IA', ${JSON.stringify(txtF).replace(/"/g, '&quot;')})">📚 Enviar Resposta para Caderno de Erros</button></div>`;
+                        let finalChatHtml = `${lHtml}<br><br><button class="btn-outline" style="width:auto; padding:6px 12px; font-size:0.8rem; margin-right:8px;" onclick="executarIA('chat', 'Aprofunde mais a resposta anterior detalhando as bases teóricas, doutrina e jurisprudência aplicável.', true)">🔍 Aprofundar Resposta</button><button class="btn-primary" style="width:auto; padding:8px 16px; font-size:0.85rem;" onclick="enviarParaCadernoErros('Chat Especialista', 'Dúvida IA', ${JSON.stringify(txtF).replace(/"/g, '&quot;')})">📚 Enviar Resposta para Caderno de Erros</button>`;
+                        box.innerHTML += `<div class="msg msg-a" style="max-width:100%; width:100%;">${finalChatHtml}</div>`;
+                        salvarFiltroHistorico('chat', p, p.length > 30 ? p.substring(0, 30) + '...' : p, finalChatHtml);
                     }
                     box.scrollTop = box.scrollHeight;
                 }
             } catch(e) { 
                 if(loadInt) clearInterval(loadInt);
                 let l = document.getElementById('load-ia'); if(l) l.remove(); 
-                let msgErro = e.message === 'QUOTA_EXCEEDED' ? 'Cota de IA esgotada. Tente amanhã.' : e.message;
-                if(box) box.innerHTML += `<div class="msg msg-a" style="color:var(--brand-danger);">Erro: ${msgErro}</div>`; 
+                let msgErro = e.message === 'LIMIT_EXCEEDED_ALL' ? 'Não foi possível responder. Limite diário de cotas atingido!' : (e.message === 'QUOTA_EXCEEDED' ? 'Cota de IA esgotada.' : e.message);
+                if(box) box.innerHTML += `<div class="msg msg-a" style="color:var(--brand-danger);">⚠️ ${msgErro}</div>`; 
             }
         }
 
         function responderQuestaoUnica(btn) {
             let container = btn.parentElement;
+            let blocoPai = container.closest('.bloco-alternativas-qst').parentElement;
+            let blocoExpl = blocoPai.querySelector('.bloco-explicacao-qst');
             let botoes = container.querySelectorAll('.alt-btn');
             botoes.forEach(b => b.disabled = true);
+
+            if(blocoExpl) blocoExpl.style.display = 'block';
 
             let isCorreta = btn.getAttribute('data-correta') === '1';
             if(isCorreta) {
