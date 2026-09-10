@@ -125,7 +125,7 @@
         
         <div style="border-top: 1px solid var(--border-color); margin-top: 10px; padding-top: 10px; display: flex; flex-direction: column; gap: 6px;">
             <button class="nav-btn" onclick="irTela('conta', event)">👤 Minha Conta</button>
-            <button class="nav-btn" onclick="document.getElementById('modal-apikey').style.display='flex'">🔑 API Key</button>
+            <button class="nav-btn" onclick="document.getElementById('modal-apikey').style.display='flex'">🔑 <span style="color:var(--brand-danger); font-weight:700;">X</span> API Key</button>
             <button class="nav-btn" onclick="alternarTema()">🌓 Claro / Escuro</button>
             <button class="nav-btn" onclick="firebase.auth().signOut()" style="color:var(--brand-danger);">🚪 Sair</button>
         </div>
@@ -1222,7 +1222,6 @@
                 return requerComplexidadeQ ? "gemini-3.1-pro-preview" : "gemini-3.8-flash";
             }
             
-            // Avaliação baseada puramente no contexto e intenção (sem tamanho de caracteres)
             let indicadoresProfundidade = [
                 'jurisprudência', 'doutrina', 'stf', 'stj', 'informativo', 'tese', 
                 'divergência', 'fundamentação detalhada', 'análise aprofundada', 
@@ -1314,7 +1313,7 @@
 
                 async function chamarGemini(modelo) {
                     const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelo}:generateContent?key=${k}`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ contents:[{parts:[{text: `${baseSys}\n\n${ctx ? "CONTEXTO / FONTES:\n"+ctx : ""}\n\nPROMPT DO USUÁRIO: ${p}`}]}], tools:[{googleSearch:{}}] }) });
-                    if(res.status === 429) throw new Error('QUOTA_EXCEEDED');
+                    if(res.status === 429 || res.status === 503) throw new Error('QUOTA_EXCEEDED');
                     const data = await res.json(); if(data.error) throw new Error(data.error.message); return data.candidates[0].content.parts[0].text;
                 }
 
@@ -1359,7 +1358,7 @@
                         <div class="pasta-body" style="background:var(--bg-card); border:1px solid var(--border-color); border-top:none; margin-top:0; border-radius: 0 0 var(--radius-sm) var(--radius-sm);">
                             <div style="margin-bottom:12px; color:var(--text-main); font-size:1rem; padding-top:8px;">💡 Resposta: ${sanitizeText(c.v)}</div>
                             <div style="display:flex; gap:10px; flex-wrap:wrap;">
-                                <button id="${bId}" class="btn-outline" style="width:auto; padding:6px 12px; font-size:0.8rem;" onclick="salvarFc('${matNome}', '${topNome}', '${sanitizeText(c.f).replace(/'/g,"\\'")} - ${sanitizeText(c.v).replace(/'/g,"\\'")}', this)">💾 Salvar no Caderno</button>
+                                <button id="${bId}" class="btn-outline" style="width:auto; padding:6px 12px; font-size:0.8rem;" onclick="salvarFc('${matNome}', '${topNome}', '${sanitizeText(c.f).replace(/'/g,"\\'")} - ${sanitizeText(c.v).replace(/'/g,"\\йтесь")}', this)">💾 Salvar no Caderno</button>
                             </div>
                         </div>
                         <div style="margin-bottom:12px;"></div>`;
