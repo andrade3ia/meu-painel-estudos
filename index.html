@@ -1212,11 +1212,31 @@
 
         function definirModeloIdeal(prompt, tipo, querAprofundar = false) {
             if(querAprofundar) return "gemini-3.1-pro-preview";
-            if(tipo === 'questoes' || tipo === 'edital') return "gemini-3.1-pro-preview";
+            if(tipo === 'edital') return "gemini-3.1-pro-preview";
             if(tipo === 'flashcards') return "gemini-3.8-flash";
+            
             let pLow = prompt.toLowerCase();
-            let palavrasComplexas = ['jurisprudência', 'aprofunde', 'recurso', 'discursiva', 'analise', 'explique detalhadamente', 'diferença entre', 'teoria', 'stf', 'stj', 'resolva', 'fgv', 'cebraspe', 'fcc', 'vunesp', 'fundamentação', 'doutrina'];
-            if(prompt.length > 200 || palavrasComplexas.some(p => pLow.includes(p))) { return "gemini-3.1-pro-preview"; }
+            
+            if(tipo === 'questoes') {
+                let requerComplexidadeQ = ['jurisprudência', 'stf', 'stj', 'informativo', 'tese repetitiva', 'divergência doutrinária', 'caso concreto complexo'].some(w => pLow.includes(w));
+                return requerComplexidadeQ ? "gemini-3.1-pro-preview" : "gemini-3.8-flash";
+            }
+            
+            // Avaliação baseada puramente no contexto e intenção (sem tamanho de caracteres)
+            let indicadoresProfundidade = [
+                'jurisprudência', 'doutrina', 'stf', 'stj', 'informativo', 'tese', 
+                'divergência', 'fundamentação detalhada', 'análise aprofundada', 
+                'distinção entre', 'recurso especial', 'recurso extraordinário', 'controle de constitucionalidade complexo'
+            ];
+            let exigeProfundidade = indicadoresProfundidade.some(termo => pLow.includes(termo));
+            
+            let historicoRecente = dbData.iaHistorico.slice(-3).join(' ').toLowerCase();
+            let alunoBuscaProfundidade = ['discursiva', 'fase oral', 'magistratura', 'procuradoria', 'delegado'].some(w => historicoRecente.includes(w));
+
+            if(exigeProfundidade || (alunoBuscaProfundidade && pLow.includes('aprofundar'))) {
+                return "gemini-3.1-pro-preview";
+            }
+            
             return "gemini-3.8-flash";
         }
 
@@ -1233,7 +1253,6 @@
                 let tipoQVal = document.getElementById('ia-tipo-q').value;
                 let instrucaoTipoQ = tipoQVal === 'ce' ? "Formato estrito Certo / Errado (C/E)." : (tipoQVal === 'ambas' ? "Misture questões de múltipla escolha e Certo/Errado." : "Múltipla escolha.");
                 
-                // Chat / Student info check for 4 or 5 alternatives
                 let numAlts = 5;
                 let historicoTexto = dbData.iaHistorico.join(' ').toLowerCase();
                 if(historicoTexto.includes('4 alternativas') || historicoTexto.includes('banca com 4')) numAlts = 4;
@@ -1269,7 +1288,6 @@
             let modeloAtual = definirModeloIdeal(p, tipo, querAprofundar);
             let loadInt = null;
 
-            // Roteamento de modelos e fallback de cota diária
             let todayStr = new Date().toDateString();
             let lastQuotaDate = localStorage.getItem('pruma_quota_date') || '';
             if(lastQuotaDate !== todayStr) {
@@ -1341,7 +1359,7 @@
                         <div class="pasta-body" style="background:var(--bg-card); border:1px solid var(--border-color); border-top:none; margin-top:0; border-radius: 0 0 var(--radius-sm) var(--radius-sm);">
                             <div style="margin-bottom:12px; color:var(--text-main); font-size:1rem; padding-top:8px;">💡 Resposta: ${sanitizeText(c.v)}</div>
                             <div style="display:flex; gap:10px; flex-wrap:wrap;">
-                                <button id="${bId}" class="btn-outline" style="width:auto; padding:6px 12px; font-size:0.8rem;" onclick="salvarFc('${matNome}', '${topNome}', '${sanitizeText(c.f).replace(/'/g,"\\'")} - ${sanitizeText(c.v).replace(/'/g,"\\йтесь")}', this)">💾 Salvar no Caderno</button>
+                                <button id="${bId}" class="btn-outline" style="width:auto; padding:6px 12px; font-size:0.8rem;" onclick="salvarFc('${matNome}', '${topNome}', '${sanitizeText(c.f).replace(/'/g,"\\'")} - ${sanitizeText(c.v).replace(/'/g,"\\'")}', this)">💾 Salvar no Caderno</button>
                             </div>
                         </div>
                         <div style="margin-bottom:12px;"></div>`;
@@ -1472,3 +1490,4 @@
     </script>
 </body>
 </html>
+
