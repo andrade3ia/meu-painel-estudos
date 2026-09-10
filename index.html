@@ -380,10 +380,10 @@
                         <!-- Sub: Chat -->
                         <div id="subia-chat">
                             <div class="chat-box" id="box-chat">
-                                <div class="msg msg-a"><strong>PRUMA:</strong> Como a PRUMA IA pode te ajudar?</div>
+                                <div class="msg msg-a">Como a PRUMA IA pode te ajudar?</div>
                             </div>
                             <div style="display:flex; gap:12px; flex-wrap:wrap;">
-                                <textarea id="inp-chat" placeholder="Digite sua dúvida de estudo ou mencione uma banca (ex: FGV, Cebraspe)..." rows="2" style="margin:0; resize:none; flex:1; min-width:200px;"></textarea>
+                                <textarea id="inp-chat" placeholder="Digite sua dúvida..." rows="2" style="margin:0; resize:none; flex:1; min-width:200px;"></textarea>
                                 <button class="btn-primary" onclick="executarIA('chat')" style="width:120px;">Enviar</button>
                             </div>
                         </div>
@@ -391,8 +391,23 @@
                         <!-- Sub: Simulador -->
                         <div id="subia-simulador" style="display:none;">
                             <div style="display:flex; gap:16px; margin-bottom:16px; flex-wrap:wrap;">
-                                <input type="number" id="ia-qts-num" value="5" min="1" max="20" style="width:90px; margin:0;" title="Nº de Questões">
-                                <input type="text" id="ia-qts-tema" placeholder="Tema específico ou Banca (ex: FGV Direito Administrativo)" style="flex:1; margin:0; min-width:200px;">
+                                <div style="flex:1; min-width:120px;">
+                                    <label style="font-size:0.75rem; font-weight:700; color:var(--text-muted); display:block; margin-bottom:4px;">QUANTIDADE</label>
+                                    <input type="number" id="ia-qts-num" value="5" min="1" max="20" style="margin:0;" title="Nº de Questões">
+                                </div>
+                                <div style="flex:2; min-width:200px;">
+                                    <label style="font-size:0.75rem; font-weight:700; color:var(--text-muted); display:block; margin-bottom:4px;">TEMA / BANCA</label>
+                                    <input type="text" id="ia-qts-tema" placeholder="Ex: FGV Direito Administrativo" style="margin:0;">
+                                </div>
+                            </div>
+                            <!-- Seletor de Nível Limpo e Flexível -->
+                            <div style="margin-bottom:16px; background:var(--bg-input); padding:14px; border-radius:var(--radius-sm);">
+                                <label style="font-size:0.75rem; font-weight:700; color:var(--text-muted); display:block; margin-bottom:8px;">NÍVEL DE DIFICULDADE (Selecione um, dois ou todos)</label>
+                                <div style="display:flex; gap:16px; flex-wrap:wrap;">
+                                    <label style="display:flex; align-items:center; gap:6px; cursor:pointer; font-weight:500;"><input type="checkbox" class="chk-nivel-q" value="Fácil" checked> Fácil</label>
+                                    <label style="display:flex; align-items:center; gap:6px; cursor:pointer; font-weight:500;"><input type="checkbox" class="chk-nivel-q" value="Médio" checked> Médio</label>
+                                    <label style="display:flex; align-items:center; gap:6px; cursor:pointer; font-weight:500;"><input type="checkbox" class="chk-nivel-q" value="Difícil" checked> Difícil</label>
+                                </div>
                             </div>
                             <button class="btn-primary" onclick="executarIA('questoes')">Gerar Bateria de Questões</button>
                             <div class="chat-box" id="box-qts" style="margin-top:16px; display:none; height:auto; min-height:200px;"></div>
@@ -400,8 +415,12 @@
 
                         <!-- Sub: Flashcards -->
                         <div id="subia-flashcards" style="display:none;">
-                            <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:16px;">⚡ Escolha abaixo por Assunto/Tópico e/ou Fonte para gerar seus flashcards cirúrgicos de alta retenção.</p>
+                            <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:16px;">⚡ Escolha abaixo a quantidade, matéria, assunto e/ou fonte para gerar seus flashcards cirúrgicos.</p>
                             <div style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:16px; background:var(--bg-input); padding:16px; border-radius:var(--radius-sm);">
+                                <div style="width:110px; min-width:110px;">
+                                    <label style="font-size:0.75rem; font-weight:700; color:var(--text-muted); display:block; margin-bottom:4px;">QUANTIDADE</label>
+                                    <input type="number" id="fc-num" value="5" min="1" max="30" style="margin:0;">
+                                </div>
                                 <div style="flex:1; min-width:130px;">
                                     <label style="font-size:0.75rem; font-weight:700; color:var(--text-muted); display:block; margin-bottom:4px;">MATÉRIA</label>
                                     <input type="text" id="fc-mat" placeholder="Ex: Direito Constitucional" list="lista-materias-dl" style="margin:0;" onclick="try{this.showPicker()}catch(e){}">
@@ -413,6 +432,15 @@
                                 <div style="flex:1; min-width:130px;">
                                     <label style="font-size:0.75rem; font-weight:700; color:var(--text-muted); display:block; margin-bottom:4px;">FONTE (OPCIONAL)</label>
                                     <input type="text" id="fc-fonte" placeholder="Selecione da biblioteca..." list="dl-ia-fontes" style="margin:0;" onclick="try{this.showPicker()}catch(e){}">
+                                </div>
+                            </div>
+                            <!-- Seletor de Nível Flashcards -->
+                            <div style="margin-bottom:16px; background:var(--bg-input); padding:14px; border-radius:var(--radius-sm);">
+                                <label style="font-size:0.75rem; font-weight:700; color:var(--text-muted); display:block; margin-bottom:8px;">NÍVEL DE DIFICULDADE (Selecione um, dois ou todos)</label>
+                                <div style="display:flex; gap:16px; flex-wrap:wrap;">
+                                    <label style="display:flex; align-items:center; gap:6px; cursor:pointer; font-weight:500;"><input type="checkbox" class="chk-nivel-fc" value="Fácil" checked> Fácil</label>
+                                    <label style="display:flex; align-items:center; gap:6px; cursor:pointer; font-weight:500;"><input type="checkbox" class="chk-nivel-fc" value="Médio" checked> Médio</label>
+                                    <label style="display:flex; align-items:center; gap:6px; cursor:pointer; font-weight:500;"><input type="checkbox" class="chk-nivel-fc" value="Difícil" checked> Difícil</label>
                                 </div>
                             </div>
                             <button class="btn-primary" onclick="executarIA('flashcards')">Gerar Flashcards Automáticos</button>
@@ -1064,26 +1092,27 @@
             return ctx;
         }
 
-        function obterPromptDoSistema(tipo, promptUsuario = "") {
+        function obterPromptDoSistema(tipo, promptUsuario = "", isFacil = false) {
             let pL = promptUsuario.toLowerCase();
             let bancaDetectada = "";
-            if(pL.includes('cebraspe') || pL.includes('cespe')) bancaDetectada = "CEBRASPE (foco rigoroso em assertivas Certo/Errado, pegadinhas textuais de interpretação estrita, doutrina e jurisprudência pacificada do STF/STJ)";
-            else if(pL.includes('fgv')) bancaDetectada = "FGV (foco em casos práticos complexos, enunciados longos e interpretativos, pegadinhas sutis e raciocínio aplicado)";
-            else if(pL.includes('fcc')) bancaDetectada = "FCC (foco total na literalidade da lei, jurisprudência sumulada e memorização exata de prazos/competências)";
-            else if(pL.includes('vunesp')) bancaDetectada = "VUNESP (foco direto na letra da lei, objetividade e menor incidência de pegadinhas complexas)";
+            if(pL.includes('cebraspe') || pL.includes('cespe')) bancaDetectada = "CEBRASPE (foco rigoroso em assertivas Certo/Errado)";
+            else if(pL.includes('fgv')) bancaDetectada = "FGV (foco em casos práticos e enunciados interpretativos)";
+            else if(pL.includes('fcc')) bancaDetectada = "FCC (foco total na literalidade da lei)";
+            else if(pL.includes('vunesp')) bancaDetectada = "VUNESP (foco direto na letra da lei e objetividade)";
 
-            let bancaInstrucao = bancaDetectada ? `\n\n🎯 BANCA EXAMINADORA: Adapte rigorosamente o tom, o estilo de cobrança e as exigências da banca ${bancaDetectada}.` : "";
+            let bancaInstrucao = bancaDetectada ? `\n\n🎯 BANCA: Adapte ao estilo da banca ${bancaDetectada}.` : "";
+            let profundidadeInstrucao = isFacil ? `\n\n💡 PERGUNTA SIMPLES DETECTADA: A questão/pergunta é simples. Seja extremamente conciso, vá direto à explicação essencial sem aprofundamentos desnecessários ou contextos longos.` : "";
 
-            const instrucaoFormatacao = `\n\n📌 REGRA DE FORMATAÇÃO RIGOROSA: 
-- NUNCA use asteriscos triplos (###), asteriscos duplos (***) ou traços excessivos (---) para cabeçalhos ou divisões.
-- Utilize emojis chamativos (📌, ⚖️, 💡, 🚀, 📖, ⚠️, ✅, 🎯) e setas (➔, ➡) para categorizar, dividir seções e facilitar a leitura rápida pelo aluno.`;
+            const instrucaoFormatacao = `\n\n📌 REGRA RIGOROSA DE FORMATAÇÃO: 
+- NUNCA use asteriscos triplos (###), asteriscos duplos (***) ou traços excessivos (---).
+- OBRIGATÓRIO: Emojis, setas (➔, ➡) e indicadores DEVEM iniciar sempre novas linhas (em início de linha). NUNCA coloque emojis ou setas perdidos no meio de frases ou emendados com linhas anteriores. Mantenha o texto perfeitamente alinhado e limpo.`;
 
-            const basePersona = "Você é a PRUMA IA, mentora especialista em concursos públicos. VÁ DIRETO AO PONTO. Sem saudações longas, sem introduções vazias, sem 'encheção de linguiça'. Comece imediatamente respondendo com precisão cirúrgica e aproveitamento máximo de tokens." + instrucaoFormatacao;
+            const basePersona = "Você é a PRUMA IA, mentora especialista em concursos. VÁ DIRETO AO PONTO. Sem saudações longas, sem introduções vazias, sem motivação excessiva. Responda com máxima concisão e precisão técnica." + profundidadeInstrucao + instrucaoFormatacao;
             
             const prompts = {
-                chat: `${basePersona} Responda com clareza, objetividade e fundamentação técnica de alto nível.${bancaInstrucao}`,
-                questoes: `${basePersona} Atue como a banca examinadora mencionada. Crie questões inéditas com altíssimo rigor técnico, indique o nível de dificuldade (Fácil, Intermediário ou Avançado) no topo de cada questão, e forneça gabarito comentado destrinchando o erro e o acerto de cada alternativa.${bancaInstrucao}`,
-                flashcards: `${basePersona} Atue como especialista em neurociência e repetição espaçada. Extraia os pontos vitais e decorebas em formato de pares cirúrgicos de pergunta e resposta de alta retenção, indicando o nível (Fácil, Intermediário ou Avançado).`
+                chat: `${basePersona} Explique com clareza cirúrgica e objetividade.${bancaInstrucao}`,
+                questoes: `${basePersona} Crie questões inéditas com rigor técnico, indicando o nível de dificuldade no início de cada linha, e gabarito comentado objetivo.${bancaInstrucao}`,
+                flashcards: `${basePersona} Crie flashcards cirúrgicos de alta retenção no formato estrito solicitado, indicando o nível no início.`
             };
             return prompts[tipo] || basePersona;
         }
@@ -1101,7 +1130,23 @@
             let k = localStorage.getItem('pruma_apikey'); if(!k) return alert("Configure a API Key na aba lateral.");
             let p = "", box = null; let ctx = extrairContextoGeral();
 
-            if(tipo === 'chat') {
+            let niveisSelecionados = [];
+            if(tipo === 'questoes') {
+                document.querySelectorAll('.chk-nivel-q:checked').forEach(el => niveisSelecionados.push(el.value));
+                if(niveisSelecionados.length === 0) return alert("Selecione ao menos um nível de dificuldade.");
+                let qtd = document.getElementById('ia-qts-num').value || '5';
+                let t = document.getElementById('ia-qts-tema').value || 'o contexto geral';
+                p = `Crie exatamente ${qtd} questões inéditas sobre: ${t}. Níveis permitidos: ${niveisSelecionados.join(', ')}. Cada questão deve iniciar com o nível correspondente, as alternativas A, B, C, D, E, indicação da correta e comentário conciso.`;
+                box = document.getElementById('box-qts'); box.style.display='flex'; box.innerHTML='';
+            } else if(tipo === 'flashcards') {
+                document.querySelectorAll('.chk-nivel-fc:checked').forEach(el => niveisSelecionados.push(el.value));
+                if(niveisSelecionados.length === 0) return alert("Selecione ao menos um nível de dificuldade.");
+                let qtd = document.getElementById('fc-num').value || '5';
+                let m = sanitizeText(document.getElementById('fc-mat').value) || 'Geral';
+                let tp = sanitizeText(document.getElementById('fc-top').value) || 'Assunto Geral';
+                p = `Gere exatamente ${qtd} flashcards de alta retenção para a Matéria: "${m}" e Tópico: "${tp}". Níveis permitidos: ${niveisSelecionados.join(', ')}. Retorne EXATAMENTE UM JSON ARRAY PURO: [{"f":"Pergunta","v":"Resposta","nivel":"Fácil/Médio/Difícil"}]. Sem markdowns como \`\`\`.`;
+                box = document.getElementById('box-fc'); box.style.display='block'; box.innerHTML='';
+            } else if(tipo === 'chat') {
                 p = document.getElementById('inp-chat').value.trim(); if(!p) return;
                 box = document.getElementById('box-chat'); 
                 box.innerHTML += `<div class="msg msg-u">${sanitizeText(p)}</div>`; 
@@ -1112,20 +1157,11 @@
                 if(isRevelador || p.length > 80) {
                     dbData.iaHistorico.push(p); if(dbData.iaHistorico.length>10) dbData.iaHistorico.shift(); refDb.child('ia_historico').set(dbData.iaHistorico);
                 }
-            } else if(tipo === 'questoes') {
-                let t = document.getElementById('ia-qts-tema').value || 'o contexto geral de estudos';
-                p = `Crie exatamente ${document.getElementById('ia-qts-num').value} questões inéditas de nível variado sobre: ${t}. Cada questão deve conter o nível de dificuldade explicitado (Fácil, Intermediário ou Avançado), as alternativas (A, B, C, D, E), a indicação clara de qual é a correta e o gabarito comentado.`;
-                box = document.getElementById('box-qts'); box.style.display='flex'; box.innerHTML='';
-            } else if(tipo === 'flashcards') {
-                let m = sanitizeText(document.getElementById('fc-mat').value) || 'Geral';
-                let tp = sanitizeText(document.getElementById('fc-top').value) || 'Assunto Geral';
-                p = `Gere flashcards cirúrgicos de alta retenção para a Matéria: "${m}" e Tópico/Assunto: "${tp}". Retorne EXATAMENTE UM JSON ARRAY PURO: [{"f":"Pergunta","v":"Resposta","nivel":"Fácil/Intermediário/Advanced"}]. Sem markdowns como \`\`\`.`;
-                box = document.getElementById('box-fc'); box.style.display='block'; box.innerHTML='';
             }
 
-            let baseSys = obterPromptDoSistema(tipo, p);
+            let isPerguntaFacil = p.length < 50 && !p.toLowerCase().includes('jurisprudência') && !p.toLowerCase().includes('aprofundado');
+            let baseSys = obterPromptDoSistema(tipo, p, isPerguntaFacil);
             let modeloAtual = definirModeloIdeal(p, tipo);
-            let tentouFallback = false;
             let loadInt = null;
 
             try {
@@ -1133,11 +1169,11 @@
                     box.innerHTML += `<div class="msg msg-a" id="load-ia"><span id="load-ia-text">Analisando...</span> ⏳</div>`; 
                     box.scrollTop = box.scrollHeight; 
                     
-                    let loadingMsgs = ["Analisando o padrão da banca...", "Cruzando dados com a bibliografia...", "Aplicando técnicas de estudo ativo...", "Estruturando resposta direta...", "Verificando jurisprudências..."];
+                    let loadingMsgs = ["Analisando...", "Cruzando dados...", "Buscando precisão...", "Formatando resposta direta..."];
                     loadInt = setInterval(() => { let msgEl = document.getElementById('load-ia-text'); if(msgEl) msgEl.textContent = loadingMsgs[Math.floor(Math.random() * loadingMsgs.length)]; }, 2500);
                 } else { 
                     box.innerHTML = `<div id="load-ia" style="color:var(--brand-primary); font-weight:600;"><span id="load-ia-text">Construindo flashcards...</span> ⏳</div>`; 
-                    let fcMsgs = ["Lendo os parâmetros...", "Extraindo conceitos vitais...", "Isolando decorebas...", "Montando cartões..."];
+                    let fcMsgs = ["Lendo parâmetros...", "Gerando cartões...", "Montando estrutura..."];
                     loadInt = setInterval(() => { let msgEl = document.getElementById('load-ia-text'); if(msgEl) msgEl.textContent = fcMsgs[Math.floor(Math.random() * fcMsgs.length)]; }, 2000);
                 }
 
@@ -1151,8 +1187,6 @@
                 try { txtF = await chamarGemini(modeloAtual); } 
                 catch(err) {
                     if(err.message === 'QUOTA_EXCEEDED' && modeloAtual.includes('pro')) {
-                        tentouFallback = true;
-                        let l = document.getElementById('load-ia-text'); if(l) l.innerHTML = `⚠️ Cota avançada excedida. Redirecionando para o motor Rápido...`;
                         modeloAtual = "gemini-3.8-flash"; txtF = await chamarGemini(modeloAtual); 
                     } else { throw err; }
                 }
@@ -1163,18 +1197,16 @@
                     let json = JSON.parse(txtF.replace(/```json/g,'').replace(/```/g,'').match(/\[.*\]/s)[0]);
                     let matNome = sanitizeText(document.getElementById('fc-mat').value) || 'Flashcards IA';
                     let topNome = sanitizeText(document.getElementById('fc-top').value) || 'Geral';
-                    box.innerHTML = tentouFallback ? '<div style="color:var(--brand-warning); font-size:0.8rem; margin-bottom:10px;">⚠️ Cota Pro excedida. Usando Flash.</div>' : '';
+                    box.innerHTML = '';
                     
                     json.forEach(c => {
                         let bId = gerarId();
-                        let nivelBadge = c.nivel ? `🔹 Nível: ${c.nivel}` : '';
-                        let conteudoCard = `[Flashcard] Pergunta: ${c.f} | Resposta: ${c.v}`;
                         box.innerHTML += `
                         <div class="pasta-header" onclick="this.nextElementSibling.classList.toggle('aberta')" style="border-left:4px solid var(--brand-warning); cursor:pointer; margin-bottom:0;">
-                            <span style="font-weight:700; color:var(--text-main);">❓ ${sanitizeText(c.f)} <span style="font-size:0.75rem; font-weight:normal; opacity:0.8;">(${c.nivel || 'Geral'})</span></span>
+                            <span style="font-weight:700; color:var(--text-main);">❓ ${sanitizeText(c.f)} <span style="font-size:0.75rem; font-weight:normal; opacity:0.8;">(📌 ${c.nivel || 'Geral'})</span></span>
                         </div>
                         <div class="pasta-body" style="background:var(--bg-card); border:1px solid var(--border-color); border-top:none; margin-top:0; border-radius: 0 0 var(--radius-sm) var(--radius-sm);">
-                            <div style="margin-bottom:12px; color:var(--text-main); font-size:1rem; padding-top:8px;"><strong>💡 Resposta:</strong> ${sanitizeText(c.v)}</div>
+                            <div style="margin-bottom:12px; color:var(--text-main); font-size:1rem; padding-top:8px;">💡 Resposta: ${sanitizeText(c.v)}</div>
                             <div style="display:flex; gap:10px; flex-wrap:wrap;">
                                 <button id="${bId}" class="btn-outline" style="width:auto; padding:6px 12px; font-size:0.8rem;" onclick="salvarFc('${matNome}', '${topNome}', '${sanitizeText(c.f).replace(/'/g,"\\'")} - ${sanitizeText(c.v).replace(/'/g,"\\'")}', this)">💾 Salvar no Caderno</button>
                             </div>
@@ -1185,19 +1217,12 @@
                     let l = document.getElementById('load-ia'); if(l) l.remove();
                     
                     if(tipo === 'questoes') {
-                        // Renderização interativa de questões com clique único e feedback vermelho/verde
-                        let qContainerId = gerarId();
-                        let htmlQ = `<div id="${qContainerId}" style="display:flex; flex-direction:column; gap:20px;">`;
-                        
-                        // Dividir o texto em blocos de questões se possível
+                        let htmlQ = `<div style="display:flex; flex-direction:column; gap:20px;">`;
                         let blocos = txtF.split(/(?=Questão|\d+[\.\)]\s|Q\d+)/i);
                         if(blocos.length <= 1) blocos = [txtF];
 
                         blocos.forEach((bloco, qIdx) => {
                             if(!bloco.trim()) return;
-                            let bId = gerarId();
-                            
-                            // Tentar extrair alternativas (A), b), C), etc.)
                             let linhas = bloco.split('\n');
                             let enunciado = [];
                             let alternativas = [];
@@ -1220,13 +1245,11 @@
                             let textoEnunciado = sanitizeText(enunciado.join(' '));
                             let textoExplicacao = sanitizeText(explicacao.join(' '));
 
-                            // Identificar resposta correta de forma heurística (se contiver [CORRETA] ou gabarito na IA)
                             let altHtml = '';
                             if(alternativas.length >= 2) {
                                 alternativas.forEach((alt, aIdx) => {
                                     let letra = alt.charAt(0).toUpperCase();
                                     let isCorreta = alt.includes('CORRETA') || /gabarito.*\b[a-eA-E]\b/i.test(txtF) && new RegExp(`gabarito.*\\b${letra}\\b`, 'i').test(txtF);
-                                    // Fallback seguro se não identificado explicitamente: assume a primeira ou marca inteligente
                                     if(aIdx === 0 && !txtF.includes('CORRETA')) isCorreta = true; 
 
                                     altHtml += `<button class="btn-outline alt-btn" data-correta="${isCorreta ? '1' : '0'}" onclick="responderQuestaoUnica(this)" style="text-align:left; padding:10px 14px; margin:4px 0; border-radius:8px; font-size:0.9rem; width:100%;">${sanitizeText(alt)}</button>`;
@@ -1239,19 +1262,17 @@
                                 <div style="font-weight:700; margin-bottom:10px; font-size:0.95rem;">🎯 Questão ${qIdx+1}</div>
                                 <div style="margin-bottom:12px; font-size:0.95rem; line-height:1.5;">${textoEnunciado || sanitizeText(bloco)}</div>
                                 <div style="display:flex; flex-direction:column; gap:4px; margin-bottom:12px;">${altHtml}</div>
-                                ${textoExplicacao ? `<div style="font-size:0.85rem; color:var(--text-muted); margin-top:8px; padding-top:8px; border-top:1px solid var(--border-color);">💡 <strong>Comentário:</strong> ${textoExplicacao}</div>` : ''}
+                                ${textoExplicacao ? `<div style="font-size:0.85rem; color:var(--text-muted); margin-top:8px; padding-top:8px; border-top:1px solid var(--border-color);">💡 Comentário: ${textoExplicacao}</div>` : ''}
                                 <button class="btn-primary" style="margin-top:12px; width:auto; padding:6px 14px; font-size:0.8rem;" onclick="enviarParaCadernoErros('Simulador IA', 'Questões', ${JSON.stringify(bloco).replace(/"/g, '&quot;')})">📚 Enviar Questão para Caderno de Erros</button>
                             </div>`;
                         });
 
                         htmlQ += `</div>`;
-                        box.innerHTML += `<div class="msg msg-a" style="max-width:100%; width:100%;"><strong>PRUMA:</strong><br><br>${htmlQ}</div>`;
+                        box.innerHTML += `<div class="msg msg-a" style="max-width:100%; width:100%;">${htmlQ}</div>`;
                     } else {
-                        // Chat especialista com botão de enviar para o caderno de erros
                         let rawHtml = txtF.replace(/\n/g, '<br>');
                         let lHtml = sanitizeText(rawHtml);
-                        let idMsgUnica = gerarId();
-                        box.innerHTML += `<div class="msg msg-a" style="max-width:100%; width:100%;"><strong>PRUMA:</strong><br><br>${lHtml}<br><br><button class="btn-primary" style="width:auto; padding:8px 16px; font-size:0.85rem;" onclick="enviarParaCadernoErros('Chat Especialista', 'Dúvida IA', ${JSON.stringify(txtF).replace(/"/g, '&quot;')})">📚 Enviar Resposta para Caderno de Erros</button></div>`;
+                        box.innerHTML += `<div class="msg msg-a" style="max-width:100%; width:100%;">${lHtml}<br><br><button class="btn-primary" style="width:auto; padding:8px 16px; font-size:0.85rem;" onclick="enviarParaCadernoErros('Chat Especialista', 'Dúvida IA', ${JSON.stringify(txtF).replace(/"/g, '&quot;')})">📚 Enviar Resposta para Caderno de Erros</button></div>`;
                     }
                     box.scrollTop = box.scrollHeight;
                 }
@@ -1266,7 +1287,6 @@
         function responderQuestaoUnica(btn) {
             let container = btn.parentElement;
             let botoes = container.querySelectorAll('.alt-btn');
-            // Desativar todas as alternativas após o primeiro clique (força atenção)
             botoes.forEach(b => b.disabled = true);
 
             let isCorreta = btn.getAttribute('data-correta') === '1';
@@ -1281,7 +1301,6 @@
                 btn.style.borderColor = 'var(--brand-danger)';
                 btn.innerHTML = '❌ ' + btn.innerHTML;
                 
-                // Destacar qual era a correta
                 botoes.forEach(b => {
                     if(b.getAttribute('data-correta') === '1') {
                         b.style.background = 'rgba(52, 199, 89, 0.2)';
