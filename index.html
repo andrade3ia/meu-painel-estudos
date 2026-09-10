@@ -45,10 +45,6 @@
         .nav-btn:hover { background: var(--bg-hover); transform: translateX(2px); }
         .nav-btn.active { background: rgba(0, 122, 255, 0.12); color: var(--brand-primary); font-weight: 600; border-left: 4px solid var(--brand-primary); }
 
-        .tempo-total-box { background: linear-gradient(135deg, var(--brand-primary), #0056b3); padding: 20px; border-radius: var(--radius-md); text-align: center; margin-bottom: 16px; color: white; box-shadow: var(--shadow-md); }
-        .tempo-total-box span { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; opacity: 0.85; letter-spacing: 0.8px; }
-        .tempo-total-box strong { display: block; font-size: 1.6rem; font-weight: 700; margin-top: 4px; font-variant-numeric: tabular-nums; }
-
         .main-content { flex: 1; padding: 32px; overflow-y: auto; scroll-behavior: smooth; }
         .container-interno { max-width: 1020px; margin: 0 auto; padding-bottom: 80px; width: 100%; }
         
@@ -191,16 +187,16 @@
                             <div style="display:flex; justify-content:center; gap:8px; flex-wrap:wrap; margin-top:12px;">
                                 <button class="btn-success" onclick="iniciarCronometro()" style="flex:1; min-width:80px; padding:10px;">▶ Iniciar</button>
                                 <button class="btn-outline" style="flex:1; min-width:80px; padding:10px;" onclick="pausarCronometro()">⏸ Pausar</button>
-                                <button class="btn-outline" style="flex:1; min-width:80px; padding:10px; color:var(--brand-danger); border-color:var(--brand-danger);" onclick="reiniciarCronometro()">🔄 Zerar</button>
+                                <button id="btn-reiniciar-cron" class="btn-outline" style="flex:1; min-width:80px; padding:10px; color:var(--brand-danger); border-color:var(--brand-primary); display:none;" onclick="reiniciarCronometro()">🔄 Zerar</button>
                             </div>
                         </div>
 
                         <!-- Calendário -->
                         <div style="background:var(--bg-input); padding:16px; border-radius:var(--radius-md); width:100%;">
                             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-                                <button style="background:none; border:none; cursor:pointer; font-size:1rem; color:var(--text-muted); padding:4px;" onclick="alterarMesCalendario(-1)">◀</button>
+                                <button id="cal-btn-prev" style="background:none; border:none; cursor:pointer; font-size:1rem; color:var(--text-muted); padding:4px;" onclick="alterarMesCalendario(-1)">◀</button>
                                 <div id="calendario-titulo" style="font-weight:700; font-size:0.95rem; color:var(--text-main);">Calendário</div>
-                                <button style="background:none; border:none; cursor:pointer; font-size:1rem; color:var(--text-muted); padding:4px;" onclick="alterarMesCalendario(1)">▶</button>
+                                <button id="cal-btn-next" style="background:none; border:none; cursor:pointer; font-size:1rem; color:var(--text-muted); padding:4px;" onclick="alterarMesCalendario(1)">▶</button>
                             </div>
                             <div id="calendario-grid" style="display:grid; grid-template-columns: repeat(7, 1fr); gap:6px; text-align:center; font-size:0.85rem; width:100%;"></div>
                         </div>
@@ -316,7 +312,6 @@
                         <select id="est-tipo-grafico" onchange="atualizarEstatisticas()" style="flex:1; min-width:140px;"><option value="doughnut">Gráfico Rosca</option><option value="bar">Gráfico de Barras</option></select>
                     </div>
 
-                    <!-- FILTROS AOS MOLDES DE SALVAR SESSÃO -->
                     <div style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:20px; background:var(--bg-input); padding:16px; border-radius:var(--radius-sm);">
                         <div style="flex:1; min-width:140px;">
                             <label style="font-size:0.75rem; font-weight:700; color:var(--text-muted); display:block; margin-bottom:4px;">PROVA(S)</label>
@@ -339,7 +334,6 @@
                         <button class="btn-success" style="width:auto;" onclick="atualizarEstatisticas()">Filtrar</button>
                     </div>
 
-                    <!-- ORDEM DOS BALÕES ESTATÍSTICAS -->
                     <div class="stats-grid">
                         <div class="stat-card"><span>Tempo Total</span><strong id="st-tempo">0h 0m 0s</strong></div>
                         <div class="stat-card"><span>Questões Totais</span><strong id="st-qts">0</strong></div>
@@ -362,7 +356,7 @@
             <div id="view-pruma" style="display:none;">
                 <div class="card" style="padding:0; overflow:hidden; border:2px solid var(--brand-primary);">
                     <div style="background:var(--brand-primary); padding:20px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
-                        <h2 style="color:white; margin:0; border:none; padding:0;">✨ PRUMA IA <span id="badge-modelo-ia" style="font-size:0.8rem; font-weight:normal; opacity:0.85; margin-left:10px;"></span></h2>
+                        <h2 style="color:white; margin:0; border:none; padding:0;">✨ PRUMA IA</h2>
                         <button class="btn-outline" style="width:auto; padding:8px 14px; border-color:white; color:white; font-size:0.85rem;" onclick="document.getElementById('modal-historico-ia').style.display='flex'">Ver Histórico (10 Últimas)</button>
                     </div>
                     
@@ -374,10 +368,10 @@
                             <button class="btn-outline" style="flex:1; min-width:140px;" onclick="mudarSubIa('edital', this)">📚 Edital Inteligente</button>
                         </div>
 
-                        <!-- Selecionador de Fonte -->
+                        <!-- Selecionador de Fonte (Geral para Chat / Simulador) -->
                         <div id="caixa-fontes-ia" style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:20px; background:var(--bg-input); padding:16px; border-radius:var(--radius-sm); align-items:center;">
                             <div style="flex:1; min-width:200px;">
-                                <label style="font-size:0.75rem; font-weight:700; color:var(--text-muted); display:block; margin-bottom:4px;">FONTE</label>
+                                <label style="font-size:0.75rem; font-weight:700; color:var(--text-muted); display:block; margin-bottom:4px;">FONTE (OPCIONAL)</label>
                                 <input type="text" id="ia-fonte" placeholder="Selecione a fonte da biblioteca..." list="dl-ia-fontes" style="margin:0;" onclick="try{this.showPicker()}catch(e){}">
                                 <datalist id="dl-ia-fontes"></datalist>
                             </div>
@@ -386,10 +380,10 @@
                         <!-- Sub: Chat -->
                         <div id="subia-chat">
                             <div class="chat-box" id="box-chat">
-                                <div class="msg msg-a"><strong>PRUMA:</strong> Olá! Selecione a Fonte acima e envie sua dúvida. Sou especialista em provas e concursos (Cebraspe, FGV, FCC, etc.). O que estudaremos hoje?</div>
+                                <div class="msg msg-a"><strong>PRUMA:</strong> Como a PRUMA IA pode te ajudar?</div>
                             </div>
                             <div style="display:flex; gap:12px; flex-wrap:wrap;">
-                                <textarea id="inp-chat" placeholder="Peça resumos de PDFs, resoluções profundas ou jurisprudência..." rows="2" style="margin:0; resize:none; flex:1; min-width:200px;"></textarea>
+                                <textarea id="inp-chat" placeholder="Digite sua dúvida de estudo ou mencione uma banca (ex: FGV, Cebraspe)..." rows="2" style="margin:0; resize:none; flex:1; min-width:200px;"></textarea>
                                 <button class="btn-primary" onclick="executarIA('chat')" style="width:120px;">Enviar</button>
                             </div>
                         </div>
@@ -398,7 +392,7 @@
                         <div id="subia-simulador" style="display:none;">
                             <div style="display:flex; gap:16px; margin-bottom:16px; flex-wrap:wrap;">
                                 <input type="number" id="ia-qts-num" value="5" min="1" max="20" style="width:90px; margin:0;" title="Nº de Questões">
-                                <input type="text" id="ia-qts-tema" placeholder="Tema específico (Ou deixe em branco para focar na Fonte selecionada)" style="flex:1; margin:0; min-width:200px;">
+                                <input type="text" id="ia-qts-tema" placeholder="Tema específico ou Banca (ex: FGV Direito Administrativo)" style="flex:1; margin:0; min-width:200px;">
                             </div>
                             <button class="btn-primary" onclick="executarIA('questoes')">Gerar Bateria de Questões</button>
                             <div class="chat-box" id="box-qts" style="margin-top:16px; display:none; height:auto; min-height:200px;"></div>
@@ -406,7 +400,21 @@
 
                         <!-- Sub: Flashcards -->
                         <div id="subia-flashcards" style="display:none;">
-                            <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:16px;">A IA criará flashcards inteligentes baseados na Fonte marcada acima focados em alta retenção.</p>
+                            <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:16px;">⚡ Escolha abaixo por Assunto/Tópico e/ou Fonte para gerar seus flashcards cirúrgicos de alta retenção.</p>
+                            <div style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:16px; background:var(--bg-input); padding:16px; border-radius:var(--radius-sm);">
+                                <div style="flex:1; min-width:130px;">
+                                    <label style="font-size:0.75rem; font-weight:700; color:var(--text-muted); display:block; margin-bottom:4px;">MATÉRIA</label>
+                                    <input type="text" id="fc-mat" placeholder="Ex: Direito Constitucional" list="lista-materias-dl" style="margin:0;" onclick="try{this.showPicker()}catch(e){}">
+                                </div>
+                                <div style="flex:1; min-width:130px;">
+                                    <label style="font-size:0.75rem; font-weight:700; color:var(--text-muted); display:block; margin-bottom:4px;">TÓPICO / ASSUNTO</label>
+                                    <input type="text" id="fc-top" placeholder="Ex: Direitos Fundamentais" style="margin:0;">
+                                </div>
+                                <div style="flex:1; min-width:130px;">
+                                    <label style="font-size:0.75rem; font-weight:700; color:var(--text-muted); display:block; margin-bottom:4px;">FONTE (OPCIONAL)</label>
+                                    <input type="text" id="fc-fonte" placeholder="Selecione da biblioteca..." list="dl-ia-fontes" style="margin:0;" onclick="try{this.showPicker()}catch(e){}">
+                                </div>
+                            </div>
                             <button class="btn-primary" onclick="executarIA('flashcards')">Gerar Flashcards Automáticos</button>
                             <div class="chat-box" id="box-fc" style="margin-top:16px; display:none; background:transparent; border:none; padding:0; height:auto; overflow:visible;"></div>
                         </div>
@@ -471,11 +479,23 @@
 
     <!-- Modais -->
     <div id="modal-apikey" class="modal">
-        <div class="modal-content">
+        <div class="modal-content" style="max-width:560px;">
             <button class="modal-close" style="position:absolute; top:20px; right:20px; background:transparent; border:none; font-size:1.5rem; cursor:pointer; color:var(--text-muted);" onclick="document.getElementById('modal-apikey').style.display='none'">✖</button>
-            <h2 style="margin-top:0;">🔑 Chave API Gemini</h2>
-            <p style="color:var(--text-muted); font-size:0.9rem;">Fica salva localmente no seu dispositivo.</p>
-            <input type="password" id="input-api-key" placeholder="Cole sua API Key">
+            <div style="display:flex; align-items:flex-start; gap:16px; margin-bottom:20px;">
+                <div style="font-size:2.5rem; background:var(--bg-input); padding:10px; border-radius:50%; line-height:1; flex-shrink:0;">👨‍💻</div>
+                <div style="background:var(--bg-input); padding:16px; border-radius:var(--radius-md); border:1px solid var(--border-color); flex:1; position:relative; font-size:0.95rem; line-height:1.4;">
+                    <strong>Oi! Sou a PRUMA IA! 🤖✨</strong><br><br>
+                    Deixa eu te explicar de um jeito bem facinho como criar sua chave secreta (API Key) para eu poder funcionar para você:<br><br>
+                    1️⃣ Clique no link abaixo para ir direto para o site oficial da Google (Google Cloud / Google AI Studio).<br>
+                    2️⃣ Entre com sua conta Google e clique no botão para criar uma nova chave (Get API Key).<br>
+                    3️⃣ Copie essa chave e cole aqui embaixo!<br><br>
+                    💡 <em>Dica de ouro:</em> Você só precisa fazer isso <strong>uma única vez</strong> neste aparelho. Depois disso, ela fica salvadinha aqui para sempre!
+                </div>
+            </div>
+            <div style="margin-bottom:16px; text-align:center;">
+                <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color:var(--brand-primary); font-weight:700; text-decoration:none; font-size:1rem;">🌐 Clique aqui para abrir o Google Cloud e pegar sua API Key</a>
+            </div>
+            <input type="password" id="input-api-key" placeholder="Cole sua API Key aqui...">
             <button class="btn-primary" onclick="salvarApiKey()">Salvar Chave</button>
         </div>
     </div>
@@ -501,7 +521,6 @@
     </div>
 
     <script>
-        // CONFIGURAÇÕES FIREBASE OBRIGATÓRIAS
         const firebaseConfig = {
             apiKey: "AIzaSyCIPK3YBKulMbjJzm_UahdtQrNjgqLmYho",
             authDomain: "plataforma-de-estudos-98ec8.firebaseapp.com",
@@ -514,15 +533,13 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database(); const storage = firebase.storage();
 
-        // ESTADOS GERAIS
         let userAtual = null, refDb = null, refStore = null, isAdmin = false;
         let dbData = { sessoes: [], provas: [], materias: [], cadernos: [], biblioteca: [], iaHistorico: [] };
         let segundosCronometro = 0, cronometroInterval = null, graficoInstance = null;
         let segundosPausa = 0, pausaInterval = null;
         let editandoRegistroId = null;
-        let calMesOff = 0; // Navegação do Calendário
+        let calMesOff = 0;
         
-        // PALETA ATUALIZADA
         const paleta17 = ['#007AFF','#34C759','#FF3B30','#FF9500','#5856D6','#AF52DE','#5AC8FA','#FF2D55','#E5C07B','#98C379','#E06C75','#C678DD','#56B6C2','#D19A66','#61AFEF', '#000000', '#FFFFFF'];
         let corAtualMateria = paleta17[0];
 
@@ -547,8 +564,6 @@
                     isAdmin = adminSnap.val() === true;
                 } catch(e) { isAdmin = false; }
                 
-                document.getElementById('badge-modelo-ia').textContent = isAdmin ? "(3.1 Pro)" : "(3.8 Flash)";
-                
                 carregarPaletaSistema(); carregarApiKey(); carregarDadosGlobais(); irTela('inicio');
                 
                 let sesDataEl = document.getElementById('ses-data');
@@ -571,7 +586,6 @@
             if(t === 'estatisticas') { renderizarFiltrosEstatisticas(); atualizarEstatisticas(); }
         }
 
-        // CONTA E RESGATE
         function aplicarCorSistema(cor) {
             document.documentElement.style.setProperty('--brand-primary', cor); 
             if (cor === '#FFFFFF') {
@@ -582,6 +596,8 @@
                 document.documentElement.style.setProperty('--btn-text', '#FFFFFF'); document.documentElement.style.setProperty('--border-color', cor + '55');
             }
             localStorage.setItem('pruma_cor_sys', cor);
+            let btnReiciar = document.getElementById('btn-reiniciar-cron');
+            if(btnReiciar) btnReiciar.style.borderColor = cor;
         }
         function carregarPaletaSistema() {
             let div = document.getElementById('paleta-cores-sistema'); div.innerHTML = '';
@@ -614,26 +630,33 @@
             } catch(e) { alert("Erro: " + e.message); }
         }
 
-        // DADOS
         function carregarDadosGlobais() {
             refDb.child('perfil/nome').on('value', s => { if(s.val()) document.getElementById('conta-nome').value = s.val(); });
             refDb.child('sessoes').on('value', s => { dbData.sessoes = s.val() ? Object.values(s.val()) : []; renderizarInicio(); if(document.getElementById('view-estatisticas').style.display==='block') { renderizarFiltrosEstatisticas(); atualizarEstatisticas(); } });
             refDb.child('provas').on('value', s => { let v = s.val(); dbData.provas = v ? (Array.isArray(v) ? v : Object.values(v)) : []; renderizarProvas(); atualizarSelectsUI(); if(document.getElementById('view-estatisticas').style.display==='block') renderizarFiltrosEstatisticas(); });
             refDb.child('materias').on('value', s => { let v = s.val(); dbData.materias = v ? (Array.isArray(v) ? v : Object.values(v)) : []; renderizarMaterias(); atualizarSelectsUI(); if(document.getElementById('view-estatisticas').style.display==='block') renderizarFiltrosEstatisticas(); });
             refDb.child('cadernos').on('value', s => { let v = s.val(); dbData.cadernos = v ? (Array.isArray(v) ? v : Object.values(v)) : []; renderizarCadernos(); atualizarSelectsUI(); });
-            refDb.child('biblioteca').on('value', s => { dbData.biblioteca = s.val() ? Object.values(s.val()) : []; renderizarBiblioteca(); atualizarSelectsUI(); });
+            refDb.child('biblioteca').on('value', s => { 
+                let v = s.val(); 
+                dbData.biblioteca = v ? Object.entries(v).map(([k, val]) => ({ ...val, fbKey: k })) : []; 
+                renderizarBiblioteca(); 
+                atualizarSelectsUI(); 
+            });
             refDb.child('ia_historico').on('value', s => { dbData.iaHistorico = s.val() || []; renderizarHistoricoIA(); });
         }
 
-        // CRONÔMETRO AVANÇADO
         function iniciarCronometro() { 
             if(pausaInterval) { clearInterval(pausaInterval); pausaInterval = null; }
             document.getElementById('visor-pausa-container').style.display = 'none';
+            let btnR = document.getElementById('btn-reiniciar-cron');
+            if(btnR) btnR.style.display = 'none';
             if(!cronometroInterval) { cronometroInterval = setInterval(() => { segundosCronometro++; atualizarVisorCronometro(); }, 1000); } 
         }
         function pausarCronometro() { 
             if(cronometroInterval) { clearInterval(cronometroInterval); cronometroInterval = null; }
             document.getElementById('visor-pausa-container').style.display = 'block';
+            let btnR = document.getElementById('btn-reiniciar-cron');
+            if(btnR) { btnR.style.display = 'inline-block'; btnR.style.borderColor = getComputedStyle(document.documentElement).getPropertyValue('--brand-primary').trim(); }
             if(!pausaInterval) { pausaInterval = setInterval(() => { segundosPausa++; atualizarVisorPausa(); }, 1000); }
         }
         function reiniciarCronometro() {
@@ -642,6 +665,8 @@
             segundosCronometro = 0; segundosPausa = 0;
             atualizarVisorCronometro(); atualizarVisorPausa();
             document.getElementById('visor-pausa-container').style.display = 'none';
+            let btnR = document.getElementById('btn-reiniciar-cron');
+            if(btnR) btnR.style.display = 'none';
         }
         function atualizarVisorCronometro() {
             let h = Math.floor(segundosCronometro/3600).toString().padStart(2,'0'), m = Math.floor((segundosCronometro%3600)/60).toString().padStart(2,'0'), s = (segundosCronometro%60).toString().padStart(2,'0');
@@ -664,7 +689,6 @@
             });
         }
 
-        // RESUMO GERAL E CALENDÁRIO
         function atualizarResumoGeral() {
             let per = document.getElementById('resumo-geral-periodo').value;
             document.getElementById('resumo-geral-custom-dates').style.display = per==='custom' ? 'flex' : 'none';
@@ -692,9 +716,13 @@
             let dataMinima = new Date(pSessao); dataMinima.setDate(1); dataMinima.setHours(0,0,0,0);
             
             let agora = new Date();
-            let mesAlvo = new Date(agora.getFullYear(), agora.getMonth() + calMesOff + delta, 1);
+            let mesAtualIndex = agora.getFullYear() * 12 + agora.getMonth();
+            let minIndex = dataMinima.getFullYear() * 12 + dataMinima.getMonth();
             
-            if (mesAlvo < dataMinima) return; // Não deixa voltar antes do primeiro estudo
+            let targetDate = new Date(agora.getFullYear(), agora.getMonth() + calMesOff + delta, 1);
+            let targetIndex = targetDate.getFullYear() * 12 + targetDate.getMonth();
+            
+            if (targetIndex < minIndex || targetIndex > mesAtualIndex) return;
             calMesOff += delta;
             renderizarCalendarioMes();
         }
@@ -705,6 +733,18 @@
             let agora = new Date();
             let targetDate = new Date(agora.getFullYear(), agora.getMonth() + calMesOff, 1);
             let ano = targetDate.getFullYear(), mes = targetDate.getMonth();
+            
+            let pSessao = dbData.sessoes.length > 0 ? dbData.sessoes.reduce((min, s) => Math.min(min, s.timestamp), Date.now()) : Date.now();
+            let dataMinima = new Date(pSessao);
+            let minIndex = dataMinima.getFullYear() * 12 + dataMinima.getMonth();
+            let atualIndex = agora.getFullYear() * 12 + agora.getMonth();
+            let targetIndex = ano * 12 + mes;
+            
+            let btnPrev = document.getElementById('cal-btn-prev');
+            let btnNext = document.getElementById('cal-btn-next');
+            if(btnPrev) btnPrev.style.visibility = (targetIndex > minIndex) ? 'visible' : 'hidden';
+            if(btnNext) btnNext.style.visibility = (targetIndex < atualIndex) ? 'visible' : 'hidden';
+            
             const nomesMeses = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
             document.getElementById('calendario-titulo').textContent = `${nomesMeses[mes]} ${ano}`;
 
@@ -729,7 +769,6 @@
             }
         }
 
-        // SALVAR E EDITAR REGISTRO DE SESSÃO
         function salvarRegistro() {
             let mat = sanitizeText(document.getElementById('ses-mat').value), top = sanitizeText(document.getElementById('ses-top').value);
             if(!mat) return alert("Preencha a matéria.");
@@ -835,7 +874,6 @@
             atualizarResumoGeral(); renderizarCalendarioMes();
         }
 
-        // PROVAS, MATÉRIAS E ESTATÍSTICAS
         function salvarProva() {
             let n = sanitizeText(document.getElementById('conc-nome').value), d = document.getElementById('conc-data').value;
             if(!n) return alert("Preencha o nome da prova.");
@@ -942,6 +980,15 @@
             dbData.cadernos.push({id: gerarId(), materia: m, topico: t, texto: txt, timestamp: Date.now(), data: new Date().toLocaleDateString()}); refDb.child('cadernos').set(dbData.cadernos);
             document.getElementById('err-texto').value = ''; document.getElementById('err-mat').value = ''; document.getElementById('err-top').value = ''; alert("Salvo no Caderno!");
         }
+        
+        function enviarParaCadernoErros(mat, top, txt) {
+            let m = sanitizeText(mat || 'PRUMA IA'), t = sanitizeText(top || 'Geral'), content = sanitizeText(txt || '');
+            if(!content) return alert("Conteúdo vazio.");
+            dbData.cadernos.push({ id: gerarId(), materia: m, topico: t, texto: content, timestamp: Date.now(), data: new Date().toLocaleDateString() });
+            refDb.child('cadernos').set(dbData.cadernos);
+            alert("📚 Enviado com sucesso para o seu Caderno de Erros!");
+        }
+
         function renderizarCadernos() {
             let div = document.getElementById('lista-cadernos-div'); div.innerHTML = ''; let agr = {};
             if(!Array.isArray(dbData.cadernos)) dbData.cadernos = Object.values(dbData.cadernos || {});
@@ -987,17 +1034,22 @@
             graficoInstance = new Chart(document.getElementById('graficoEst').getContext('2d'), { type: tipo, data: { labels: keys, datasets: [{ label: 'Tempo', data: vals, backgroundColor: cores, borderWidth: 0, borderRadius: tipo==='bar'?6:0 }] }, options: { responsive: true, maintainAspectRatio: false, color: txtCor, plugins: { legend: { labels: { color: txtCor } }, tooltip: { callbacks: { label: function(c) { let t = c.raw || 0; return ` ${c.label || ''}: ${Math.floor(t / 3600)}h ${Math.floor((t % 3600) / 60)}m ${t % 60}s`; } } } }, scales: tipo==='bar' ? { x:{ticks:{color:txtCor}}, y:{ticks:{color:txtCor}} } : {} } });
         }
 
-        // BIBLIOTECA
         async function uploadArquivo() {
             let f = document.getElementById('bib-file').files[0]; if(!f) return alert("Selecione."); if(f.size > 100 * 1024 * 1024) return alert("Arquivo máx 100MB."); let btn = event.currentTarget; let tx = btn.textContent; btn.disabled = true; btn.textContent = "Lendo...";
             try { let refF = refStore.child('biblioteca/'+gerarId()+'_'+f.name); await refF.put(f); let url = await refF.getDownloadURL(); let txt = ""; if(f.type.includes('pdf')) { const arr = await f.arrayBuffer(); const pdf = await pdfjsLib.getDocument({data:arr}).promise; for(let i=1; i<=Math.min(pdf.numPages, 15); i++) { let c = await (await pdf.getPage(i)).getTextContent(); txt += c.items.map(it=>it.str).join(" ") + "\n"; } } else { txt = await f.text(); } let m = sanitizeText(document.getElementById('bib-mat-arq').value||'Geral'); refDb.child('biblioteca').push({ id: gerarId(), nome: f.name, tipo: 'ARQUIVO', url: url, texto: txt.substring(0,40000), materia: m, data: new Date().toLocaleDateString(), refPath: refF.fullPath }); document.getElementById('bib-file').value = ''; btn.textContent = "✅ Salvo!"; setTimeout(()=> {btn.textContent=tx; btn.disabled=false;}, 2000); } catch(e) { alert("Erro: "+e.message); btn.textContent=tx; btn.disabled=false; }
         }
         function salvarLink() { let url = document.getElementById('bib-link').value.trim(); if(!url) return; refDb.child('biblioteca').push({ id: gerarId(), nome: new URL(url).hostname, tipo: 'LINK', url: url, texto: "Conteúdo Web referenciado: "+url, materia: sanitizeText(document.getElementById('bib-mat-link').value||'Geral'), data: new Date().toLocaleDateString() }); document.getElementById('bib-link').value = ''; alert("Link Salvo."); }
-        function renderizarBiblioteca() { let div = document.getElementById('lista-biblioteca'); div.innerHTML = ''; dbData.biblioteca.forEach(b => { div.innerHTML += `<div class="registro-curto" title="${sanitizeText(b.nome)}"><div class="info"><strong title="${sanitizeText(b.nome)}">${b.tipo==='LINK'?'🌐':'📄'} ${b.nome}</strong><span>${b.materia} | ${b.data}</span></div><button class="btn-x-vermelho" onclick="if(confirm('Excluir?')) { let i = Object.entries(dbData.biblioteca).find(e=>e[1].id==='${b.id}'); if(i) { refDb.child('biblioteca/'+i[0]).remove(); if('${b.refPath||''}') try{ storage.ref('${b.refPath}').delete(); }catch(e){} } }">✖</button></div>`; }); }
+        
+        function renderizarBiblioteca() { 
+            let div = document.getElementById('lista-biblioteca'); 
+            div.innerHTML = ''; 
+            dbData.biblioteca.forEach(b => { 
+                div.innerHTML += `<div class="registro-curto" title="${sanitizeText(b.nome)}"><div class="info"><strong title="${sanitizeText(b.nome)}">${b.tipo==='LINK'?'🌐':'📄'} ${b.nome}</strong><span>${b.materia} | ${b.data}</span></div><button class="btn-x-vermelho" onclick="if(confirm('Excluir?')) { refDb.child('biblioteca/${b.fbKey}').remove(); if('${b.refPath||''}') try{ storage.ref('${b.refPath}').delete(); }catch(e){} }">✖</button></div>`; 
+            }); 
+        }
 
-        // PRUMA IA
         function mudarSubIa(sub, btn) {
-            ['chat', 'simulador', 'flashcards', 'edital'].forEach(s => { let el = document.getElementById('subia-'+s); if(el) el.style.display = (s===sub)?'block':'none'; }); document.querySelectorAll('#view-pruma .btn-outline').forEach(b => { b.style.background='transparent'; b.style.color='var(--text-main)'; }); if(btn) { btn.style.background='var(--brand-primary)'; btn.style.color='white'; } document.getElementById('caixa-fontes-ia').style.display = (sub==='edital') ? 'none' : 'flex';
+            ['chat', 'simulador', 'flashcards', 'edital'].forEach(s => { let el = document.getElementById('subia-'+s); if(el) el.style.display = (s===sub)?'block':'none'; }); document.querySelectorAll('#view-pruma .btn-outline').forEach(b => { b.style.background='transparent'; b.style.color='var(--text-main)'; }); if(btn) { btn.style.background='var(--brand-primary)'; btn.style.color='white'; } document.getElementById('caixa-fontes-ia').style.display = (sub==='edital' || sub==='flashcards') ? 'none' : 'flex';
         }
         function renderizarHistoricoIA() {
             let div = document.getElementById('lista-historico-ia'); div.innerHTML = ''; if(dbData.iaHistorico.length===0) div.innerHTML = '<p>Seu perfil de aprendizado está sendo mapeado com base nas suas dúvidas relevantes...</p>';
@@ -1006,22 +1058,36 @@
         function extrairContextoGeral() {
             let ctx = ""; let fonteSel = sanitizeText(document.getElementById('ia-fonte').value).toLowerCase();
             if (fonteSel) { dbData.biblioteca.forEach(b => { if(b.nome && b.nome.toLowerCase().includes(fonteSel)) { ctx += `\n[FONTE BIBLIOTECA: ${b.nome}]\n${b.texto}\n`; } }); }
+            let fcFonteSel = sanitizeText(document.getElementById('fc-fonte')?.value).toLowerCase();
+            if (fcFonteSel) { dbData.biblioteca.forEach(b => { if(b.nome && b.nome.toLowerCase().includes(fcFonteSel)) { ctx += `\n[FONTE BIBLIOTECA: ${b.nome}]\n${b.texto}\n`; } }); }
             if(dbData.iaHistorico.length>0) ctx += `\n[JORNADA DO ESTUDANTE / HISTÓRICO]:\n${dbData.iaHistorico.map(h=> `- ${h}`).join('\n')}\n`;
             return ctx;
         }
 
-        // PROMPTS ESPECIALISTAS COM UX MÁXIMA
-        function obterPromptDoSistema(tipo) {
-            const basePersona = "Você é a PRUMA IA, a mais avançada Mentora e Especialista em Concursos Públicos (Cebraspe, FGV, FCC, Vunesp, etc.) e alta performance de estudos. Sua comunicação é didática, direta, encorajadora e adaptada à jornada de quem estuda muito. Cruzamento de informações com a Doutrina e Jurisprudência atualizada é sua prioridade.";
+        function obterPromptDoSistema(tipo, promptUsuario = "") {
+            let pL = promptUsuario.toLowerCase();
+            let bancaDetectada = "";
+            if(pL.includes('cebraspe') || pL.includes('cespe')) bancaDetectada = "CEBRASPE (foco rigoroso em assertivas Certo/Errado, pegadinhas textuais de interpretação estrita, doutrina e jurisprudência pacificada do STF/STJ)";
+            else if(pL.includes('fgv')) bancaDetectada = "FGV (foco em casos práticos complexos, enunciados longos e interpretativos, pegadinhas sutis e raciocínio aplicado)";
+            else if(pL.includes('fcc')) bancaDetectada = "FCC (foco total na literalidade da lei, jurisprudência sumulada e memorização exata de prazos/competências)";
+            else if(pL.includes('vunesp')) bancaDetectada = "VUNESP (foco direto na letra da lei, objetividade e menor incidência de pegadinhas complexas)";
+
+            let bancaInstrucao = bancaDetectada ? `\n\n🎯 BANCA EXAMINADORA: Adapte rigorosamente o tom, o estilo de cobrança e as exigências da banca ${bancaDetectada}.` : "";
+
+            const instrucaoFormatacao = `\n\n📌 REGRA DE FORMATAÇÃO RIGOROSA: 
+- NUNCA use asteriscos triplos (###), asteriscos duplos (***) ou traços excessivos (---) para cabeçalhos ou divisões.
+- Utilize emojis chamativos (📌, ⚖️, 💡, 🚀, 📖, ⚠️, ✅, 🎯) e setas (➔, ➡) para categorizar, dividir seções e facilitar a leitura rápida pelo aluno.`;
+
+            const basePersona = "Você é a PRUMA IA, mentora especialista em concursos públicos. VÁ DIRETO AO PONTO. Sem saudações longas, sem introduções vazias, sem 'encheção de linguiça'. Comece imediatamente respondendo com precisão cirúrgica e aproveitamento máximo de tokens." + instrucaoFormatacao;
+            
             const prompts = {
-                chat: `${basePersona} Analise as dúvidas do estudante. Seja profundo mas direto. Cite a fonte da biblioteca se houver. Leia a [Jornada do Estudante] para adaptar sua linguagem ao contexto de estudos e dificuldades dele.`,
-                questoes: `${basePersona} Atue como uma Banca Examinadora Rigorosa (nível FGV/Cebraspe). Crie questões inéditas de múltipla escolha (A, B, C, D, E) com alto rigor técnico. Forneça gabarito comentado justificando profundamente o erro e acerto de cada alternativa usando fundamentação jurídica/técnica.`,
-                flashcards: `${basePersona} Atue como um Especialista em Neurociência Aplicada ao Estudo e Repetição Espaçada. Analise a fonte fornecida, extraia os conceitos vitais, as decorebas de leis ou pormenores, e crie pares de pergunta diretas (gatilho) e respostas cirúrgicas. O foco é máxima retenção.`
+                chat: `${basePersona} Responda com clareza, objetividade e fundamentação técnica de alto nível.${bancaInstrucao}`,
+                questoes: `${basePersona} Atue como a banca examinadora mencionada. Crie questões inéditas com altíssimo rigor técnico, indique o nível de dificuldade (Fácil, Intermediário ou Avançado) no topo de cada questão, e forneça gabarito comentado destrinchando o erro e o acerto de cada alternativa.${bancaInstrucao}`,
+                flashcards: `${basePersona} Atue como especialista em neurociência e repetição espaçada. Extraia os pontos vitais e decorebas em formato de pares cirúrgicos de pergunta e resposta de alta retenção, indicando o nível (Fácil, Intermediário ou Avançado).`
             };
             return prompts[tipo] || basePersona;
         }
 
-        // HEURÍSTICA DE DEFINIÇÃO DE MODELO INTELIGENTE
         function definirModeloIdeal(prompt, tipo) {
             if(tipo === 'questoes' || tipo === 'edital') return "gemini-3.1-pro-preview";
             if(tipo === 'flashcards') return "gemini-3.8-flash";
@@ -1033,7 +1099,7 @@
 
         async function executarIA(tipo) {
             let k = localStorage.getItem('pruma_apikey'); if(!k) return alert("Configure a API Key na aba lateral.");
-            let p = "", box = null; let ctx = extrairContextoGeral(); let baseSys = obterPromptDoSistema(tipo);
+            let p = "", box = null; let ctx = extrairContextoGeral();
 
             if(tipo === 'chat') {
                 p = document.getElementById('inp-chat').value.trim(); if(!p) return;
@@ -1041,38 +1107,37 @@
                 box.innerHTML += `<div class="msg msg-u">${sanitizeText(p)}</div>`; 
                 document.getElementById('inp-chat').value=''; box.scrollTop = box.scrollHeight;
                 
-                // GRAVAÇÃO DE CONTEXTO SELETIVA (Extraindo a Jornada do Usuário)
                 let pLow = p.toLowerCase();
-                let isRevelador = ['estudo para', 'foco em', 'tenho dificuldade', 'minha rotina', 'concurso', 'banca', 'como eu', 'preciso melhorar', 'sou ', 'minha meta', 'cargo', 'cronograma'].some(w => pLow.includes(w));
+                let isRevelador = ['estudo para', 'foco em', 'tenho dificuldade', 'minha rotina', 'concurso', 'banca', 'como eu', 'preciso melhorar', 'sou ', 'minha meta', 'cargo', 'cronograma', 'cebraspe', 'fgv', 'fcc', 'vunesp'].some(w => pLow.includes(w));
                 if(isRevelador || p.length > 80) {
                     dbData.iaHistorico.push(p); if(dbData.iaHistorico.length>10) dbData.iaHistorico.shift(); refDb.child('ia_historico').set(dbData.iaHistorico);
                 }
             } else if(tipo === 'questoes') {
-                let t = document.getElementById('ia-qts-tema').value || 'o contexto da fonte marcada acima';
-                p = `Crie exatamente ${document.getElementById('ia-qts-num').value} questões inéditas sobre: ${t}. Coloque [CORRETA] ao lado da alternativa certa e cite a fonte.`;
+                let t = document.getElementById('ia-qts-tema').value || 'o contexto geral de estudos';
+                p = `Crie exatamente ${document.getElementById('ia-qts-num').value} questões inéditas de nível variado sobre: ${t}. Cada questão deve conter o nível de dificuldade explicitado (Fácil, Intermediário ou Avançado), as alternativas (A, B, C, D, E), a indicação clara de qual é a correta e o gabarito comentado.`;
                 box = document.getElementById('box-qts'); box.style.display='flex'; box.innerHTML='';
             } else if(tipo === 'flashcards') {
-                let fSel = document.getElementById('ia-fonte').value.trim();
-                if(!fSel) return alert("Selecione a Fonte para extrair os Flashcards.");
-                p = `Retorne EXATAMENTE UM JSON ARRAY PURO: [{"f":"Pergunta","v":"Resposta"}]. Sem markdowns como \`\`\`.`;
+                let m = sanitizeText(document.getElementById('fc-mat').value) || 'Geral';
+                let tp = sanitizeText(document.getElementById('fc-top').value) || 'Assunto Geral';
+                p = `Gere flashcards cirúrgicos de alta retenção para a Matéria: "${m}" e Tópico/Assunto: "${tp}". Retorne EXATAMENTE UM JSON ARRAY PURO: [{"f":"Pergunta","v":"Resposta","nivel":"Fácil/Intermediário/Advanced"}]. Sem markdowns como \`\`\`.`;
                 box = document.getElementById('box-fc'); box.style.display='block'; box.innerHTML='';
             }
 
+            let baseSys = obterPromptDoSistema(tipo, p);
             let modeloAtual = definirModeloIdeal(p, tipo);
             let tentouFallback = false;
             let loadInt = null;
 
             try {
-                // UI de Carregamento Dinâmico
                 if(tipo!=='flashcards') { 
-                    box.innerHTML += `<div class="msg msg-a" id="load-ia"><span id="load-ia-text">Pensando...</span> ⏳ <span style="font-size:0.7rem; color:var(--text-muted); display:block; margin-top:4px;">(Motor: ${modeloAtual.includes('pro') ? 'Avançado' : 'Rápido'})</span></div>`; 
+                    box.innerHTML += `<div class="msg msg-a" id="load-ia"><span id="load-ia-text">Analisando...</span> ⏳</div>`; 
                     box.scrollTop = box.scrollHeight; 
                     
-                    let loadingMsgs = ["Analisando o padrão da banca...", "Cruzando dados com a bibliografia...", "Aplicando técnicas de estudo ativo...", "Estruturando a melhor resposta...", "Verificando jurisprudências e atualizações...", "Avaliando a jornada do usuário...", "Quase lá..."];
+                    let loadingMsgs = ["Analisando o padrão da banca...", "Cruzando dados com a bibliografia...", "Aplicando técnicas de estudo ativo...", "Estruturando resposta direta...", "Verificando jurisprudências..."];
                     loadInt = setInterval(() => { let msgEl = document.getElementById('load-ia-text'); if(msgEl) msgEl.textContent = loadingMsgs[Math.floor(Math.random() * loadingMsgs.length)]; }, 2500);
                 } else { 
-                    box.innerHTML = `<div id="load-ia" style="color:var(--brand-primary); font-weight:600;"><span id="load-ia-text">Construindo neuro-gatilhos de memória...</span> ⏳</div>`; 
-                    let fcMsgs = ["Lendo a fonte de dados...", "Extraindo conceitos vitais...", "Isolando decorebas e exceções da regra...", "Montando cartões de alta retenção..."];
+                    box.innerHTML = `<div id="load-ia" style="color:var(--brand-primary); font-weight:600;"><span id="load-ia-text">Construindo flashcards...</span> ⏳</div>`; 
+                    let fcMsgs = ["Lendo os parâmetros...", "Extraindo conceitos vitais...", "Isolando decorebas...", "Montando cartões..."];
                     loadInt = setInterval(() => { let msgEl = document.getElementById('load-ia-text'); if(msgEl) msgEl.textContent = fcMsgs[Math.floor(Math.random() * fcMsgs.length)]; }, 2000);
                 }
 
@@ -1096,29 +1161,99 @@
 
                 if(tipo === 'flashcards') {
                     let json = JSON.parse(txtF.replace(/```json/g,'').replace(/```/g,'').match(/\[.*\]/s)[0]);
-                    let fD = sanitizeText(document.getElementById('ia-fonte').value);
+                    let matNome = sanitizeText(document.getElementById('fc-mat').value) || 'Flashcards IA';
+                    let topNome = sanitizeText(document.getElementById('fc-top').value) || 'Geral';
                     box.innerHTML = tentouFallback ? '<div style="color:var(--brand-warning); font-size:0.8rem; margin-bottom:10px;">⚠️ Cota Pro excedida. Usando Flash.</div>' : '';
                     
-                    // HTML DOS FLASHCARDS ESTILO PASTA MINIMIZADA
                     json.forEach(c => {
                         let bId = gerarId();
+                        let nivelBadge = c.nivel ? `🔹 Nível: ${c.nivel}` : '';
+                        let conteudoCard = `[Flashcard] Pergunta: ${c.f} | Resposta: ${c.v}`;
                         box.innerHTML += `
                         <div class="pasta-header" onclick="this.nextElementSibling.classList.toggle('aberta')" style="border-left:4px solid var(--brand-warning); cursor:pointer; margin-bottom:0;">
-                            <span style="font-weight:700; color:var(--text-main);">❓ ${sanitizeText(c.f)}</span>
+                            <span style="font-weight:700; color:var(--text-main);">❓ ${sanitizeText(c.f)} <span style="font-size:0.75rem; font-weight:normal; opacity:0.8;">(${c.nivel || 'Geral'})</span></span>
                         </div>
                         <div class="pasta-body" style="background:var(--bg-card); border:1px solid var(--border-color); border-top:none; margin-top:0; border-radius: 0 0 var(--radius-sm) var(--radius-sm);">
-                            <div style="margin-bottom:12px; color:var(--text-main); font-size:1rem; padding-top:8px;"><strong>Resposta:</strong> ${sanitizeText(c.v)}</div>
-                            <button id="${bId}" class="btn-outline" style="width:auto; padding:6px 12px; font-size:0.8rem;" onclick="salvarFc('${fD}', 'Geral', '${sanitizeText(c.f).replace(/'/g,"\\'")} - ${sanitizeText(c.v).replace(/'/g,"\\'")}', this)">💾 Salvar no Caderno</button>
+                            <div style="margin-bottom:12px; color:var(--text-main); font-size:1rem; padding-top:8px;"><strong>💡 Resposta:</strong> ${sanitizeText(c.v)}</div>
+                            <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                                <button id="${bId}" class="btn-outline" style="width:auto; padding:6px 12px; font-size:0.8rem;" onclick="salvarFc('${matNome}', '${topNome}', '${sanitizeText(c.f).replace(/'/g,"\\'")} - ${sanitizeText(c.v).replace(/'/g,"\\'")}', this)">💾 Salvar no Caderno</button>
+                            </div>
                         </div>
                         <div style="margin-bottom:12px;"></div>`;
                     });
                 } else {
                     let l = document.getElementById('load-ia'); if(l) l.remove();
-                    let rawHtml = txtF.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\*(.*?)\*/g, '<em>$1</em>').replace(/^([A-E]\)) (.*?)(\[CORRETA\])?$/gm, (m,lt,t,c) => `<div style="padding:10px; background:var(--bg-card); border:1px solid var(--border-color); margin:6px 0; border-radius:var(--radius-sm); cursor:pointer;" onclick="this.style.borderColor='${c?'var(--brand-success)':'var(--brand-danger)'}'">${lt} ${t.trim()}</div>`).replace(/\n/g, '<br>');
-                    let lHtml = sanitizeText(rawHtml);
-                    let btnPdf = (p.toLowerCase().includes('resumo') && p.toLowerCase().includes('pdf')) ? `<br><br><button class="btn-primary" style="width:auto; padding:8px 16px;" onclick="baixarPdfResumo('${btoa(unescape(encodeURIComponent(txtF)))}')">📥 Baixar PDF</button>` : '';
-                    let avisoFallback = tentouFallback ? `<br><br><span style="font-size:0.75rem; color:var(--brand-warning);">⚠️ Resposta gerada via modelo Flash (Cota do Pro excedida por hoje).</span>` : '';
-                    box.innerHTML += `<div class="msg msg-a"><strong>PRUMA:</strong><br>${lHtml}${btnPdf}${avisoFallback}</div>`; box.scrollTop = box.scrollHeight;
+                    
+                    if(tipo === 'questoes') {
+                        // Renderização interativa de questões com clique único e feedback vermelho/verde
+                        let qContainerId = gerarId();
+                        let htmlQ = `<div id="${qContainerId}" style="display:flex; flex-direction:column; gap:20px;">`;
+                        
+                        // Dividir o texto em blocos de questões se possível
+                        let blocos = txtF.split(/(?=Questão|\d+[\.\)]\s|Q\d+)/i);
+                        if(blocos.length <= 1) blocos = [txtF];
+
+                        blocos.forEach((bloco, qIdx) => {
+                            if(!bloco.trim()) return;
+                            let bId = gerarId();
+                            
+                            // Tentar extrair alternativas (A), b), C), etc.)
+                            let linhas = bloco.split('\n');
+                            let enunciado = [];
+                            let alternativas = [];
+                            let explicacao = [];
+                            let modoExplicacao = false;
+
+                            linhas.forEach(l => {
+                                let lTrim = l.trim();
+                                if (/^[a-eA-E][\)\.]\s/.test(lTrim)) {
+                                    alternativas.push(lTrim);
+                                } else if (/gabarito|comentário|explicação|correta:/i.test(lTrim)) {
+                                    modoExplicacao = true;
+                                    explicacao.push(lTrim);
+                                } else {
+                                    if(modoExplicacao) explicacao.push(lTrim);
+                                    else enunciado.push(lTrim);
+                                }
+                            });
+
+                            let textoEnunciado = sanitizeText(enunciado.join(' '));
+                            let textoExplicacao = sanitizeText(explicacao.join(' '));
+
+                            // Identificar resposta correta de forma heurística (se contiver [CORRETA] ou gabarito na IA)
+                            let altHtml = '';
+                            if(alternativas.length >= 2) {
+                                alternativas.forEach((alt, aIdx) => {
+                                    let letra = alt.charAt(0).toUpperCase();
+                                    let isCorreta = alt.includes('CORRETA') || /gabarito.*\b[a-eA-E]\b/i.test(txtF) && new RegExp(`gabarito.*\\b${letra}\\b`, 'i').test(txtF);
+                                    // Fallback seguro se não identificado explicitamente: assume a primeira ou marca inteligente
+                                    if(aIdx === 0 && !txtF.includes('CORRETA')) isCorreta = true; 
+
+                                    altHtml += `<button class="btn-outline alt-btn" data-correta="${isCorreta ? '1' : '0'}" onclick="responderQuestaoUnica(this)" style="text-align:left; padding:10px 14px; margin:4px 0; border-radius:8px; font-size:0.9rem; width:100%;">${sanitizeText(alt)}</button>`;
+                                });
+                            } else {
+                                altHtml = `<div style="font-size:0.95rem; line-height:1.4;">${sanitizeText(bloco)}</div>`;
+                            }
+
+                            htmlQ += `<div style="background:var(--bg-input); padding:16px; border-radius:var(--radius-sm); border:1px solid var(--border-color);">
+                                <div style="font-weight:700; margin-bottom:10px; font-size:0.95rem;">🎯 Questão ${qIdx+1}</div>
+                                <div style="margin-bottom:12px; font-size:0.95rem; line-height:1.5;">${textoEnunciado || sanitizeText(bloco)}</div>
+                                <div style="display:flex; flex-direction:column; gap:4px; margin-bottom:12px;">${altHtml}</div>
+                                ${textoExplicacao ? `<div style="font-size:0.85rem; color:var(--text-muted); margin-top:8px; padding-top:8px; border-top:1px solid var(--border-color);">💡 <strong>Comentário:</strong> ${textoExplicacao}</div>` : ''}
+                                <button class="btn-primary" style="margin-top:12px; width:auto; padding:6px 14px; font-size:0.8rem;" onclick="enviarParaCadernoErros('Simulador IA', 'Questões', ${JSON.stringify(bloco).replace(/"/g, '&quot;')})">📚 Enviar Questão para Caderno de Erros</button>
+                            </div>`;
+                        });
+
+                        htmlQ += `</div>`;
+                        box.innerHTML += `<div class="msg msg-a" style="max-width:100%; width:100%;"><strong>PRUMA:</strong><br><br>${htmlQ}</div>`;
+                    } else {
+                        // Chat especialista com botão de enviar para o caderno de erros
+                        let rawHtml = txtF.replace(/\n/g, '<br>');
+                        let lHtml = sanitizeText(rawHtml);
+                        let idMsgUnica = gerarId();
+                        box.innerHTML += `<div class="msg msg-a" style="max-width:100%; width:100%;"><strong>PRUMA:</strong><br><br>${lHtml}<br><br><button class="btn-primary" style="width:auto; padding:8px 16px; font-size:0.85rem;" onclick="enviarParaCadernoErros('Chat Especialista', 'Dúvida IA', ${JSON.stringify(txtF).replace(/"/g, '&quot;')})">📚 Enviar Resposta para Caderno de Erros</button></div>`;
+                    }
+                    box.scrollTop = box.scrollHeight;
                 }
             } catch(e) { 
                 if(loadInt) clearInterval(loadInt);
@@ -1127,15 +1262,47 @@
                 if(box) box.innerHTML += `<div class="msg msg-a" style="color:var(--brand-danger);">Erro: ${msgErro}</div>`; 
             }
         }
-        function salvarFc(m, t, txt, btn) { dbData.cadernos.push({id:gerarId(), materia:m||'Flashcards IA', topico:t||'Geral', texto:txt, timestamp:Date.now(), data:new Date().toLocaleDateString()}); refDb.child('cadernos').set(dbData.cadernos); btn.textContent = "✅ Salvo!"; btn.disabled = true; btn.style.background = 'var(--brand-success)'; btn.style.color = '#FFF'; btn.style.borderColor = 'var(--brand-success)'; }
+
+        function responderQuestaoUnica(btn) {
+            let container = btn.parentElement;
+            let botoes = container.querySelectorAll('.alt-btn');
+            // Desativar todas as alternativas após o primeiro clique (força atenção)
+            botoes.forEach(b => b.disabled = true);
+
+            let isCorreta = btn.getAttribute('data-correta') === '1';
+            if(isCorreta) {
+                btn.style.background = 'var(--brand-success)';
+                btn.style.color = '#FFFFFF';
+                btn.style.borderColor = 'var(--brand-success)';
+                btn.innerHTML = '✅ ' + btn.innerHTML;
+            } else {
+                btn.style.background = 'var(--brand-danger)';
+                btn.style.color = '#FFFFFF';
+                btn.style.borderColor = 'var(--brand-danger)';
+                btn.innerHTML = '❌ ' + btn.innerHTML;
+                
+                // Destacar qual era a correta
+                botoes.forEach(b => {
+                    if(b.getAttribute('data-correta') === '1') {
+                        b.style.background = 'rgba(52, 199, 89, 0.2)';
+                        b.style.borderColor = 'var(--brand-success)';
+                    }
+                });
+            }
+        }
+
+        function salvarFc(m, t, txt, btn) { 
+            dbData.cadernos.push({id:gerarId(), materia:m||'Flashcards IA', topico:t||'Geral', texto:txt, timestamp:Date.now(), data:new Date().toLocaleDateString()}); 
+            refDb.child('cadernos').set(dbData.cadernos); 
+            btn.textContent = "✅ Salvo!"; btn.disabled = true; btn.style.background = 'var(--brand-success)'; btn.style.color = '#FFF'; btn.style.borderColor = 'var(--brand-success)'; 
+        }
         
         async function processarEdital(btn) {
             let k = localStorage.getItem('pruma_apikey'); if(!k) return alert("API Key ausente."); let txt = document.getElementById('edital-texto').value.trim(); if(!txt) return; let pId = document.getElementById('edital-ia-prova').value;
-            const modelo = "gemini-3.1-pro-preview"; // Edital sempre usa o PRO por causa do longo contexto
+            const modelo = "gemini-3.1-pro-preview";
             let tx = btn.textContent; btn.disabled=true; btn.textContent="Processando com IA...";
             try { const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelo}:generateContent?key=${k}`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({contents:[{parts:[{text:`Organize em JSON PURO: [{"disciplina": "Nome", "topicos": ["T1", "T2"]}]. Sem markdown. Edital:\n${txt.substring(0,60000)}`}]}]}) }); const data = await res.json(); if(data.error) throw new Error(data.error.message); let json = JSON.parse(data.candidates[0].content.parts[0].text.match(/\[.*\]/s)[0]); if(!Array.isArray(dbData.materias)) dbData.materias = Object.values(dbData.materias || {}); json.forEach(n => { let idx = dbData.materias.findIndex(x=>x.nome.toLowerCase()===n.disciplina.toLowerCase() && x.provaId===pId); if(idx !== -1) { if(!Array.isArray(dbData.materias[idx].topicos)) dbData.materias[idx].topicos = Object.values(dbData.materias[idx].topicos || {}); n.topicos.forEach(t=>{ if(!dbData.materias[idx].topicos.includes(t)) dbData.materias[idx].topicos.push(t); }); } else { dbData.materias.push({id:gerarId(), nome:n.disciplina, cor:paleta17[0], topicos:n.topicos, provaId:pId}); } }); refDb.child('materias').set(dbData.materias); document.getElementById('edital-texto').value=''; alert("Edital mapeado!"); } catch(e) { alert("Erro: "+e.message); } finally { btn.textContent=tx; btn.disabled=false; }
         }
-        function baixarPdfResumo(txtBase64) { try { const doc = new window.jspdf.jsPDF(); doc.setFont("helvetica"); doc.setFontSize(12); doc.text(doc.splitTextToSize(atob(txtBase64), 180), 15, 15); doc.save("Resumo_PRUMA.pdf"); } catch(e) { alert("Erro ao gerar PDF."); } }
     </script>
 </body>
 </html>
