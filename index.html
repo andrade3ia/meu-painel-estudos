@@ -185,16 +185,23 @@
                     <div style="flex:1; min-width:260px; display:flex; flex-direction:column; gap:20px; max-width:100%;">
                         <div style="text-align:center; background:var(--bg-input); padding:20px; border-radius:var(--radius-md); width:100%;">
                             <div style="font-size: 0.7rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.8px;">Cronômetro</div>
-                            <div id="cronometro-visor" style="font-size: 3rem; color: var(--brand-primary); font-weight: 700; font-variant-numeric: tabular-nums; margin: 8px 0; letter-spacing:-1px; word-break:break-all;">00:00:00</div>
-                            <div style="display:flex; justify-content:center; gap:12px; flex-wrap:wrap;">
-                                <button class="btn-success" onclick="iniciarCronometro()" style="flex:1; min-width:100px;">▶ Iniciar</button>
-                                <button class="btn-outline" style="flex:1; min-width:100px; padding:10px 14px;" onclick="pausarCronometro()">⏸ Pausar</button>
+                            <div id="cronometro-visor" style="font-size: 3rem; color: var(--brand-primary); font-weight: 700; font-variant-numeric: tabular-nums; margin: 8px 0 0 0; letter-spacing:-1px; word-break:break-all;">00:00:00</div>
+                            <div id="visor-pausa-container" style="display:none; font-size:0.85rem; font-weight:600; color:var(--text-muted); margin-bottom:8px;">⏸️ Pausado: <span id="visor-pausa" style="font-variant-numeric:tabular-nums;">00:00:00</span></div>
+                            
+                            <div style="display:flex; justify-content:center; gap:8px; flex-wrap:wrap; margin-top:12px;">
+                                <button class="btn-success" onclick="iniciarCronometro()" style="flex:1; min-width:80px; padding:10px;">▶ Iniciar</button>
+                                <button class="btn-outline" style="flex:1; min-width:80px; padding:10px;" onclick="pausarCronometro()">⏸ Pausar</button>
+                                <button class="btn-outline" style="flex:1; min-width:80px; padding:10px; color:var(--brand-danger); border-color:var(--brand-danger);" onclick="reiniciarCronometro()">🔄 Zerar</button>
                             </div>
                         </div>
 
                         <!-- Calendário -->
                         <div style="background:var(--bg-input); padding:16px; border-radius:var(--radius-md); width:100%;">
-                            <div id="calendario-titulo" style="font-weight:700; text-align:center; margin-bottom:12px; font-size:0.95rem; color:var(--text-main);">Calendário de Estudos</div>
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                                <button style="background:none; border:none; cursor:pointer; font-size:1rem; color:var(--text-muted); padding:4px;" onclick="alterarMesCalendario(-1)">◀</button>
+                                <div id="calendario-titulo" style="font-weight:700; font-size:0.95rem; color:var(--text-main);">Calendário</div>
+                                <button style="background:none; border:none; cursor:pointer; font-size:1rem; color:var(--text-muted); padding:4px;" onclick="alterarMesCalendario(1)">▶</button>
+                            </div>
                             <div id="calendario-grid" style="display:grid; grid-template-columns: repeat(7, 1fr); gap:6px; text-align:center; font-size:0.85rem; width:100%;"></div>
                         </div>
                     </div>
@@ -379,7 +386,7 @@
                         <!-- Sub: Chat -->
                         <div id="subia-chat">
                             <div class="chat-box" id="box-chat">
-                                <div class="msg msg-a"><strong>PRUMA:</strong> Olá! Selecione a Fonte acima e envie sua dúvida. Sou especialista em provas e concursos. O que estudaremos hoje?</div>
+                                <div class="msg msg-a"><strong>PRUMA:</strong> Olá! Selecione a Fonte acima e envie sua dúvida. Sou especialista em provas e concursos (Cebraspe, FGV, FCC, etc.). O que estudaremos hoje?</div>
                             </div>
                             <div style="display:flex; gap:12px; flex-wrap:wrap;">
                                 <textarea id="inp-chat" placeholder="Peça resumos de PDFs, resoluções profundas ou jurisprudência..." rows="2" style="margin:0; resize:none; flex:1; min-width:200px;"></textarea>
@@ -399,7 +406,7 @@
 
                         <!-- Sub: Flashcards -->
                         <div id="subia-flashcards" style="display:none;">
-                            <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:16px;">A IA criará flashcards inteligentes baseados na Fonte marcada acima.</p>
+                            <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:16px;">A IA criará flashcards inteligentes baseados na Fonte marcada acima focados em alta retenção.</p>
                             <button class="btn-primary" onclick="executarIA('flashcards')">Gerar Flashcards Automáticos</button>
                             <div class="chat-box" id="box-fc" style="margin-top:16px; display:none; background:transparent; border:none; padding:0; height:auto; overflow:visible;"></div>
                         </div>
@@ -476,7 +483,8 @@
     <div id="modal-historico-ia" class="modal">
         <div class="modal-content" style="max-width:700px;">
             <button class="modal-close" style="position:absolute; top:20px; right:20px; background:transparent; border:none; font-size:1.5rem; cursor:pointer; color:var(--text-muted);" onclick="document.getElementById('modal-historico-ia').style.display='none'">✖</button>
-            <h2 style="margin-top:0;">🔄 Últimas 10 Perguntas</h2>
+            <h2 style="margin-top:0;">🔄 Perfil e Últimas Perguntas</h2>
+            <p style="font-size:0.85rem; color:var(--text-muted);">As perguntas abaixo ajudam a IA a entender seu perfil, dores e jornada de estudos.</p>
             <div id="lista-historico-ia" style="display:flex; flex-direction:column; gap:12px; margin-top:16px;"></div>
         </div>
     </div>
@@ -510,9 +518,11 @@
         let userAtual = null, refDb = null, refStore = null, isAdmin = false;
         let dbData = { sessoes: [], provas: [], materias: [], cadernos: [], biblioteca: [], iaHistorico: [] };
         let segundosCronometro = 0, cronometroInterval = null, graficoInstance = null;
+        let segundosPausa = 0, pausaInterval = null;
         let editandoRegistroId = null;
+        let calMesOff = 0; // Navegação do Calendário
         
-        // PALETA ATUALIZADA (com Preto e Branco)
+        // PALETA ATUALIZADA
         const paleta17 = ['#007AFF','#34C759','#FF3B30','#FF9500','#5856D6','#AF52DE','#5AC8FA','#FF2D55','#E5C07B','#98C379','#E06C75','#C678DD','#56B6C2','#D19A66','#61AFEF', '#000000', '#FFFFFF'];
         let corAtualMateria = paleta17[0];
 
@@ -532,7 +542,6 @@
                 document.getElementById('tela-login').style.display = 'none'; document.getElementById('tela-painel').style.display = 'block';
                 document.getElementById('conta-email').textContent = user.email;
                 
-                // Validação de Admin no Banco de Dados
                 try {
                     let adminSnap = await db.ref('admins/' + user.uid).once('value');
                     isAdmin = adminSnap.val() === true;
@@ -559,38 +568,29 @@
                 if(e.currentTarget.textContent.includes('PRUMA IA')) { e.currentTarget.style.background='rgba(0,122,255,0.12)'; e.currentTarget.style.borderLeft='4px solid var(--brand-primary)'; }
             }
             if(window.innerWidth <= 768) document.getElementById('sidebar-menu').classList.remove('open');
-            if(t === 'estatisticas') {
-                renderizarFiltrosEstatisticas();
-                atualizarEstatisticas();
-            }
+            if(t === 'estatisticas') { renderizarFiltrosEstatisticas(); atualizarEstatisticas(); }
         }
 
         // CONTA E RESGATE
         function aplicarCorSistema(cor) {
             document.documentElement.style.setProperty('--brand-primary', cor); 
             if (cor === '#FFFFFF') {
-                document.documentElement.style.setProperty('--btn-text', '#000000');
-                document.documentElement.style.setProperty('--border-color', '#CCCCCC');
+                document.documentElement.style.setProperty('--btn-text', '#000000'); document.documentElement.style.setProperty('--border-color', '#CCCCCC');
             } else if (cor === '#000000') {
-                document.documentElement.style.setProperty('--btn-text', '#FFFFFF');
-                document.documentElement.style.setProperty('--border-color', '#333333');
+                document.documentElement.style.setProperty('--btn-text', '#FFFFFF'); document.documentElement.style.setProperty('--border-color', '#333333');
             } else {
-                document.documentElement.style.setProperty('--btn-text', '#FFFFFF');
-                document.documentElement.style.setProperty('--border-color', cor + '55');
+                document.documentElement.style.setProperty('--btn-text', '#FFFFFF'); document.documentElement.style.setProperty('--border-color', cor + '55');
             }
             localStorage.setItem('pruma_cor_sys', cor);
         }
-
         function carregarPaletaSistema() {
             let div = document.getElementById('paleta-cores-sistema'); div.innerHTML = '';
             paleta17.forEach(cor => {
                 let dot = document.createElement('div'); dot.style.width='32px'; dot.style.height='32px'; dot.style.borderRadius='50%'; 
                 dot.style.background = cor; dot.style.cursor='pointer'; dot.style.border = '1px solid #CCC';
-                dot.onclick = () => aplicarCorSistema(cor);
-                div.appendChild(dot);
+                dot.onclick = () => aplicarCorSistema(cor); div.appendChild(dot);
             });
-            let salva = localStorage.getItem('pruma_cor_sys'); 
-            if(salva) aplicarCorSistema(salva);
+            let salva = localStorage.getItem('pruma_cor_sys'); if(salva) aplicarCorSistema(salva);
         }
         function salvarNomePerfil() { let n = document.getElementById('conta-nome').value.trim(); if(n) refDb.child('perfil/nome').set(n); alert("Salvo."); }
         async function excluirConta() { if(confirm("Apagar tudo?")) { await refDb.remove(); await userAtual.delete(); window.location.reload(); } }
@@ -625,18 +625,37 @@
             refDb.child('ia_historico').on('value', s => { dbData.iaHistorico = s.val() || []; renderizarHistoricoIA(); });
         }
 
-        function iniciarCronometro() { if(!cronometroInterval) { cronometroInterval = setInterval(() => { segundosCronometro++; atualizarVisorCronometro(); }, 1000); } }
-        function pausarCronometro() { clearInterval(cronometroInterval); cronometroInterval = null; }
+        // CRONÔMETRO AVANÇADO
+        function iniciarCronometro() { 
+            if(pausaInterval) { clearInterval(pausaInterval); pausaInterval = null; }
+            document.getElementById('visor-pausa-container').style.display = 'none';
+            if(!cronometroInterval) { cronometroInterval = setInterval(() => { segundosCronometro++; atualizarVisorCronometro(); }, 1000); } 
+        }
+        function pausarCronometro() { 
+            if(cronometroInterval) { clearInterval(cronometroInterval); cronometroInterval = null; }
+            document.getElementById('visor-pausa-container').style.display = 'block';
+            if(!pausaInterval) { pausaInterval = setInterval(() => { segundosPausa++; atualizarVisorPausa(); }, 1000); }
+        }
+        function reiniciarCronometro() {
+            if(cronometroInterval) clearInterval(cronometroInterval); cronometroInterval = null;
+            if(pausaInterval) clearInterval(pausaInterval); pausaInterval = null;
+            segundosCronometro = 0; segundosPausa = 0;
+            atualizarVisorCronometro(); atualizarVisorPausa();
+            document.getElementById('visor-pausa-container').style.display = 'none';
+        }
         function atualizarVisorCronometro() {
             let h = Math.floor(segundosCronometro/3600).toString().padStart(2,'0'), m = Math.floor((segundosCronometro%3600)/60).toString().padStart(2,'0'), s = (segundosCronometro%60).toString().padStart(2,'0');
             document.getElementById('cronometro-visor').textContent = `${h}:${m}:${s}`;
+        }
+        function atualizarVisorPausa() {
+            let h = Math.floor(segundosPausa/3600).toString().padStart(2,'0'), m = Math.floor((segundosPausa%3600)/60).toString().padStart(2,'0'), s = (segundosPausa%60).toString().padStart(2,'0');
+            document.getElementById('visor-pausa').textContent = `${h}:${m}:${s}`;
         }
         function toggleCamposDetalhes() {
             let mat = document.getElementById('ses-tipo-mat').value;
             document.getElementById('campos-pdf').style.display = mat.includes('PDF') ? 'flex' : 'none';
             document.getElementById('campos-video').style.display = mat==='Vídeo Aula' ? 'flex' : 'none';
         }
-
         function atualizarTopicosSessao(matNome) {
             let dl = document.getElementById('dl-ses-top'); if(!dl) return; dl.innerHTML = '';
             if(!Array.isArray(dbData.materias)) dbData.materias = Object.values(dbData.materias || {});
@@ -659,38 +678,37 @@
                 return (agora - s.timestamp) <= (parseInt(per)*86400000);
             }).forEach(s => {
                 let ac = s.acertos || 0, er = s.erros || 0;
-                tA += ac; tE += er;
-                tQts += (s.totalQts !== undefined ? s.totalQts : (ac + er));
-                tSeg += (s.segundos || 0);
+                tA += ac; tE += er; tQts += (s.totalQts !== undefined ? s.totalQts : (ac + er)); tSeg += (s.segundos || 0);
             });
 
-            let hh = Math.floor(tSeg / 3600).toString().padStart(2,'0');
-            let mm = Math.floor((tSeg % 3600) / 60).toString().padStart(2,'0');
-            let ss = (tSeg % 60).toString().padStart(2,'0');
-            let hTempo = `${hh}:${mm}:${ss}`;
+            let hh = Math.floor(tSeg / 3600).toString().padStart(2,'0'), mm = Math.floor((tSeg % 3600) / 60).toString().padStart(2,'0'), ss = (tSeg % 60).toString().padStart(2,'0');
+            let elRgTempo = document.getElementById('rg-tempo'); if(elRgTempo) elRgTempo.textContent = `${hh}:${mm}:${ss}`;
+            document.getElementById('rg-qts').textContent = tQts; document.getElementById('rg-acertos').textContent = tA;
+            document.getElementById('rg-erros').textContent = tE; document.getElementById('rg-perc').textContent = (tA + tE) > 0 ? Math.round((tA / (tA + tE)) * 100) + '%' : '0%';
+        }
 
-            let elRgTempo = document.getElementById('rg-tempo');
-            if(elRgTempo) elRgTempo.textContent = hTempo;
-
-            document.getElementById('rg-qts').textContent = tQts;
-            document.getElementById('rg-acertos').textContent = tA;
-            document.getElementById('rg-erros').textContent = tE;
-            document.getElementById('rg-perc').textContent = (tA + tE) > 0 ? Math.round((tA / (tA + tE)) * 100) + '%' : '0%';
+        function alterarMesCalendario(delta) {
+            let pSessao = dbData.sessoes.length > 0 ? dbData.sessoes.reduce((min, s) => Math.min(min, s.timestamp), Date.now()) : Date.now();
+            let dataMinima = new Date(pSessao); dataMinima.setDate(1); dataMinima.setHours(0,0,0,0);
+            
+            let agora = new Date();
+            let mesAlvo = new Date(agora.getFullYear(), agora.getMonth() + calMesOff + delta, 1);
+            
+            if (mesAlvo < dataMinima) return; // Não deixa voltar antes do primeiro estudo
+            calMesOff += delta;
+            renderizarCalendarioMes();
         }
 
         function renderizarCalendarioMes() {
-            let grid = document.getElementById('calendario-grid');
-            if(!grid) return;
-            grid.innerHTML = '';
+            let grid = document.getElementById('calendario-grid'); if(!grid) return; grid.innerHTML = '';
             
             let agora = new Date();
-            let ano = agora.getFullYear(), mes = agora.getMonth();
+            let targetDate = new Date(agora.getFullYear(), agora.getMonth() + calMesOff, 1);
+            let ano = targetDate.getFullYear(), mes = targetDate.getMonth();
             const nomesMeses = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
-            document.getElementById('calendario-titulo').textContent = `Estudos em ${nomesMeses[mes]} ${ano}`;
+            document.getElementById('calendario-titulo').textContent = `${nomesMeses[mes]} ${ano}`;
 
-            ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'].forEach(d => {
-                grid.innerHTML += `<div style="font-weight:700; color:var(--text-muted); font-size:0.75rem; padding-bottom:4px;">${d}</div>`;
-            });
+            ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'].forEach(d => { grid.innerHTML += `<div style="font-weight:700; color:var(--text-muted); font-size:0.75rem; padding-bottom:4px;">${d}</div>`; });
 
             let primeiroDiaDoMes = new Date(ano, mes, 1).getDay();
             let ultimoDiaDoMes = new Date(ano, mes + 1, 0).getDate();
@@ -718,11 +736,9 @@
             
             let sesDataVal = document.getElementById('ses-data').value;
             let dObj = sesDataVal ? new Date(sesDataVal + 'T00:00:00') : new Date();
-            let timestamp = dObj.getTime();
-            let dataStr = dObj.toLocaleDateString();
+            let timestamp = dObj.getTime(), dataStr = dObj.toLocaleDateString();
 
-            let hMan = parseInt(document.getElementById('ses-man-horas').value) || 0;
-            let mMan = parseInt(document.getElementById('ses-man-mins').value) || 0;
+            let hMan = parseInt(document.getElementById('ses-man-horas').value) || 0, mMan = parseInt(document.getElementById('ses-man-mins').value) || 0;
             let segsManuais = (hMan * 3600) + (mMan * 60);
             let segsFinais = segsManuais > 0 ? segsManuais : segundosCronometro;
             
@@ -733,10 +749,7 @@
             let horaAdicao = editandoRegistroId && existingReg ? (existingReg.hora || new Date().toLocaleTimeString().substring(0,5)) : new Date().toLocaleTimeString().substring(0,5);
 
             let reg = { 
-                id: regId, 
-                timestamp: timestamp, 
-                data: dataStr, 
-                hora: horaAdicao, 
+                id: regId, timestamp: timestamp, data: dataStr, hora: horaAdicao, 
                 materia: mat, topico: top, tipoEstudo: document.getElementById('ses-tipo-estudo').value, 
                 tipoMat: document.getElementById('ses-tipo-mat').value, segundos: segsFinais, 
                 acertos: a, erros: e, totalQts: a+e, obs: sanitizeText(document.getElementById('ses-obs').value) 
@@ -748,15 +761,14 @@
             if(!Array.isArray(dbData.materias)) dbData.materias = Object.values(dbData.materias || {});
             let idxM = dbData.materias.findIndex(m => m.nome.toLowerCase() === mat.toLowerCase());
             if(idxM === -1) { 
-                dbData.materias.push({id: gerarId(), nome: mat, cor: corAtualMateria, topicos: top ? [top] : []}); 
-                refDb.child('materias').set(dbData.materias); 
+                dbData.materias.push({id: gerarId(), nome: mat, cor: corAtualMateria, topicos: top ? [top] : []}); refDb.child('materias').set(dbData.materias); 
             } else if(top) {
                 if(!Array.isArray(dbData.materias[idxM].topicos)) dbData.materias[idxM].topicos = Object.values(dbData.materias[idxM].topicos || {});
                 if(!dbData.materias[idxM].topicos.includes(top)) { dbData.materias[idxM].topicos.push(top); refDb.child('materias').set(dbData.materias); }
             }
             refDb.child('sessoes/'+reg.id).set(reg);
             
-            cancelarEdicaoRegistro(); segundosCronometro = 0; atualizarVisorCronometro();
+            cancelarEdicaoRegistro(); reiniciarCronometro();
             ['ses-mat','ses-top','ses-acertos','ses-erros','ses-man-horas','ses-man-mins','ses-obs','ses-pdf-ini','ses-pdf-fim','ses-vid-ini','ses-vid-fim'].forEach(id=> { if(document.getElementById(id)) document.getElementById(id).value = ''; });
             document.getElementById('ses-data').value = new Date().toISOString().split('T')[0];
         }
@@ -766,38 +778,21 @@
             editandoRegistroId = id;
             if(s.timestamp) {
                 let sDate = new Date(s.timestamp);
-                let year = sDate.getFullYear();
-                let month = String(sDate.getMonth() + 1).padStart(2, '0');
-                let day = String(sDate.getDate()).padStart(2, '0');
+                let year = sDate.getFullYear(), month = String(sDate.getMonth() + 1).padStart(2, '0'), day = String(sDate.getDate()).padStart(2, '0');
                 document.getElementById('ses-data').value = `${year}-${month}-${day}`;
-            } else {
-                document.getElementById('ses-data').value = new Date().toISOString().split('T')[0];
-            }
-            document.getElementById('ses-mat').value = s.materia || '';
-            document.getElementById('ses-top').value = s.topico || '';
-            document.getElementById('ses-mat').title = s.materia || '';
-            document.getElementById('ses-top').title = s.topico || '';
-            document.getElementById('ses-tipo-estudo').value = s.tipoEstudo || 'Teoria';
-            document.getElementById('ses-tipo-mat').value = s.tipoMat || 'Questões';
-            toggleCamposDetalhes();
-            document.getElementById('ses-acertos').value = s.acertos || '';
-            document.getElementById('ses-erros').value = s.erros || '';
+            } else { document.getElementById('ses-data').value = new Date().toISOString().split('T')[0]; }
+            document.getElementById('ses-mat').value = s.materia || ''; document.getElementById('ses-top').value = s.topico || '';
+            document.getElementById('ses-tipo-estudo').value = s.tipoEstudo || 'Teoria'; document.getElementById('ses-tipo-mat').value = s.tipoMat || 'Questões'; toggleCamposDetalhes();
+            document.getElementById('ses-acertos').value = s.acertos || ''; document.getElementById('ses-erros').value = s.erros || '';
             let hrs = Math.floor((s.segundos || 0) / 3600), mins = Math.floor(((s.segundos || 0) % 3600) / 60);
-            document.getElementById('ses-man-horas').value = hrs || '';
-            document.getElementById('ses-man-mins').value = mins || '';
+            document.getElementById('ses-man-horas').value = hrs || ''; document.getElementById('ses-man-mins').value = mins || '';
             document.getElementById('ses-obs').value = s.obs || '';
             
-            document.getElementById('form-titulo-sessao').textContent = "✏️ Editando Sessão";
-            document.getElementById('btn-salvar-sessao').textContent = "💾 Atualizar Sessão";
-            document.getElementById('btn-cancelar-edicao').style.display = 'block';
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+            document.getElementById('form-titulo-sessao').textContent = "✏️ Editando Sessão"; document.getElementById('btn-salvar-sessao').textContent = "💾 Atualizar Sessão"; document.getElementById('btn-cancelar-edicao').style.display = 'block'; window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
         function cancelarEdicaoRegistro() {
-            editandoRegistroId = null;
-            document.getElementById('form-titulo-sessao').textContent = "Registrar Sessão";
-            document.getElementById('btn-salvar-sessao').textContent = "💾 Salvar Sessão";
-            document.getElementById('btn-cancelar-edicao').style.display = 'none';
+            editandoRegistroId = null; document.getElementById('form-titulo-sessao').textContent = "Registrar Sessão"; document.getElementById('btn-salvar-sessao').textContent = "💾 Salvar Sessão"; document.getElementById('btn-cancelar-edicao').style.display = 'none';
             ['ses-mat','ses-top','ses-acertos','ses-erros','ses-man-horas','ses-man-mins','ses-obs','ses-pdf-ini','ses-pdf-fim','ses-vid-ini','ses-vid-fim'].forEach(id=> { if(document.getElementById(id)) { document.getElementById(id).value = ''; document.getElementById(id).title = ''; } });
             document.getElementById('ses-data').value = new Date().toISOString().split('T')[0];
         }
@@ -806,19 +801,10 @@
             let divReg = document.getElementById('lista-ultimos-registros'); divReg.innerHTML = '';
             let arr = [...dbData.sessoes].sort((a,b)=> b.timestamp - a.timestamp);
             
-            if(!arr.length) {
-                divReg.innerHTML = 'Nenhum registro.';
-                atualizarResumoGeral();
-                renderizarCalendarioMes();
-                return;
-            }
+            if(!arr.length) { divReg.innerHTML = 'Nenhum registro.'; atualizarResumoGeral(); renderizarCalendarioMes(); return; }
 
             let agrupadoPorData = {};
-            arr.forEach(s => {
-                let d = s.data || new Date(s.timestamp).toLocaleDateString();
-                if(!agrupadoPorData[d]) agrupadoPorData[d] = [];
-                agrupadoPorData[d].push(s);
-            });
+            arr.forEach(s => { let d = s.data || new Date(s.timestamp).toLocaleDateString(); if(!agrupadoPorData[d]) agrupadoPorData[d] = []; agrupadoPorData[d].push(s); });
 
             let count = 0;
             for(let dataStr in agrupadoPorData) {
@@ -829,79 +815,47 @@
                 let sessoesHtml = '';
                 
                 sessoesDoDia.forEach(s => {
-                    if(count >= 15) return;
-                    count++;
-                    let ht = Math.floor(s.segundos/3600), mt = Math.floor((s.segundos%3600)/60), st = s.segundos%60;
-                    let timeStr = `${ht}h ${mt}m ${st}s`;
-                    let perc = s.totalQts > 0 ? Math.round((s.acertos/s.totalQts)*100)+'%' : '0%';
-                    let accStr = `${perc} (${s.acertos||0}/${s.totalQts||0})`;
+                    if(count >= 15) return; count++;
+                    let ht = Math.floor(s.segundos/3600), mt = Math.floor((s.segundos%3600)/60), st = s.segundos%60; let timeStr = `${ht}h ${mt}m ${st}s`;
+                    let perc = s.totalQts > 0 ? Math.round((s.acertos/s.totalQts)*100)+'%' : '0%'; let accStr = `${perc} (${s.acertos||0}/${s.totalQts||0})`;
                     let tooltipText = `${s.materia} - ${s.topico||'Geral'} | Lançado às: ${s.hora||'--:--'} | ⏱️ ${timeStr} | 🎯 ${accStr}${s.obs ? ' | ' + s.obs : ''}`;
 
-                    sessoesHtml += `
-                    <div class="registro-curto" title="${sanitizeText(tooltipText)}">
+                    sessoesHtml += `<div class="registro-curto" title="${sanitizeText(tooltipText)}">
                         <div class="info">
                             <strong title="${sanitizeText(s.materia)}">${s.tipoMat.includes('PDF')?'📖':s.tipoMat==='Vídeo Aula'?'🎥':'📝'} ${s.materia} <span style="font-size:0.75rem; color:var(--text-muted); font-weight:normal;">(Lançado às ${s.hora||'--:--'})</span></strong>
                             <span style="display:flex; align-items:center; gap:6px; font-size:0.8rem; color:var(--text-muted); min-width:0; max-width:100%;">
-                                <span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; flex:1; max-width:140px;" title="${sanitizeText(s.topico||'Geral')}">${s.topico||'Geral'}</span>
-                                <span style="flex-shrink:0;">| ⏱️ ${timeStr} | 🎯 ${accStr}</span>
+                                <span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; flex:1; max-width:140px;" title="${sanitizeText(s.topico||'Geral')}">${s.topico||'Geral'}</span><span style="flex-shrink:0;">| ⏱️ ${timeStr} | 🎯 ${accStr}</span>
                             </span>
                         </div>
-                        <div class="acoes-reg">
-                            <button style="background:transparent;border:none;cursor:pointer;font-size:1rem;" title="Editar" onclick="editarRegistro('${s.id}')">✏️</button>
-                            <button class="btn-x-vermelho" onclick="if(confirm('Excluir?')) refDb.child('sessoes/${s.id}').remove()">✖</button>
-                        </div>
+                        <div class="acoes-reg"><button style="background:transparent;border:none;cursor:pointer;font-size:1rem;" title="Editar" onclick="editarRegistro('${s.id}')">✏️</button><button class="btn-x-vermelho" onclick="if(confirm('Excluir?')) refDb.child('sessoes/${s.id}').remove()">✖</button></div>
                     </div>`;
                 });
-                
-                if(sessoesHtml) {
-                    divReg.innerHTML += headerHtml + sessoesHtml;
-                }
+                if(sessoesHtml) divReg.innerHTML += headerHtml + sessoesHtml;
             }
-
-            atualizarResumoGeral();
-            renderizarCalendarioMes();
+            atualizarResumoGeral(); renderizarCalendarioMes();
         }
 
-        // PROVAS
+        // PROVAS, MATÉRIAS E ESTATÍSTICAS
         function salvarProva() {
             let n = sanitizeText(document.getElementById('conc-nome').value), d = document.getElementById('conc-data').value;
             if(!n) return alert("Preencha o nome da prova.");
             if(!Array.isArray(dbData.provas)) dbData.provas = Object.values(dbData.provas || {});
-            dbData.provas.push({id: gerarId(), nome: n, data: d || ''}); 
-            refDb.child('provas').set(dbData.provas); 
-            document.getElementById('conc-nome').value='';
-            document.getElementById('conc-data').value='';
+            dbData.provas.push({id: gerarId(), nome: n, data: d || ''}); refDb.child('provas').set(dbData.provas); 
+            document.getElementById('conc-nome').value=''; document.getElementById('conc-data').value='';
         }
-
         function excluirProva(pId) {
             if(!confirm('Excluir esta prova? As matérias vinculadas serão mantidas no acervo geral.')) return;
-            dbData.provas = dbData.provas.filter(x => x.id !== pId);
-            refDb.child('provas').set(dbData.provas);
-            
+            dbData.provas = dbData.provas.filter(x => x.id !== pId); refDb.child('provas').set(dbData.provas);
             if(!Array.isArray(dbData.materias)) dbData.materias = Object.values(dbData.materias || {});
-            let mudou = false;
-            dbData.materias.forEach(m => {
-                if(m.provaId === pId) {
-                    m.provaId = "";
-                    mudou = true;
-                }
-            });
-            if(mudou) {
-                refDb.child('materias').set(dbData.materias);
-            }
+            let mudou = false; dbData.materias.forEach(m => { if(m.provaId === pId) { m.provaId = ""; mudou = true; } });
+            if(mudou) refDb.child('materias').set(dbData.materias);
         }
-
         function renderizarProvas() {
             let div = document.getElementById('lista-provas-div'); div.innerHTML = '';
             if(!Array.isArray(dbData.provas)) dbData.provas = Object.values(dbData.provas || {});
             dbData.provas.forEach(p => {
-                let diasText = 'data indefinida';
-                let corD = 'var(--text-muted)';
-                if(p.data) {
-                    let dias = Math.ceil((new Date(p.data) - new Date()) / (1000*60*60*24));
-                    diasText = `Faltam ${dias} dias`;
-                    corD = (dias < 30) ? 'var(--brand-danger)' : 'var(--brand-primary)';
-                }
+                let diasText = 'data indefinida'; let corD = 'var(--text-muted)';
+                if(p.data) { let dias = Math.ceil((new Date(p.data) - new Date()) / (1000*60*60*24)); diasText = `Faltam ${dias} dias`; corD = (dias < 30) ? 'var(--brand-danger)' : 'var(--brand-primary)'; }
                 div.innerHTML += `<div class="stat-card" style="position:relative;" title="${sanitizeText(p.nome)}">
                     <strong style="font-size: 1.5rem; color: var(--text-main); display: block; margin: 4px 0 8px 0; word-break: break-word;">${sanitizeText(p.nome)}</strong>
                     <span style="font-size: 1.1rem; font-weight: 700; color: ${corD}; display: block; margin-bottom: 6px;">${diasText}</span>
@@ -910,591 +864,278 @@
                 </div>`;
             });
         }
-
-        // MATÉRIAS, EDIÇÃO E JUNÇÃO DE TÓPICOS
         document.getElementById('mat-paleta').innerHTML = paleta17.map(c => `<div style="width:28px; height:28px; border-radius:50%; background:${c}; border:1px solid #CCC; cursor:pointer;" onclick="corAtualMateria='${c}'; this.style.border='2px solid var(--text-main)';"></div>`).join('');
         
         function salvarMateria() {
-            let n = sanitizeText(document.getElementById('mat-nome').value), t = sanitizeText(document.getElementById('mat-topico').value), pId = document.getElementById('mat-prova').value;
-            if(!n) return;
+            let n = sanitizeText(document.getElementById('mat-nome').value), t = sanitizeText(document.getElementById('mat-topico').value), pId = document.getElementById('mat-prova').value; if(!n) return;
             if(!Array.isArray(dbData.materias)) dbData.materias = Object.values(dbData.materias || {});
-            
             let existingSameName = dbData.materias.filter(m => m.nome.toLowerCase() === n.toLowerCase());
             if(existingSameName.length > 0) {
                 let apenasCor = confirm(`A matéria "${n}" já existe. Deseja alterar somente a cor de todas as pastas com este nome (OK) ou criar uma nova pasta/vincular (Cancelar)?`);
-                if(apenasCor) {
-                    dbData.materias.forEach(m => {
-                        if(m.nome.toLowerCase() === n.toLowerCase()) {
-                            m.cor = corAtualMateria;
-                            if(t && (!m.topicos || !m.topicos.includes(t))) {
-                                if(!Array.isArray(m.topicos)) m.topicos = Object.values(m.topicos || {});
-                                m.topicos.push(t);
-                            }
-                        }
-                    });
-                    refDb.child('materias').set(dbData.materias);
-                    document.getElementById('mat-topico').value = '';
-                    alert("Cor atualizada em todas as pastas com este nome!");
-                    return;
-                }
+                if(apenasCor) { dbData.materias.forEach(m => { if(m.nome.toLowerCase() === n.toLowerCase()) { m.cor = corAtualMateria; if(t && (!m.topicos || !m.topicos.includes(t))) { if(!Array.isArray(m.topicos)) m.topicos = Object.values(m.topicos || {}); m.topicos.push(t); } } }); refDb.child('materias').set(dbData.materias); document.getElementById('mat-topico').value = ''; alert("Cor atualizada!"); return; }
             }
-
             let idx = dbData.materias.findIndex(m => m.nome.toLowerCase() === n.toLowerCase() && m.provaId === pId);
-            if(idx !== -1) { 
-                if(!Array.isArray(dbData.materias[idx].topicos)) dbData.materias[idx].topicos = Object.values(dbData.materias[idx].topicos || {});
-                if(t && !dbData.materias[idx].topicos.includes(t)) dbData.materias[idx].topicos.push(t); 
-                dbData.materias[idx].cor = corAtualMateria; 
-            } else { 
-                dbData.materias.push({id: gerarId(), nome: n, cor: corAtualMateria, topicos: t ? [t] : [], provaId: pId}); 
-            }
+            if(idx !== -1) { if(!Array.isArray(dbData.materias[idx].topicos)) dbData.materias[idx].topicos = Object.values(dbData.materias[idx].topicos || {}); if(t && !dbData.materias[idx].topicos.includes(t)) dbData.materias[idx].topicos.push(t); dbData.materias[idx].cor = corAtualMateria; } else { dbData.materias.push({id: gerarId(), nome: n, cor: corAtualMateria, topicos: t ? [t] : [], provaId: pId}); }
             refDb.child('materias').set(dbData.materias); document.getElementById('mat-topico').value = '';
         }
-
         function moverMateriaParaProva(id) {
-            let txt = dbData.provas.map((pr, i) => `${i+1} - ${pr.nome}`).join('\n');
-            let res = prompt("Digite o número correspondente à Prova para vincular esta matéria:\n0 - Matérias Gerais\n" + txt);
-            if(res !== null) {
-                let num = parseInt(res);
-                let m = dbData.materias.find(x => x.id === id);
-                if(num === 0) m.provaId = "";
-                else if(num > 0 && num <= dbData.provas.length) m.provaId = dbData.provas[num-1].id;
-                else return alert("Opção inválida.");
-                refDb.child('materias').set(dbData.materias);
-            }
+            let txt = dbData.provas.map((pr, i) => `${i+1} - ${pr.nome}`).join('\n'); let res = prompt("Vincular à Prova:\n0 - Matérias Gerais\n" + txt);
+            if(res !== null) { let num = parseInt(res); let m = dbData.materias.find(x => x.id === id); if(num === 0) m.provaId = ""; else if(num > 0 && num <= dbData.provas.length) m.provaId = dbData.provas[num-1].id; else return alert("Inválido."); refDb.child('materias').set(dbData.materias); }
         }
-
         function excluirTopicoMateria(mId, i) {
-            if(!confirm('Tem certeza que deseja excluir o tópico?')) return;
-            let m = dbData.materias.find(x=>x.id===mId);
-            if(m && m.topicos) {
-                m.topicos.splice(i,1);
-                refDb.child('materias').set(dbData.materias);
-            }
+            if(!confirm('Excluir o tópico?')) return; let m = dbData.materias.find(x=>x.id===mId);
+            if(m && m.topicos) { m.topicos.splice(i,1); refDb.child('materias').set(dbData.materias); }
         }
-
         function renderizarMaterias() {
-            let statePastas = [];
-            document.querySelectorAll('.pasta-body.aberta').forEach(el => {
-                let id = el.previousElementSibling ? el.previousElementSibling.getAttribute('data-folder-id') : null;
-                if(id) statePastas.push(id);
-            });
-
-            let stateBlocos = [];
-            document.querySelectorAll('.bloco-prova').forEach(bp => {
-                let content = bp.querySelector('.bloco-prova-content');
-                let bId = bp.getAttribute('data-prova-id');
-                if(content && content.style.display !== 'none' && bId) stateBlocos.push(bId);
-            });
-
+            let statePastas = []; document.querySelectorAll('.pasta-body.aberta').forEach(el => { let id = el.previousElementSibling ? el.previousElementSibling.getAttribute('data-folder-id') : null; if(id) statePastas.push(id); });
+            let stateBlocos = []; document.querySelectorAll('.bloco-prova').forEach(bp => { let content = bp.querySelector('.bloco-prova-content'); let bId = bp.getAttribute('data-prova-id'); if(content && content.style.display !== 'none' && bId) stateBlocos.push(bId); });
             let div = document.getElementById('lista-materias-cadastradas'); div.innerHTML = '';
-            if(!Array.isArray(dbData.materias)) dbData.materias = Object.values(dbData.materias || {});
-            if(!Array.isArray(dbData.provas)) dbData.provas = Object.values(dbData.provas || {});
-
+            if(!Array.isArray(dbData.materias)) dbData.materias = Object.values(dbData.materias || {}); if(!Array.isArray(dbData.provas)) dbData.provas = Object.values(dbData.provas || {});
             let grupos = { 'geral': [] };
-            dbData.materias.forEach(m => {
-                let p = m.provaId;
-                if(!p || !dbData.provas.some(pr => pr.id === p)) {
-                    p = 'geral';
-                }
-                if(!grupos[p]) grupos[p] = [];
-                grupos[p].push(m);
-            });
-
+            dbData.materias.forEach(m => { let p = m.provaId; if(!p || !dbData.provas.some(pr => pr.id === p)) { p = 'geral'; } if(!grupos[p]) grupos[p] = []; grupos[p].push(m); });
             for(let p in grupos) {
                 if(grupos[p].length === 0) continue;
-                let isGeral = p === 'geral';
-                let nomeP = isGeral ? 'Matérias Gerais' : (dbData.provas.find(x=>x.id===p)?.nome || 'Matérias Gerais');
-                
+                let isGeral = p === 'geral'; let nomeP = isGeral ? 'Matérias Gerais' : (dbData.provas.find(x=>x.id===p)?.nome || 'Matérias Gerais');
                 let conteudoMat = grupos[p].map(m => {
                     if(!Array.isArray(m.topicos)) m.topicos = Object.values(m.topicos || {});
                     let htmlT = m.topicos.map((t, i) => `<div style="padding:8px 0; border-bottom:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center; gap:8px;" title="${sanitizeText(t)}"><span style="overflow:hidden; text-overflow:ellipsis; min-width:0; flex:1;" title="${sanitizeText(t)}">📄 ${t}</span> <div style="display:flex; align-items:center; gap:6px; flex-shrink:0;"><button style="background:transparent;border:none;cursor:pointer;font-size:1rem;" title="Editar Tópico" onclick="editarTopico('${m.id}', ${i})">✏️</button> <button style="background:transparent;border:none;cursor:pointer;font-size:1rem;" title="Juntar Tópicos" onclick="abrirModalJuntar('${m.id}', '${sanitizeText(t).replace(/'/g,"\\'")}')">🔗</button> <button class="btn-x-vermelho" onclick="excluirTopicoMateria('${m.id}', ${i})">✖</button></div></div>`).join('');
-                    
-                    let vazioOpcao = `<div style="color:var(--text-muted);font-size:0.85rem; padding:6px 0; display:flex; justify-content:space-between; align-items:center;"><span>Sem tópicos.</span> <button class="btn-danger" style="padding:4px 8px; font-size:0.75rem;" onclick="if(confirm('Excluir esta matéria sem tópicos?')){ dbData.materias=dbData.materias.filter(x=>x.id!='${m.id}'); refDb.child('materias').set(dbData.materias); }">Excluir Matéria</button></div>`;
-
-                    return `<div class="pasta-header" data-folder-id="${m.id}" style="border-left:5px solid ${m.cor};" onclick="this.nextElementSibling.classList.toggle('aberta')" title="${sanitizeText(m.nome)}">
-                        <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1; min-width:0;" title="${sanitizeText(m.nome)}">📁 ${m.nome} (${m.topicos.length})</span>
-                        <div style="display:flex; gap:8px; align-items:center;">
-                            <button style="background:transparent;border:none;cursor:pointer;font-size:1.1rem;" title="Mover para Prova" onclick="event.stopPropagation(); moverMateriaParaProva('${m.id}')">🔄</button>
-                            <button class="btn-x-vermelho" style="flex-shrink:0;" onclick="event.stopPropagation(); if(confirm('Apagar matéria inteira?')) { dbData.materias=dbData.materias.filter(x=>x.id!=='${m.id}'); refDb.child('materias').set(dbData.materias); }">✖</button>
-                        </div>
-                    </div><div class="pasta-body">${htmlT || vazioOpcao}</div>`;
+                    let vazioOpcao = `<div style="color:var(--text-muted);font-size:0.85rem; padding:6px 0; display:flex; justify-content:space-between; align-items:center;"><span>Sem tópicos.</span> <button class="btn-danger" style="padding:4px 8px; font-size:0.75rem;" onclick="if(confirm('Excluir?')){ dbData.materias=dbData.materias.filter(x=>x.id!='${m.id}'); refDb.child('materias').set(dbData.materias); }">Excluir Matéria</button></div>`;
+                    return `<div class="pasta-header" data-folder-id="${m.id}" style="border-left:5px solid ${m.cor};" onclick="this.nextElementSibling.classList.toggle('aberta')" title="${sanitizeText(m.nome)}"><span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1; min-width:0;" title="${sanitizeText(m.nome)}">📁 ${m.nome} (${m.topicos.length})</span><div style="display:flex; gap:8px; align-items:center;"><button style="background:transparent;border:none;cursor:pointer;font-size:1.1rem;" title="Mover para Prova" onclick="event.stopPropagation(); moverMateriaParaProva('${m.id}')">🔄</button><button class="btn-x-vermelho" style="flex-shrink:0;" onclick="event.stopPropagation(); if(confirm('Apagar matéria inteira?')) { dbData.materias=dbData.materias.filter(x=>x.id!=='${m.id}'); refDb.child('materias').set(dbData.materias); }">✖</button></div></div><div class="pasta-body">${htmlT || vazioOpcao}</div>`;
                 }).join('');
-
                 if(!isGeral) {
                     let isBlockOpen = stateBlocos.includes(p);
-                    div.innerHTML += `
-                    <div class="bloco-prova" data-prova-id="${p}">
-                        <div class="bloco-prova-titulo" style="cursor:pointer; user-select:none; margin-bottom:0; justify-content:space-between;" onclick="let el=this.nextElementSibling; el.style.display = (el.style.display==='none'||!el.style.display)?'block':'none';" title="${sanitizeText(nomeP)}">
-                            <span>🎯 ${nomeP}</span>
-                            <span style="font-size:0.85rem; font-weight:normal; color:var(--text-muted);">▼ Expandir / Minimizar</span>
-                        </div>
-                        <div class="bloco-prova-content" style="display:${isBlockOpen?'block':'none'}; margin-top:16px;">${conteudoMat}</div>
-                    </div>`;
-                } else {
-                    div.innerHTML += `<h3 style="color:var(--text-muted); margin-top:20px; font-size:1.1rem;" title="${sanitizeText(nomeP)}">${nomeP}</h3>${conteudoMat}`;
-                }
+                    div.innerHTML += `<div class="bloco-prova" data-prova-id="${p}"><div class="bloco-prova-titulo" style="cursor:pointer; user-select:none; margin-bottom:0; justify-content:space-between;" onclick="let el=this.nextElementSibling; el.style.display = (el.style.display==='none'||!el.style.display)?'block':'none';" title="${sanitizeText(nomeP)}"><span>🎯 ${nomeP}</span><span style="font-size:0.85rem; font-weight:normal; color:var(--text-muted);">▼ Expandir / Minimizar</span></div><div class="bloco-prova-content" style="display:${isBlockOpen?'block':'none'}; margin-top:16px;">${conteudoMat}</div></div>`;
+                } else { div.innerHTML += `<h3 style="color:var(--text-muted); margin-top:20px; font-size:1.1rem;" title="${sanitizeText(nomeP)}">${nomeP}</h3>${conteudoMat}`; }
             }
-
-            statePastas.forEach(id => {
-                let hdr = document.querySelector(`.pasta-header[data-folder-id="${id}"]`);
-                if(hdr && hdr.nextElementSibling) hdr.nextElementSibling.classList.add('aberta');
-            });
+            statePastas.forEach(id => { let hdr = document.querySelector(`.pasta-header[data-folder-id="${id}"]`); if(hdr && hdr.nextElementSibling) hdr.nextElementSibling.classList.add('aberta'); });
         }
-
         function editarTopico(mId, index) {
-            if(!Array.isArray(dbData.materias)) dbData.materias = Object.values(dbData.materias || {});
-            let mat = dbData.materias.find(m => m.id === mId); if(!mat) return;
-            if(!Array.isArray(mat.topicos)) mat.topicos = Object.values(mat.topicos || {});
-            let velhoTop = mat.topicos[index], novoTop = prompt("Editar nome do tópico:", velhoTop);
-            if(!novoTop || !novoTop.trim()) return;
-            novoTop = sanitizeText(novoTop.trim());
-            if(mat.topicos.includes(novoTop)) return alert("Já existe um tópico com esse nome.");
-            
-            mat.topicos[index] = novoTop;
-            dbData.sessoes.forEach(s => { if(s.materia === mat.nome && s.topico === velhoTop) s.topico = novoTop; }); refDb.child('sessoes').set(dbData.sessoes);
-            dbData.cadernos.forEach(c => { if(c.materia === mat.nome && c.topico === velhoTop) c.topico = novoTop; }); refDb.child('cadernos').set(dbData.cadernos);
-            refDb.child('materias').set(dbData.materias); alert("Tópico atualizado com sucesso!");
+            if(!Array.isArray(dbData.materias)) dbData.materias = Object.values(dbData.materias || {}); let mat = dbData.materias.find(m => m.id === mId); if(!mat) return;
+            if(!Array.isArray(mat.topicos)) mat.topicos = Object.values(mat.topicos || {}); let velhoTop = mat.topicos[index], novoTop = prompt("Editar nome do tópico:", velhoTop); if(!novoTop || !novoTop.trim()) return; novoTop = sanitizeText(novoTop.trim()); if(mat.topicos.includes(novoTop)) return alert("Tópico já existe.");
+            mat.topicos[index] = novoTop; dbData.sessoes.forEach(s => { if(s.materia === mat.nome && s.topico === velhoTop) s.topico = novoTop; }); refDb.child('sessoes').set(dbData.sessoes);
+            dbData.cadernos.forEach(c => { if(c.materia === mat.nome && c.topico === velhoTop) c.topico = novoTop; }); refDb.child('cadernos').set(dbData.cadernos); refDb.child('materias').set(dbData.materias); alert("Atualizado!");
         }
-
         function abrirModalJuntar(mId, topOri) {
-            if(!Array.isArray(dbData.materias)) dbData.materias = Object.values(dbData.materias || {});
-            let mat = dbData.materias.find(m => m.id === mId); if(!mat) return;
-            if(!Array.isArray(mat.topicos)) mat.topicos = Object.values(mat.topicos || {});
-            document.getElementById('lbl-topico-origem').textContent = topOri;
-            document.getElementById('hid-mat-id').value = mId;
-            document.getElementById('hid-top-origem').value = topOri;
-            
-            let sel = document.getElementById('sel-topico-destino'); sel.innerHTML = '';
-            mat.topicos.forEach(t => { if(t !== topOri) sel.innerHTML += `<option value="${t}">${t}</option>`; });
-            if(sel.options.length === 0) return alert("Não há outros tópicos para juntar.");
-            document.getElementById('modal-juntar').style.display='flex';
+            if(!Array.isArray(dbData.materias)) dbData.materias = Object.values(dbData.materias || {}); let mat = dbData.materias.find(m => m.id === mId); if(!mat) return;
+            if(!Array.isArray(mat.topicos)) mat.topicos = Object.values(mat.topicos || {}); document.getElementById('lbl-topico-origem').textContent = topOri; document.getElementById('hid-mat-id').value = mId; document.getElementById('hid-top-origem').value = topOri;
+            let sel = document.getElementById('sel-topico-destino'); sel.innerHTML = ''; mat.topicos.forEach(t => { if(t !== topOri) sel.innerHTML += `<option value="${t}">${t}</option>`; });
+            if(sel.options.length === 0) return alert("Não há outros tópicos."); document.getElementById('modal-juntar').style.display='flex';
         }
-
         function confirmarJuncao() {
             let mId = document.getElementById('hid-mat-id').value, tOri = document.getElementById('hid-top-origem').value, tDest = document.getElementById('sel-topico-destino').value;
-            if(!tDest || tOri === tDest) return alert("Selecione um tópico de destino válido.");
-            
-            if(!Array.isArray(dbData.materias)) dbData.materias = Object.values(dbData.materias || {});
-            let mat = dbData.materias.find(m => m.id === mId); if(!mat) return;
-            if(!Array.isArray(mat.topicos)) mat.topicos = Object.values(mat.topicos || {});
-            let novoTopico = `${tDest}. ${tOri}`;
-            
-            let idxDest = mat.topicos.indexOf(tDest);
-            if(idxDest !== -1) {
-                mat.topicos[idxDest] = novoTopico;
-                mat.topicos = mat.topicos.filter(t => t !== tOri);
-            } else {
-                mat.topicos = mat.topicos.filter(t => t !== tOri && t !== tDest);
-                mat.topicos.push(novoTopico);
-            }
-
+            if(!tDest || tOri === tDest) return alert("Selecione um tópico válido.");
+            if(!Array.isArray(dbData.materias)) dbData.materias = Object.values(dbData.materias || {}); let mat = dbData.materias.find(m => m.id === mId); if(!mat) return;
+            if(!Array.isArray(mat.topicos)) mat.topicos = Object.values(mat.topicos || {}); let novoTopico = `${tDest}. ${tOri}`; let idxDest = mat.topicos.indexOf(tDest);
+            if(idxDest !== -1) { mat.topicos[idxDest] = novoTopico; mat.topicos = mat.topicos.filter(t => t !== tOri); } else { mat.topicos = mat.topicos.filter(t => t !== tOri && t !== tDest); mat.topicos.push(novoTopico); }
             dbData.sessoes.forEach(s => { if(s.materia === mat.nome && (s.topico === tOri || s.topico === tDest)) s.topico = novoTopico; }); refDb.child('sessoes').set(dbData.sessoes);
             dbData.cadernos.forEach(c => { if(c.materia === mat.nome && (c.topico === tOri || c.topico === tDest)) c.topico = novoTopico; }); refDb.child('cadernos').set(dbData.cadernos);
-
-            refDb.child('materias').set(dbData.materias); document.getElementById('modal-juntar').style.display='none'; 
-            alert(`Tópicos juntados com sucesso como "${novoTopico}"!`);
+            refDb.child('materias').set(dbData.materias); document.getElementById('modal-juntar').style.display='none'; alert(`Tópicos juntados!`);
         }
-
         function atualizarSelectsUI() {
             let dlMats = document.getElementById('lista-materias-dl'); 
-            if(dlMats) { 
-                dlMats.innerHTML = ''; 
-                if(!Array.isArray(dbData.materias)) dbData.materias = Object.values(dbData.materias || {});
-                if(!Array.isArray(dbData.cadernos)) dbData.cadernos = Object.values(dbData.cadernos || {});
-                
-                let setNomes = new Set();
-                dbData.materias.forEach(m => { if(m.nome) setNomes.add(m.nome); });
-                dbData.cadernos.forEach(c => { if(c.materia) setNomes.add(c.materia); });
-                
-                [...setNomes].forEach(m => dlMats.innerHTML += `<option value="${m}">`); 
-            }
-            let selP = [document.getElementById('mat-prova'), document.getElementById('edital-ia-prova')];
-            selP.forEach(s => { 
-                if(s) { 
-                    s.innerHTML = '<option value="">Vincular a uma Prova? (Opcional)</option>'; 
-                    if(!Array.isArray(dbData.provas)) dbData.provas = Object.values(dbData.provas || {});
-                    dbData.provas.forEach(p => s.innerHTML += `<option value="${p.id}">${p.nome}</option>`); 
-                } 
-            });
-
-            let dlFontes = document.getElementById('dl-ia-fontes');
-            if(dlFontes) {
-                dlFontes.innerHTML = '';
-                if(Array.isArray(dbData.biblioteca)) {
-                    dbData.biblioteca.forEach(b => dlFontes.innerHTML += `<option value="${sanitizeText(b.nome)}">`);
-                }
-            }
+            if(dlMats) { dlMats.innerHTML = ''; if(!Array.isArray(dbData.materias)) dbData.materias = Object.values(dbData.materias || {}); if(!Array.isArray(dbData.cadernos)) dbData.cadernos = Object.values(dbData.cadernos || {}); let setNomes = new Set(); dbData.materias.forEach(m => { if(m.nome) setNomes.add(m.nome); }); dbData.cadernos.forEach(c => { if(c.materia) setNomes.add(c.materia); }); [...setNomes].forEach(m => dlMats.innerHTML += `<option value="${m}">`); }
+            let selP = [document.getElementById('mat-prova'), document.getElementById('edital-ia-prova')]; selP.forEach(s => { if(s) { s.innerHTML = '<option value="">Vincular a uma Prova? (Opcional)</option>'; if(!Array.isArray(dbData.provas)) dbData.provas = Object.values(dbData.provas || {}); dbData.provas.forEach(p => s.innerHTML += `<option value="${p.id}">${p.nome}</option>`); } });
+            let dlFontes = document.getElementById('dl-ia-fontes'); if(dlFontes) { dlFontes.innerHTML = ''; if(Array.isArray(dbData.biblioteca)) { dbData.biblioteca.forEach(b => dlFontes.innerHTML += `<option value="${sanitizeText(b.nome)}">`); } }
         }
-        function atualizarTopicosDatalist(inputId, matNome) {
-            let dl = document.getElementById('dl-'+inputId); if(!dl) return; dl.innerHTML = '';
-            if(!Array.isArray(dbData.materias)) dbData.materias = Object.values(dbData.materias || {});
-            dbData.materias.filter(m => m.nome.toLowerCase() === matNome.toLowerCase()).forEach(m => {
-                if(Array.isArray(m.topicos)) m.topicos.forEach(t => dl.innerHTML += `<option value="${t}">`);
-            });
-        }
-
-        // CADERNOS
         function salvarErro() {
-            let m = sanitizeText(document.getElementById('err-mat').value) || 'Geral';
-            let t = sanitizeText(document.getElementById('err-top').value) || 'Geral';
-            let txt = sanitizeText(document.getElementById('err-texto').value) || '(Sem anotação)';
-            
-            dbData.cadernos.push({id: gerarId(), materia: m, topico: t, texto: txt, timestamp: Date.now(), data: new Date().toLocaleDateString()});
-            refDb.child('cadernos').set(dbData.cadernos);
-            document.getElementById('err-texto').value = '';
-            document.getElementById('err-mat').value = '';
-            document.getElementById('err-top').value = '';
-            alert("Caderno salvo com sucesso!");
+            let m = sanitizeText(document.getElementById('err-mat').value) || 'Geral', t = sanitizeText(document.getElementById('err-top').value) || 'Geral', txt = sanitizeText(document.getElementById('err-texto').value) || '(Sem anotação)';
+            dbData.cadernos.push({id: gerarId(), materia: m, topico: t, texto: txt, timestamp: Date.now(), data: new Date().toLocaleDateString()}); refDb.child('cadernos').set(dbData.cadernos);
+            document.getElementById('err-texto').value = ''; document.getElementById('err-mat').value = ''; document.getElementById('err-top').value = ''; alert("Salvo no Caderno!");
         }
         function renderizarCadernos() {
             let div = document.getElementById('lista-cadernos-div'); div.innerHTML = ''; let agr = {};
             if(!Array.isArray(dbData.cadernos)) dbData.cadernos = Object.values(dbData.cadernos || {});
             dbData.cadernos.forEach(c => { if(!agr[c.materia]) agr[c.materia] = {}; if(!agr[c.materia][c.topico]) agr[c.materia][c.topico] = []; agr[c.materia][c.topico].push(c); });
             for(let m in agr) {
-                let htmlM = '';
-                for(let t in agr[m]) {
-                    htmlM += `<div style="font-weight:700; color:var(--brand-primary); margin:10px 0 4px 0;" title="${sanitizeText(t)}">📌 ${t}</div>`;
-                    agr[m][t].forEach(i => { htmlM += `<div style="background:var(--bg-input); padding:10px; border-radius:var(--radius-sm); margin-bottom:6px; display:flex; justify-content:space-between; align-items:flex-start; gap:8px;" title="${sanitizeText(i.texto)}"><div style="font-size:0.95rem; min-width:0; flex:1; word-break:break-word;">${i.texto} <span style="font-size:0.75rem; color:var(--text-muted); display:block;">${i.data}</span></div><button class="btn-x-vermelho" style="flex-shrink:0;" onclick="if(confirm('Excluir?')){ dbData.cadernos=dbData.cadernos.filter(x=>x.id!=='${i.id}'); refDb.child('cadernos').set(dbData.cadernos); }">✖</button></div>`; });
-                }
+                let htmlM = ''; for(let t in agr[m]) { htmlM += `<div style="font-weight:700; color:var(--brand-primary); margin:10px 0 4px 0;" title="${sanitizeText(t)}">📌 ${t}</div>`; agr[m][t].forEach(i => { htmlM += `<div style="background:var(--bg-input); padding:10px; border-radius:var(--radius-sm); margin-bottom:6px; display:flex; justify-content:space-between; align-items:flex-start; gap:8px;" title="${sanitizeText(i.texto)}"><div style="font-size:0.95rem; min-width:0; flex:1; word-break:break-word;">${i.texto} <span style="font-size:0.75rem; color:var(--text-muted); display:block;">${i.data}</span></div><button class="btn-x-vermelho" style="flex-shrink:0;" onclick="if(confirm('Excluir?')){ dbData.cadernos=dbData.cadernos.filter(x=>x.id!=='${i.id}'); refDb.child('cadernos').set(dbData.cadernos); }">✖</button></div>`; }); }
                 div.innerHTML += `<div class="pasta-header" onclick="this.nextElementSibling.classList.toggle('aberta')"><span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1; min-width:0;" title="${sanitizeText(m)}">📓 ${m}</span></div><div class="pasta-body">${htmlM}</div>`;
             }
         }
-
-        // ESTATÍSTICAS
         function renderizarFiltrosEstatisticas() {
-            let dlProvas = document.getElementById('dl-est-provas');
-            if(dlProvas) {
-                dlProvas.innerHTML = '';
-                if(!Array.isArray(dbData.provas)) dbData.provas = Object.values(dbData.provas || {});
-                dbData.provas.forEach(p => dlProvas.innerHTML += `<option value="${p.nome}">`);
-            }
+            let dlProvas = document.getElementById('dl-est-provas'); if(dlProvas) { dlProvas.innerHTML = ''; if(!Array.isArray(dbData.provas)) dbData.provas = Object.values(dbData.provas || {}); dbData.provas.forEach(p => dlProvas.innerHTML += `<option value="${p.nome}">`); }
             atualizarTopicosFiltroEstatisticas();
         }
-
         function onEstMateriasInput() {
-            atualizarTopicosFiltroEstatisticas();
-            let matInput = document.getElementById('est-filtro-materias').value.trim();
-            let mats = matInput ? matInput.split(',').map(x => x.trim()).filter(Boolean) : [];
-            let topInputEl = document.getElementById('est-filtro-topicos');
-            if(topInputEl) {
-                if(mats.length === 1) {
-                    topInputEl.disabled = false;
-                    topInputEl.placeholder = "Todos (sep. por vírgula)";
-                } else {
-                    topInputEl.value = '';
-                    topInputEl.disabled = true;
-                    topInputEl.placeholder = mats.length > 1 ? "Disponível apenas para 1 matéria" : "Todos (sep. por vírgula)";
-                }
-            }
-            atualizarEstatisticas();
+            atualizarTopicosFiltroEstatisticas(); let matInput = document.getElementById('est-filtro-materias').value.trim(); let mats = matInput ? matInput.split(',').map(x => x.trim()).filter(Boolean) : []; let topInputEl = document.getElementById('est-filtro-topicos');
+            if(topInputEl) { if(mats.length === 1) { topInputEl.disabled = false; topInputEl.placeholder = "Todos (sep. por vírgula)"; } else { topInputEl.value = ''; topInputEl.disabled = true; topInputEl.placeholder = mats.length > 1 ? "Apenas para 1 matéria" : "Todos"; } } atualizarEstatisticas();
         }
-
         function atualizarTopicosFiltroEstatisticas() {
-            let dlTop = document.getElementById('dl-est-topicos');
-            if(!dlTop) return;
-            dlTop.innerHTML = '';
-            let matInput = document.getElementById('est-filtro-materias').value.trim().toLowerCase();
-            if(!matInput) return;
-            let mats = matInput.split(',').map(m => m.trim()).filter(Boolean);
-            if(mats.length !== 1) return;
-            
-            let topicosSet = new Set();
-            if(!Array.isArray(dbData.materias)) dbData.materias = Object.values(dbData.materias || {});
-            dbData.materias.forEach(m => {
-                if(mats.some(mat => m.nome.toLowerCase() === mat) && Array.isArray(m.topicos)) {
-                    m.topicos.forEach(t => topicosSet.add(t));
-                }
-            });
-            dbData.sessoes.forEach(s => {
-                if(s.materia && mats.some(mat => s.materia.toLowerCase() === mat) && s.topico) {
-                    topicosSet.add(s.topico);
-                }
-            });
-            [...topicosSet].forEach(t => dlTop.innerHTML += `<option value="${t}">`);
+            let dlTop = document.getElementById('dl-est-topicos'); if(!dlTop) return; dlTop.innerHTML = ''; let matInput = document.getElementById('est-filtro-materias').value.trim().toLowerCase(); if(!matInput) return; let mats = matInput.split(',').map(m => m.trim()).filter(Boolean); if(mats.length !== 1) return;
+            let topicosSet = new Set(); if(!Array.isArray(dbData.materias)) dbData.materias = Object.values(dbData.materias || {}); dbData.materias.forEach(m => { if(mats.some(mat => m.nome.toLowerCase() === mat) && Array.isArray(m.topicos)) { m.topicos.forEach(t => topicosSet.add(t)); } }); dbData.sessoes.forEach(s => { if(s.materia && mats.some(mat => s.materia.toLowerCase() === mat) && s.topico) { topicosSet.add(s.topico); } }); [...topicosSet].forEach(t => dlTop.innerHTML += `<option value="${t}">`);
         }
-
         function atualizarEstatisticas() {
-            let per = document.getElementById('est-periodo').value, tipo = document.getElementById('est-tipo-grafico').value;
-            document.getElementById('est-custom-dates').style.display = per==='custom' ? 'flex' : 'none';
-            let dtI = document.getElementById('est-dt-ini').value, dtF = document.getElementById('est-dt-fim').value;
-            let agora = Date.now(), tA = 0, tE = 0, tSeg = 0, tPag = 0, tVid = 0, tQts = 0; let dadosGraf = {};
-            let setDias = new Set();
-
-            let provasInput = document.getElementById('est-filtro-provas').value.trim().toLowerCase();
-            let provasArr = provasInput ? provasInput.split(',').map(x => x.trim()).filter(Boolean) : [];
-
-            let materiasInput = document.getElementById('est-filtro-materias').value.trim().toLowerCase();
-            let materiasArr = materiasInput ? materiasInput.split(',').map(x => x.trim()).filter(Boolean) : [];
-
-            let topicosInput = document.getElementById('est-filtro-topicos').value.trim().toLowerCase();
-            let topicosArr = (materiasArr.length === 1 && topicosInput) ? topicosInput.split(',').map(x => x.trim()).filter(Boolean) : [];
+            let per = document.getElementById('est-periodo').value, tipo = document.getElementById('est-tipo-grafico').value; document.getElementById('est-custom-dates').style.display = per==='custom' ? 'flex' : 'none';
+            let dtI = document.getElementById('est-dt-ini').value, dtF = document.getElementById('est-dt-fim').value; let agora = Date.now(), tA = 0, tE = 0, tSeg = 0, tPag = 0, tVid = 0, tQts = 0; let dadosGraf = {}; let setDias = new Set();
+            let provasInput = document.getElementById('est-filtro-provas').value.trim().toLowerCase(), provasArr = provasInput ? provasInput.split(',').map(x => x.trim()).filter(Boolean) : [];
+            let materiasInput = document.getElementById('est-filtro-materias').value.trim().toLowerCase(), materiasArr = materiasInput ? materiasInput.split(',').map(x => x.trim()).filter(Boolean) : [];
+            let topicosInput = document.getElementById('est-filtro-topicos').value.trim().toLowerCase(), topicosArr = (materiasArr.length === 1 && topicosInput) ? topicosInput.split(',').map(x => x.trim()).filter(Boolean) : [];
 
             let filteredSessoes = dbData.sessoes.filter(s => {
-                if(per !== 'tudo') {
-                    if(per === 'hoje') {
-                        if(s.data !== new Date().toLocaleDateString()) return false;
-                    } else if(per === 'custom') {
-                        if(dtI && dtF) {
-                            let tMin = new Date(dtI).getTime();
-                            let tMax = new Date(dtF).getTime() + 86399999;
-                            if(s.timestamp < tMin || s.timestamp > tMax) return false;
-                        }
-                    } else {
-                        if((agora - s.timestamp) > (parseInt(per)*86400000)) return false;
-                    }
-                }
-
-                if(provasArr.length > 0) {
-                    let matObj = dbData.materias.find(m => m.nome.toLowerCase() === s.materia.toLowerCase());
-                    let pNome = "geral";
-                    if(matObj && matObj.provaId) {
-                        let pObj = dbData.provas.find(p => p.id === matObj.provaId);
-                        if(pObj) pNome = pObj.nome.toLowerCase();
-                    }
-                    if(!provasArr.some(p => pNome.includes(p))) return false;
-                }
-
-                if(materiasArr.length > 0) {
-                    if(!materiasArr.some(m => s.materia.toLowerCase() === m)) return false;
-                }
-
-                if(topicosArr.length > 0) {
-                    let sTop = s.topico ? s.topico.toLowerCase() : '';
-                    if(!topicosArr.some(t => sTop === t)) return false;
-                }
-
+                if(per !== 'tudo') { if(per === 'hoje') { if(s.data !== new Date().toLocaleDateString()) return false; } else if(per === 'custom') { if(dtI && dtF) { let tMin = new Date(dtI).getTime(), tMax = new Date(dtF).getTime() + 86399999; if(s.timestamp < tMin || s.timestamp > tMax) return false; } } else { if((agora - s.timestamp) > (parseInt(per)*86400000)) return false; } }
+                if(provasArr.length > 0) { let matObj = dbData.materias.find(m => m.nome.toLowerCase() === s.materia.toLowerCase()); let pNome = "geral"; if(matObj && matObj.provaId) { let pObj = dbData.provas.find(p => p.id === matObj.provaId); if(pObj) pNome = pObj.nome.toLowerCase(); } if(!provasArr.some(p => pNome.includes(p))) return false; }
+                if(materiasArr.length > 0) { if(!materiasArr.some(m => s.materia.toLowerCase() === m)) return false; }
+                if(topicosArr.length > 0) { let sTop = s.topico ? s.topico.toLowerCase() : ''; if(!topicosArr.some(t => sTop === t)) return false; }
                 return true;
             });
 
-            filteredSessoes.forEach(s => {
-                tA += (s.acertos||0); tE += (s.erros||0); tSeg += (s.segundos||0); tPag += (s.paginas||0); tVid += (s.videos||0);
-                tQts += (s.totalQts !== undefined ? s.totalQts : ((s.acertos||0)+(s.erros||0)));
-                if(s.data) setDias.add(s.data);
-
-                let chaveGraf = s.materia;
-                if(materiasArr.length === 1) {
-                    chaveGraf = s.topico || 'Geral';
-                } else {
-                    chaveGraf = s.materia;
-                }
-                dadosGraf[chaveGraf] = (dadosGraf[chaveGraf]||0) + s.segundos;
-            });
-
-            let thh = Math.floor(tSeg / 3600);
-            let tmm = Math.floor((tSeg % 3600) / 60);
-            let tss = tSeg % 60;
-            document.getElementById('st-tempo').textContent = `${thh}h ${tmm}m ${tss}s`;
-
-            document.getElementById('st-qts').textContent = tQts;
-            document.getElementById('st-acertos').textContent = tA; document.getElementById('st-erros').textContent = tE;
-            document.getElementById('st-perc').textContent = (tA+tE)>0 ? Math.round((tA/(tA+tE))*100)+'%' : '0%';
-            document.getElementById('st-pags').textContent = tPag; document.getElementById('st-vids').textContent = tVid;
-            
-            let ritmo = (tSeg > 0) ? Math.round(tQts / (tSeg/3600)) : 0;
-            document.getElementById('st-ritmo').textContent = ritmo + '/h';
-            document.getElementById('st-dias').textContent = setDias.size;
+            filteredSessoes.forEach(s => { tA += (s.acertos||0); tE += (s.erros||0); tSeg += (s.segundos||0); tPag += (s.paginas||0); tVid += (s.videos||0); tQts += (s.totalQts !== undefined ? s.totalQts : ((s.acertos||0)+(s.erros||0))); if(s.data) setDias.add(s.data); let chaveGraf = (materiasArr.length === 1) ? (s.topico || 'Geral') : s.materia; dadosGraf[chaveGraf] = (dadosGraf[chaveGraf]||0) + s.segundos; });
+            document.getElementById('st-tempo').textContent = `${Math.floor(tSeg / 3600)}h ${Math.floor((tSeg % 3600) / 60)}m ${tSeg % 60}s`; document.getElementById('st-qts').textContent = tQts; document.getElementById('st-acertos').textContent = tA; document.getElementById('st-erros').textContent = tE; document.getElementById('st-perc').textContent = (tA+tE)>0 ? Math.round((tA/(tA+tE))*100)+'%' : '0%'; document.getElementById('st-pags').textContent = tPag; document.getElementById('st-vids').textContent = tVid; document.getElementById('st-ritmo').textContent = ((tSeg > 0) ? Math.round(tQts / (tSeg/3600)) : 0) + '/h'; document.getElementById('st-dias').textContent = setDias.size;
 
             if(graficoInstance) graficoInstance.destroy();
-            let isDark = document.documentElement.getAttribute('data-theme') === 'dark'; let txtCor = isDark ? '#FFFFFF' : '#000000';
-            let keys = Object.keys(dadosGraf).length>0 ? Object.keys(dadosGraf) : ['Sem dados'], vals = Object.values(dadosGraf).length>0 ? Object.values(dadosGraf) : [1];
-            
-            let cores = keys.map(k => { 
-                if(materiasArr.length === 1) {
-                    return isDark ? '#FFFFFF' : '#000000';
-                }
-                if(!Array.isArray(dbData.materias)) dbData.materias = Object.values(dbData.materias || {});
-                let m = dbData.materias.find(x=>x.nome.toLowerCase()===k.toLowerCase()); return m ? m.cor : paleta17[0]; 
-            });
-
-            graficoInstance = new Chart(document.getElementById('graficoEst').getContext('2d'), {
-                type: tipo, data: { labels: keys, datasets: [{ label: 'Tempo', data: vals, backgroundColor: cores, borderWidth: 0, borderRadius: tipo==='bar'?6:0 }] },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    color: txtCor,
-                    plugins: {
-                        legend: { labels: { color: txtCor } },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    let totalSeg = context.raw || 0;
-                                    let h = Math.floor(totalSeg / 3600);
-                                    let m = Math.floor((totalSeg % 3600) / 60);
-                                    let s = totalSeg % 60;
-                                    return ` ${context.label || ''}: ${h}h ${m}m ${s}s`;
-                                }
-                            }
-                        }
-                    },
-                    scales: tipo==='bar' ? { x:{ticks:{color:txtCor}}, y:{ticks:{color:txtCor}} } : {}
-                }
-            });
+            let isDark = document.documentElement.getAttribute('data-theme') === 'dark'; let txtCor = isDark ? '#FFFFFF' : '#000000'; let keys = Object.keys(dadosGraf).length>0 ? Object.keys(dadosGraf) : ['Sem dados'], vals = Object.values(dadosGraf).length>0 ? Object.values(dadosGraf) : [1];
+            let cores = keys.map(k => { if(materiasArr.length === 1) { return isDark ? '#FFFFFF' : '#000000'; } if(!Array.isArray(dbData.materias)) dbData.materias = Object.values(dbData.materias || {}); let m = dbData.materias.find(x=>x.nome.toLowerCase()===k.toLowerCase()); return m ? m.cor : paleta17[0]; });
+            graficoInstance = new Chart(document.getElementById('graficoEst').getContext('2d'), { type: tipo, data: { labels: keys, datasets: [{ label: 'Tempo', data: vals, backgroundColor: cores, borderWidth: 0, borderRadius: tipo==='bar'?6:0 }] }, options: { responsive: true, maintainAspectRatio: false, color: txtCor, plugins: { legend: { labels: { color: txtCor } }, tooltip: { callbacks: { label: function(c) { let t = c.raw || 0; return ` ${c.label || ''}: ${Math.floor(t / 3600)}h ${Math.floor((t % 3600) / 60)}m ${t % 60}s`; } } } }, scales: tipo==='bar' ? { x:{ticks:{color:txtCor}}, y:{ticks:{color:txtCor}} } : {} } });
         }
 
         // BIBLIOTECA
         async function uploadArquivo() {
-            let f = document.getElementById('bib-file').files[0]; if(!f) return alert("Selecione.");
-            if(f.size > 100 * 1024 * 1024) return alert("O arquivo não pode ser maior que 100MB.");
-            let btn = event.currentTarget; let tx = btn.textContent; btn.disabled = true; btn.textContent = "Lendo...";
-            try {
-                let refF = refStore.child('biblioteca/'+gerarId()+'_'+f.name); await refF.put(f); let url = await refF.getDownloadURL();
-                let txt = "";
-                if(f.type.includes('pdf')) {
-                    const arr = await f.arrayBuffer(); const pdf = await pdfjsLib.getDocument({data:arr}).promise;
-                    for(let i=1; i<=Math.min(pdf.numPages, 15); i++) { let c = await (await pdf.getPage(i)).getTextContent(); txt += c.items.map(it=>it.str).join(" ") + "\n"; }
-                } else { txt = await f.text(); }
-                let m = sanitizeText(document.getElementById('bib-mat-arq').value||'Geral');
-                refDb.child('biblioteca').push({ id: gerarId(), nome: f.name, tipo: 'ARQUIVO', url: url, texto: txt.substring(0,40000), materia: m, data: new Date().toLocaleDateString(), refPath: refF.fullPath });
-                document.getElementById('bib-file').value = ''; btn.textContent = "✅ Salvo!"; setTimeout(()=> {btn.textContent=tx; btn.disabled=false;}, 2000);
-            } catch(e) { alert("Erro: "+e.message); btn.textContent=tx; btn.disabled=false; }
+            let f = document.getElementById('bib-file').files[0]; if(!f) return alert("Selecione."); if(f.size > 100 * 1024 * 1024) return alert("Arquivo máx 100MB."); let btn = event.currentTarget; let tx = btn.textContent; btn.disabled = true; btn.textContent = "Lendo...";
+            try { let refF = refStore.child('biblioteca/'+gerarId()+'_'+f.name); await refF.put(f); let url = await refF.getDownloadURL(); let txt = ""; if(f.type.includes('pdf')) { const arr = await f.arrayBuffer(); const pdf = await pdfjsLib.getDocument({data:arr}).promise; for(let i=1; i<=Math.min(pdf.numPages, 15); i++) { let c = await (await pdf.getPage(i)).getTextContent(); txt += c.items.map(it=>it.str).join(" ") + "\n"; } } else { txt = await f.text(); } let m = sanitizeText(document.getElementById('bib-mat-arq').value||'Geral'); refDb.child('biblioteca').push({ id: gerarId(), nome: f.name, tipo: 'ARQUIVO', url: url, texto: txt.substring(0,40000), materia: m, data: new Date().toLocaleDateString(), refPath: refF.fullPath }); document.getElementById('bib-file').value = ''; btn.textContent = "✅ Salvo!"; setTimeout(()=> {btn.textContent=tx; btn.disabled=false;}, 2000); } catch(e) { alert("Erro: "+e.message); btn.textContent=tx; btn.disabled=false; }
         }
-        function salvarLink() {
-            let url = document.getElementById('bib-link').value.trim(); if(!url) return;
-            refDb.child('biblioteca').push({ id: gerarId(), nome: new URL(url).hostname, tipo: 'LINK', url: url, texto: "Conteúdo Web referenciado: "+url, materia: sanitizeText(document.getElementById('bib-mat-link').value||'Geral'), data: new Date().toLocaleDateString() });
-            document.getElementById('bib-link').value = ''; alert("Link Salvo.");
-        }
-        function renderizarBiblioteca() {
-            let div = document.getElementById('lista-biblioteca'); div.innerHTML = '';
-            dbData.biblioteca.forEach(b => { div.innerHTML += `<div class="registro-curto" title="${sanitizeText(b.nome)}"><div class="info"><strong title="${sanitizeText(b.nome)}">${b.tipo==='LINK'?'🌐':'📄'} ${b.nome}</strong><span>${b.materia} | ${b.data}</span></div><button class="btn-x-vermelho" onclick="if(confirm('Excluir?')) { let i = Object.entries(dbData.biblioteca).find(e=>e[1].id==='${b.id}'); if(i) { refDb.child('biblioteca/'+i[0]).remove(); if('${b.refPath||''}') try{ storage.ref('${b.refPath}').delete(); }catch(e){} } }">✖</button></div>`; });
-        }
+        function salvarLink() { let url = document.getElementById('bib-link').value.trim(); if(!url) return; refDb.child('biblioteca').push({ id: gerarId(), nome: new URL(url).hostname, tipo: 'LINK', url: url, texto: "Conteúdo Web referenciado: "+url, materia: sanitizeText(document.getElementById('bib-mat-link').value||'Geral'), data: new Date().toLocaleDateString() }); document.getElementById('bib-link').value = ''; alert("Link Salvo."); }
+        function renderizarBiblioteca() { let div = document.getElementById('lista-biblioteca'); div.innerHTML = ''; dbData.biblioteca.forEach(b => { div.innerHTML += `<div class="registro-curto" title="${sanitizeText(b.nome)}"><div class="info"><strong title="${sanitizeText(b.nome)}">${b.tipo==='LINK'?'🌐':'📄'} ${b.nome}</strong><span>${b.materia} | ${b.data}</span></div><button class="btn-x-vermelho" onclick="if(confirm('Excluir?')) { let i = Object.entries(dbData.biblioteca).find(e=>e[1].id==='${b.id}'); if(i) { refDb.child('biblioteca/'+i[0]).remove(); if('${b.refPath||''}') try{ storage.ref('${b.refPath}').delete(); }catch(e){} } }">✖</button></div>`; }); }
 
         // PRUMA IA
         function mudarSubIa(sub, btn) {
-            ['chat', 'simulador', 'flashcards', 'edital'].forEach(s => { let el = document.getElementById('subia-'+s); if(el) el.style.display = (s===sub)?'block':'none'; });
-            document.querySelectorAll('#view-pruma .btn-outline').forEach(b => { b.style.background='transparent'; b.style.color='var(--text-main)'; });
-            if(btn) { btn.style.background='var(--brand-primary)'; btn.style.color='white'; }
-            document.getElementById('caixa-fontes-ia').style.display = (sub==='edital') ? 'none' : 'flex';
+            ['chat', 'simulador', 'flashcards', 'edital'].forEach(s => { let el = document.getElementById('subia-'+s); if(el) el.style.display = (s===sub)?'block':'none'; }); document.querySelectorAll('#view-pruma .btn-outline').forEach(b => { b.style.background='transparent'; b.style.color='var(--text-main)'; }); if(btn) { btn.style.background='var(--brand-primary)'; btn.style.color='white'; } document.getElementById('caixa-fontes-ia').style.display = (sub==='edital') ? 'none' : 'flex';
         }
-
         function renderizarHistoricoIA() {
-            let div = document.getElementById('lista-historico-ia'); div.innerHTML = '';
-            if(dbData.iaHistorico.length===0) div.innerHTML = '<p>Vazio.</p>';
-            [...dbData.iaHistorico].reverse().forEach(h => {
-                div.innerHTML += `<div style="background:var(--bg-input); padding:12px; border-radius:var(--radius-sm); border:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center; gap:10px;" title="${sanitizeText(h)}"><span style="font-size:0.9rem;">"${h}"</span><button class="btn-primary" style="width:auto; padding:6px 12px; font-size:0.8rem;" onclick="document.getElementById('modal-historico-ia').style.display='none'; document.getElementById('inp-chat').value = '${sanitizeText(h).replace(/'/g, "\\ me")}'; executarIA('chat');">🔄 Reenviar</button></div>`;
-            });
+            let div = document.getElementById('lista-historico-ia'); div.innerHTML = ''; if(dbData.iaHistorico.length===0) div.innerHTML = '<p>Seu perfil de aprendizado está sendo mapeado com base nas suas dúvidas relevantes...</p>';
+            [...dbData.iaHistorico].reverse().forEach(h => { div.innerHTML += `<div style="background:var(--bg-input); padding:12px; border-radius:var(--radius-sm); border:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center; gap:10px;" title="${sanitizeText(h)}"><span style="font-size:0.9rem;">"${h}"</span><button class="btn-primary" style="width:auto; padding:6px 12px; font-size:0.8rem;" onclick="document.getElementById('modal-historico-ia').style.display='none'; document.getElementById('inp-chat').value = '${sanitizeText(h).replace(/'/g, "\\'")}'; executarIA('chat');">🔄 Reenviar</button></div>`; });
         }
-
         function extrairContextoGeral() {
-            let ctx = "";
-            let fonteSel = sanitizeText(document.getElementById('ia-fonte').value).toLowerCase();
-            
-            if (fonteSel) {
-                dbData.biblioteca.forEach(b => { 
-                    if(b.nome && b.nome.toLowerCase().includes(fonteSel)) { ctx += `\n[FONTE BIBLIOTECA: ${b.nome}]\n${b.texto}\n`; }
-                });
-            }
-            if(dbData.iaHistorico.length>0) ctx += `\n[HISTÓRICO RECENTE]:\n${dbData.iaHistorico.map(h=> `Eu perguntei: ${h}`).join('\n')}\n`;
+            let ctx = ""; let fonteSel = sanitizeText(document.getElementById('ia-fonte').value).toLowerCase();
+            if (fonteSel) { dbData.biblioteca.forEach(b => { if(b.nome && b.nome.toLowerCase().includes(fonteSel)) { ctx += `\n[FONTE BIBLIOTECA: ${b.nome}]\n${b.texto}\n`; } }); }
+            if(dbData.iaHistorico.length>0) ctx += `\n[JORNADA DO ESTUDANTE / HISTÓRICO]:\n${dbData.iaHistorico.map(h=> `- ${h}`).join('\n')}\n`;
             return ctx;
         }
 
+        // PROMPTS ESPECIALISTAS COM UX MÁXIMA
         function obterPromptDoSistema(tipo) {
+            const basePersona = "Você é a PRUMA IA, a mais avançada Mentora e Especialista em Concursos Públicos (Cebraspe, FGV, FCC, Vunesp, etc.) e alta performance de estudos. Sua comunicação é didática, direta, encorajadora e adaptada à jornada de quem estuda muito. Cruzamento de informações com a Doutrina e Jurisprudência atualizada é sua prioridade.";
             const prompts = {
-                chat: "Você é a PRUMA IA, tutora especialista em vestibulares e concursos. Explique de forma didática, direta e fundamentada cruzando informações com as fontes fornecidas. OBRIGATÓRIO citar a fonte da resposta.",
-                questoes: "Você é a PRUMA IA, uma banca examinadora rigorosa. Crie questões inéditas de múltipla escolha (A, B, C, D, E) com alto rigor técnico. Forneça gabarito comentado justificando o erro e acerto de cada alternativa com base nas fontes.",
-                flashcards: "Você é a PRUMA IA, especialista em memorização ativa. Extraia conceitos-chave e crie pares de perguntas diretas e respostas concisas baseando-se no material fornecido. O foco é alta retenção."
+                chat: `${basePersona} Analise as dúvidas do estudante. Seja profundo mas direto. Cite a fonte da biblioteca se houver. Leia a [Jornada do Estudante] para adaptar sua linguagem ao contexto de estudos e dificuldades dele.`,
+                questoes: `${basePersona} Atue como uma Banca Examinadora Rigorosa (nível FGV/Cebraspe). Crie questões inéditas de múltipla escolha (A, B, C, D, E) com alto rigor técnico. Forneça gabarito comentado justificando profundamente o erro e acerto de cada alternativa usando fundamentação jurídica/técnica.`,
+                flashcards: `${basePersona} Atue como um Especialista em Neurociência Aplicada ao Estudo e Repetição Espaçada. Analise a fonte fornecida, extraia os conceitos vitais, as decorebas de leis ou pormenores, e crie pares de pergunta diretas (gatilho) e respostas cirúrgicas. O foco é máxima retenção.`
             };
-            return prompts[tipo] || "Você é a PRUMA IA, assistente de estudos.";
+            return prompts[tipo] || basePersona;
+        }
+
+        // HEURÍSTICA DE DEFINIÇÃO DE MODELO INTELIGENTE
+        function definirModeloIdeal(prompt, tipo) {
+            if(tipo === 'questoes' || tipo === 'edital') return "gemini-3.1-pro-preview";
+            if(tipo === 'flashcards') return "gemini-3.8-flash";
+            let pLow = prompt.toLowerCase();
+            let palavrasComplexas = ['jurisprudência', 'aprofunde', 'recurso', 'discursiva', 'analise', 'explique detalhadamente', 'diferença entre', 'teoria', 'stf', 'stj', 'resolva', 'fgv', 'cebraspe', 'fcc', 'vunesp', 'fundamentação', 'doutrina'];
+            if(prompt.length > 200 || palavrasComplexas.some(p => pLow.includes(p))) { return "gemini-3.1-pro-preview"; }
+            return "gemini-3.8-flash";
         }
 
         async function executarIA(tipo) {
             let k = localStorage.getItem('pruma_apikey'); if(!k) return alert("Configure a API Key na aba lateral.");
-            const modelo = isAdmin ? "gemini-3.1-pro-preview" : "gemini-3.8-flash";
-            
-            let p = "", box = null; let ctx = extrairContextoGeral();
-            let baseSys = obterPromptDoSistema(tipo);
+            let p = "", box = null; let ctx = extrairContextoGeral(); let baseSys = obterPromptDoSistema(tipo);
 
             if(tipo === 'chat') {
                 p = document.getElementById('inp-chat').value.trim(); if(!p) return;
-                box = document.getElementById('box-chat'); box.innerHTML += `<div class="msg msg-u">${sanitizeText(p)}</div>`; document.getElementById('inp-chat').value=''; box.scrollTop = box.scrollHeight;
-                dbData.iaHistorico.push(p); if(dbData.iaHistorico.length>10) dbData.iaHistorico.shift(); refDb.child('ia_historico').set(dbData.iaHistorico);
+                box = document.getElementById('box-chat'); 
+                box.innerHTML += `<div class="msg msg-u">${sanitizeText(p)}</div>`; 
+                document.getElementById('inp-chat').value=''; box.scrollTop = box.scrollHeight;
+                
+                // GRAVAÇÃO DE CONTEXTO SELETIVA (Extraindo a Jornada do Usuário)
+                let pLow = p.toLowerCase();
+                let isRevelador = ['estudo para', 'foco em', 'tenho dificuldade', 'minha rotina', 'concurso', 'banca', 'como eu', 'preciso melhorar', 'sou ', 'minha meta', 'cargo', 'cronograma'].some(w => pLow.includes(w));
+                if(isRevelador || p.length > 80) {
+                    dbData.iaHistorico.push(p); if(dbData.iaHistorico.length>10) dbData.iaHistorico.shift(); refDb.child('ia_historico').set(dbData.iaHistorico);
+                }
             } else if(tipo === 'questoes') {
                 let t = document.getElementById('ia-qts-tema').value || 'o contexto da fonte marcada acima';
-                p = `Crie exatamente ${document.getElementById('ia-qts-num').value} questões inéditas sobre: ${t}. Coloque [CORRETA] ao lado da alternativa certa e cite a fonte no comentário.`;
+                p = `Crie exatamente ${document.getElementById('ia-qts-num').value} questões inéditas sobre: ${t}. Coloque [CORRETA] ao lado da alternativa certa e cite a fonte.`;
                 box = document.getElementById('box-qts'); box.style.display='flex'; box.innerHTML='';
             } else if(tipo === 'flashcards') {
                 let fSel = document.getElementById('ia-fonte').value.trim();
-                if(!fSel) return alert("Selecione no campo acima qual é a Fonte para extrair os Flashcards.");
-                p = `Baseado nas fontes extraídas, retorne EXATAMENTE UM JSON ARRAY PURO: [{"f":"Pergunta","v":"Resposta"}]. Sem blocos como \`\`\`.`;
+                if(!fSel) return alert("Selecione a Fonte para extrair os Flashcards.");
+                p = `Retorne EXATAMENTE UM JSON ARRAY PURO: [{"f":"Pergunta","v":"Resposta"}]. Sem markdowns como \`\`\`.`;
                 box = document.getElementById('box-fc'); box.style.display='block'; box.innerHTML='';
             }
 
-            try {
-                if(tipo!=='flashcards') { box.innerHTML += `<div class="msg msg-a" id="load-ia">Raciocinando... ⏳</div>`; box.scrollTop = box.scrollHeight; }
-                else { box.innerHTML = "Gerando cartões... ⏳"; }
+            let modeloAtual = definirModeloIdeal(p, tipo);
+            let tentouFallback = false;
+            let loadInt = null;
 
-                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelo}:generateContent?key=${k}`, {
-                    method:'POST', headers:{'Content-Type':'application/json'},
-                    body:JSON.stringify({ contents:[{parts:[{text: `${baseSys}\n\n${ctx ? "CONTEXTO / FONTES:\n"+ctx : ""}\n\nPROMPT DO USUÁRIO: ${p}`}]}], tools:[{googleSearch:{}}] })
-                });
-                const data = await res.json(); if(data.error) throw new Error(data.error.message);
-                let txtF = data.candidates[0].content.parts[0].text;
+            try {
+                // UI de Carregamento Dinâmico
+                if(tipo!=='flashcards') { 
+                    box.innerHTML += `<div class="msg msg-a" id="load-ia"><span id="load-ia-text">Pensando...</span> ⏳ <span style="font-size:0.7rem; color:var(--text-muted); display:block; margin-top:4px;">(Motor: ${modeloAtual.includes('pro') ? 'Avançado' : 'Rápido'})</span></div>`; 
+                    box.scrollTop = box.scrollHeight; 
+                    
+                    let loadingMsgs = ["Analisando o padrão da banca...", "Cruzando dados com a bibliografia...", "Aplicando técnicas de estudo ativo...", "Estruturando a melhor resposta...", "Verificando jurisprudências e atualizações...", "Avaliando a jornada do usuário...", "Quase lá..."];
+                    loadInt = setInterval(() => { let msgEl = document.getElementById('load-ia-text'); if(msgEl) msgEl.textContent = loadingMsgs[Math.floor(Math.random() * loadingMsgs.length)]; }, 2500);
+                } else { 
+                    box.innerHTML = `<div id="load-ia" style="color:var(--brand-primary); font-weight:600;"><span id="load-ia-text">Construindo neuro-gatilhos de memória...</span> ⏳</div>`; 
+                    let fcMsgs = ["Lendo a fonte de dados...", "Extraindo conceitos vitais...", "Isolando decorebas e exceções da regra...", "Montando cartões de alta retenção..."];
+                    loadInt = setInterval(() => { let msgEl = document.getElementById('load-ia-text'); if(msgEl) msgEl.textContent = fcMsgs[Math.floor(Math.random() * fcMsgs.length)]; }, 2000);
+                }
+
+                async function chamarGemini(modelo) {
+                    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelo}:generateContent?key=${k}`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ contents:[{parts:[{text: `${baseSys}\n\n${ctx ? "CONTEXTO / FONTES:\n"+ctx : ""}\n\nPROMPT DO USUÁRIO: ${p}`}]}], tools:[{googleSearch:{}}] }) });
+                    if(res.status === 429) throw new Error('QUOTA_EXCEEDED');
+                    const data = await res.json(); if(data.error) throw new Error(data.error.message); return data.candidates[0].content.parts[0].text;
+                }
+
+                let txtF;
+                try { txtF = await chamarGemini(modeloAtual); } 
+                catch(err) {
+                    if(err.message === 'QUOTA_EXCEEDED' && modeloAtual.includes('pro')) {
+                        tentouFallback = true;
+                        let l = document.getElementById('load-ia-text'); if(l) l.innerHTML = `⚠️ Cota avançada excedida. Redirecionando para o motor Rápido...`;
+                        modeloAtual = "gemini-3.8-flash"; txtF = await chamarGemini(modeloAtual); 
+                    } else { throw err; }
+                }
+
+                if(loadInt) clearInterval(loadInt);
 
                 if(tipo === 'flashcards') {
                     let json = JSON.parse(txtF.replace(/```json/g,'').replace(/```/g,'').match(/\[.*\]/s)[0]);
                     let fD = sanitizeText(document.getElementById('ia-fonte').value);
-                    box.innerHTML = '';
+                    box.innerHTML = tentouFallback ? '<div style="color:var(--brand-warning); font-size:0.8rem; margin-bottom:10px;">⚠️ Cota Pro excedida. Usando Flash.</div>' : '';
+                    
+                    // HTML DOS FLASHCARDS ESTILO PASTA MINIMIZADA
                     json.forEach(c => {
                         let bId = gerarId();
-                        box.innerHTML += `<div class="card" style="padding:16px; margin-bottom:12px;">
-                            <strong style="color:var(--brand-primary); display:block; margin-bottom:4px;">FRENTE:</strong><div>${sanitizeText(c.f)}</div>
-                            <strong style="color:var(--brand-success); display:block; margin:12px 0 4px 0;">VERSO:</strong><div>${sanitizeText(c.v)}</div>
-                            <button id="${bId}" class="btn-outline" style="margin-top:12px;" onclick="salvarFc('${fD}', 'Geral', '${sanitizeText(c.f).replace(/'/g,"\\'")} - ${sanitizeText(c.v).replace(/'/g,"\\'")}', this)">Salvar no Caderno</button>
-                        </div>`;
+                        box.innerHTML += `
+                        <div class="pasta-header" onclick="this.nextElementSibling.classList.toggle('aberta')" style="border-left:4px solid var(--brand-warning); cursor:pointer; margin-bottom:0;">
+                            <span style="font-weight:700; color:var(--text-main);">❓ ${sanitizeText(c.f)}</span>
+                        </div>
+                        <div class="pasta-body" style="background:var(--bg-card); border:1px solid var(--border-color); border-top:none; margin-top:0; border-radius: 0 0 var(--radius-sm) var(--radius-sm);">
+                            <div style="margin-bottom:12px; color:var(--text-main); font-size:1rem; padding-top:8px;"><strong>Resposta:</strong> ${sanitizeText(c.v)}</div>
+                            <button id="${bId}" class="btn-outline" style="width:auto; padding:6px 12px; font-size:0.8rem;" onclick="salvarFc('${fD}', 'Geral', '${sanitizeText(c.f).replace(/'/g,"\\'")} - ${sanitizeText(c.v).replace(/'/g,"\\'")}', this)">💾 Salvar no Caderno</button>
+                        </div>
+                        <div style="margin-bottom:12px;"></div>`;
                     });
                 } else {
                     let l = document.getElementById('load-ia'); if(l) l.remove();
-                    
-                    // PASSO 3: Inversão da lógica de Sanitização. Primeiro gera o HTML, depois o DOMPurify limpa a string final.
-                    let rawHtml = txtF.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                                      .replace(/\*(.*?)\*/g, '<em>$1</em>')
-                                      .replace(/^([A-E]\)) (.*?)(\[CORRETA\])?$/gm, (m,lt,t,c) => `<div style="padding:10px; background:var(--bg-card); border:1px solid var(--border-color); margin:6px 0; border-radius:var(--radius-sm); cursor:pointer;" onclick="this.style.borderColor='${c?'var(--brand-success)':'var(--brand-danger)'}'">${lt} ${t.trim()}</div>`)
-                                      .replace(/\n/g, '<br>');
-                    
+                    let rawHtml = txtF.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\*(.*?)\*/g, '<em>$1</em>').replace(/^([A-E]\)) (.*?)(\[CORRETA\])?$/gm, (m,lt,t,c) => `<div style="padding:10px; background:var(--bg-card); border:1px solid var(--border-color); margin:6px 0; border-radius:var(--radius-sm); cursor:pointer;" onclick="this.style.borderColor='${c?'var(--brand-success)':'var(--brand-danger)'}'">${lt} ${t.trim()}</div>`).replace(/\n/g, '<br>');
                     let lHtml = sanitizeText(rawHtml);
-                    
-                    let btnPdf = '';
-                    if(p.toLowerCase().includes('resumo') && p.toLowerCase().includes('pdf')) {
-                        btnPdf = `<br><br><button class="btn-primary" style="width:auto; padding:8px 16px;" onclick="baixarPdfResumo('${btoa(unescape(encodeURIComponent(txtF)))}')">📥 Baixar PDF do Resumo</button>`;
-                    }
-                    box.innerHTML += `<div class="msg msg-a"><strong>PRUMA:</strong><br>${lHtml}${btnPdf}</div>`; box.scrollTop = box.scrollHeight;
+                    let btnPdf = (p.toLowerCase().includes('resumo') && p.toLowerCase().includes('pdf')) ? `<br><br><button class="btn-primary" style="width:auto; padding:8px 16px;" onclick="baixarPdfResumo('${btoa(unescape(encodeURIComponent(txtF)))}')">📥 Baixar PDF</button>` : '';
+                    let avisoFallback = tentouFallback ? `<br><br><span style="font-size:0.75rem; color:var(--brand-warning);">⚠️ Resposta gerada via modelo Flash (Cota do Pro excedida por hoje).</span>` : '';
+                    box.innerHTML += `<div class="msg msg-a"><strong>PRUMA:</strong><br>${lHtml}${btnPdf}${avisoFallback}</div>`; box.scrollTop = box.scrollHeight;
                 }
-            } catch(e) { let l = document.getElementById('load-ia'); if(l) l.remove(); if(box) box.innerHTML += `<div class="msg msg-a" style="color:var(--brand-danger);">Erro: ${e.message}</div>`; }
+            } catch(e) { 
+                if(loadInt) clearInterval(loadInt);
+                let l = document.getElementById('load-ia'); if(l) l.remove(); 
+                let msgErro = e.message === 'QUOTA_EXCEEDED' ? 'Cota de IA esgotada. Tente amanhã.' : e.message;
+                if(box) box.innerHTML += `<div class="msg msg-a" style="color:var(--brand-danger);">Erro: ${msgErro}</div>`; 
+            }
         }
-
-        function salvarFc(m, t, txt, btn) {
-            dbData.cadernos.push({id:gerarId(), materia:m||'Flashcards IA', topico:t||'Geral', texto:txt, timestamp:Date.now(), data:new Date().toLocaleDateString()}); refDb.child('cadernos').set(dbData.cadernos);
-            btn.textContent = "✅ Salvo!"; btn.disabled = true; btn.style.background = 'var(--brand-success)'; btn.style.color = '#FFF'; btn.style.borderColor = 'var(--brand-success)';
-        }
-
+        function salvarFc(m, t, txt, btn) { dbData.cadernos.push({id:gerarId(), materia:m||'Flashcards IA', topico:t||'Geral', texto:txt, timestamp:Date.now(), data:new Date().toLocaleDateString()}); refDb.child('cadernos').set(dbData.cadernos); btn.textContent = "✅ Salvo!"; btn.disabled = true; btn.style.background = 'var(--brand-success)'; btn.style.color = '#FFF'; btn.style.borderColor = 'var(--brand-success)'; }
+        
         async function processarEdital(btn) {
-            let k = localStorage.getItem('pruma_apikey'); if(!k) return alert("API Key ausente.");
-            let txt = document.getElementById('edital-texto').value.trim(); if(!txt) return;
-            let pId = document.getElementById('edital-ia-prova').value;
-            const modelo = isAdmin ? "gemini-3.1-pro-preview" : "gemini-3.8-flash";
-            
+            let k = localStorage.getItem('pruma_apikey'); if(!k) return alert("API Key ausente."); let txt = document.getElementById('edital-texto').value.trim(); if(!txt) return; let pId = document.getElementById('edital-ia-prova').value;
+            const modelo = "gemini-3.1-pro-preview"; // Edital sempre usa o PRO por causa do longo contexto
             let tx = btn.textContent; btn.disabled=true; btn.textContent="Processando com IA...";
-            try {
-                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelo}:generateContent?key=${k}`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({contents:[{parts:[{text:`Organize em JSON PURO: [{"disciplina": "Nome", "topicos": ["T1", "T2"]}]. Sem markdown. Edital:\n${txt.substring(0,60000)}`}]}]}) });
-                const data = await res.json(); if(data.error) throw new Error(data.error.message);
-                let json = JSON.parse(data.candidates[0].content.parts[0].text.match(/\[.*\]/s)[0]);
-                
-                if(!Array.isArray(dbData.materias)) dbData.materias = Object.values(dbData.materias || {});
-                json.forEach(n => {
-                    let idx = dbData.materias.findIndex(x=>x.nome.toLowerCase()===n.disciplina.toLowerCase() && x.provaId===pId);
-                    if(idx !== -1) { 
-                        if(!Array.isArray(dbData.materias[idx].topicos)) dbData.materias[idx].topicos = Object.values(dbData.materias[idx].topicos || {});
-                        n.topicos.forEach(t=>{ if(!dbData.materias[idx].topicos.includes(t)) dbData.materias[idx].topicos.push(t); }); 
-                    } else { 
-                        dbData.materias.push({id:gerarId(), nome:n.disciplina, cor:paleta17[0], topicos:n.topicos, provaId:pId}); 
-                    }
-                });
-                refDb.child('materias').set(dbData.materias); document.getElementById('edital-texto').value=''; alert("Edital mapeado!");
-            } catch(e) { alert("Erro: "+e.message); } finally { btn.textContent=tx; btn.disabled=false; }
+            try { const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelo}:generateContent?key=${k}`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({contents:[{parts:[{text:`Organize em JSON PURO: [{"disciplina": "Nome", "topicos": ["T1", "T2"]}]. Sem markdown. Edital:\n${txt.substring(0,60000)}`}]}]}) }); const data = await res.json(); if(data.error) throw new Error(data.error.message); let json = JSON.parse(data.candidates[0].content.parts[0].text.match(/\[.*\]/s)[0]); if(!Array.isArray(dbData.materias)) dbData.materias = Object.values(dbData.materias || {}); json.forEach(n => { let idx = dbData.materias.findIndex(x=>x.nome.toLowerCase()===n.disciplina.toLowerCase() && x.provaId===pId); if(idx !== -1) { if(!Array.isArray(dbData.materias[idx].topicos)) dbData.materias[idx].topicos = Object.values(dbData.materias[idx].topicos || {}); n.topicos.forEach(t=>{ if(!dbData.materias[idx].topicos.includes(t)) dbData.materias[idx].topicos.push(t); }); } else { dbData.materias.push({id:gerarId(), nome:n.disciplina, cor:paleta17[0], topicos:n.topicos, provaId:pId}); } }); refDb.child('materias').set(dbData.materias); document.getElementById('edital-texto').value=''; alert("Edital mapeado!"); } catch(e) { alert("Erro: "+e.message); } finally { btn.textContent=tx; btn.disabled=false; }
         }
-
-        function baixarPdfResumo(txtBase64) {
-            try { const doc = new window.jspdf.jsPDF(); doc.setFont("helvetica"); doc.setFontSize(12); doc.text(doc.splitTextToSize(atob(txtBase64), 180), 15, 15); doc.save("Resumo_PRUMA.pdf"); } catch(e) { alert("Erro ao gerar PDF."); }
-        }
+        function baixarPdfResumo(txtBase64) { try { const doc = new window.jspdf.jsPDF(); doc.setFont("helvetica"); doc.setFontSize(12); doc.text(doc.splitTextToSize(atob(txtBase64), 180), 15, 15); doc.save("Resumo_PRUMA.pdf"); } catch(e) { alert("Erro ao gerar PDF."); } }
     </script>
 </body>
 </html>
