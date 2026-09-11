@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR" data-theme="light">
 <head>
@@ -1210,8 +1211,21 @@
             return prompts[tipo] || basePersona;
         }
 
-        function definirModeloIideal(prompt, tipo, querAprofundar = false) {
-            return "gemini-3.8-flash";
+        // --- SISTEMA DE ROTEAMENTO COM GEMINI 1.5 FLASH E PRO (USANDO V1) ---
+        function definirModeloIdeal(prompt, tipo, querAprofundar = false) {
+            if (querAprofundar) return "gemini-1.5-pro";
+            if (tipo === 'edital') return "gemini-1.5-pro"; 
+
+            if (tipo === 'chat') {
+                let pLow = prompt.toLowerCase();
+                let termosComplexos = ['jurisprudência', 'doutrina', 'recurso', 'aprofunde', 'detalhe', 'discursiva', 'análise', 'stf', 'stj'];
+                let isComplexo = termosComplexos.some(t => pLow.includes(t));
+                if (prompt.length > 1500 || isComplexo) {
+                    return "gemini-1.5-pro";
+                }
+            }
+            
+            return "gemini-1.5-flash"; 
         }
 
         async function executarIA(tipo, promptEspecifico = null, querAprofundar = false) {
@@ -1287,7 +1301,7 @@
                 }
 
                 async function chamarGemini(modelo) {
-                    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelo}:generateContent?key=${k}`, { 
+                    const res = await fetch(`https://generativelanguage.googleapis.com/v1/models/${modelo}:generateContent?key=${k}`, { 
                         method:'POST', 
                         headers:{'Content-Type':'application/json'}, 
                         body:JSON.stringify({ contents:[{parts:[{text: `${baseSys}\n\n${ctx ? "CONTEXTO / FONTES:\n"+ctx : ""}\n\nPROMPT DO USUÁRIO: ${p}`}]}] }) 
@@ -1308,7 +1322,12 @@
                 }
 
                 let txtF;
+                
+                // --- CASCATA DE ROTEAMENTO (FALLBACK) ---
                 let listaModelosCascata = [modeloIdeal];
+                if (modeloIdeal === 'gemini-1.5-pro') listaModelosCascata.push('gemini-1.5-flash');
+                else listaModelosCascata.push('gemini-1.5-pro');
+
                 let sucesso = false, modeloUsadoFinal = "";
 
                 for(let m of listaModelosCascata) {
@@ -1318,12 +1337,14 @@
                         sucesso = true;
                         break;
                     } catch(err) {
-                        if(err.message === 'QUOTA_EXCEEDED') throw err;
-                        throw err;
+                        console.warn(`Falha no modelo ${m}, tentando fallback...`, err);
+                        if(err.message === 'QUOTA_EXCEEDED') throw err; 
                     }
                 }
 
                 if(!sucesso) throw new Error('LIMIT_EXCEEDED_ALL');
+                // ----------------------------------------
+
                 if(loadInt) clearInterval(loadInt);
 
                 let badgeModelo = `<div style="font-size:0.7rem; color:var(--text-muted); opacity:0.7; margin-bottom:6px; text-align:right;">⚡ Modelo: ${modeloUsadoFinal}</div>`;
@@ -1404,7 +1425,7 @@
             } catch(e) { 
                 if(loadInt) clearInterval(loadInt);
                 let l = document.getElementById('load-ia'); if(l) l.remove(); 
-                let msgErro = (e.message === 'LIMIT_EXCEEDED_ALL' || e.message === 'QUOTA_EXCEEDED') ? 'Não foi possível responder. Limite diário de cotas atingido!' : e.message;
+                let msgErro = (e.message === 'LIMIT_EXCEEDED_ALL' || e.message === 'QUOTA_EXCEEDED') ? 'Não foi possível responder. O Limite de cotas da API foi atingido!' : e.message;
                 if(box) box.innerHTML += `<div class="msg msg-a" style="color:var(--brand-danger);">⚠️ ${msgErro}</div>`; 
             }
         }
@@ -1447,10 +1468,12 @@
         
         async function processarEdital(btn) {
             let k = localStorage.getItem('pruma_apikey'); if(!k) return alert("API Key ausente."); let txt = document.getElementById('edital-texto').value.trim(); if(!txt) return; let pId = document.getElementById('edital-ia-prova').value;
-            const modelo = "gemini-3.8-flash";
-            let tx = btn.textContent; btn.disabled=true; btn.textContent="Processando com IA...";
+            
+            const modelo = "gemini-1.5-pro"; 
+            
+            let tx = btn.textContent; btn.disabled=true; btn.textContent="Processando com IA (Pode levar uns segundos)...";
             try { 
-                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelo}:generateContent?key=${k}`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({contents:[{parts:[{text:`Organize em JSON PURO: [{"disciplina": "Nome", "topicos": ["T1", "T2"]}]. Sem markdown. Edital:\n${txt.substring(0,60000)}`}]}]}) }); 
+                const res = await fetch(`https://generativelanguage.googleapis.com/v1/models/${modelo}:generateContent?key=${k}`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({contents:[{parts:[{text:`Organize em JSON PURO: [{"disciplina": "Nome", "topicos": ["T1", "T2"]}]. Sem markdown. Edital:\n${txt.substring(0,60000)}`}]}]}) }); 
                 if(!res.ok) throw new Error('Erro ao processar edital');
                 const data = await res.json(); if(data.error) throw new Error(data.error.message); 
                 let json = JSON.parse(data.candidates[0].content.parts[0].text.match(/\[.*\]/s)[0]); 
