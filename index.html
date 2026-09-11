@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR" data-theme="light">
 <head>
@@ -1211,23 +1210,6 @@
             return prompts[tipo] || basePersona;
         }
 
-        // --- SISTEMA DE ROTEAMENTO COM GEMINI 1.5 FLASH E PRO (USANDO V1) ---
-        function definirModeloIdeal(prompt, tipo, querAprofundar = false) {
-            if (querAprofundar) return "gemini-1.5-pro";
-            if (tipo === 'edital') return "gemini-1.5-pro"; 
-
-            if (tipo === 'chat') {
-                let pLow = prompt.toLowerCase();
-                let termosComplexos = ['jurisprudência', 'doutrina', 'recurso', 'aprofunde', 'detalhe', 'discursiva', 'análise', 'stf', 'stj'];
-                let isComplexo = termosComplexos.some(t => pLow.includes(t));
-                if (prompt.length > 1500 || isComplexo) {
-                    return "gemini-1.5-pro";
-                }
-            }
-            
-            return "gemini-1.5-flash"; 
-        }
-
         async function executarIA(tipo, promptEspecifico = null, querAprofundar = false) {
             let k = localStorage.getItem('pruma_apikey'); if(!k) return alert("Configure a API Key na aba lateral.");
             let p = "", box = null; let ctx = extrairContextoGeral();
@@ -1284,7 +1266,7 @@
 
             let isPerguntaFacil = p.length < 50 && !p.toLowerCase().includes('jurisprudência') && !p.toLowerCase().includes('aprofundado');
             let baseSys = obterPromptDoSistema(tipo, p, isPerguntaFacil);
-            let modeloIdeal = definirModeloIdeal(p, tipo, querAprofundar);
+            let modeloUsadoFinal = "gemini-2.0-flash";
             let loadInt = null;
 
             try {
@@ -1321,29 +1303,7 @@
                     return data.candidates[0].content.parts[0].text;
                 }
 
-                let txtF;
-                
-                // --- CASCATA DE ROTEAMENTO (FALLBACK) ---
-                let listaModelosCascata = [modeloIdeal];
-                if (modeloIdeal === 'gemini-1.5-pro') listaModelosCascata.push('gemini-1.5-flash');
-                else listaModelosCascata.push('gemini-1.5-pro');
-
-                let sucesso = false, modeloUsadoFinal = "";
-
-                for(let m of listaModelosCascata) {
-                    try {
-                        txtF = await chamarGemini(m);
-                        modeloUsadoFinal = m;
-                        sucesso = true;
-                        break;
-                    } catch(err) {
-                        console.warn(`Falha no modelo ${m}, tentando fallback...`, err);
-                        if(err.message === 'QUOTA_EXCEEDED') throw err; 
-                    }
-                }
-
-                if(!sucesso) throw new Error('LIMIT_EXCEEDED_ALL');
-                // ----------------------------------------
+                let txtF = await chamarGemini(modeloUsadoFinal);
 
                 if(loadInt) clearInterval(loadInt);
 
@@ -1469,7 +1429,7 @@
         async function processarEdital(btn) {
             let k = localStorage.getItem('pruma_apikey'); if(!k) return alert("API Key ausente."); let txt = document.getElementById('edital-texto').value.trim(); if(!txt) return; let pId = document.getElementById('edital-ia-prova').value;
             
-            const modelo = "gemini-1.5-pro"; 
+            const modelo = "gemini-2.0-flash"; 
             
             let tx = btn.textContent; btn.disabled=true; btn.textContent="Processando com IA (Pode levar uns segundos)...";
             try { 
