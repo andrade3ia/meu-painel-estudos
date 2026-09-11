@@ -1211,7 +1211,7 @@
         }
 
         function definirModeloIdeal(prompt, tipo, querAprofundar = false) {
-            return "gemini-3.8-flash";
+            return "gemini-1.5-flash";
         }
 
         async function executarIA(tipo, promptEspecifico = null, querAprofundar = false) {
@@ -1293,8 +1293,9 @@
                         body:JSON.stringify({ contents:[{parts:[{text: `${baseSys}\n\n${ctx ? "CONTEXTO / FONTES:\n"+ctx : ""}\n\nPROMPT DO USUÁRIO: ${p}`}]}] }) 
                     });
                     if(!res.ok) {
-                        if(res.status === 429 || res.status === 403 || res.status === 400 || res.status === 503) throw new Error('QUOTA_EXCEEDED');
-                        throw new Error(`HTTP error ${res.status}`);
+                        if(res.status === 429 || res.status === 403 || res.status === 503) throw new Error('QUOTA_EXCEEDED');
+                        const errData = await res.json().catch(() => ({}));
+                        throw new Error(errData.error?.message || `HTTP error ${res.status}`);
                     }
                     const data = await res.json(); 
                     if(data.error) {
@@ -1317,7 +1318,8 @@
                         sucesso = true;
                         break;
                     } catch(err) {
-                        // Sem fallback para outros modelos; falhará se o limite for atingido.
+                        if(err.message === 'QUOTA_EXCEEDED') throw err;
+                        throw err;
                     }
                 }
 
@@ -1445,7 +1447,7 @@
         
         async function processarEdital(btn) {
             let k = localStorage.getItem('pruma_apikey'); if(!k) return alert("API Key ausente."); let txt = document.getElementById('edital-texto').value.trim(); if(!txt) return; let pId = document.getElementById('edital-ia-prova').value;
-            const modelo = "gemini-3.8-flash";
+            const modelo = "gemini-1.5-flash";
             let tx = btn.textContent; btn.disabled=true; btn.textContent="Processando com IA...";
             try { 
                 const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelo}:generateContent?key=${k}`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({contents:[{parts:[{text:`Organize em JSON PURO: [{"disciplina": "Nome", "topicos": ["T1", "T2"]}]. Sem markdown. Edital:\n${txt.substring(0,60000)}`}]}]}) }); 
