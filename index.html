@@ -1284,19 +1284,8 @@
 
             let isPerguntaFacil = p.length < 50 && !p.toLowerCase().includes('jurisprudência') && !p.toLowerCase().includes('aprofundado');
             let baseSys = obterPromptDoSistema(tipo, p, isPerguntaFacil);
-            let modeloAtual = definirModeloIdeal(p, tipo, querAprofundar);
+            let modeloIdeal = definirModeloIdeal(p, tipo, querAprofundar);
             let loadInt = null;
-
-            let todayStr = new Date().toDateString();
-            let lastQuotaDate = localStorage.getItem('pruma_quota_date') || '';
-            if(lastQuotaDate !== todayStr) {
-                localStorage.setItem('pruma_quota_date', todayStr);
-                localStorage.setItem('pruma_pro_exhausted', 'false');
-            }
-            let proExhausted = localStorage.getItem('pruma_pro_exhausted') === 'true';
-            if(proExhausted && modeloAtual.includes('pro')) {
-                modeloAtual = "gemini-3.8-flash";
-            }
 
             try {
                 if(tipo!=='flashcards') { 
@@ -1318,29 +1307,38 @@
                 }
 
                 let txtF;
-                try { 
-                    txtF = await chamarGemini(modeloAtual); 
-                } 
-                catch(err) {
-                    if(err.message === 'QUOTA_EXCEEDED') {
-                        if(modeloAtual.includes('pro')) {
-                            localStorage.setItem('pruma_pro_exhausted', 'true');
-                            modeloAtual = "gemini-3.8-flash";
-                            try {
-                                txtF = await chamarGemini(modeloAtual);
-                            } catch(errFlash) {
-                                if(errFlash.message === 'QUOTA_EXCEEDED') {
-                                    throw new Error('LIMIT_EXCEEDED_ALL');
-                                }
-                                throw errFlash;
-                            }
-                        } else {
-                            throw new Error('LIMIT_EXCEEDED_ALL');
+                let listaModelosCascata = [];
+                if(modeloIdeal.includes('pro')) {
+                    listaModelosCascata = [modeloIdeal, "gemini-3.8-flash", "gemini-1.5-flash"];
+                } else {
+                    listaModelosCascata = [modeloIdeal, "gemini-1.5-flash"];
+                }
+
+                let sucesso = false;
+                let ultimoErro = null;
+                let modeloUsadoFinal = "";
+
+                for(let m of listaModelosCascata) {
+                    try {
+                        txtF = await chamarGemini(m);
+                        modeloUsadoFinal = m;
+                        sucesso = true;
+                        break;
+                    } catch(err) {
+                        ultimoErro = err;
+                        if(err.message !== 'QUOTA_EXCEEDED') {
+                            throw err;
                         }
-                    } else { throw err; }
+                    }
+                }
+
+                if(!sucesso) {
+                    throw new Error('LIMIT_EXCEEDED_ALL');
                 }
 
                 if(loadInt) clearInterval(loadInt);
+
+                let badgeModelo = `<div style="font-size:0.7rem; color:var(--text-muted); opacity:0.7; margin-bottom:6px; text-align:right;">⚡ Modelo: ${modeloUsadoFinal}</div>`;
 
                 if(tipo === 'flashcards') {
                     let json = JSON.parse(txtF.replace(/```json/g,'').replace(/```/g,'').match(/\[.*\]/s)[0]);
@@ -1348,7 +1346,7 @@
                     let topNome = sanitizeText(document.getElementById('fc-top').value) || 'Geral';
                     box.innerHTML = '';
                     
-                    let htmlFCResult = '';
+                    let htmlFCResult = badgeModelo;
                     json.forEach(c => {
                         let bId = gerarId();
                         let itemHtml = `
@@ -1365,6 +1363,7 @@
                         box.innerHTML += itemHtml;
                         htmlFCResult += itemHtml;
                     });
+                    box.insertAdjacentHTML('afterbegin', badgeModelo);
                     salvarFiltroHistorico('flashcards', {mat: matNome, top: topNome}, `${matNome} - ${topNome}`, htmlFCResult);
                 } else {
                     let l = document.getElementById('load-ia'); if(l) l.remove();
@@ -1423,14 +1422,14 @@
                         });
 
                         htmlQ += `</div>`;
-                        let finalQstHtml = `<div class="msg msg-a" style="max-width:100%; width:100%;">${htmlQ}</div>`;
+                        let finalQstHtml = `<div class="msg msg-a" style="max-width:100%; width:100%;">${badgeModelo}${htmlQ}</div>`;
                         box.innerHTML += finalQstHtml;
                         let temaStr = document.getElementById('ia-qts-tema').value || 'Questões IA';
-                        salvarFiltroHistorico('questoes', {tema: temaStr}, temaStr, htmlQ);
+                        salvarFiltroHistorico('questoes', {tema: temaStr}, temaStr, badgeModelo + htmlQ);
                     } else {
                         let rawHtml = txtF.replace(/\n/g, '<br>');
                         let lHtml = sanitizeText(rawHtml);
-                        let finalChatHtml = `${lHtml}<br><br><button class="btn-outline" style="width:auto; padding:6px 12px; font-size:0.8rem; margin-right:8px;" onclick="executarIA('chat', 'Aprofunde mais a resposta anterior detalhando as bases teóricas, doutrina e jurisprudência aplicável.', true)">🔍 Aprofundar Resposta</button><button class="btn-primary" style="width:auto; padding:8px 16px; font-size:0.85rem;" onclick="enviarParaCadernoErros('Chat Especialista', 'Dúvida IA', ${JSON.stringify(txtF).replace(/"/g, '&quot;')})">📚 Enviar Resposta para Caderno de Erros</button>`;
+                        let finalChatHtml = `${badgeModelo}${lHtml}<br><br><button class="btn-outline" style="width:auto; padding:6px 12px; font-size:0.8rem; margin-right:8px;" onclick="executarIA('chat', 'Aprofunde mais a resposta anterior detalhando as bases teóricas, doutrina e jurisprudência aplicável.', true)">🔍 Aprofundar Resposta</button><button class="btn-primary" style="width:auto; padding:8px 16px; font-size:0.85rem;" onclick="enviarParaCadernoErros('Chat Especialista', 'Dúvida IA', ${JSON.stringify(txtF).replace(/"/g, '&quot;')})">📚 Enviar Resposta para Caderno de Erros</button>`;
                         box.innerHTML += `<div class="msg msg-a" style="max-width:100%; width:100%;">${finalChatHtml}</div>`;
                         salvarFiltroHistorico('chat', p, p.length > 30 ? p.substring(0, 30) + '...' : p, finalChatHtml);
                     }
@@ -1489,4 +1488,3 @@
     </script>
 </body>
 </html>
-
