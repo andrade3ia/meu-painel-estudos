@@ -1239,6 +1239,13 @@
             return "gemini-3.8-flash";
         }
 
+        1. Sobre o uso gratuito do Modelo Pro
+Sim, é totalmente possível usar o modelo Pro de forma gratuita!
+Através do Google AI Studio (onde você gera a sua API Key), a Google disponibiliza um Free Tier (Plano Gratuito) que inclui cotas de uso para os modelos Flash e Pro. Você não paga absolutamente nada para usar o modelo Pro, desde que o seu uso esteja dentro dos limites de requisições por minuto (RPM) e por dia (RPD) estabelecidos pelo plano gratuito da API.
+2. Correção e Otimização do "PRUMA Questões"
+O problema anterior ocorria porque o sistema tentava adivinhar a estrutura do texto gerado pela IA usando expressões regulares (regex), o que causava falhas de formatação e contagem incorreta.
+Para resolver isso de forma definitiva e garantir que a quantidade exata de questões solicitada seja gerada com perfeição, a IA agora retorna um formato estruturado em JSON.
+O trecho correspondente da função executarIA deve ser substituído pelo código abaixo no seu arquivo:
         async function executarIA(tipo, promptEspecifico = null, querAprofundar = false) {
             let k = localStorage.getItem('pruma_apikey'); if(!k) return alert("Configure a API Key na aba lateral.");
             let p = "", box = null; let ctx = extrairContextoGeral();
@@ -1256,7 +1263,18 @@
                 let historicoTexto = dbData.iaHistorico.join(' ').toLowerCase();
                 if(historicoTexto.includes('4 alternativas') || historicoTexto.includes('banca com 4')) numAlts = 4;
 
-                p = `Crie exatamente ${qtd} questões inéditas sobre: ${t}. ${instrucaoTipoQ} Com ${numAlts} alternativas por questão se for múltipla escolha. Níveis permitidos: ${niveisSelecionados.join(', ')}. Cada questão deve iniciar com o nível correspondente, as alternativas, indicação da correta e comentário conciso.`;
+                p = `Gere exatamente ${qtd} questões inéditas em formato JSON PURO sobre: ${t}. ${instrucaoTipoQ} Com ${numAlts} alternativas por questão se for múltipla escolha. Níveis permitidos: ${niveisSelecionados.join(', ')}. 
+                Retorne EXATAMENTE UM JSON ARRAY PURO contendo o array de objetos com esta estrutura exata:
+                [
+                  {
+                    "enunciado": "Texto da questão...",
+                    "alternativas": ["A) Opção 1", "B) Opção 2", "C) Opção 3", "D) Opção 4"],
+                    "correta": "A",
+                    "comentario": "Comentário objetivo...",
+                    "nivel": "Médio"
+                  }
+                ]
+                Não inclua markdown (como \`\`\`json), retorne apenas o JSON puro.`;
                 box = document.getElementById('box-qts'); box.style.display='flex'; box.innerHTML='';
             } else if(tipo === 'flashcards') {
                 document.querySelectorAll('.chk-nivel-fc:checked').forEach(el => niveisSelecionados.push(el.value));
@@ -1281,6 +1299,133 @@
                     dbData.iaHistorico.push(p); if(dbData.iaHistorico.length>10) dbData.iaHistorico.shift(); refDb.child('ia_historico').set(dbData.iaHistorico);
                 }
             }
+
+            let isPerguntaFacil = p.length < 50 && !p.toLowerCase().includes('jurisprudência') && !p.toLowerCase().includes('aprofundado');
+            let baseSys = obterPromptDoSistema(tipo, p, isPerguntaFacil);
+            let modeloIdeal = definirModeloIdeal(p, tipo, querAprofundar);
+            let loadInt = null;
+
+            try {
+                if(tipo!=='flashcards') { 
+                    box.innerHTML += `<div class="msg msg-a" id="load-ia"><span id="load-ia-text">Analisando...</span> ⏳</div>`; 
+                    box.scrollTop = box.scrollHeight; 
+                    
+                    let loadingMsgs = ["Analisando...", "Cruzando dados...", "Buscando precisão...", "Formatando resposta direta..."];
+                    loadInt = setInterval(() => { let msgEl = document.getElementById('load-ia-text'); if(msgEl) msgEl.textContent = loadingMsgs[Math.floor(Math.random() * loadingMsgs.length)]; }, 2500);
+                } else { 
+                    box.innerHTML = `<div id="load-ia" style="color:var(--brand-primary); font-weight:600;"><span id="load-ia-text">Construindo flashcards...</span> ⏳</div>`; 
+                    let fcMsgs = ["Lendo parâmetros...", "Gerando cartões...", "Montando estrutura..."];
+                    loadInt = setInterval(() => { let msgEl = document.getElementById('load-ia-text'); if(msgEl) msgEl.textContent = fcMsgs[Math.floor(Math.random() * fcMsgs.length)]; }, 2000);
+                }
+
+                async function chamarGemini(modelo) {
+                    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelo}:generateContent?key=${k}`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ contents:[{parts:[{text: `${baseSys}\n\n${ctx ? "CONTEXTO / FONTES:\n"+ctx : ""}\n\nPROMPT DO USUÁRIO: ${p}`}]}], tools:[{googleSearch:{}}] }) });
+                    if(res.status === 429 || res.status === 503) throw new Error('QUOTA_EXCEEDED');
+                    const data = await res.json(); if(data.error) throw new Error(data.error.message); return data.candidates[0].content.parts[0].text;
+                }
+
+                let txtF;
+                let listaModelosCascata = modeloIdeal.includes('pro') ? [modeloIdeal, "gemini-3.8-flash", "gemini-1.5-flash"] : [modeloIdeal, "gemini-1.5-flash"];
+                let sucesso = false, modeloUsadoFinal = "";
+
+                for(let m of listaModelosCascata) {
+                    try {
+                        txtF = await chamarGemini(m);
+                        modeloUsadoFinal = m;
+                        sucesso = true;
+                        break;
+                    } catch(err) {
+                        if(err.message !== 'QUOTA_EXCEEDED') throw err;
+                    }
+                }
+
+                if(!sucesso) throw new Error('LIMIT_EXCEEDED_ALL');
+                if(loadInt) clearInterval(loadInt);
+
+                let badgeModelo = `<div style="font-size:0.7rem; color:var(--text-muted); opacity:0.7; margin-bottom:6px; text-align:right;">⚡ Modelo: ${modeloUsadoFinal}</div>`;
+
+                if(tipo === 'flashcards') {
+                    let json = JSON.parse(txtF.replace(/```json/g,'').replace(/```/g,'').match(/\[.*\]/s)[0]);
+                    let matNome = sanitizeText(document.getElementById('fc-mat').value) || 'Flashcards IA';
+                    let topNome = sanitizeText(document.getElementById('fc-top').value) || 'Geral';
+                    box.innerHTML = '';
+                    
+                    let htmlFCResult = badgeModelo;
+                    json.forEach(c => {
+                        let bId = gerarId();
+                        let itemHtml = `
+                        <div class="pasta-header" onclick="this.nextElementSibling.classList.toggle('aberta')" style="border-left:4px solid var(--brand-warning); cursor:pointer; margin-bottom:0;">
+                            <span style="font-weight:700; color:var(--text-main);">❓ ${sanitizeText(c.f)} <span style="font-size:0.75rem; font-weight:normal; opacity:0.8;">(📌 ${c.nivel || 'Geral'})</span></span>
+                        </div>
+                        <div class="pasta-body" style="background:var(--bg-card); border:1px solid var(--border-color); border-top:none; margin-top:0; border-radius: 0 0 var(--radius-sm) var(--radius-sm);">
+                            <div style="margin-bottom:12px; color:var(--text-main); font-size:1rem; padding-top:8px;">💡 Resposta: ${sanitizeText(c.v)}</div>
+                            <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                                <button id="${bId}" class="btn-outline" style="width:auto; padding:6px 12px; font-size:0.8rem;" onclick="salvarFc('${matNome}', '${topNome}', '${sanitizeText(c.f).replace(/'/g,"\\'")} - ${sanitizeText(c.v).replace(/'/g,"\\йтесь")}', this)">💾 Salvar no Caderno</button>
+                            </div>
+                        </div>
+                        <div style="margin-bottom:12px;"></div>`;
+                        box.innerHTML += itemHtml;
+                        htmlFCResult += itemHtml;
+                    });
+                    box.insertAdjacentHTML('afterbegin', badgeModelo);
+                    salvarFiltroHistorico('flashcards', {mat: matNome, top: topNome}, `${matNome} - ${topNome}`, htmlFCResult);
+                } else if(tipo === 'questoes') {
+                    let l = document.getElementById('load-ia'); if(l) l.remove();
+                    try {
+                        let jsonClean = txtF.replace(/```json/g,'').replace(/```/g,'').trim();
+                        let matchJson = jsonClean.match(/\[.*\]/s);
+                        let qArray = JSON.parse(matchJson ? matchJson[0] : jsonClean);
+                        
+                        let htmlQ = `<div style="display:flex; flex-direction:column; gap:20px;">`;
+                        qArray.forEach((q, qIdx) => {
+                            let altHtml = '';
+                            if(Array.isArray(q.alternativas)) {
+                                q.alternativas.forEach(alt => {
+                                    let letra = alt.charAt(0).toUpperCase();
+                                    let isCorreta = (letra === (q.correta || '').toUpperCase()) || alt.toLowerCase().includes('correta');
+                                    altHtml += `<button class="btn-outline alt-btn" data-correta="${isCorreta ? '1' : '0'}" onclick="responderQuestaoUnica(this)" style="text-align:left; padding:10px 14px; margin:4px 0; border-radius:8px; font-size:0.9rem; width:100%;">${sanitizeText(alt)}</button>`;
+                                });
+                            }
+                            
+                            htmlQ += `<div style="background:var(--bg-input); padding:16px; border-radius:var(--radius-sm); border:1px solid var(--border-color);">
+                                <div style="font-weight:700; margin-bottom:10px; font-size:0.95rem; display:flex; justify-content:space-between;">
+                                    <span>🎯 Questão ${qIdx+1}</span>
+                                    <span style="font-size:0.75rem; background:var(--bg-card); padding:2px 8px; border-radius:4px; border:1px solid var(--border-color);">${sanitizeText(q.nivel || 'Geral')}</span>
+                                </div>
+                                <div style="margin-bottom:12px; font-size:0.95rem; line-height:1.5;">${sanitizeText(q.enunciado)}</div>
+                                <div style="display:flex; flex-direction:column; gap:4px; margin-bottom:12px;" class="bloco-alternativas-qst">${altHtml}</div>
+                                <div class="bloco-explicacao-qst" style="display:none; margin-top:8px;">
+                                    <div style="font-size:0.85rem; color:var(--text-muted); padding-top:8px; border-top:1px solid var(--border-color);">💡 Comentário: ${sanitizeText(q.comentario || '')}</div>
+                                    <button class="btn-primary" style="margin-top:12px; width:auto; padding:6px 14px; font-size:0.8rem;" onclick="enviarParaCadernoErros('Simulador IA', 'Questões', ${JSON.stringify(`Questão: ${q.enunciado}\nGabarito: ${q.correta}\nComentário: ${q.comentario}`).replace(/"/g, '&quot;')})">📚 Enviar para Caderno de Erros</button>
+                                </div>
+                            </div>`;
+                        });
+                        htmlQ += `</div>`;
+                        let finalQstHtml = `${badgeModelo}${htmlQ}`;
+                        box.innerHTML = `<div class="msg msg-a" style="max-width:100%; width:100%;">${finalQstHtml}</div>`;
+                        let temaStr = document.getElementById('ia-qts-tema').value || 'Questões IA';
+                        salvarFiltroHistorico('questoes', {tema: temaStr}, temaStr, finalQstHtml);
+                    } catch(errParse) {
+                        box.innerHTML = `<div class="msg msg-a" style="color:var(--brand-danger);">Erro ao estruturar as questões da IA. Tente gerar novamente.</div>`;
+                    }
+                } else {
+                    let l = document.getElementById('load-ia'); if(l) l.remove();
+                    let rawHtml = txtF.replace(/\n/g, '<br>');
+                    let lHtml = sanitizeText(rawHtml);
+                    let finalChatHtml = `${badgeModelo}${lHtml}<br><br><button class="btn-outline" style="width:auto; padding:6px 12px; font-size:0.8rem; margin-right:8px;" onclick="executarIA('chat', 'Aprofunde mais a resposta anterior detalhando as bases teóricas, doutrina e jurisprudência aplicável.', true)">🔍 Aprofundar Resposta</button><button class="btn-primary" style="width:auto; padding:8px 16px; font-size:0.85rem;" onclick="enviarParaCadernoErros('Chat Especialista', 'Dúvida IA', ${JSON.stringify(txtF).replace(/"/g, '&quot;')})">📚 Enviar Resposta para Caderno de Erros</button>`;
+                    box.innerHTML += `<div class="msg msg-a" style="max-width:100%; width:100%;">${finalChatHtml}</div>`;
+                    salvarFiltroHistorico('chat', p, p.length > 30 ? p.substring(0, 30) + '...' : p, finalChatHtml);
+                }
+                box.scrollTop = box.scrollHeight;
+            } catch(e) { 
+                if(loadInt) clearInterval(loadInt);
+                let l = document.getElementById('load-ia'); if(l) l.remove(); 
+                let msgErro = e.message === 'LIMIT_EXCEEDED_ALL' ? 'Limite diário de cotas atingido!' : e.message;
+                if(box) box.innerHTML += `<div class="msg msg-a" style="color:var(--brand-danger);">⚠️ ${msgErro}</div>`; 
+            }
+        }
+
+
 
             let isPerguntaFacil = p.length < 50 && !p.toLowerCase().includes('jurisprudência') && !p.toLowerCase().includes('aprofundado');
             let baseSys = obterPromptDoSistema(tipo, p, isPerguntaFacil);
