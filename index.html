@@ -1048,7 +1048,7 @@
                     htmlM += `<div style="background:var(--bg-input); padding:10px; border-radius:var(--radius-sm); margin-bottom:6px; display:flex; justify-content:space-between; align-items:flex-start; gap:8px;">
                         <div style="font-size:0.95rem; min-width:0; flex:1; word-break:break-word;">
                             <span class="cad-txt-span" data-full="${encodeURIComponent(textoCompleto)}">${textoExibido}</span>
-                            ${isLongo ? `<button style="background:none;border:none;color:var(--brand-primary);cursor:pointer;font-weight:700;font-size:0.8rem;display:block;margin-top:4px;" onclick="let span=this.previousElementSibling; if(span.textContent.endsWith('...')){ span.textContent=decodeURIComponent(span.getAttribute('data-full')); this.textContent='(Menos)'; }else{ span.textContent=decodeURIComponent(span.getAttribute('data-full')).substring(0,180)+'...'; this.textContent='(Ler mais)'; }">Ler mais</button>` : ''}
+                            ${isLongo ? `<button style="background:none;border:none;color:var(--brand-primary);cursor:pointer;font-weight:700;font-size:0.8rem;display:block;margin-top:4px;" onclick="let span=this.previousElementSibling; if(span.textContent.endsWith('...')){ span.textContent=decodeURIComponent(span.getAttribute('data-full')); this.textContent='(Mostrar menos)'; }else{ span.textContent=decodeURIComponent(span.getAttribute('data-full')).substring(0,180)+'...'; this.textContent='(Ler mais)'; }">Ler mais</button>` : ''}
                             <span style="font-size:0.75rem; color:var(--text-muted); display:block; margin-top:4px;">${i.data}</span>
                         </div>
                         <button class="btn-x-vermelho" style="flex-shrink:0;" onclick="if(confirm('Excluir?')){ dbData.cadernos=dbData.cadernos.filter(x=>x.id!=='${i.id}'); refDb.child('cadernos').set(dbData.cadernos); }">✖</button>
@@ -1196,36 +1196,47 @@
             let bancaInstrucao = bancaDetectada ? `\n\n🎯 BANCA: Adapte ao estilo da banca ${bancaDetectada}.` : "";
             let profundidadeInstrucao = isFacil ? `\n\n💡 PERGUNTA SIMPLES DETECTADA: A questão/pergunta é simples. Seja extremamente conciso, vá direto à explicação essencial sem aprofundamentos desnecessários ou contextos longos.` : "";
 
-            const instrucaoAntiAlucinacao = `\n\n🛑 TRAVAS RÍGIDAS DE ANTI-ALUCINAÇÃO E VERIFICAÇÃO OFICIAL (LEIS E FATOS):
-1. PROIBIDO INVENTAR OU SUPOR: É estritamente proibido inventar artigos de lei, números de leis, prazos processuais, entendimentos de jurisprudência ou súmulas. Se houver dúvida exata sobre uma norma, utilize a verificação integrada com a legislação federal vigente (planalto.gov.br) ou portais oficiais dos tribunais superiores (STF, STJ, TST, STM).
-2. CITABILIDADE OBRIGATÓRIA: Toda afirmação sobre leis, prazos, competências ou jurisprudência deve vir acompanhada da respectiva base normativa verificada (ex: Art. X da CF/88, Súmula Y do STF).
-3. TRANSPARÊNCIA DE INCERTEZA: Caso não haja dados conclusivos ou se trate de tema controvertido, declare explicitamente a divergência ou a ausência de consolidação legal, em vez de inventar uma resposta.`;
-
             const instrucaoFormatacao = `\n\n📌 REGRA RIGOROSA DE FORMATAÇÃO E INTERATIVIDADE: 
 - NUNCA use asteriscos triplos (###), asteriscos duplos (***) ou traços excessivos (---).
 - OBRIGATÓRIO: Emojis, setas (➔, ➡), subitens e indicadores DEVEM iniciar SEMPRE novas linhas (em início de linha), servindo estritamente de orientação, destaque e organização visual. NUNCA coloque emojis ou setas perdidos no meio de frases ou emendados com linhas anteriores. Mantenha o texto perfeitamente alinhado e limpo.`;
 
-            const basePersona = "Você é a PRUMA IA, mentora especialista em concursos e regulação técnica. VÁ DIRETO AO PONTO. Sem saudações longas, sem introduções vazias, sem motivação excessiva. Responda com máxima concisão, rigor documental e precisão técnica." + profundidadeInstrucao + instrucaoAntiAlucinacao + instrucaoFormatacao;
+            const basePersona = "Você é a PRUMA IA, mentora especialista em concursos. VÁ DIRETO AO PONTO. Sem saudações longas, sem introduções vazias, sem motivação excessiva. Responda com máxima concisão e precisão técnica, estruturando explicações interativas e dinâmicas." + profundidadeInstrucao + instrucaoFormatacao;
             
             const prompts = {
-                chat: `${basePersona} Explique com clareza cirúrgica, embasamento legal oficial e objetividade.${bancaInstrucao}`,
-                questoes: `${basePersona} Crie questões inéditas com rigor técnico estrito, fundamentadas em leis vigentes e jurisprudência pacificada, indicando o nível de dificuldade no início e gabarito rigorosamente fundamentado.${bancaInstrucao}`,
-                flashcards: `${basePersona} Crie flashcards cirúrgicos de alta retenção baseados estritamente na lei seca e jurisprudência oficial, indicando o nível no início.`
+                chat: `${basePersona} Explique com clareza cirúrgica e objetividade.${bancaInstrucao}`,
+                questoes: `${basePersona} Crie questões inéditas com rigor técnico, indicando o nível de dificuldade no início de cada linha, e gabarito comentado objetivo.${bancaInstrucao}`,
+                flashcards: `${basePersona} Crie flashcards cirúrgicos de alta retenção no formato estrito solicitado, indicando o nível no início.`
             };
             return prompts[tipo] || basePersona;
         }
 
         function definirModeloIdeal(prompt, tipo, querAprofundar = false) {
-            let pLow = prompt.toLowerCase();
-            let scoreComplexidade = 0;
-            const termosPesados = ['stf', 'stj', 'stm', 'tese repetitiva', 'divergência doutrinária', 'informativo', 'súmula vinculante', 'constitucional'];
-            const termosMedios = ['jurisprudência', 'doutrina', 'recurso especial', 'recurso extraordinário', 'controle de constitucionalidade', 'artigo', 'lei'];
+            if(querAprofundar) return "gemini-3.1-pro-preview";
+            if(tipo === 'edital') return "gemini-3.1-pro-preview";
+            if(tipo === 'flashcards') return "gemini-3.8-flash";
             
-            termosPesados.forEach(termo => { if(pLow.includes(termo)) scoreComplexidade += 3; });
-            termosMedios.forEach(termo => { if(pLow.includes(termo)) scoreComplexidade += 2; });
-            if(prompt.length > 250) scoreComplexidade += 1;
+            let pLow = prompt.toLowerCase();
+            
+            if(tipo === 'questoes') {
+                let requerComplexidadeQ = ['jurisprudência', 'stf', 'stj', 'informativo', 'tese repetitiva', 'divergência doutrinária', 'caso concreto complexo'].some(w => pLow.includes(w));
+                return requerComplexidadeQ ? "gemini-3.1-pro-preview" : "gemini-3.8-flash";
+            }
+            
+            let indicadoresProfundidade = [
+                'jurisprudência', 'doutrina', 'stf', 'stj', 'informativo', 'tese', 
+                'divergência', 'fundamentação detalhada', 'análise aprofundada', 
+                'distinção entre', 'recurso especial', 'recurso extraordinário', 'controle de constitucionalidade complexo'
+            ];
+            let exigeProfundidade = indicadoresProfundidade.some(termo => pLow.includes(termo));
+            
+            let historicoRecente = dbData.iaHistorico.slice(-3).join(' ').toLowerCase();
+            let alunoBuscaProfundidade = ['discursiva', 'fase oral', 'magistratura', 'procuradoria', 'delegado'].some(w => historicoRecente.includes(w));
 
-            return "gemini-1.5-flash"; 
+            if(exigeProfundidade || (alunoBuscaProfundidade && pLow.includes('aprofundar'))) {
+                return "gemini-3.1-pro-preview";
+            }
+            
+            return "gemini-3.8-flash";
         }
 
         async function executarIA(tipo, promptEspecifico = null, querAprofundar = false) {
@@ -1245,7 +1256,7 @@
                 let historicoTexto = dbData.iaHistorico.join(' ').toLowerCase();
                 if(historicoTexto.includes('4 alternativas') || historicoTexto.includes('banca com 4')) numAlts = 4;
 
-                p = `Crie exatamente ${qtd} questões inéditas e estritamente fundamentadas na lei vigente e jurisprudência sobre: ${t}. ${instrucaoTipoQ} Com ${numAlts} alternativas por questão se for múltipla escolha. Níveis permitidos: ${niveisSelecionados.join(', ')}. Cada questão deve iniciar com o nível correspondente, as alternativas, indicação da correta e comentário normativo conciso.`;
+                p = `Crie exatamente ${qtd} questões inéditas sobre: ${t}. ${instrucaoTipoQ} Com ${numAlts} alternativas por questão se for múltipla escolha. Níveis permitidos: ${niveisSelecionados.join(', ')}. Cada questão deve iniciar com o nível correspondente, as alternativas, indicação da correta e comentário conciso.`;
                 box = document.getElementById('box-qts'); box.style.display='flex'; box.innerHTML='';
             } else if(tipo === 'flashcards') {
                 document.querySelectorAll('.chk-nivel-fc:checked').forEach(el => niveisSelecionados.push(el.value));
@@ -1253,7 +1264,7 @@
                 let qtd = document.getElementById('fc-num').value || '5';
                 let m = sanitizeText(document.getElementById('fc-mat').value) || 'Geral';
                 let tp = sanitizeText(document.getElementById('fc-top').value) || 'Assunto Geral';
-                p = `Gere exatamente ${qtd} flashcards de alta retenção baseados na legislação oficial e jurisprudência para a Matéria: "${m}" e Tópico: "${tp}". Níveis permitidos: ${niveisSelecionados.join(', ')}. Retorne EXATAMENTE UM JSON ARRAY PURO: [{"f":"Pergunta","v":"Resposta com embasamento legal","nivel":"Fácil/Médio/Difícil"}]. Sem markdowns como \`\`\`.`;
+                p = `Gere exatamente ${qtd} flashcards de alta retenção para a Matéria: "${m}" e Tópico: "${tp}". Níveis permitidos: ${niveisSelecionados.join(', ')}. Retorne EXATAMENTE UM JSON ARRAY PURO: [{"f":"Pergunta","v":"Resposta","nivel":"Fácil/Médio/Difícil"}]. Sem markdowns como \`\`\`.`;
                 box = document.getElementById('box-fc'); box.style.display='block'; box.innerHTML='';
             } else if(tipo === 'chat') {
                 p = promptEspecifico || document.getElementById('inp-chat').value.trim(); if(!p) return;
@@ -1278,68 +1289,56 @@
 
             try {
                 if(tipo!=='flashcards') { 
-                    box.innerHTML += `<div class="msg msg-a" id="load-ia"><span id="load-ia-text">Verificando bases oficiais...</span> ⏳</div>`; 
+                    box.innerHTML += `<div class="msg msg-a" id="load-ia"><span id="load-ia-text">Analisando...</span> ⏳</div>`; 
                     box.scrollTop = box.scrollHeight; 
                     
-                    let loadingMsgs = ["Verificando bases oficiais...", "Consultando legislação e jurisprudência...", "Cruzando fontes governamentais...", "Formatando resposta verificada..."];
+                    let loadingMsgs = ["Analisando...", "Cruzando dados...", "Buscando precisão...", "Formatando resposta direta..."];
                     loadInt = setInterval(() => { let msgEl = document.getElementById('load-ia-text'); if(msgEl) msgEl.textContent = loadingMsgs[Math.floor(Math.random() * loadingMsgs.length)]; }, 2500);
                 } else { 
-                    box.innerHTML = `<div id="load-ia" style="color:var(--brand-primary); font-weight:600;"><span id="load-ia-text">Validando flashcards normativos...</span> ⏳</div>`; 
-                    let fcMsgs = ["Lendo parâmetros...", "Validando na lei seca...", "Montando cartões..."];
+                    box.innerHTML = `<div id="load-ia" style="color:var(--brand-primary); font-weight:600;"><span id="load-ia-text">Construindo flashcards...</span> ⏳</div>`; 
+                    let fcMsgs = ["Lendo parâmetros...", "Gerando cartões...", "Montando estrutura..."];
                     loadInt = setInterval(() => { let msgEl = document.getElementById('load-ia-text'); if(msgEl) msgEl.textContent = fcMsgs[Math.floor(Math.random() * fcMsgs.length)]; }, 2000);
                 }
 
                 async function chamarGemini(modelo) {
-                    const rotasModelos = [
-                        'gemini-1.5-flash' // Removido o Pro para garantir uso estrito e gratuito do Flash
-                    ];
-                    
-                    let ultimaExcecao = null;
-                    
-                    for (let m of [...new Set(rotasModelos)]) {
-                        for (let versao of ['v1', 'v1beta']) {
-                            try {
-                                const res = await fetch(`https://generativelanguage.googleapis.com/${versao}/models/${m}:generateContent?key=${k}`, { 
-                                    method: 'POST', 
-                                    headers: { 'Content-Type': 'application/json' }, 
-                                    body: JSON.stringify({ 
-                                        contents: [{ parts: [{ text: `${baseSys}\n\n${ctx ? "CONTEXTO / FONTES:\n"+ctx : ""}\n\nPROMPT DO USUÁRIO: ${p}` }] }]
-                                    }) 
-                                });
-                                
-                                if (!res.ok) {
-                                    if (res.status === 429) throw new Error("Não foi possível responder. Limite diário de cotas atingido!");
-                                    let errJson = await res.json().catch(() => ({}));
-                                    let errMsg = errJson.error?.message || "";
-                                    if (errMsg.toLowerCase().includes("quota") || errMsg.toLowerCase().includes("exhausted")) throw new Error("Não foi possível responder. Limite diário de cotas atingido!");
-                                    throw new Error(errMsg || `HTTP error! status: ${res.status}`);
-                                }
-                                
-                                const data = await res.json(); 
-                                if (data.error) {
-                                    let errMsg = data.error.message || "";
-                                    if (errMsg.toLowerCase().includes("quota") || errMsg.toLowerCase().includes("exhausted")) throw new Error("Não foi possível responder. Limite diário de cotas atingido!");
-                                    throw new Error(errMsg);
-                                }
-                                if (data.candidates && data.candidates[0] && data.candidates[0].content) {
-                                    return { texto: data.candidates[0].content.parts[0].text, modeloUsado: m };
-                                }
-                            } catch (err) {
-                                ultimaExcecao = err;
-                                if (err.message === "Não foi possível responder. Limite diário de cotas atingido!") throw err;
-                            }
-                        }
-                    }
-                    throw ultimaExcecao || new Error("Falha ao conectar com os modelos da IA em todas as rotas.");
+                    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelo}:generateContent?key=${k}`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ contents:[{parts:[{text: `${baseSys}\n\n${ctx ? "CONTEXTO / FONTES:\n"+ctx : ""}\n\nPROMPT DO USUÁRIO: ${p}`}]}], tools:[{googleSearch:{}}] }) });
+                    if(res.status === 429 || res.status === 503) throw new Error('QUOTA_EXCEEDED');
+                    const data = await res.json(); if(data.error) throw new Error(data.error.message); return data.candidates[0].content.parts[0].text;
                 }
 
-                let resultadoChamada = await chamarGemini(modeloIdeal);
-                let txtF = resultadoChamada.texto;
-                let modeloUsadoFinal = resultadoChamada.modeloUsado;
+                let txtF;
+                let listaModelosCascata = [];
+                if(modeloIdeal.includes('pro')) {
+                    listaModelosCascata = [modeloIdeal, "gemini-3.8-flash", "gemini-1.5-flash"];
+                } else {
+                    listaModelosCascata = [modeloIdeal, "gemini-1.5-flash"];
+                }
+
+                let sucesso = false;
+                let ultimoErro = null;
+                let modeloUsadoFinal = "";
+
+                for(let m of listaModelosCascata) {
+                    try {
+                        txtF = await chamarGemini(m);
+                        modeloUsadoFinal = m;
+                        sucesso = true;
+                        break;
+                    } catch(err) {
+                        ultimoErro = err;
+                        if(err.message !== 'QUOTA_EXCEEDED') {
+                            throw err;
+                        }
+                    }
+                }
+
+                if(!sucesso) {
+                    throw new Error('LIMIT_EXCEEDED_ALL');
+                }
 
                 if(loadInt) clearInterval(loadInt);
 
-                let badgeModelo = `<div style="font-size:0.7rem; color:var(--text-muted); opacity:0.7; margin-bottom:6px; text-align:right;">🛡️ Antialucinação Ativa | Modelo: ${modeloUsadoFinal}</div>`;
+                let badgeModelo = `<div style="font-size:0.7rem; color:var(--text-muted); opacity:0.7; margin-bottom:6px; text-align:right;">⚡ Modelo: ${modeloUsadoFinal}</div>`;
 
                 if(tipo === 'flashcards') {
                     let json = JSON.parse(txtF.replace(/```json/g,'').replace(/```/g,'').match(/\[.*\]/s)[0]);
@@ -1416,7 +1415,7 @@
                                 <div style="margin-bottom:12px; font-size:0.95rem; line-height:1.5;">${textoEnunciado || sanitizeText(bloco)}</div>
                                 <div style="display:flex; flex-direction:column; gap:4px; margin-bottom:12px;" class="bloco-alternativas-qst">${altHtml}</div>
                                 <div class="bloco-explicacao-qst" style="display:none; margin-top:8px;">
-                                    ${textoExplicacao ? `<div style="font-size:0.85rem; color:var(--text-muted); padding-top:8px; border-top:1px solid var(--border-color);">💡 Comentário Normativo: ${textoExplicacao}</div>` : ''}
+                                    ${textoExplicacao ? `<div style="font-size:0.85rem; color:var(--text-muted); padding-top:8px; border-top:1px solid var(--border-color);">💡 Comentário: ${textoExplicacao}</div>` : ''}
                                     <button class="btn-primary" style="margin-top:12px; width:auto; padding:6px 14px; font-size:0.8rem;" onclick="enviarParaCadernoErros('Simulador IA', 'Questões', ${JSON.stringify(bloco).replace(/"/g, '&quot;')})">📚 Enviar Questão para Caderno de Erros</button>
                                 </div>
                             </div>`;
@@ -1439,7 +1438,7 @@
             } catch(e) { 
                 if(loadInt) clearInterval(loadInt);
                 let l = document.getElementById('load-ia'); if(l) l.remove(); 
-                let msgErro = e.message || 'Erro desconhecido ao processar requisição.';
+                let msgErro = e.message === 'LIMIT_EXCEEDED_ALL' ? 'Não foi possível responder. Limite diário de cotas atingido!' : (e.message === 'QUOTA_EXCEEDED' ? 'Cota de IA esgotada.' : e.message);
                 if(box) box.innerHTML += `<div class="msg msg-a" style="color:var(--brand-danger);">⚠️ ${msgErro}</div>`; 
             }
         }
@@ -1482,39 +1481,11 @@
         
         async function processarEdital(btn) {
             let k = localStorage.getItem('pruma_apikey'); if(!k) return alert("API Key ausente."); let txt = document.getElementById('edital-texto').value.trim(); if(!txt) return; let pId = document.getElementById('edital-ia-prova').value;
-            const modelo = "gemini-1.5-flash"; // Alterado para Flash para evitar limites de requisição do Pro
+            const modelo = "gemini-3.1-pro-preview";
             let tx = btn.textContent; btn.disabled=true; btn.textContent="Processando com IA...";
-            try { 
-                const res = await fetch(`https://generativelanguage.googleapis.com/v1/models/${modelo}:generateContent?key=${k}`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({contents:[{parts:[{text:`Organize em JSON PURO: [{"disciplina": "Nome", "topicos": ["T1", "T2"]}]. Sem markdown. Edital:\n${txt.substring(0,60000)}`}]}]}) }); 
-                
-                if (!res.ok) {
-                    if (res.status === 429) throw new Error("Não foi possível responder. Limite diário de cotas atingido!");
-                    let errJson = await res.json().catch(() => ({}));
-                    let errMsg = errJson.error?.message || "";
-                    if (errMsg.toLowerCase().includes("quota") || errMsg.toLowerCase().includes("exhausted")) throw new Error("Não foi possível responder. Limite diário de cotas atingido!");
-                    throw new Error(errMsg || `HTTP error! status: ${res.status}`);
-                }
-
-                const data = await res.json(); 
-                if (data.error) {
-                    let errMsg = data.error.message || "";
-                    if (errMsg.toLowerCase().includes("quota") || errMsg.toLowerCase().includes("exhausted")) throw new Error("Não foi possível responder. Limite diário de cotas atingido!");
-                    throw new Error(errMsg);
-                }
-
-                let json = JSON.parse(data.candidates[0].content.parts[0].text.match(/\[.*\]/s)[0]); 
-                if(!Array.isArray(dbData.materias)) dbData.materias = Object.values(dbData.materias || {}); 
-                json.forEach(n => { let idx = dbData.materias.findIndex(x=>x.nome.toLowerCase()===n.disciplina.toLowerCase() && x.provaId===pId); if(idx !== -1) { if(!Array.isArray(dbData.materias[idx].topicos)) dbData.materias[idx].topicos = Object.values(dbData.materias[idx].topicos || {}); n.topicos.forEach(t=>{ if(!dbData.materias[idx].topicos.includes(t)) dbData.materias[idx].topicos.push(t); }); } else { dbData.materias.push({id:gerarId(), nome:n.disciplina, cor:paleta17[0], topicos:n.topicos, provaId:pId}); } }); 
-                refDb.child('materias').set(dbData.materias); 
-                document.getElementById('edital-texto').value=''; 
-                alert("Edital mapeado!"); 
-            } catch(e) { 
-                alert(e.message === "Não foi possível responder. Limite diário de cotas atingido!" ? e.message : "Erro: " + e.message); 
-            } finally { 
-                btn.textContent=tx; 
-                btn.disabled=false; 
-            }
+            try { const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelo}:generateContent?key=${k}`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({contents:[{parts:[{text:`Organize em JSON PURO: [{"disciplina": "Nome", "topicos": ["T1", "T2"]}]. Sem markdown. Edital:\n${txt.substring(0,60000)}`}]}]}) }); const data = await res.json(); if(data.error) throw new Error(data.error.message); let json = JSON.parse(data.candidates[0].content.parts[0].text.match(/\[.*\]/s)[0]); if(!Array.isArray(dbData.materias)) dbData.materias = Object.values(dbData.materias || {}); json.forEach(n => { let idx = dbData.materias.findIndex(x=>x.nome.toLowerCase()===n.disciplina.toLowerCase() && x.provaId===pId); if(idx !== -1) { if(!Array.isArray(dbData.materias[idx].topicos)) dbData.materias[idx].topicos = Object.values(dbData.materias[idx].topicos || {}); n.topicos.forEach(t=>{ if(!dbData.materias[idx].topicos.includes(t)) dbData.materias[idx].topicos.push(t); }); } else { dbData.materias.push({id:gerarId(), nome:n.disciplina, cor:paleta17[0], topicos:n.topicos, provaId:pId}); } }); refDb.child('materias').set(dbData.materias); document.getElementById('edital-texto').value=''; alert("Edital mapeado!"); } catch(e) { alert("Erro: "+e.message); } finally { btn.textContent=tx; btn.disabled=false; }
         }
     </script>
 </body>
 </html>
+
