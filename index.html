@@ -1197,9 +1197,9 @@
             let profundidadeInstrucao = isFacil ? `\n\n💡 PERGUNTA SIMPLES DETECTADA: A questão/pergunta é simples. Seja extremamente conciso, vá direto à explicação essencial sem aprofundamentos desnecessários ou contextos longos.` : "";
 
             const instrucaoAntiAlucinacao = `\n\n🛑 TRAVAS RÍGIDAS DE ANTI-ALUCINAÇÃO E VERIFICAÇÃO OFICIAL (LEIS E FATOS):
-1. PROIBIDO INVENTAR OU SUPOR: É estritamente proibido inventar artigos de lei, números de leis, prazos processuais, entendimentos de jurisprudência ou súmulas. Se houver dúvida exata sobre uma norma, utilize a ferramenta de busca integrada (Google Search Grounding) para verificar a legislação federal vigente (planalto.gov.br) ou portais oficiais dos tribunais superiores (STF, STJ, TST).
+1. PROIBIDO INVENTAR OU SUPOR: É estritamente proibido inventar artigos de lei, números de leis, prazos processuais, entendimentos de jurisprudência ou súmulas. Se houver dúvida exata sobre uma norma, utilize a ferramenta de busca integrada para verificar a legislação federal vigente (planalto.gov.br) ou portais oficiais dos tribunais superiores (STF, STJ, TST, STM).
 2. CITABILIDADE OBRIGATÓRIA: Toda afirmação sobre leis, prazos, competências ou jurisprudência deve vir acompanhada da respectiva base normativa verificada (ex: Art. X da CF/88, Súmula Y do STF).
-3. TRANSPARÊNCIA DE INCERTEZA: Caso a busca oficial não traga dados conclusivos ou se trate de tema controvertido, declare explicitamente a divergência ou a ausência de consolidação legal, em vez de inventar uma resposta.`;
+3. TRANSPARÊNCIA DE INCERTEZA: Caso não haja dados conclusivos ou se trate de tema controvertido, declare explicitamente a divergência ou a ausência de consolidação legal, em vez de inventar uma resposta.`;
 
             const instrucaoFormatacao = `\n\n📌 REGRA RIGOROSA DE FORMATAÇÃO E INTERATIVIDADE: 
 - NUNCA use asteriscos triplos (###), asteriscos duplos (***) ou traços excessivos (---).
@@ -1223,7 +1223,7 @@
             let pLow = prompt.toLowerCase();
             let scoreComplexidade = 0;
 
-            const termosPesados = ['stf', 'stj', 'tese repetitiva', 'divergência doutrinária', 'informativo', 'súmula vinculante', 'constitucional'];
+            const termosPesados = ['stf', 'stj', 'stm', 'tese repetitiva', 'divergência doutrinária', 'informativo', 'súmula vinculante', 'constitucional'];
             const termosMedios = ['jurisprudência', 'doutrina', 'recurso especial', 'recurso extraordinário', 'controle de constitucionalidade', 'artigo', 'lei'];
             
             termosPesados.forEach(termo => { if(pLow.includes(termo)) scoreComplexidade += 3; });
@@ -1311,8 +1311,7 @@
                         method:'POST', 
                         headers:{'Content-Type':'application/json'}, 
                         body:JSON.stringify({ 
-                            contents:[{parts:[{text: `${baseSys}\n\n${ctx ? "CONTEXTO / FONTES:\n"+ctx : ""}\n\nPROMPT DO USUÁRIO: ${p}`}]}], 
-                            tools:[{googleSearch:{}}] 
+                            contents:[{parts:[{text: `${baseSys}\n\n${ctx ? "CONTEXTO / FONTES:\n"+ctx : ""}\n\nPROMPT DO USUÁRIO: ${p}`}]}]
                         }) 
                     });
                     if(res.status === 429 || res.status === 503) throw new Error('QUOTA_EXCEEDED');
