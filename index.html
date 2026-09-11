@@ -1188,48 +1188,44 @@
         function obterPromptDoSistema(tipo, promptUsuario = "", isFacil = false) {
             let pL = promptUsuario.toLowerCase();
             let bancaDetectada = "";
-            if(pL.includes('cebraspe') || pL.includes('cespe')) bancaDetectada = "CEBRASPE (foco rigoroso em assertivas Certo/Errado com base estrita na lei e jurisprudência pacificada do STF/STJ)";
-            else if(pL.includes('fgv')) bancaDetectada = "FGV (foco em casos práticos, enunciados interpretativos e jurisprudência aplicada)";
-            else if(pL.includes('fcc')) bancaDetectada = "FCC (foco total na literalidade da lei e súmulas)";
+            if(pL.includes('cebraspe') || pL.includes('cespe')) bancaDetectada = "CEBRASPE (foco rigoroso em assertivas Certo/Errado)";
+            else if(pL.includes('fgv')) bancaDetectada = "FGV (foco em casos práticos e enunciados interpretativos)";
+            else if(pL.includes('fcc')) bancaDetectada = "FCC (foco total na literalidade da lei)";
             else if(pL.includes('vunesp')) bancaDetectada = "VUNESP (foco direto na letra da lei e objetividade)";
 
-            let bancaInstrucao = bancaDetectada ? `\n\n🎯 BANCA EXAMINADORA: Adapte rigorosamente ao perfil da banca ${bancaDetectada}.` : "";
-            let profundidadeInstrucao = isFacil ? `\n\n💡 DIRETRIZ DE OBJETIVIDADE: Questão objetiva. Apresente resposta cirúrgica, sem rodeios ou excesso de contextualização.` : "";
+            let bancaInstrucao = bancaDetectada ? `\n\n🎯 BANCA: Adapte ao estilo da banca ${bancaDetectada}.` : "";
+            let profundidadeInstrucao = isFacil ? `\n\n💡 PERGUNTA SIMPLES DETECTADA: A questão/pergunta é simples. Seja extremamente conciso, vá direto à explicação essencial sem aprofundamentos desnecessários ou contextos longos.` : "";
 
-            const instrucaoAntiAlucinacao = `\n\n🛑 PROTOCOLO RIGOROSO DE ANTI-ALUCINAÇÃO E PRECISÃO TÉCNICA:
-1. PROIBIDO INVENTAR OU SUPOR NORMAS: Nunca invente artigos de lei, prazos processuais, entendimentos jurisprudenciais ou súmulas. Baseie-se exclusivamente na legislação federal oficial e jurisprudência vinculante dos tribunais superiores (STF, STJ).
-2. CITABILIDADE OBRIGATÓRIA: Toda assertiva de direito deve vir acompanhada da respectiva base normativa (ex: Art. 5º, Inciso X da CF/88; Súmula Vinculante nº 14 do STF).
-3. ESTRUTURAÇÃO DE QUESTÕES E GABARITOS: Ao criar questões (especialmente no formato de múltipla escolha ou Certo/Errado), garanta que exista apenas uma única alternativa correta e inquestionável, seguida de um gabarito comentado aprofundado que explique o erro das demais alternativas com base legal.`;
+            const instrucaoAntiAlucinacao = `\n\n🛑 TRAVAS RÍGIDAS DE ANTI-ALUCINAÇÃO E VERIFICAÇÃO OFICIAL (LEIS E FATOS):
+1. PROIBIDO INVENTAR OU SUPOR: É estritamente proibido inventar artigos de lei, números de leis, prazos processuais, entendimentos de jurisprudência ou súmulas. Se houver dúvida exata sobre uma norma, utilize a verificação integrada com a legislação federal vigente (planalto.gov.br) ou portais oficiais dos tribunais superiores (STF, STJ, TST, STM).
+2. CITABILIDADE OBRIGATÓRIA: Toda afirmação sobre leis, prazos, competências ou jurisprudência deve vir acompanhada da respectiva base normativa verificada (ex: Art. X da CF/88, Súmula Y do STF).
+3. TRANSPARÊNCIA DE INCERTEZA: Caso não haja dados conclusivos ou se trate de tema controvertido, declare explicitamente a divergência ou a ausência de consolidação legal, em vez de inventar uma resposta.`;
 
-            const instrucaoFormatacao = `\n\n📌 DIRETRIZ ABSOLUTA DE FORMATAÇÃO E ORGANIZAÇÃO VISUAL:
-- NUNCA utilize asteriscos triplos (###), asteriscos duplos (***) ou linhas longas de traços (---).
-- OBRIGATÓRIO: Emojis, setas orientadoras (➔, ➡), marcadores de subitens e divisores devem iniciar SEMPRE em novas linhas (em início de linha), servindo unicamente para estruturar de forma limpa, elegante e legível. Nunca emende emojis ou setas no meio de parágrafos.`;
+            const instrucaoFormatacao = `\n\n📌 REGRA RIGOROSA DE FORMATAÇÃO E INTERATIVIDADE: 
+- NUNCA use asteriscos triplos (###), asteriscos duplos (***) ou traços excessivos (---).
+- OBRIGATÓRIO: Emojis, setas (➔, ➡), subitens e indicadores DEVEM iniciar SEMPRE novas linhas (em início de linha), servindo estritamente de orientação, destaque e organização visual. NUNCA coloque emojis ou setas perdidos no meio de frases ou emendados com linhas anteriores. Mantenha o texto perfeitamente alinhado e limpo.`;
 
-            const basePersona = "Você é a PRUMA IA, mentora especialista de alto desempenho em concursos públicos e regulação jurídica e técnica. Responda com precisão cirúrgica, rigor documental e máxima utilidade." + profundidadeInstrucao + instrucaoAntiAlucinacao + instrucaoFormatacao;
+            const basePersona = "Você é a PRUMA IA, mentora especialista em concursos e regulação técnica. VÁ DIRETO AO PONTO. Sem saudações longas, sem introduções vazias, sem motivação excessiva. Responda com máxima concisão, rigor documental e precisão técnica." + profundidadeInstrucao + instrucaoAntiAlucinacao + instrucaoFormatacao;
             
             const prompts = {
-                chat: `${basePersona} Explique com clareza técnica impecável, embasamento legal oficial e objetividade.${bancaInstrucao}`,
-                questoes: `${basePersona} Crie questões inéditas de alto nível para concurso, perfeitamente fundamentadas na legislação vigente e jurisprudência consolidada, indicando o nível de dificuldade no início e apresentando gabarito rigorosamente comentado e fundamentado.${bancaInstrucao}`,
-                flashcards: `${basePersona} Crie flashcards cirúrgicos de retenção rápida baseados estritamente na lei seca e jurisprudência dos tribunais superiores, indicando o nível de dificuldade no início.`
+                chat: `${basePersona} Explique com clareza cirúrgica, embasamento legal oficial e objetividade.${bancaInstrucao}`,
+                questoes: `${basePersona} Crie questões inéditas com rigor técnico estrito, fundamentadas em leis vigentes e jurisprudência pacificada, indicando o nível de dificuldade no início e gabarito rigorosamente fundamentado.${bancaInstrucao}`,
+                flashcards: `${basePersona} Crie flashcards cirúrgicos de alta retenção baseados estritamente na lei seca e jurisprudência oficial, indicando o nível no início.`
             };
             return prompts[tipo] || basePersona;
         }
 
         function definirModeloIdeal(prompt, tipo, querAprofundar = false) {
-            if(querAprofundar) return "gemini-1.5-pro";
-            if(tipo === 'edital') return "gemini-1.5-pro";
-            if(tipo === 'flashcards') return "gemini-1.5-flash";
-            
             let pLow = prompt.toLowerCase();
             let scoreComplexidade = 0;
-            const termosPesados = ['stf', 'stj', 'stm', 'tese repetitiva', 'divergência doutrinária', 'informativo', 'súmula vinculante', 'constitucional', 'responsabilidade civil do estado', 'controle de constitucionalidade'];
-            const termosMedios = ['jurisprudência', 'doutrina', 'recurso especial', 'recurso extraordinário', 'artigo', 'lei'];
+            const termosPesados = ['stf', 'stj', 'stm', 'tese repetitiva', 'divergência doutrinária', 'informativo', 'súmula vinculante', 'constitucional'];
+            const termosMedios = ['jurisprudência', 'doutrina', 'recurso especial', 'recurso extraordinário', 'controle de constitucionalidade', 'artigo', 'lei'];
             
             termosPesados.forEach(termo => { if(pLow.includes(termo)) scoreComplexidade += 3; });
             termosMedios.forEach(termo => { if(pLow.includes(termo)) scoreComplexidade += 2; });
             if(prompt.length > 250) scoreComplexidade += 1;
 
-            return scoreComplexidade >= 3 ? "gemini-1.5-pro" : "gemini-1.5-flash";
+            return "gemini-1.5-flash"; 
         }
 
         async function executarIA(tipo, promptEspecifico = null, querAprofundar = false) {
@@ -1243,13 +1239,13 @@
                 let qtd = document.getElementById('ia-qts-num').value || '5';
                 let t = document.getElementById('ia-qts-tema').value || 'o contexto geral';
                 let tipoQVal = document.getElementById('ia-tipo-q').value;
-                let instrucaoTipoQ = tipoQVal === 'ce' ? "Formato estrito Certo / Errado (C/E) com assertivas rigorosas." : (tipoQVal === 'ambas' ? "Misture questões de múltipla escolha e Certo / Errado." : "Múltipla escolha com 5 alternativas (A, B, C, D, E) onde apenas uma é correta.");
+                let instrucaoTipoQ = tipoQVal === 'ce' ? "Formato estrito Certo / Errado (C/E)." : (tipoQVal === 'ambas' ? "Misture questões de múltipla escolha e Certo/Errado." : "Múltipla escolha.");
                 
                 let numAlts = 5;
                 let historicoTexto = dbData.iaHistorico.join(' ').toLowerCase();
                 if(historicoTexto.includes('4 alternativas') || historicoTexto.includes('banca com 4')) numAlts = 4;
 
-                p = `Crie exatamente ${qtd} questões inéditas de concurso público, perfeitamente estruturadas e fundamentadas na lei vigente e jurisprudência sobre: ${t}. ${instrucaoTipoQ} Com ${numAlts} alternativas por questão se for múltipla escolha (letras A até E bem definidas em linhas separadas). Níveis permitidos: ${niveisSelecionados.join(', ')}. Cada questão DEVE iniciar explicitamente indicando o nível (Ex: [Nível: Médio]), o enunciado completo, as alternativas em formato de lista clara (A), B), C), D), E)), indicação clara da alternativa correta no gabarito e um comentário normativo aprofundado explicando o embasamento legal e o motivo do erro nas incorretas.`;
+                p = `Crie exatamente ${qtd} questões inéditas e estritamente fundamentadas na lei vigente e jurisprudência sobre: ${t}. ${instrucaoTipoQ} Com ${numAlts} alternativas por questão se for múltipla escolha. Níveis permitidos: ${niveisSelecionados.join(', ')}. Cada questão deve iniciar com o nível correspondente, as alternativas, indicação da correta e comentário normativo conciso.`;
                 box = document.getElementById('box-qts'); box.style.display='flex'; box.innerHTML='';
             } else if(tipo === 'flashcards') {
                 document.querySelectorAll('.chk-nivel-fc:checked').forEach(el => niveisSelecionados.push(el.value));
@@ -1257,7 +1253,7 @@
                 let qtd = document.getElementById('fc-num').value || '5';
                 let m = sanitizeText(document.getElementById('fc-mat').value) || 'Geral';
                 let tp = sanitizeText(document.getElementById('fc-top').value) || 'Assunto Geral';
-                p = `Gere exatamente ${qtd} flashcards de alta retenção baseados na legislação oficial e jurisprudência para a Matéria: "${m}" e Tópico: "${tp}". Níveis permitidos: ${niveisSelecionados.join(', ')}. Retorne EXATAMENTE UM JSON ARRAY PURO: [{"f":"Pergunta objetiva","v":"Resposta com embasamento legal","nivel":"Fácil/Médio/Difícil"}]. Sem markdowns como \`\`\`.`;
+                p = `Gere exatamente ${qtd} flashcards de alta retenção baseados na legislação oficial e jurisprudência para a Matéria: "${m}" e Tópico: "${tp}". Níveis permitidos: ${niveisSelecionados.join(', ')}. Retorne EXATAMENTE UM JSON ARRAY PURO: [{"f":"Pergunta","v":"Resposta com embasamento legal","nivel":"Fácil/Médio/Difícil"}]. Sem markdowns como \`\`\`.`;
                 box = document.getElementById('box-fc'); box.style.display='block'; box.innerHTML='';
             } else if(tipo === 'chat') {
                 p = promptEspecifico || document.getElementById('inp-chat').value.trim(); if(!p) return;
@@ -1295,9 +1291,7 @@
 
                 async function chamarGemini(modelo) {
                     const rotasModelos = [
-                        modelo,
-                        'gemini-1.5-flash',
-                        'gemini-1.5-pro'
+                        'gemini-1.5-flash' // Removido o Pro para garantir uso estrito e gratuito do Flash
                     ];
                     
                     let ultimaExcecao = null;
@@ -1348,4 +1342,179 @@
                 let badgeModelo = `<div style="font-size:0.7rem; color:var(--text-muted); opacity:0.7; margin-bottom:6px; text-align:right;">🛡️ Antialucinação Ativa | Modelo: ${modeloUsadoFinal}</div>`;
 
                 if(tipo === 'flashcards') {
-                    let json = JSON.parse(txtF.replace(/```json/g,'').replace(/
+                    let json = JSON.parse(txtF.replace(/```json/g,'').replace(/```/g,'').match(/\[.*\]/s)[0]);
+                    let matNome = sanitizeText(document.getElementById('fc-mat').value) || 'Flashcards IA';
+                    let topNome = sanitizeText(document.getElementById('fc-top').value) || 'Geral';
+                    box.innerHTML = '';
+                    
+                    let htmlFCResult = badgeModelo;
+                    json.forEach(c => {
+                        let bId = gerarId();
+                        let itemHtml = `
+                        <div class="pasta-header" onclick="this.nextElementSibling.classList.toggle('aberta')" style="border-left:4px solid var(--brand-warning); cursor:pointer; margin-bottom:0;">
+                            <span style="font-weight:700; color:var(--text-main);">❓ ${sanitizeText(c.f)} <span style="font-size:0.75rem; font-weight:normal; opacity:0.8;">(📌 ${c.nivel || 'Geral'})</span></span>
+                        </div>
+                        <div class="pasta-body" style="background:var(--bg-card); border:1px solid var(--border-color); border-top:none; margin-top:0; border-radius: 0 0 var(--radius-sm) var(--radius-sm);">
+                            <div style="margin-bottom:12px; color:var(--text-main); font-size:1rem; padding-top:8px;">💡 Resposta: ${sanitizeText(c.v)}</div>
+                            <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                                <button id="${bId}" class="btn-outline" style="width:auto; padding:6px 12px; font-size:0.8rem;" onclick="salvarFc('${matNome}', '${topNome}', '${sanitizeText(c.f).replace(/'/g,"\\'")} - ${sanitizeText(c.v).replace(/'/g,"\\йтесь")}', this)">💾 Salvar no Caderno</button>
+                            </div>
+                        </div>
+                        <div style="margin-bottom:12px;"></div>`;
+                        box.innerHTML += itemHtml;
+                        htmlFCResult += itemHtml;
+                    });
+                    box.insertAdjacentHTML('afterbegin', badgeModelo);
+                    salvarFiltroHistorico('flashcards', {mat: matNome, top: topNome}, `${matNome} - ${topNome}`, htmlFCResult);
+                } else {
+                    let l = document.getElementById('load-ia'); if(l) l.remove();
+                    
+                    if(tipo === 'questoes') {
+                        let htmlQ = `<div style="display:flex; flex-direction:column; gap:20px;">`;
+                        let blocos = txtF.split(/(?=Questão|\d+[\.\)]\s|Q\d+)/i);
+                        if(blocos.length <= 1) blocos = [txtF];
+
+                        blocos.forEach((bloco, qIdx) => {
+                            if(!bloco.trim()) return;
+                            let linhas = bloco.split('\n');
+                            let enunciado = [];
+                            let alternativas = [];
+                            let explicacao = [];
+                            let modoExplicacao = false;
+
+                            linhas.forEach(l => {
+                                let lTrim = l.trim();
+                                if (/^[a-eA-E][\)\.]\s/.test(lTrim)) {
+                                    alternativas.push(lTrim);
+                                } else if (/gabarito|comentário|explicação|correta:/i.test(lTrim)) {
+                                    modoExplicacao = true;
+                                    explicacao.push(lTrim);
+                                } else {
+                                    if(modoExplicacao) explicacao.push(lTrim);
+                                    else enunciado.push(lTrim);
+                                }
+                            });
+
+                            let textoEnunciado = sanitizeText(enunciado.join(' '));
+                            let textoExplicacao = sanitizeText(explicacao.join(' '));
+
+                            let altHtml = '';
+                            if(alternativas.length >= 2) {
+                                alternativas.forEach((alt, aIdx) => {
+                                    let letra = alt.charAt(0).toUpperCase();
+                                    let isCorreta = alt.includes('CORRETA') || /gabarito.*\b[a-eA-E]\b/i.test(txtF) && new RegExp(`gabarito.*\\b${letra}\\b`, 'i').test(txtF);
+                                    if(aIdx === 0 && !txtF.includes('CORRETA')) isCorreta = true; 
+
+                                    altHtml += `<button class="btn-outline alt-btn" data-correta="${isCorreta ? '1' : '0'}" onclick="responderQuestaoUnica(this)" style="text-align:left; padding:10px 14px; margin:4px 0; border-radius:8px; font-size:0.9rem; width:100%;">${sanitizeText(alt)}</button>`;
+                                });
+                            } else {
+                                altHtml = `<div style="font-size:0.95rem; line-height:1.4;">${sanitizeText(bloco)}</div>`;
+                            }
+
+                            htmlQ += `<div style="background:var(--bg-input); padding:16px; border-radius:var(--radius-sm); border:1px solid var(--border-color);">
+                                <div style="font-weight:700; margin-bottom:10px; font-size:0.95rem;">🎯 Questão ${qIdx+1}</div>
+                                <div style="margin-bottom:12px; font-size:0.95rem; line-height:1.5;">${textoEnunciado || sanitizeText(bloco)}</div>
+                                <div style="display:flex; flex-direction:column; gap:4px; margin-bottom:12px;" class="bloco-alternativas-qst">${altHtml}</div>
+                                <div class="bloco-explicacao-qst" style="display:none; margin-top:8px;">
+                                    ${textoExplicacao ? `<div style="font-size:0.85rem; color:var(--text-muted); padding-top:8px; border-top:1px solid var(--border-color);">💡 Comentário Normativo: ${textoExplicacao}</div>` : ''}
+                                    <button class="btn-primary" style="margin-top:12px; width:auto; padding:6px 14px; font-size:0.8rem;" onclick="enviarParaCadernoErros('Simulador IA', 'Questões', ${JSON.stringify(bloco).replace(/"/g, '&quot;')})">📚 Enviar Questão para Caderno de Erros</button>
+                                </div>
+                            </div>`;
+                        });
+
+                        htmlQ += `</div>`;
+                        let finalQstHtml = `<div class="msg msg-a" style="max-width:100%; width:100%;">${badgeModelo}${htmlQ}</div>`;
+                        box.innerHTML += finalQstHtml;
+                        let temaStr = document.getElementById('ia-qts-tema').value || 'Questões IA';
+                        salvarFiltroHistorico('questoes', {tema: temaStr}, temaStr, badgeModelo + htmlQ);
+                    } else {
+                        let rawHtml = txtF.replace(/\n/g, '<br>');
+                        let lHtml = sanitizeText(rawHtml);
+                        let finalChatHtml = `${badgeModelo}${lHtml}<br><br><button class="btn-outline" style="width:auto; padding:6px 12px; font-size:0.8rem; margin-right:8px;" onclick="executarIA('chat', 'Aprofunde mais a resposta anterior detalhando as bases teóricas, doutrina e jurisprudência aplicável.', true)">🔍 Aprofundar Resposta</button><button class="btn-primary" style="width:auto; padding:8px 16px; font-size:0.85rem;" onclick="enviarParaCadernoErros('Chat Especialista', 'Dúvida IA', ${JSON.stringify(txtF).replace(/"/g, '&quot;')})">📚 Enviar Resposta para Caderno de Erros</button>`;
+                        box.innerHTML += `<div class="msg msg-a" style="max-width:100%; width:100%;">${finalChatHtml}</div>`;
+                        salvarFiltroHistorico('chat', p, p.length > 30 ? p.substring(0, 30) + '...' : p, finalChatHtml);
+                    }
+                    box.scrollTop = box.scrollHeight;
+                }
+            } catch(e) { 
+                if(loadInt) clearInterval(loadInt);
+                let l = document.getElementById('load-ia'); if(l) l.remove(); 
+                let msgErro = e.message || 'Erro desconhecido ao processar requisição.';
+                if(box) box.innerHTML += `<div class="msg msg-a" style="color:var(--brand-danger);">⚠️ ${msgErro}</div>`; 
+            }
+        }
+
+        function responderQuestaoUnica(btn) {
+            let container = btn.parentElement;
+            let blocoPai = container.closest('.bloco-alternativas-qst').parentElement;
+            let blocoExpl = blocoPai.querySelector('.bloco-explicacao-qst');
+            let botoes = container.querySelectorAll('.alt-btn');
+            botoes.forEach(b => b.disabled = true);
+
+            if(blocoExpl) blocoExpl.style.display = 'block';
+
+            let isCorreta = btn.getAttribute('data-correta') === '1';
+            if(isCorreta) {
+                btn.style.background = 'var(--brand-success)';
+                btn.style.color = '#FFFFFF';
+                btn.style.borderColor = 'var(--brand-success)';
+                btn.innerHTML = '✅ ' + btn.innerHTML;
+            } else {
+                btn.style.background = 'var(--brand-danger)';
+                btn.style.color = '#FFFFFF';
+                btn.style.borderColor = 'var(--brand-danger)';
+                btn.innerHTML = '❌ ' + btn.innerHTML;
+                
+                botoes.forEach(b => {
+                    if(b.getAttribute('data-correta') === '1') {
+                        b.style.background = 'rgba(52, 199, 89, 0.2)';
+                        b.style.borderColor = 'var(--brand-success)';
+                    }
+                });
+            }
+        }
+
+        function salvarFc(m, t, txt, btn) { 
+            dbData.cadernos.push({id:gerarId(), materia:m||'Flashcards IA', topico:t||'Geral', texto:txt, timestamp:Date.now(), data:new Date().toLocaleDateString()}); 
+            refDb.child('cadernos').set(dbData.cadernos); 
+            btn.textContent = "✅ Salvo!"; btn.disabled = true; btn.style.background = 'var(--brand-success)'; btn.style.color = '#FFF'; btn.style.borderColor = 'var(--brand-success)'; 
+        }
+        
+        async function processarEdital(btn) {
+            let k = localStorage.getItem('pruma_apikey'); if(!k) return alert("API Key ausente."); let txt = document.getElementById('edital-texto').value.trim(); if(!txt) return; let pId = document.getElementById('edital-ia-prova').value;
+            const modelo = "gemini-1.5-flash"; // Alterado para Flash para evitar limites de requisição do Pro
+            let tx = btn.textContent; btn.disabled=true; btn.textContent="Processando com IA...";
+            try { 
+                const res = await fetch(`https://generativelanguage.googleapis.com/v1/models/${modelo}:generateContent?key=${k}`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({contents:[{parts:[{text:`Organize em JSON PURO: [{"disciplina": "Nome", "topicos": ["T1", "T2"]}]. Sem markdown. Edital:\n${txt.substring(0,60000)}`}]}]}) }); 
+                
+                if (!res.ok) {
+                    if (res.status === 429) throw new Error("Não foi possível responder. Limite diário de cotas atingido!");
+                    let errJson = await res.json().catch(() => ({}));
+                    let errMsg = errJson.error?.message || "";
+                    if (errMsg.toLowerCase().includes("quota") || errMsg.toLowerCase().includes("exhausted")) throw new Error("Não foi possível responder. Limite diário de cotas atingido!");
+                    throw new Error(errMsg || `HTTP error! status: ${res.status}`);
+                }
+
+                const data = await res.json(); 
+                if (data.error) {
+                    let errMsg = data.error.message || "";
+                    if (errMsg.toLowerCase().includes("quota") || errMsg.toLowerCase().includes("exhausted")) throw new Error("Não foi possível responder. Limite diário de cotas atingido!");
+                    throw new Error(errMsg);
+                }
+
+                let json = JSON.parse(data.candidates[0].content.parts[0].text.match(/\[.*\]/s)[0]); 
+                if(!Array.isArray(dbData.materias)) dbData.materias = Object.values(dbData.materias || {}); 
+                json.forEach(n => { let idx = dbData.materias.findIndex(x=>x.nome.toLowerCase()===n.disciplina.toLowerCase() && x.provaId===pId); if(idx !== -1) { if(!Array.isArray(dbData.materias[idx].topicos)) dbData.materias[idx].topicos = Object.values(dbData.materias[idx].topicos || {}); n.topicos.forEach(t=>{ if(!dbData.materias[idx].topicos.includes(t)) dbData.materias[idx].topicos.push(t); }); } else { dbData.materias.push({id:gerarId(), nome:n.disciplina, cor:paleta17[0], topicos:n.topicos, provaId:pId}); } }); 
+                refDb.child('materias').set(dbData.materias); 
+                document.getElementById('edital-texto').value=''; 
+                alert("Edital mapeado!"); 
+            } catch(e) { 
+                alert(e.message === "Não foi possível responder. Limite diário de cotas atingido!" ? e.message : "Erro: " + e.message); 
+            } finally { 
+                btn.textContent=tx; 
+                btn.disabled=false; 
+            }
+        }
+    </script>
+</body>
+</html>
