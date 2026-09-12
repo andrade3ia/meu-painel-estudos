@@ -583,7 +583,7 @@
         let editandoRegistroId = null;
         let calMesOff = 0;
         let subIaAtual = 'chat';
-        let ultimoEnvioIA = 0; // Controle rígido de RPM (10 RPM = 1 requisição a cada 6 segundos)
+        let ultimoEnvioIA = 0; // Controle rígido de RPM
         
         const paleta17 = ['#007AFF','#34C759','#FF3B30','#FF9500','#5856D6','#AF52DE','#5AC8FA','#FF2D55','#E5C07B','#98C379','#E06C75','#C678DD','#56B6C2','#D19A66','#61AFEF', '#000000', '#FFFFFF'];
         let corAtualMateria = paleta17[0];
@@ -1202,7 +1202,8 @@
 - NUNCA use asteriscos triplos (###), asteriscos duplos (***) ou traços excessivos (---).
 - Emojis e setas DEVEM iniciar SEMPRE novas linhas. Mantenha o texto limpo.`;
 
-            const basePersona = "Você é a PRUMA IA, mentora jurídica de altíssimo rigor para concursos públicos. REGRA ANTIALUCINAÇÃO: É PROIBIDO inventar artigos ou prazos. Utilize a busca na web e a Nuvem PRUMA para verificar legislação do Planalto e STF/STJ." + profundidadeInstrucao + instrucaoFormatacao;
+            // CORREÇÃO CRÍTICA: Removida a menção de "Busca na Web" para não acionar necessidade da ferramenta (que exige plano pago).
+            const basePersona = "Você é a PRUMA IA, mentora jurídica de altíssimo rigor para concursos públicos. REGRA ANTIALUCINAÇÃO: É PROIBIDO inventar artigos ou prazos. Baseie-se no seu vasto conhecimento consolidado e na Nuvem PRUMA para verificar legislação." + profundidadeInstrucao + instrucaoFormatacao;
             
             const prompts = {
                 chat: `${basePersona} Explique com clareza e objetividade jurídica.${bancaInstrucao}`,
@@ -1272,15 +1273,15 @@
 
             let isPerguntaFacil = p.length < 50;
             let baseSys = obterPromptDoSistema(tipo, p, isPerguntaFacil);
-            let modeloUsadoFinal = "gemini-3.5-flash"; 
+            let modeloUsadoFinal = "gemini-3.5-flash-lite"; // MANTIDO CONFORME SEU PEDIDO
             let loadInt = null;
 
             try {
                 if(tipo!=='flashcards') { 
-                    box.innerHTML += `<div class="msg msg-a" id="load-ia"><span id="load-ia-text">Analisando com busca oficial...</span> ⏳</div>`; 
+                    box.innerHTML += `<div class="msg msg-a" id="load-ia"><span id="load-ia-text">Analisando o banco de dados...</span> ⏳</div>`; 
                     box.scrollTop = box.scrollHeight; 
                     
-                    let loadingMsgs = ["Consultando fontes oficiais...", "Cruzando dados da Nuvem PRUMA...", "Verificando legislação..."];
+                    let loadingMsgs = ["Buscando conhecimento jurídico...", "Cruzando dados da Nuvem PRUMA...", "Analisando referências..."];
                     loadInt = setInterval(() => { let msgEl = document.getElementById('load-ia-text'); if(msgEl) msgEl.textContent = loadingMsgs[Math.floor(Math.random() * loadingMsgs.length)]; }, 2500);
                 } else { 
                     box.innerHTML = `<div id="load-ia" style="color:var(--brand-primary); font-weight:600;"><span id="load-ia-text">Construindo flashcards...</span> ⏳</div>`; 
@@ -1301,7 +1302,8 @@
                     let res = null;
 
                     for (let i = 0; i < retentativas; i++) {
-                        res = await fetch(`https://generativelanguage.googleapis.com/v1/models/${modelo}:generateContent?key=${k}`, { 
+                        // CORREÇÃO CRÍTICA: Alterado de /v1/ para /v1beta/ que tem total suporte às chaves da geração 3.5
+                        res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelo}:generateContent?key=${k}`, { 
                             method:'POST', 
                             headers:{'Content-Type':'application/json'}, 
                             body:JSON.stringify({ 
@@ -1310,9 +1312,9 @@
                                         text: `${baseSys}\n\n${ctx ? "CONTEXTO / NUVEM PRUMA:\n"+ctx.substring(0,10000) : ""}\n\nPROMPT: ${p}`
                                     }]
                                 }],
-                                tools: [{ googleSearch: {} }],
+                                // A ferramenta "googleSearch" FOI REMOVIDA AQUI, pois é ela quem causa o 429 instantâneo no plano gratuito!
                                 generationConfig: {
-                                    maxOutputTokens: 1024 // LIMITADO PARA RESPEITAR O TETO DE TPM 175K
+                                    maxOutputTokens: 1024 // Limite seguro para TPM
                                 }
                             }) 
                         });
@@ -1337,7 +1339,7 @@
                         } catch(e) {
                             mensagemErroReal = erroTexto || res.statusText;
                         }
-                        throw new Error(`Limite de uso atingido (Código ${res.status}): ${mensagemErroReal}`);
+                        throw new Error(`Limite atingido ou erro (Código ${res.status}): ${mensagemErroReal}`);
                     }
 
                     const data = await res.json(); 
@@ -1352,7 +1354,7 @@
 
                 if(loadInt) clearInterval(loadInt);
 
-                let badgeModelo = `<div style="font-size:0.7rem; color:var(--text-muted); opacity:0.7; margin-bottom:6px; text-align:right;">🛡️ Blindagem Ativa (RPM/TPM Otimizados) | ${modeloUsadoFinal}</div>`;
+                let badgeModelo = `<div style="font-size:0.7rem; color:var(--text-muted); opacity:0.7; margin-bottom:6px; text-align:right;">🛡️ API Gratuita (V1Beta/Offline) | ${modeloUsadoFinal}</div>`;
 
                 if(tipo === 'flashcards') {
                     let json = JSON.parse(txtF.replace(/```json/g,'').replace(/```/g,'').match(/\[.*\]/s)[0]);
@@ -1474,7 +1476,7 @@
         async function processarEdital(btn) {
             let k = localStorage.getItem('pruma_apikey'); if(!k) return alert("API Key ausente."); let txt = document.getElementById('edital-texto').value.trim(); if(!txt) return; let pId = document.getElementById('edital-ia-prova').value;
             
-            const modelo = "gemini-3.5-flash"; 
+            const modelo = "gemini-3.5-flash-lite"; 
             
             let tx = btn.textContent; btn.disabled=true; btn.textContent="Processando com IA (Pode levar uns segundos)...";
             try { 
@@ -1483,12 +1485,12 @@
                 let atraso = 3000;
 
                 for (let i = 0; i < retentativas; i++) {
-                    res = await fetch(`https://generativelanguage.googleapis.com/v1/models/${modelo}:generateContent?key=${k}`, { 
+                    res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelo}:generateContent?key=${k}`, { 
                         method:'POST', 
                         headers:{'Content-Type':'application/json'}, 
                         body:JSON.stringify({
                             contents:[{parts:[{text:`Organize em JSON PURO: [{"disciplina": "Nome", "topicos": ["T1", "T2"]}]. Sem markdown. Edital:\n${txt.substring(0,20000)}`}]}],
-                            tools: [{ googleSearch: {} }],
+                            // Ferramenta googleSearch REMOVIDA também na área do Edital
                             generationConfig: {
                                 maxOutputTokens: 1500
                             }
@@ -1531,5 +1533,4 @@
     </script>
 </body>
 </html>
-
 
