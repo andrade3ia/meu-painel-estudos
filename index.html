@@ -1272,7 +1272,7 @@
 
             let isPerguntaFacil = p.length < 50;
             let baseSys = obterPromptDoSistema(tipo, p, isPerguntaFacil);
-            let modeloUsadoFinal = "gemini-3.5-flash-lite"; 
+            let modeloUsadoFinal = "gemini-1.5-flash"; 
             let loadInt = null;
 
             try {
@@ -1474,7 +1474,7 @@
         async function processarEdital(btn) {
             let k = localStorage.getItem('pruma_apikey'); if(!k) return alert("API Key ausente."); let txt = document.getElementById('edital-texto').value.trim(); if(!txt) return; let pId = document.getElementById('edital-ia-prova').value;
             
-            const modelo = "gemini-3.5-flash-lite"; 
+            const modelo = "gemini-1.5-flash"; 
             
             let tx = btn.textContent; btn.disabled=true; btn.textContent="Processando com IA (Pode levar uns segundos)...";
             try { 
@@ -1531,3 +1531,5 @@
     </script>
 </body>
 </html>
+
+
