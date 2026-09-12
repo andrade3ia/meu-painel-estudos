@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR" data-theme="light">
 <head>
@@ -1210,6 +1211,17 @@
             return prompts[tipo] || basePersona;
         }
 
+        // Função auxiliar para Aprofundar Resposta lendo exatamente o texto do balão atual
+        function aprofundarRespostaContextual(btn) {
+            let msgBalão = btn.closest('.msg');
+            if (!msgBalão) return alert("Não foi possível localizar o balão da resposta.");
+            let conteudoDiv = msgBalão.querySelector('.conteudo-resposta-ia');
+            let textoDoBalao = conteudoDiv ? conteudoDiv.innerText : msgBalão.innerText;
+            
+            let promptAprofundado = `Atue como um professor especialista. O aluno pediu para aprofundar a seguinte explicação apresentada anteriormente:\n\n"${textoDoBalao}"\n\nPor favor, forneça um aprofundamento detalhado e técnico sobre este assunto específico, trazendo novos exemplos, bases teóricas e ampliando a compreensão do tema de forma clara.`;
+            executarIA('chat', promptAprofundado);
+        }
+
         async function executarIA(tipo, promptEspecifico = null, querAprofundar = false) {
             let k = localStorage.getItem('pruma_apikey'); if(!k) return alert("Configure a API Key na aba lateral.");
             let p = "", box = null; let ctx = extrairContextoGeral();
@@ -1283,23 +1295,46 @@
                 }
 
                 async function chamarGemini(modelo) {
-                    const res = await fetch(`https://generativelanguage.googleapis.com/v1/models/${modelo}:generateContent?key=${k}`, { 
-                        method:'POST', 
-                        headers:{'Content-Type':'application/json'}, 
-                        body:JSON.stringify({ contents:[{parts:[{text: `${baseSys}\n\n${ctx ? "CONTEXTO / FONTES:\n"+ctx : ""}\n\nPROMPT DO USUÁRIO: ${p}`}]}] }) 
-                    });
-                    if(!res.ok) {
-                        if(res.status === 429 || res.status === 403 || res.status === 503) throw new Error('QUOTA_EXCEEDED');
-                        const errData = await res.json().catch(() => ({}));
-                        throw new Error(errData.error?.message || `HTTP error ${res.status}`);
+                    let retentativas = 3;
+                    let atraso = 2000;
+                    let res = null;
+
+                    for (let i = 0; i < retentativas; i++) {
+                        res = await fetch(`https://generativelanguage.googleapis.com/v1/models/${modelo}:generateContent?key=${k}`, { 
+                            method:'POST', 
+                            headers:{'Content-Type':'application/json'}, 
+                            body:JSON.stringify({ contents:[{parts:[{text: `${baseSys}\n\n${ctx ? "CONTEXTO / FONTES:\n"+ctx : ""}\n\nPROMPT DO USUÁRIO: ${p}`}]}] }) 
+                        });
+
+                        if (res.ok) break;
+
+                        // Se for erro 503 (Servidor Indisponível) ou 429, tenta novamente
+                        if ((res.status === 503 || res.status === 429) && i < retentativas - 1) {
+                            await new Promise(r => setTimeout(r, atraso));
+                            continue;
+                        }
+                        break;
                     }
+
+                    if(!res.ok) {
+                        let erroTexto = await res.text();
+                        let mensagemErroReal = `Erro HTTP ${res.status}`;
+                        try {
+                            let erroObj = JSON.parse(erroTexto);
+                            if(erroObj.error && erroObj.error.message) {
+                                mensagemErroReal = erroObj.error.message;
+                            }
+                        } catch(e) {
+                            mensagemErroReal = erroTexto || res.statusText;
+                        }
+                        throw new Error(`Falha na API Gemini (Código ${res.status}): ${mensagemErroReal}`);
+                    }
+
                     const data = await res.json(); 
                     if(data.error) {
-                        let msg = data.error.message || '';
-                        if(msg.toLowerCase().includes('quota') || msg.toLowerCase().includes('exhausted') || msg.toLowerCase().includes('permission')) throw new Error('QUOTA_EXCEEDED');
-                        throw new Error(msg);
+                        throw new Error(`Erro da API Gemini (Código ${data.error.code || 'Desconhecido'}): ${data.error.message}`);
                     }
-                    if(!data.candidates || !data.candidates[0] || !data.candidates[0].content) throw new Error('Resposta vazia');
+                    if(!data.candidates || !data.candidates[0] || !data.candidates[0].content) throw new Error('Resposta vazia da IA');
                     return data.candidates[0].content.parts[0].text;
                 }
 
@@ -1377,7 +1412,7 @@
                     let l = document.getElementById('load-ia'); if(l) l.remove();
                     let rawHtml = txtF.replace(/\n/g, '<br>');
                     let lHtml = sanitizeText(rawHtml);
-                    let finalChatHtml = `${badgeModelo}${lHtml}<br><br><button class="btn-outline" style="width:auto; padding:6px 12px; font-size:0.8rem; margin-right:8px;" onclick="executarIA('chat', 'Aprofunde mais a resposta anterior detalhando as bases teóricas, doutrina e jurisprudência aplicável.', true)">🔍 Aprofundar Resposta</button><button class="btn-primary" style="width:auto; padding:8px 16px; font-size:0.85rem;" onclick="enviarParaCadernoErros('Chat Especialista', 'Dúvida IA', ${JSON.stringify(txtF).replace(/"/g, '&quot;')})">📚 Enviar Resposta para Caderno de Erros</button>`;
+                    let finalChatHtml = `${badgeModelo}<div class="conteudo-resposta-ia">${lHtml}</div><br><br><button class="btn-outline" style="width:auto; padding:6px 12px; font-size:0.8rem; margin-right:8px;" onclick="aprofundarRespostaContextual(this)">🔍 Aprofundar Resposta</button><button class="btn-primary" style="width:auto; padding:8px 16px; font-size:0.85rem;" onclick="enviarParaCadernoErros('Chat Especialista', 'Dúvida IA', ${JSON.stringify(txtF).replace(/"/g, '&quot;')})">📚 Enviar Resposta para Caderno de Erros</button>`;
                     box.innerHTML += `<div class="msg msg-a" style="max-width:100%; width:100%;">${finalChatHtml}</div>`;
                     salvarFiltroHistorico('chat', p, p.length > 30 ? p.substring(0, 30) + '...' : p, finalChatHtml);
                 }
@@ -1385,7 +1420,7 @@
             } catch(e) { 
                 if(loadInt) clearInterval(loadInt);
                 let l = document.getElementById('load-ia'); if(l) l.remove(); 
-                let msgErro = (e.message === 'LIMIT_EXCEEDED_ALL' || e.message === 'QUOTA_EXCEEDED') ? 'Não foi possível responder. O Limite de cotas da API foi atingido!' : e.message;
+                let msgErro = e.message; 
                 if(box) box.innerHTML += `<div class="msg msg-a" style="color:var(--brand-danger);">⚠️ ${msgErro}</div>`; 
             }
         }
@@ -1433,17 +1468,50 @@
             
             let tx = btn.textContent; btn.disabled=true; btn.textContent="Processando com IA (Pode levar uns segundos)...";
             try { 
-                const res = await fetch(`https://generativelanguage.googleapis.com/v1/models/${modelo}:generateContent?key=${k}`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({contents:[{parts:[{text:`Organize em JSON PURO: [{"disciplina": "Nome", "topicos": ["T1", "T2"]}]. Sem markdown. Edital:\n${txt.substring(0,60000)}`}]}]}) }); 
-                if(!res.ok) throw new Error('Erro ao processar edital');
-                const data = await res.json(); if(data.error) throw new Error(data.error.message); 
+                let res = null;
+                let retentativas = 3;
+                let atraso = 2000;
+
+                for (let i = 0; i < retentativas; i++) {
+                    res = await fetch(`https://generativelanguage.googleapis.com/v1/models/${modelo}:generateContent?key=${k}`, { 
+                        method:'POST', 
+                        headers:{'Content-Type':'application/json'}, 
+                        body:JSON.stringify({contents:[{parts:[{text:`Organize em JSON PURO: [{"disciplina": "Nome", "topicos": ["T1", "T2"]}]. Sem markdown. Edital:\n${txt.substring(0,60000)}`}]}]}) 
+                    });
+
+                    if (res.ok) break;
+
+                    if ((res.status === 503 || res.status === 429) && i < retentativas - 1) {
+                        await new Promise(r => setTimeout(r, atraso));
+                        continue;
+                    }
+                    break;
+                }
+
+                if(!res.ok) {
+                    let erroTexto = await res.text();
+                    let mensagemErroReal = `Erro HTTP ${res.status}`;
+                    try {
+                        let erroObj = JSON.parse(erroTexto);
+                        if(erroObj.error && erroObj.error.message) {
+                            mensagemErroReal = erroObj.error.message;
+                        }
+                    } catch(e) {
+                        mensagemErroReal = erroTexto || res.statusText;
+                    }
+                    throw new Error(`Falha ao processar edital (Código ${res.status}): ${mensagemErroReal}`);
+                }
+
+                const data = await res.json(); 
+                if(data.error) throw new Error(`Erro da API (Código ${data.error.code || 'Desconhecido'}): ${data.error.message}`); 
                 let json = JSON.parse(data.candidates[0].content.parts[0].text.match(/\[.*\]/s)[0]); 
                 if(!Array.isArray(dbData.materias)) dbData.materias = Object.values(dbData.materias || {}); 
                 json.forEach(n => { let idx = dbData.materias.findIndex(x=>x.nome.toLowerCase()===n.disciplina.toLowerCase() && x.provaId===pId); if(idx !== -1) { if(!Array.isArray(dbData.materias[idx].topicos)) dbData.materias[idx].topicos = Object.values(dbData.materias[idx].topicos || {}); n.topicos.forEach(t=>{ if(!dbData.materias[idx].topicos.includes(t)) dbData.materias[idx].topicos.push(t); }); } else { dbData.materias.push({id:gerarId(), nome:n.disciplina, cor:paleta17[0], topicos:n.topicos, provaId:pId}); } }); 
                 refDb.child('materias').set(dbData.materias); 
                 document.getElementById('edital-texto').value=''; 
                 alert("Edital mapeado!"); 
-            } catch(e) { alert("Erro: "+e.message); } finally { btn.textContent=tx; btn.disabled=false; }
+            } catch(e) { alert(e.message); } finally { btn.textContent=tx; btn.disabled=false; }
         }
     </script>
 </body>
-</html>
+</html>  
