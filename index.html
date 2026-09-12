@@ -990,7 +990,7 @@
                     div.innerHTML += `<div class="bloco-prova" data-prova-id="${p}"><div class="bloco-prova-titulo" style="cursor:pointer; user-select:none; margin-bottom:0; justify-content:space-between;" onclick="let el=this.nextElementSibling; el.style.display = (el.style.display==='none'||!el.style.display)?'block':'none';" title="${sanitizeText(nomeP)}"><span>🎯 ${nomeP}</span><span style="font-size:0.85rem; font-weight:normal; color:var(--text-muted);">▼ Expandir / Minimizar</span></div><div class="bloco-prova-content" style="display:${isBlockOpen?'block':'none'}; margin-top:16px;">${conteudoMat}</div></div>`;
                 } else { div.innerHTML += `<h3 style="color:var(--text-muted); margin-top:20px; font-size:1.1rem;" title="${sanitizeText(nomeP)}">${nomeP}</h3>${conteudoMat}`; }
             }
-            statePastas.forEach(id => { let hdr = document.querySelector(`.pasta-header[data-folder-id="${id}"]`); if(hdr && hdr.nextElementSibling) hdr.nextElementSibling.classList.add('aberta'); });
+            statePastas.forEach(id => { let hdr = document.querySelector(`.pasta-header[data-caderno-folder="${id}"]`) || document.querySelector(`.pasta-header[data-folder-id="${id}"]`); if(hdr && hdr.nextElementSibling) hdr.nextElementSibling.classList.add('aberta'); });
         }
         function editarTopico(mId, index) {
             if(!Array.isArray(dbData.materias)) dbData.materias = Object.values(dbData.materias || {}); let mat = dbData.materias.find(m => m.id === mId); if(!mat) return;
@@ -1179,9 +1179,9 @@
         }
         function extrairContextoGeral() {
             let ctx = ""; let fonteSel = sanitizeText(document.getElementById('ia-fonte').value).toLowerCase();
-            if (fonteSel) { dbData.biblioteca.forEach(b => { if(b.nome && b.nome.toLowerCase().includes(fonteSel)) { ctx += `\n[FONTE BIBLIOTECA: ${b.nome}]\n${b.texto}\n`; } }); }
+            if (fonteSel) { dbData.biblioteca.forEach(b => { if(b.nome && b.nome.toLowerCase().includes(fonteSel)) { ctx += `\n[FONTE BIBLIOTECA (NUVEM PRUMA): ${b.nome}]\n${b.texto}\n`; } }); }
             let fcFonteSel = sanitizeText(document.getElementById('fc-fonte')?.value).toLowerCase();
-            if (fcFonteSel) { dbData.biblioteca.forEach(b => { if(b.nome && b.nome.toLowerCase().includes(fcFonteSel)) { ctx += `\n[FONTE BIBLIOTECA: ${b.nome}]\n${b.texto}\n`; } }); }
+            if (fcFonteSel) { dbData.biblioteca.forEach(b => { if(b.nome && b.nome.toLowerCase().includes(fcFonteSel)) { ctx += `\n[FONTE BIBLIOTECA (NUVEM PRUMA): ${b.nome}]\n${b.texto}\n`; } }); }
             if(dbData.iaHistorico.length>0) ctx += `\n[JORNADA DO ESTUDANTE / HISTÓRICO]:\n${dbData.iaHistorico.map(h=> `- ${h}`).join('\n')}\n`;
             return ctx;
         }
@@ -1201,11 +1201,12 @@
 - NUNCA use asteriscos triplos (###), asteriscos duplos (***) ou traços excessivos (---).
 - OBRIGATÓRIO: Emojis, setas (➔, ➡), subitens e indicadores DEVEM iniciar SEMPRE novas linhas (em início de linha), servindo estritamente de orientação, destaque e organização visual. NUNCA coloque emojis ou setas perdidos no meio de frases ou emendados com linhas anteriores. Mantenha o texto perfeitamente alinhado e limpo.`;
 
-            const basePersona = "Você é a PRUMA IA, mentora especialista em concursos. VÁ DIRETO AO PONTO. Sem saudações longas, sem introduções vazias, sem motivação excessiva. Responda com máxima concisão e precisão técnica, estruturando explicações interativas e dinâmicas." + profundidadeInstrucao + instrucaoFormatacao;
+            // BLINDAGEM TRIPLA ANTIALUCINAÇÃO JURÍDICA
+            const basePersona = "Você é a PRUMA IA, mentora jurídica de altíssimo rigor para concursos públicos. REGRA DE OURO ANTIALUCINAÇÃO: É PROIBIDO inventar ou adivinhar números de artigos, prazos processuais ou entendimentos de Súmulas. OBRIGATÓRIO: Utilize a busca na web e os documentos da Nuvem PRUMA para verificar a legislação federal vigente (Planalto) e a jurisprudência dos tribunais superiores (STF/STJ). Se houver divergência ou incerteza, alerte expressamente o estudante. Vá direto ao ponto técnico com máxima clareza." + profundidadeInstrucao + instrucaoFormatacao;
             
             const prompts = {
-                chat: `${basePersona} Explique com clareza cirúrgica e objetividade.${bancaInstrucao}`,
-                questoes: `${basePersona} Crie questões inéditas com rigor técnico, indicando o nível de dificuldade no início de cada linha, e gabarito comentado objetivo.${bancaInstrucao}`,
+                chat: `${basePersona} Explique com clareza cirúrgica e objetividade jurídica.${bancaInstrucao}`,
+                questoes: `${basePersona} Crie questões inéditas com rigor técnico, indicando o nível de dificuldade no início de cada linha, e gabarito comentado objetivo baseado em lei seca e jurisprudência.${bancaInstrucao}`,
                 flashcards: `${basePersona} Crie flashcards cirúrgicos de alta retenção no formato estrito solicitado, indicando o nível no início.`
             };
             return prompts[tipo] || basePersona;
@@ -1218,7 +1219,7 @@
             let conteudoDiv = msgBalão.querySelector('.conteudo-resposta-ia');
             let textoDoBalao = conteudoDiv ? conteudoDiv.innerText : msgBalão.innerText;
             
-            let promptAprofundado = `Atue como um professor especialista. O aluno pediu para aprofundar a seguinte explicação apresentada anteriormente:\n\n"${textoDoBalao}"\n\nPor favor, forneça um aprofundamento detalhado e técnico sobre este assunto específico, trazendo novos exemplos, bases teóricas e ampliando a compreensão do tema de forma clara.`;
+            let promptAprofundado = `Atue como um professor especialista. O aluno pediu para aprofundar a seguinte explicação apresentada anteriormente:\n\n"${textoDoBalao}"\n\nPor favor, forneça um aprofundamento detalhado, técnico e fundamentado em jurisprudência e doutrina sobre este assunto específico, ampliando a compreensão do tema com total rigor.`;
             executarIA('chat', promptAprofundado);
         }
 
@@ -1278,19 +1279,19 @@
 
             let isPerguntaFacil = p.length < 50 && !p.toLowerCase().includes('jurisprudência') && !p.toLowerCase().includes('aprofundado');
             let baseSys = obterPromptDoSistema(tipo, p, isPerguntaFacil);
-            let modeloUsadoFinal = "gemini-3.5-flash-lite";
+            let modeloUsadoFinal = "gemini-3.5-flash-lite"; // Atualizado para o modelo 3.5 Flash-Lite
             let loadInt = null;
 
             try {
                 if(tipo!=='flashcards') { 
-                    box.innerHTML += `<div class="msg msg-a" id="load-ia"><span id="load-ia-text">Analisando...</span> ⏳</div>`; 
+                    box.innerHTML += `<div class="msg msg-a" id="load-ia"><span id="load-ia-text">Analisando com busca oficial...</span> ⏳</div>`; 
                     box.scrollTop = box.scrollHeight; 
                     
-                    let loadingMsgs = ["Analisando...", "Cruzando dados...", "Buscando precisão...", "Formatando resposta direta..."];
+                    let loadingMsgs = ["Consultando legislação e jurisprudência...", "Cruzando dados da Nuvem PRUMA...", "Verificando fontes oficiais...", "Formatando resposta blindada..."];
                     loadInt = setInterval(() => { let msgEl = document.getElementById('load-ia-text'); if(msgEl) msgEl.textContent = loadingMsgs[Math.floor(Math.random() * loadingMsgs.length)]; }, 2500);
                 } else { 
-                    box.innerHTML = `<div id="load-ia" style="color:var(--brand-primary); font-weight:600;"><span id="load-ia-text">Construindo flashcards...</span> ⏳</div>`; 
-                    let fcMsgs = ["Lendo parâmetros...", "Gerando cartões...", "Montando estrutura..."];
+                    box.innerHTML = `<div id="load-ia" style="color:var(--brand-primary); font-weight:600;"><span id="load-ia-text">Construindo flashcards blindados...</span> ⏳</div>`; 
+                    let fcMsgs = ["Lendo parâmetros...", "Gerando cartões com rigor técnico...", "Montando estrutura..."];
                     loadInt = setInterval(() => { let msgEl = document.getElementById('load-ia-text'); if(msgEl) msgEl.textContent = fcMsgs[Math.floor(Math.random() * fcMsgs.length)]; }, 2000);
                 }
 
@@ -1303,12 +1304,18 @@
                         res = await fetch(`https://generativelanguage.googleapis.com/v1/models/${modelo}:generateContent?key=${k}`, { 
                             method:'POST', 
                             headers:{'Content-Type':'application/json'}, 
-                            body:JSON.stringify({ contents:[{parts:[{text: `${baseSys}\n\n${ctx ? "CONTEXTO / FONTES:\n"+ctx : ""}\n\nPROMPT DO USUÁRIO: ${p}`}]}] }) 
+                            body:JSON.stringify({ 
+                                contents:[{
+                                    parts:[{
+                                        text: `${baseSys}\n\n${ctx ? "CONTEXTO / FONTES DA NUVEM PRUMA:\n"+ctx : ""}\n\nPROMPT DO USUÁRIO: ${p}`
+                                    }]
+                                }],
+                                tools: [{ googleSearch: {} }] // BLINDAGEM TRIPLA: ATIVANDO O GOOGLE SEARCH GROUNDING POR PADRÃO
+                            }) 
                         });
 
                         if (res.ok) break;
 
-                        // Se for erro 503 (Servidor Indisponível) ou 429, tenta novamente
                         if ((res.status === 503 || res.status === 429) && i < retentativas - 1) {
                             await new Promise(r => setTimeout(r, atraso));
                             continue;
@@ -1342,7 +1349,7 @@
 
                 if(loadInt) clearInterval(loadInt);
 
-                let badgeModelo = `<div style="font-size:0.7rem; color:var(--text-muted); opacity:0.7; margin-bottom:6px; text-align:right;">⚡ Modelo: ${modeloUsadoFinal}</div>`;
+                let badgeModelo = `<div style="font-size:0.7rem; color:var(--text-muted); opacity:0.7; margin-bottom:6px; text-align:right;">🛡️ Blindagem Ativa | Modelo: ${modeloUsadoFinal}</div>`;
 
                 if(tipo === 'flashcards') {
                     let json = JSON.parse(txtF.replace(/```json/g,'').replace(/```/g,'').match(/\[.*\]/s)[0]);
@@ -1476,7 +1483,10 @@
                     res = await fetch(`https://generativelanguage.googleapis.com/v1/models/${modelo}:generateContent?key=${k}`, { 
                         method:'POST', 
                         headers:{'Content-Type':'application/json'}, 
-                        body:JSON.stringify({contents:[{parts:[{text:`Organize em JSON PURO: [{"disciplina": "Nome", "topicos": ["T1", "T2"]}]. Sem markdown. Edital:\n${txt.substring(0,60000)}`}]}]}) 
+                        body:JSON.stringify({
+                            contents:[{parts:[{text:`Organize em JSON PURO: [{"disciplina": "Nome", "topicos": ["T1", "T2"]}]. Sem markdown. Edital:\n${txt.substring(0,60000)}`}]}],
+                            tools: [{ googleSearch: {} }]
+                        }) 
                     });
 
                     if (res.ok) break;
@@ -1514,4 +1524,4 @@
         }
     </script>
 </body>
-</html>  
+</html>
