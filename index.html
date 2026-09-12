@@ -1279,7 +1279,7 @@
 
             let isPerguntaFacil = p.length < 50 && !p.toLowerCase().includes('jurisprudência') && !p.toLowerCase().includes('aprofundado');
             let baseSys = obterPromptDoSistema(tipo, p, isPerguntaFacil);
-            let modeloUsadoFinal = "gemini-3.5-flash-lite"; // Atualizado para o modelo 3.5 Flash-Lite
+            let modeloUsadoFinal = "gemini-3.5-flash-lite"; 
             let loadInt = null;
 
             try {
@@ -1301,18 +1301,21 @@
                     let res = null;
 
                     for (let i = 0; i < retentativas; i++) {
-                       res = await fetch(`https://generativelanguage.googleapis.com/v1/models/\({modelo}:generateContent?key=\){k}`, { 
-    method:'POST', 
-    headers:{'Content-Type':'application/json'}, 
-    body:JSON.stringify({ 
-        contents:[{
-            parts:[{
-                text: `\({baseSys}\n\n\){ctx ? "CONTEXTO / FONTES DA NUVEM PRUMA:\n"+ctx : ""}\n\nPROMPT DO USUÁRIO: ${p}`
-            }]
-        }],
-        tools: [{ googleSearch: {} }] // Mantém apenas a busca oficial do Google ativada
-    }) 
-});
+                        res = await fetch(`https://generativelanguage.googleapis.com/v1/models/${modelo}:generateContent?key=${k}`, { 
+                            method:'POST', 
+                            headers:{'Content-Type':'application/json'}, 
+                            body:JSON.stringify({ 
+                                contents:[{
+                                    parts:[{
+                                        text: `${baseSys}\n\n${ctx ? "CONTEXTO / FONTES DA NUVEM PRUMA:\n"+ctx : ""}\n\nPROMPT DO USUÁRIO: ${p}`
+                                    }]
+                                }],
+                                tools: [{ googleSearch: {} }], // BLINDAGEM TRIPLA: GOOGLE SEARCH GROUNDING ATIVADO
+                                generationConfig: {
+                                    maxOutputTokens: 2048 // CONTROLE DE TPM PARA MITIGAR ERROS 429
+                                }
+                            }) 
+                        });
 
                         if (res.ok) break;
 
@@ -1485,7 +1488,10 @@
                         headers:{'Content-Type':'application/json'}, 
                         body:JSON.stringify({
                             contents:[{parts:[{text:`Organize em JSON PURO: [{"disciplina": "Nome", "topicos": ["T1", "T2"]}]. Sem markdown. Edital:\n${txt.substring(0,60000)}`}]}],
-                            tools: [{ googleSearch: {} }]
+                            tools: [{ googleSearch: {} }],
+                            generationConfig: {
+                                maxOutputTokens: 2048
+                            }
                         }) 
                     });
 
