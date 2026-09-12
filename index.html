@@ -1301,18 +1301,18 @@
                     let res = null;
 
                     for (let i = 0; i < retentativas; i++) {
-                        res = await fetch(`https://generativelanguage.googleapis.com/v1/models/${modelo}:generateContent?key=${k}`, { 
-                            method:'POST', 
-                            headers:{'Content-Type':'application/json'}, 
-                            body:JSON.stringify({ 
-                                contents:[{
-                                    parts:[{
-                                        text: `${baseSys}\n\n${ctx ? "CONTEXTO / FONTES DA NUVEM PRUMA:\n"+ctx : ""}\n\nPROMPT DO USUÁRIO: ${p}`
-                                    }]
-                                }],
-                                tools: [{ googleSearch: {} }] // BLINDAGEM TRIPLA: ATIVANDO O GOOGLE SEARCH GROUNDING POR PADRÃO
-                            }) 
-                        });
+                       res = await fetch(`https://generativelanguage.googleapis.com/v1/models/\({modelo}:generateContent?key=\){k}`, { 
+    method:'POST', 
+    headers:{'Content-Type':'application/json'}, 
+    body:JSON.stringify({ 
+        contents:[{
+            parts:[{
+                text: `\({baseSys}\n\n\){ctx ? "CONTEXTO / FONTES DA NUVEM PRUMA:\n"+ctx : ""}\n\nPROMPT DO USUÁRIO: ${p}`
+            }]
+        }],
+        tools: [{ googleSearch: {} }] // Mantém apenas a busca oficial do Google ativada
+    }) 
+});
 
                         if (res.ok) break;
 
