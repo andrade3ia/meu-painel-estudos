@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR" data-theme="light">
 <head>
@@ -375,19 +374,10 @@
                             <div id="lista-ultimos-filtros-ia" style="display:flex; gap:8px; flex-wrap:wrap;"></div>
                         </div>
 
-                        <!-- Selecionador de Fonte (Geral para Chat / Simulador) -->
-                        <div id="caixa-fontes-ia" style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:20px; background:var(--bg-input); padding:16px; border-radius:var(--radius-sm); align-items:center;">
-                            <div style="flex:1; min-width:200px;">
-                                <label style="font-size:0.75rem; font-weight:700; color:var(--text-muted); display:block; margin-bottom:4px;">FONTE (OPCIONAL)</label>
-                                <input type="text" id="ia-fonte" placeholder="Selecione a fonte da biblioteca..." list="dl-ia-fontes" style="margin:0;" onclick="try{this.showPicker()}catch(e){}">
-                                <datalist id="dl-ia-fontes"></datalist>
-                            </div>
-                        </div>
-
                         <!-- Sub: Chat -->
                         <div id="subia-chat">
                             <div class="chat-box" id="box-chat">
-                                <div class="msg msg-a">Como a PRUMA IA pode te ajudar?</div>
+                                <div class="msg msg-a">Como a PRUMA IA pode te ajudar? (Agora com busca automática e inteligente na sua Nuvem PRUMA)</div>
                             </div>
                             <div style="display:flex; gap:12px; flex-wrap:wrap; align-items:flex-end;">
                                 <textarea id="inp-chat" placeholder="Digite sua dúvida..." rows="2" style="margin:0; resize:none; flex:1; min-width:200px;"></textarea>
@@ -446,10 +436,6 @@
                                 <div style="flex:1; min-width:130px;">
                                     <label style="font-size:0.75rem; font-weight:700; color:var(--text-muted); display:block; margin-bottom:4px;">TÓPICO / ASSUNTO</label>
                                     <input type="text" id="fc-top" placeholder="Ex: Direitos Fundamentais" style="margin:0;">
-                                </div>
-                                <div style="flex:1; min-width:130px;">
-                                    <label style="font-size:0.75rem; font-weight:700; color:var(--text-muted); display:block; margin-bottom:4px;">FONTE (OPCIONAL)</label>
-                                    <input type="text" id="fc-fonte" placeholder="Selecione da biblioteca..." list="dl-ia-fontes" style="margin:0;" onclick="try{this.showPicker()}catch(e){}">
                                 </div>
                             </div>
                             <!-- Seletor de Nível Flashcards -->
@@ -1022,7 +1008,6 @@
             let dlMats = document.getElementById('lista-materias-dl'); 
             if(dlMats) { dlMats.innerHTML = ''; if(!Array.isArray(dbData.materias)) dbData.materias = Object.values(dbData.materias || {}); if(!Array.isArray(dbData.cadernos)) dbData.cadernos = Object.values(dbData.cadernos || {}); let setNomes = new Set(); dbData.materias.forEach(m => { if(m.nome) setNomes.add(m.nome); }); dbData.cadernos.forEach(c => { if(c.materia) setNomes.add(c.materia); }); [...setNomes].forEach(m => dlMats.innerHTML += `<option value="${m}">`); }
             let selP = [document.getElementById('mat-prova'), document.getElementById('edital-ia-prova')]; selP.forEach(s => { if(s) { s.innerHTML = '<option value="">Vincular a uma Prova? (Opcional)</option>'; if(!Array.isArray(dbData.provas)) dbData.provas = Object.values(dbData.provas || {}); dbData.provas.forEach(p => s.innerHTML += `<option value="${p.id}">${p.nome}</option>`); } });
-            let dlFontes = document.getElementById('dl-ia-fontes'); if(dlFontes) { dlFontes.innerHTML = ''; if(Array.isArray(dbData.biblioteca)) { dbData.biblioteca.forEach(b => dlFontes.innerHTML += `<option value="${sanitizeText(b.nome)}">`); } }
         }
         function salvarErro() {
             let m = sanitizeText(document.getElementById('err-mat').value) || 'Geral', t = sanitizeText(document.getElementById('err-top').value) || 'Geral', txt = sanitizeText(document.getElementById('err-texto').value) || '(Sem anotação)';
@@ -1104,7 +1089,6 @@
             try { let refF = refStore.child('biblioteca/'+gerarId()+'_'+f.name); await refF.put(f); let url = await refF.getDownloadURL(); let txt = ""; if(f.type.includes('pdf')) { const arr = await f.arrayBuffer(); const pdf = await pdfjsLib.getDocument({data:arr}).promise; for(let i=1; i<=Math.min(pdf.numPages, 15); i++) { let c = await (await pdf.getPage(i)).getTextContent(); txt += c.items.map(it=>it.str).join(" ") + "\n"; } } else { txt = await f.text(); } let m = sanitizeText(document.getElementById('bib-mat-arq').value||'Geral'); refDb.child('biblioteca').push({ id: gerarId(), nome: f.name, tipo: 'ARQUIVO', url: url, texto: txt.substring(0,20000), materia: m, data: new Date().toLocaleDateString(), refPath: refF.fullPath }); document.getElementById('bib-file').value = ''; btn.textContent = "✅ Salvo!"; setTimeout(()=> {btn.textContent=tx; btn.disabled=false;}, 2000); } catch(e) { alert("Erro: "+e.message); btn.textContent=tx; btn.disabled=false; }
         }
 
-        // SOLUÇÃO 2: Scraping Inteligente ao salvar um Link
         async function salvarLink() { 
             let url = document.getElementById('bib-link').value.trim(); 
             if(!url) return; 
@@ -1117,14 +1101,11 @@
             let mat = sanitizeText(document.getElementById('bib-mat-link').value||'Geral');
             
             try {
-                // Usando proxy gratuito para contornar bloqueios CORS
                 let proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
                 let res = await fetch(proxyUrl);
                 let data = await res.json();
                 
                 let doc = new DOMParser().parseFromString(data.contents, "text/html");
-                
-                // Limpeza do DOM para deixar só texto útil
                 let inuteis = doc.querySelectorAll('script, style, nav, footer, header, aside, iframe, noscript, svg');
                 inuteis.forEach(el => el.remove());
                 
@@ -1144,7 +1125,6 @@
                 }); 
                 alert("Site lido com sucesso e salvo na Nuvem!"); 
             } catch(e) {
-                // Fallback (se o site bloquear a leitura via antibots)
                 refDb.child('biblioteca').push({ 
                     id: gerarId(), 
                     nome: "🌐 " + new URL(url).hostname, 
@@ -1175,7 +1155,6 @@
             ['chat', 'simulador', 'flashcards', 'edital'].forEach(s => { let el = document.getElementById('subia-'+s); if(el) el.style.display = (s===sub)?'block':'none'; }); 
             document.querySelectorAll('#view-pruma .btn-outline').forEach(b => { b.style.background='transparent'; b.style.color='var(--text-main)'; }); 
             if(btn) { btn.style.background='var(--brand-primary);'; btn.style.color='white'; } 
-            document.getElementById('caixa-fontes-ia').style.display = (sub==='edital' || sub==='flashcards') ? 'none' : 'flex';
             renderizarFiltrosIAHistorico();
         }
 
@@ -1238,13 +1217,75 @@
             let div = document.getElementById('lista-historico-ia'); div.innerHTML = ''; if(dbData.iaHistorico.length===0) div.innerHTML = '<p>Seu perfil de aprendizado está sendo mapeado com base nas suas dúvidas relevantes...</p>';
             [...dbData.iaHistorico].reverse().forEach(h => { div.innerHTML += `<div style="background:var(--bg-input); padding:12px; border-radius:var(--radius-sm); border:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center; gap:10px;" title="${sanitizeText(h)}"><span style="font-size:0.9rem;">"${h}"</span><button class="btn-primary" style="width:auto; padding:6px 12px; font-size:0.8rem;" onclick="document.getElementById('modal-historico-ia').style.display='none'; document.getElementById('inp-chat').value = '${sanitizeText(h).replace(/'/g, "\\'")}'; executarIA('chat');">🔄 Reenviar</button></div>`; });
         }
-        function extrairContextoGeral() {
-            let ctx = ""; let fonteSel = sanitizeText(document.getElementById('ia-fonte').value).toLowerCase();
-            if (fonteSel) { dbData.biblioteca.forEach(b => { if(b.nome && b.nome.toLowerCase().includes(fonteSel)) { ctx += `\n[FONTE NUVEM PRUMA: ${b.nome}]\n${b.texto.substring(0,5000)}\n`; } }); }
-            let fcFonteSel = sanitizeText(document.getElementById('fc-fonte')?.value).toLowerCase();
-            if (fcFonteSel) { dbData.biblioteca.forEach(b => { if(b.nome && b.nome.toLowerCase().includes(fcFonteSel)) { ctx += `\n[FONTE NUVEM PRUMA: ${b.nome}]\n${b.texto.substring(0,5000)}\n`; } }); }
-            if(dbData.iaHistorico.length>0) ctx += `\n[JORNADA]:\n${dbData.iaHistorico.slice(-3).map(h=> `- ${h}`).join('\n')}\n`;
-            return ctx;
+
+        // NOVO: Sistema de Busca Semântica Avançada (RAG Local com Scoring de Densidade e Chunks)
+        function extrairContextoSemantico(query) {
+            if (!dbData.biblioteca || dbData.biblioteca.length === 0) return "";
+            
+            // Quebra o prompt do usuário em tokens significativos (ignorando preposições comuns)
+            let stopWords = new Set(['o','a','os','as','um','uma','de','do','da','dos','das','em','no','na','nos','nas','por','para','com','como','que','e','ou','se']);
+            let tokensQuery = query.toLowerCase()
+                .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+                .replace(/[^\w\s]/gi, ' ')
+                .split(/\s+/)
+                .filter(w => w.length > 2 && !stopWords.has(w));
+
+            if (tokensQuery.length === 0) return "";
+
+            let blocosAvaliados = [];
+
+            dbData.biblioteca.forEach(doc => {
+                if (!doc.texto) return;
+                
+                // Fragmenta o documento em pedaços (parágrafos ou blocos de aprox 400 caracteres)
+                let chunks = doc.texto.split(/(?:\r?\n){2,}|(?:\.\s+)/);
+                
+                chunks.forEach(chunk => {
+                    let chunkLimpo = chunk.trim();
+                    if (chunkLimpo.length < 50) return; // descarta fragmentos muito curtos
+                    
+                    let chunkNorm = chunkLimpo.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                    let matchesCount = 0;
+                    let denseScore = 0;
+
+                    tokensQuery.forEach(token => {
+                        let regex = new RegExp(`\\b${token}\\b`, 'g');
+                        let matches = chunkNorm.match(regex);
+                        if (matches) {
+                            matchesCount++;
+                            denseScore += matches.length;
+                        }
+                    });
+
+                    // Só pontua se encontrar pelo menos metade dos termos-chave ou alta densidade
+                    if (matchesCount >= Math.max(1, Math.floor(tokensQuery.length * 0.4))) {
+                        blocosAvaliados.push({
+                            fonte: doc.nome,
+                            texto: chunkLimpo,
+                            score: denseScore + matchesCount * 2
+                        });
+                    }
+                });
+            });
+
+            // Ordena os fragmentos pela pontuação mais alta (relevância e densidade)
+            blocosAvaliados.sort((a, b) => b.score - a.score);
+
+            let contextoFinal = "";
+            let selecionados = blocosAvaliados.slice(0, 3); // Pega os top 3 melhores fragmentos
+
+            if (selecionados.length > 0) {
+                contextoFinal += "\n\n[TRECHO(S) RELEVANTE(S) ENCONTRADO(S) NA NUVEM PRUMA]:\n";
+                selecionados.forEach((b, idx) => {
+                    contextoFinal += `\n--- Fonte [${b.fonte}] ---\n${b.texto}\n`;
+                });
+            }
+
+            if(dbData.iaHistorico.length > 0) {
+                contextoFinal += `\n[JORNADA RECENTE]:\n${dbData.iaHistorico.slice(-3).map(h => `- ${h}`).join('\n')}\n`;
+            }
+
+            return contextoFinal;
         }
 
         function obterPromptDoSistema(tipo, promptUsuario = "", isFacil = false) {
@@ -1260,9 +1301,10 @@
 
             const instrucaoFormatacao = `\n\n📌 REGRA DE FORMATAÇÃO: 
 - NUNCA use asteriscos triplos (###), asteriscos duplos (***) ou traços excessivos (---).
-- Emojis e setas DEVEM iniciar SEMPRE novas linhas. Mantenha o texto limpo.`;
+- Emojis e setas DEVEM iniciar SEMPRE novas linhas. Mantenha o texto limpo.
+- REGRA DE CONTEXTO LOCAL: Se houver trechos fornecidos da Nuvem PRUMA, analise-os com rigor. Ignore menções superficiais ou isoladas que não aprofundem o tema central, baseando-se prioritariamente no conhecimento técnico sólido.`;
 
-            const basePersona = "Você é a PRUMA IA, mentora jurídica de altíssimo rigor para concursos públicos. REGRA ANTIALUCINAÇÃO: É PROIBIDO inventar artigos ou prazos. Baseie-se no seu vasto conhecimento consolidado e na Nuvem PRUMA para verificar legislação." + profundidadeInstrucao + instrucaoFormatacao;
+            const basePersona = "Você é a PRUMA IA, mentora jurídica de altíssimo rigor para concursos públicos. REGRA ANTIALUCINAÇÃO: É PROIBIDO inventar artigos ou prazos." + profundidadeInstrucao + instrucaoFormatacao;
             
             const prompts = {
                 chat: `${basePersona} Explique com clareza e objetividade jurídica.${bancaInstrucao}`,
@@ -1282,7 +1324,6 @@
             executarIA('chat', promptAprofundado);
         }
 
-        // SOLUÇÃO 1: Função Agente Fantasma (DuckDuckGo Search)
         async function buscarNaWeb(query) {
             try {
                 let url = `https://html.duckduckgo.com/html/?q=${encodeURIComponent(query)}`;
@@ -1306,7 +1347,7 @@
 
         async function executarIA(tipo, promptEspecifico = null, querAprofundar = false) {
             let k = localStorage.getItem('pruma_apikey'); if(!k) return alert("Configure a API Key na aba lateral.");
-            let p = "", box = null; let ctx = extrairContextoGeral();
+            let p = "", box = null; 
 
             let niveisSelecionados = [];
             if(tipo === 'questoes') {
@@ -1352,6 +1393,9 @@
                 }
             }
 
+            // BUSCA SEMÂNTICA AUTOMÁTICA NA NUVEM PRUMA
+            let ctx = extrairContextoSemantico(p);
+
             let isPerguntaFacil = p.length < 50;
             let baseSys = obterPromptDoSistema(tipo, p, isPerguntaFacil);
             let modeloUsadoFinal = "gemini-3.5-flash-lite";
@@ -1362,9 +1406,8 @@
                     box.innerHTML += `<div class="msg msg-a" id="load-ia"><span id="load-ia-text">Analisando o banco de dados...</span> ⏳</div>`; 
                     box.scrollTop = box.scrollHeight; 
                     
-                    let loadingMsgs = ["Buscando conhecimento jurídico...", "Cruzando dados da Nuvem PRUMA...", "Analisando referências..."];
+                    let loadingMsgs = ["Buscando conhecimento jurídico...", "Varredura semântica na Nuvem PRUMA...", "Analisando referências..."];
                     
-                    // INTERCEPTADOR DA BUSCA WEB FANTASMA
                     let chk = document.getElementById('chk-busca-web');
                     if(tipo === 'chat' && chk && chk.checked) {
                         document.getElementById('load-ia-text').textContent = "🕵️ Buscando notícias e dados recentes na Web (DuckDuckGo)...";
@@ -1378,7 +1421,6 @@
                 }
 
                 async function chamarGemini(modelo) {
-                    // CONTROLE RÍGIDO DE RPM (10 RPM = mínimo 6 segundos entre requisições)
                     let agoraMs = Date.now();
                     let tempoDecorrido = agoraMs - ultimoEnvioIA;
                     if (tempoDecorrido < 6000) {
@@ -1398,7 +1440,7 @@
                             body:JSON.stringify({ 
                                 contents:[{
                                     parts:[{
-                                        text: `${baseSys}\n\n${ctx ? "CONTEXTO / NUVEM PRUMA:\n"+ctx.substring(0,10000) : ""}\n\nPROMPT: ${p}`
+                                        text: `${baseSys}\n\n${ctx ? "CONTEXTO SEMÂNTICO ENCONTRADO NA NUVEM PRUMA:\n"+ctx.substring(0,10000) : ""}\n\nPROMPT: ${p}`
                                     }]
                                 }],
                                 generationConfig: {
@@ -1620,4 +1662,3 @@
     </script>
 </body>
 </html>
-
