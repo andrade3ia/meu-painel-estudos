@@ -389,9 +389,12 @@
                             <div class="chat-box" id="box-chat">
                                 <div class="msg msg-a">Como a PRUMA IA pode te ajudar?</div>
                             </div>
-                            <div style="display:flex; gap:12px; flex-wrap:wrap;">
+                            <div style="display:flex; gap:12px; flex-wrap:wrap; align-items:flex-end;">
                                 <textarea id="inp-chat" placeholder="Digite sua dúvida..." rows="2" style="margin:0; resize:none; flex:1; min-width:200px;"></textarea>
-                                <button class="btn-primary" onclick="executarIA('chat')" style="width:120px;">Enviar</button>
+                                <div style="display:flex; flex-direction:column; gap:8px;">
+                                    <label style="display:flex; align-items:center; gap:6px; font-size:0.8rem; font-weight:600; cursor:pointer;" title="Faz uma busca oculta no DuckDuckGo para dados atualizados."><input type="checkbox" id="chk-busca-web"> 🌐 Buscar Web</label>
+                                    <button class="btn-primary" onclick="executarIA('chat')" style="width:120px;">Enviar</button>
+                                </div>
                             </div>
                         </div>
 
@@ -487,7 +490,7 @@
                             <h3 style="margin-top:0; font-size:1.1rem;">Salvar Link Web</h3>
                             <input type="text" id="bib-mat-link" placeholder="Matéria/Assunto (Opcional)" list="lista-materias-dl" onclick="try{this.showPicker()}catch(e){}">
                             <input type="url" id="bib-link" placeholder="https://...">
-                            <button class="btn-success" onclick="salvarLink()">Salvar URL</button>
+                            <button class="btn-success" onclick="salvarLink()">Ler e Salvar Site</button>
                         </div>
                     </div>
                 </div>
@@ -1100,7 +1103,64 @@
             let f = document.getElementById('bib-file').files[0]; if(!f) return alert("Selecione."); if(f.size > 100 * 1024 * 1024) return alert("Arquivo máx 100MB."); let btn = event.currentTarget; let tx = btn.textContent; btn.disabled = true; btn.textContent = "Lendo...";
             try { let refF = refStore.child('biblioteca/'+gerarId()+'_'+f.name); await refF.put(f); let url = await refF.getDownloadURL(); let txt = ""; if(f.type.includes('pdf')) { const arr = await f.arrayBuffer(); const pdf = await pdfjsLib.getDocument({data:arr}).promise; for(let i=1; i<=Math.min(pdf.numPages, 15); i++) { let c = await (await pdf.getPage(i)).getTextContent(); txt += c.items.map(it=>it.str).join(" ") + "\n"; } } else { txt = await f.text(); } let m = sanitizeText(document.getElementById('bib-mat-arq').value||'Geral'); refDb.child('biblioteca').push({ id: gerarId(), nome: f.name, tipo: 'ARQUIVO', url: url, texto: txt.substring(0,20000), materia: m, data: new Date().toLocaleDateString(), refPath: refF.fullPath }); document.getElementById('bib-file').value = ''; btn.textContent = "✅ Salvo!"; setTimeout(()=> {btn.textContent=tx; btn.disabled=false;}, 2000); } catch(e) { alert("Erro: "+e.message); btn.textContent=tx; btn.disabled=false; }
         }
-        function salvarLink() { let url = document.getElementById('bib-link').value.trim(); if(!url) return; refDb.child('biblioteca').push({ id: gerarId(), nome: new URL(url).hostname, tipo: 'LINK', url: url, texto: "Conteúdo Web referenciado: "+url, materia: sanitizeText(document.getElementById('bib-mat-link').value||'Geral'), data: new Date().toLocaleDateString() }); document.getElementById('bib-link').value = ''; alert("Link Salvo."); }
+
+        // SOLUÇÃO 2: Scraping Inteligente ao salvar um Link
+        async function salvarLink() { 
+            let url = document.getElementById('bib-link').value.trim(); 
+            if(!url) return; 
+            
+            let btn = event.currentTarget; 
+            let tx = btn.textContent; 
+            btn.disabled = true; 
+            btn.textContent = "Lendo Site... ⏳"; 
+            
+            let mat = sanitizeText(document.getElementById('bib-mat-link').value||'Geral');
+            
+            try {
+                // Usando proxy gratuito para contornar bloqueios CORS
+                let proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
+                let res = await fetch(proxyUrl);
+                let data = await res.json();
+                
+                let doc = new DOMParser().parseFromString(data.contents, "text/html");
+                
+                // Limpeza do DOM para deixar só texto útil
+                let inuteis = doc.querySelectorAll('script, style, nav, footer, header, aside, iframe, noscript, svg');
+                inuteis.forEach(el => el.remove());
+                
+                let textoExtraido = doc.body ? doc.body.innerText.replace(/\s+/g, ' ').trim() : "";
+                let tituloSite = doc.title || new URL(url).hostname;
+                
+                if(!textoExtraido) throw new Error("Vazio");
+
+                refDb.child('biblioteca').push({ 
+                    id: gerarId(), 
+                    nome: "🌐 " + tituloSite.substring(0, 40), 
+                    tipo: 'LINK', 
+                    url: url, 
+                    texto: `[CONTEÚDO LIDO DA URL: ${url}]\n\n${textoExtraido.substring(0, 15000)}`, 
+                    materia: mat, 
+                    data: new Date().toLocaleDateString() 
+                }); 
+                alert("Site lido com sucesso e salvo na Nuvem!"); 
+            } catch(e) {
+                // Fallback (se o site bloquear a leitura via antibots)
+                refDb.child('biblioteca').push({ 
+                    id: gerarId(), 
+                    nome: "🌐 " + new URL(url).hostname, 
+                    tipo: 'LINK', 
+                    url: url, 
+                    texto: "Conteúdo Web referenciado (Leitura bloqueada): " + url, 
+                    materia: mat, 
+                    data: new Date().toLocaleDateString() 
+                }); 
+                alert("Site bloqueou a leitura oculta. O link foi salvo como referência.");
+            } finally {
+                document.getElementById('bib-link').value = ''; 
+                btn.textContent = tx; 
+                btn.disabled = false;
+            }
+        }
         
         function renderizarBiblioteca() { 
             let div = document.getElementById('lista-biblioteca'); 
@@ -1202,7 +1262,6 @@
 - NUNCA use asteriscos triplos (###), asteriscos duplos (***) ou traços excessivos (---).
 - Emojis e setas DEVEM iniciar SEMPRE novas linhas. Mantenha o texto limpo.`;
 
-            // CORREÇÃO CRÍTICA: Removida a menção de "Busca na Web" para não acionar necessidade da ferramenta (que exige plano pago).
             const basePersona = "Você é a PRUMA IA, mentora jurídica de altíssimo rigor para concursos públicos. REGRA ANTIALUCINAÇÃO: É PROIBIDO inventar artigos ou prazos. Baseie-se no seu vasto conhecimento consolidado e na Nuvem PRUMA para verificar legislação." + profundidadeInstrucao + instrucaoFormatacao;
             
             const prompts = {
@@ -1221,6 +1280,28 @@
             
             let promptAprofundado = `Atue como um professor especialista. Aprofunde a seguinte explicação anterior:\n\n"${textoDoBalao}"\n\nForneça um aprofundamento técnico e fundamentado em jurisprudência.`;
             executarIA('chat', promptAprofundado);
+        }
+
+        // SOLUÇÃO 1: Função Agente Fantasma (DuckDuckGo Search)
+        async function buscarNaWeb(query) {
+            try {
+                let url = `https://html.duckduckgo.com/html/?q=${encodeURIComponent(query)}`;
+                let proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
+                let res = await fetch(proxyUrl);
+                let data = await res.json();
+                
+                let doc = new DOMParser().parseFromString(data.contents, "text/html");
+                let results = doc.querySelectorAll('.result__snippet');
+                
+                let snippets = [];
+                for(let i=0; i<Math.min(4, results.length); i++) {
+                    snippets.push("- " + results[i].textContent.trim());
+                }
+                return snippets.length > 0 ? snippets.join('\n') : "Nenhum resultado recente encontrado.";
+            } catch(e) {
+                console.error("Erro proxy web:", e);
+                return "Falha ao ler os resultados da internet.";
+            }
         }
 
         async function executarIA(tipo, promptEspecifico = null, querAprofundar = false) {
@@ -1273,7 +1354,7 @@
 
             let isPerguntaFacil = p.length < 50;
             let baseSys = obterPromptDoSistema(tipo, p, isPerguntaFacil);
-            let modeloUsadoFinal = "gemini-3.5-flash-lite"; // MANTIDO CONFORME SEU PEDIDO
+            let modeloUsadoFinal = "gemini-3.5-flash-lite";
             let loadInt = null;
 
             try {
@@ -1282,6 +1363,15 @@
                     box.scrollTop = box.scrollHeight; 
                     
                     let loadingMsgs = ["Buscando conhecimento jurídico...", "Cruzando dados da Nuvem PRUMA...", "Analisando referências..."];
+                    
+                    // INTERCEPTADOR DA BUSCA WEB FANTASMA
+                    let chk = document.getElementById('chk-busca-web');
+                    if(tipo === 'chat' && chk && chk.checked) {
+                        document.getElementById('load-ia-text').textContent = "🕵️ Buscando notícias e dados recentes na Web (DuckDuckGo)...";
+                        let resultadosWeb = await buscarNaWeb(p);
+                        ctx += `\n\n[RESULTADOS DA BUSCA NA WEB EM TEMPO REAL]:\n${resultadosWeb}\n`;
+                    }
+
                     loadInt = setInterval(() => { let msgEl = document.getElementById('load-ia-text'); if(msgEl) msgEl.textContent = loadingMsgs[Math.floor(Math.random() * loadingMsgs.length)]; }, 2500);
                 } else { 
                     box.innerHTML = `<div id="load-ia" style="color:var(--brand-primary); font-weight:600;"><span id="load-ia-text">Construindo flashcards...</span> ⏳</div>`; 
@@ -1302,7 +1392,6 @@
                     let res = null;
 
                     for (let i = 0; i < retentativas; i++) {
-                        // CORREÇÃO CRÍTICA: Alterado de /v1/ para /v1beta/ que tem total suporte às chaves da geração 3.5
                         res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelo}:generateContent?key=${k}`, { 
                             method:'POST', 
                             headers:{'Content-Type':'application/json'}, 
@@ -1312,9 +1401,8 @@
                                         text: `${baseSys}\n\n${ctx ? "CONTEXTO / NUVEM PRUMA:\n"+ctx.substring(0,10000) : ""}\n\nPROMPT: ${p}`
                                     }]
                                 }],
-                                // A ferramenta "googleSearch" FOI REMOVIDA AQUI, pois é ela quem causa o 429 instantâneo no plano gratuito!
                                 generationConfig: {
-                                    maxOutputTokens: 1024 // Limite seguro para TPM
+                                    maxOutputTokens: 1024
                                 }
                             }) 
                         });
@@ -1322,7 +1410,7 @@
                         if (res.ok) break;
 
                         if ((res.status === 503 || res.status === 429) && i < retentativas - 1) {
-                            await new Promise(r => setTimeout(r, atraso * (i + 1))); // Backoff progressivo
+                            await new Promise(r => setTimeout(r, atraso * (i + 1))); 
                             continue;
                         }
                         break;
@@ -1490,7 +1578,6 @@
                         headers:{'Content-Type':'application/json'}, 
                         body:JSON.stringify({
                             contents:[{parts:[{text:`Organize em JSON PURO: [{"disciplina": "Nome", "topicos": ["T1", "T2"]}]. Sem markdown. Edital:\n${txt.substring(0,20000)}`}]}],
-                            // Ferramenta googleSearch REMOVIDA também na área do Edital
                             generationConfig: {
                                 maxOutputTokens: 1500
                             }
