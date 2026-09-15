@@ -377,7 +377,7 @@
                         <!-- Sub: Chat -->
                         <div id="subia-chat">
                             <div class="chat-box" id="box-chat">
-                                <div class="msg msg-a">Como a PRUMA IA pode te ajudar? (Agora com busca automática e inteligente na sua Nuvem PRUMA)</div>
+                                <div class="msg msg-a">🛡️ PRUMA IA ativada. Como posso te ajudar hoje?</div>
                             </div>
                             <div style="display:flex; gap:12px; flex-wrap:wrap; align-items:flex-end;">
                                 <textarea id="inp-chat" placeholder="Digite sua dúvida..." rows="2" style="margin:0; resize:none; flex:1; min-width:200px;"></textarea>
@@ -1218,11 +1218,9 @@
             [...dbData.iaHistorico].reverse().forEach(h => { div.innerHTML += `<div style="background:var(--bg-input); padding:12px; border-radius:var(--radius-sm); border:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center; gap:10px;" title="${sanitizeText(h)}"><span style="font-size:0.9rem;">"${h}"</span><button class="btn-primary" style="width:auto; padding:6px 12px; font-size:0.8rem;" onclick="document.getElementById('modal-historico-ia').style.display='none'; document.getElementById('inp-chat').value = '${sanitizeText(h).replace(/'/g, "\\'")}'; executarIA('chat');">🔄 Reenviar</button></div>`; });
         }
 
-        // NOVO: Sistema de Busca Semântica Avançada (RAG Local com Scoring de Densidade e Chunks)
         function extrairContextoSemantico(query) {
             if (!dbData.biblioteca || dbData.biblioteca.length === 0) return "";
             
-            // Quebra o prompt do usuário em tokens significativos (ignorando preposições comuns)
             let stopWords = new Set(['o','a','os','as','um','uma','de','do','da','dos','das','em','no','na','nos','nas','por','para','com','como','que','e','ou','se']);
             let tokensQuery = query.toLowerCase()
                 .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
@@ -1236,13 +1234,11 @@
 
             dbData.biblioteca.forEach(doc => {
                 if (!doc.texto) return;
-                
-                // Fragmenta o documento em pedaços (parágrafos ou blocos de aprox 400 caracteres)
                 let chunks = doc.texto.split(/(?:\r?\n){2,}|(?:\.\s+)/);
                 
                 chunks.forEach(chunk => {
                     let chunkLimpo = chunk.trim();
-                    if (chunkLimpo.length < 50) return; // descarta fragmentos muito curtos
+                    if (chunkLimpo.length < 50) return;
                     
                     let chunkNorm = chunkLimpo.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
                     let matchesCount = 0;
@@ -1257,7 +1253,6 @@
                         }
                     });
 
-                    // Só pontua se encontrar pelo menos metade dos termos-chave ou alta densidade
                     if (matchesCount >= Math.max(1, Math.floor(tokensQuery.length * 0.4))) {
                         blocosAvaliados.push({
                             fonte: doc.nome,
@@ -1268,15 +1263,13 @@
                 });
             });
 
-            // Ordena os fragmentos pela pontuação mais alta (relevância e densidade)
             blocosAvaliados.sort((a, b) => b.score - a.score);
-
+            let selecionados = blocosAvaliados.slice(0, 3);
             let contextoFinal = "";
-            let selecionados = blocosAvaliados.slice(0, 3); // Pega os top 3 melhores fragmentos
 
             if (selecionados.length > 0) {
                 contextoFinal += "\n\n[TRECHO(S) RELEVANTE(S) ENCONTRADO(S) NA NUVEM PRUMA]:\n";
-                selecionados.forEach((b, idx) => {
+                selecionados.forEach((b) => {
                     contextoFinal += `\n--- Fonte [${b.fonte}] ---\n${b.texto}\n`;
                 });
             }
@@ -1291,23 +1284,24 @@
         function obterPromptDoSistema(tipo, promptUsuario = "", isFacil = false) {
             let pL = promptUsuario.toLowerCase();
             let bancaDetectada = "";
-            if(pL.includes('cebraspe') || pL.includes('cespe')) bancaDetectada = "CEBRASPE (foco rigoroso em assertivas Certo/Errado)";
-            else if(pL.includes('fgv')) bancaDetectada = "FGV (foco em casos práticos e enunciados interpretativos)";
-            else if(pL.includes('fcc')) bancaDetectada = "FCC (foco total na literalidade da lei)";
-            else if(pL.includes('vunesp')) bancaDetectada = "VUNESP (foco direto na letra da lei e objetividade)";
+            if(pL.includes('cebraspe') || pL.includes('cespe')) bancaDetectada = "CEBRASPE";
+            else if(pL.includes('fgv')) bancaDetectada = "FGV";
+            else if(pL.includes('fcc')) bancaDetectada = "FCC";
+            else if(pL.includes('vunesp')) bancaDetectada = "VUNESP";
 
-            let bancaInstrucao = bancaDetectada ? `\n\n🎯 BANCA: Adapte ao estilo da banca ${bancaDetectada}.` : "";
-            let profundidadeInstrucao = isFacil ? `\n\n💡 PERGUNTA SIMPLES: Seja conciso e direto ao ponto.` : "";
+            let bancaInstrucao = bancaDetectada ? `\n\nBANCA: ${bancaDetectada}. Seja extremamente objetivo quanto aos critérios dela, sem enrolação.` : "";
 
-            const instrucaoFormatacao = `\n\n📌 REGRA DE FORMATAÇÃO: 
-- NUNCA use asteriscos triplos (###), asteriscos duplos (***) ou traços excessivos (---).
-- Emojis e setas DEVEM iniciar SEMPRE novas linhas. Mantenha o texto limpo.
-- REGRA DE CONTEXTO LOCAL: Se houver trechos fornecidos da Nuvem PRUMA, analise-os com rigor. Ignore menções superficiais ou isoladas que não aprofundem o tema central, baseando-se prioritariamente no conhecimento técnico sólido.`;
+            const instrucaoFormatacao = `\n\nDIRETRIZES RIGOROSAS DE RESPOSTA:
+1. VÁ DIRETO AO PONTO. Sem introduções longas, sem floreios, sem saudações desnecessárias.
+2. Seja objetivo e cirúrgico. Concentre seu esforço analítico e tokens exclusivamente no que foi perguntado pelo aluno.
+3. Descarte tudo que seja inútil ou irrelevante para a resposta direta.
+4. NUNCA use asteriscos triplos (###), asteriscos duplos (***) ou traços excessivos (---).
+5. Emojis e setas DEVEM iniciar SEMPRE novas linhas. Mantenha o texto limpo e legível.`;
 
-            const basePersona = "Você é a PRUMA IA, mentora jurídica de altíssimo rigor para concursos públicos. REGRA ANTIALUCINAÇÃO: É PROIBIDO inventar artigos ou prazos." + profundidadeInstrucao + instrucaoFormatacao;
+            const basePersona = "Você é a PRUMA IA, mentora jurídica de altíssimo rigor para concursos públicos. REGRA ANTIALUCINAÇÃO: É PROIBIDO inventar artigos ou prazos." + instrucaoFormatacao;
             
             const prompts = {
-                chat: `${basePersona} Explique com clareza e objetividade jurídica.${bancaInstrucao}`,
+                chat: `${basePersona} Responda com clareza objetiva e jurídica.${bancaInstrucao}`,
                 questoes: `${basePersona} Crie questões inéditas com rigor técnico, indicando o nível no início de cada linha, e gabarito comentado objetivo.${bancaInstrucao}`,
                 flashcards: `${basePersona} Crie flashcards cirúrgicos de alta retenção no formato estrito solicitado.`
             };
@@ -1320,7 +1314,7 @@
             let conteudoDiv = msgBalão.querySelector('.conteudo-resposta-ia');
             let textoDoBalao = conteudoDiv ? conteudoDiv.innerText : msgBalão.innerText;
             
-            let promptAprofundado = `Atue como um professor especialista. Aprofunde a seguinte explicação anterior:\n\n"${textoDoBalao}"\n\nForneça um aprofundamento técnico e fundamentado em jurisprudência.`;
+            let promptAprofundado = `Atue como um professor especialista. Aprofunde a seguinte explicação anterior:\n\n"${textoDoBalao}"\n\nForneça um aprofundamento técnico direto e fundamentado em jurisprudência.`;
             executarIA('chat', promptAprofundado);
         }
 
@@ -1358,7 +1352,13 @@
                 let tipoQVal = document.getElementById('ia-tipo-q').value;
                 let instrucaoTipoQ = tipoQVal === 'ce' ? "Formato estrito Certo / Errado (C/E)." : (tipoQVal === 'ambas' ? "Misture múltipla escolha e Certo/Errado." : "Múltipla escolha.");
                 
-                p = `Gere exatamente ${qtd} questões inéditas em formato JSON PURO sobre: ${t}. ${instrucaoTipoQ} Níveis: ${niveisSelecionados.join(', ')}. 
+                p = `Gere exatamente ${qtd} questões inéditas em formato JSON PURO sobre: ${t}. ${instrucaoTipoQ} 
+                CRITÉRIO OBRIGATÓRIO DE DIFICULDADE: Distribua ou aplique estritamente os níveis solicitados entre as questões: [${niveisSelecionados.join(', ')}]. 
+                - Se o nível for Fácil: cobre texto de lei seco ou conceito direto e memorizável.
+                - Se o nível for Médio: cobre aplicação simples de regra a um caso prático ou exceções comuns.
+                - Se o nível for Difícil: cobre pegadinhas jurisprudenciais profundas, cruzamento de artigos ou casos complexos.
+                Cada questão no JSON DEVE conter explicitamente o seu nível correspondente no campo "nivel".
+                
                 Retorne EXATAMENTE UM JSON ARRAY PURO:
                 [
                   {
@@ -1366,7 +1366,7 @@
                     "alternativas": ["A) Opção 1", "B) Opção 2", "C) Opção 3", "D) Opção 4"],
                     "correta": "A",
                     "comentario": "Comentário...",
-                    "nivel": "Médio"
+                    "nivel": "Difícil"
                   }
                 ]
                 Sem markdown como \`\`\`json.`;
@@ -1377,7 +1377,7 @@
                 let qtd = document.getElementById('fc-num').value || '5';
                 let m = sanitizeText(document.getElementById('fc-mat').value) || 'Geral';
                 let tp = sanitizeText(document.getElementById('fc-top').value) || 'Assunto Geral';
-                p = `Gere ${qtd} flashcards para Matéria: "${m}" e Tópico: "${tp}". Níveis: ${niveisSelecionados.join(', ')}. Retorne EXATAMENTE UM JSON ARRAY PURO: [{"f":"Pergunta","v":"Resposta","nivel":"Fácil/Médio/Difícil"}]. Sem markdowns.`;
+                p = `Gere ${qtd} flashcards para Matéria: "${m}" e Tópico: "${tp}". Níveis estritos a respeitar: ${niveisSelecionados.join(', ')}. Cada flashcard deve refletir exatamente o seu nível (Fácil = memorização direta, Médio = aplicação, Difícil = exceções/detalhes profundos). Retorne EXATAMENTE UM JSON ARRAY PURO: [{"f":"Pergunta","v":"Resposta","nivel":"Fácil/Médio/Difícil"}]. Sem markdowns.`;
                 box = document.getElementById('box-fc'); box.style.display='block'; box.innerHTML='';
             } else if(tipo === 'chat') {
                 p = promptEspecifico || document.getElementById('inp-chat').value.trim(); if(!p) return;
@@ -1393,24 +1393,22 @@
                 }
             }
 
-            // BUSCA SEMÂNTICA AUTOMÁTICA NA NUVEM PRUMA
             let ctx = extrairContextoSemantico(p);
-
             let isPerguntaFacil = p.length < 50;
             let baseSys = obterPromptDoSistema(tipo, p, isPerguntaFacil);
-            let modeloUsadoFinal = "gemini-3.8-flash";
+            let modeloUsadoFinal = "gemini-2.5-flash"; 
             let loadInt = null;
 
             try {
                 if(tipo!=='flashcards') { 
-                    box.innerHTML += `<div class="msg msg-a" id="load-ia"><span id="load-ia-text">Analisando o banco de dados...</span> ⏳</div>`; 
+                    box.innerHTML += `<div class="msg msg-a" id="load-ia"><span id="load-ia-text">Analisando...</span> ⏳</div>`; 
                     box.scrollTop = box.scrollHeight; 
                     
-                    let loadingMsgs = ["Buscando conhecimento jurídico...", "Varredura semântica na Nuvem PRUMA...", "Analisando referências..."];
+                    let loadingMsgs = ["Analisando o banco...", "Buscando diretrizes...", "Processando resposta..."];
                     
                     let chk = document.getElementById('chk-busca-web');
                     if(tipo === 'chat' && chk && chk.checked) {
-                        document.getElementById('load-ia-text').textContent = "🕵️ Buscando notícias e dados recentes na Web (DuckDuckGo)...";
+                        document.getElementById('load-ia-text').textContent = "🕵️ Buscando na Web...";
                         let resultadosWeb = await buscarNaWeb(p);
                         ctx += `\n\n[RESULTADOS DA BUSCA NA WEB EM TEMPO REAL]:\n${resultadosWeb}\n`;
                     }
@@ -1440,12 +1438,9 @@
                             body:JSON.stringify({ 
                                 contents:[{
                                     parts:[{
-                                        text: `${baseSys}\n\n${ctx ? "CONTEXTO SEMÂNTICO ENCONTRADO NA NUVEM PRUMA:\n"+ctx.substring(0,10000) : ""}\n\nPROMPT: ${p}`
+                                        text: `${baseSys}\n\n${ctx ? "CONTEXTO ENCONTRADO NA NUVEM PRUMA:\n"+ctx.substring(0,10000) : ""}\n\nPROMPT: ${p}`
                                     }]
-                                }],
-                                generationConfig: {
-                                    maxOutputTokens: 1024
-                                }
+                                }]
                             }) 
                         });
 
@@ -1484,7 +1479,7 @@
 
                 if(loadInt) clearInterval(loadInt);
 
-                let badgeModelo = `<div style="font-size:0.7rem; color:var(--text-muted); opacity:0.7; margin-bottom:6px; text-align:right;">🛡️ API Gratuita (V1Beta/Offline) | ${modeloUsadoFinal}</div>`;
+                let badgeModelo = `<div style="font-size:0.7rem; color:var(--text-muted); opacity:0.7; margin-bottom:6px; text-align:right;">🛡️ PRUMA IA ativada</div>`;
 
                 if(tipo === 'flashcards') {
                     let json = JSON.parse(txtF.replace(/```json/g,'').replace(/```/g,'').match(/\[.*\]/s)[0]);
@@ -1606,9 +1601,9 @@
         async function processarEdital(btn) {
             let k = localStorage.getItem('pruma_apikey'); if(!k) return alert("API Key ausente."); let txt = document.getElementById('edital-texto').value.trim(); if(!txt) return; let pId = document.getElementById('edital-ia-prova').value;
             
-            const modelo = "gemini-3.8-flash"; 
+            const modelo = "gemini-2.5-flash"; 
             
-            let tx = btn.textContent; btn.disabled=true; btn.textContent="Processando com IA (Pode levar uns segundos)...";
+            let tx = btn.textContent; btn.disabled=true; btn.textContent="Processando com IA...";
             try { 
                 let res = null;
                 let retentativas = 3;
@@ -1619,10 +1614,7 @@
                         method:'POST', 
                         headers:{'Content-Type':'application/json'}, 
                         body:JSON.stringify({
-                            contents:[{parts:[{text:`Organize em JSON PURO: [{"disciplina": "Nome", "topicos": ["T1", "T2"]}]. Sem markdown. Edital:\n${txt.substring(0,20000)}`}]}],
-                            generationConfig: {
-                                maxOutputTokens: 1500
-                            }
+                            contents:[{parts:[{text:`Organize em JSON PURO: [{"disciplina": "Nome", "topicos": ["T1", "T2"]}]. Sem markdown. Edital:\n${txt.substring(0,20000)}`}]}]
                         }) 
                     });
 
@@ -1653,7 +1645,7 @@
                 if(data.error) throw new Error(`Erro da API (Código ${data.error.code || 'Desconhecido'}): ${data.error.message}`); 
                 let json = JSON.parse(data.candidates[0].content.parts[0].text.match(/\[.*\]/s)[0]); 
                 if(!Array.isArray(dbData.materias)) dbData.materias = Object.values(dbData.materias || {}); 
-                json.forEach(n => { let idx = dbData.materias.findIndex(x=>x.nome.toLowerCase()===n.disciplina.toLowerCase() && x.provaId===pId); if(idx !== -1) { if(!Array.isArray(dbData.materias[idx].topicos)) dbData.materias[idx].topicos = Object.values(dbData.materias[idx].topicos || {}); n.topicos.forEach(t=>{ if(!dbData.materias[idx].topicos.includes(t)) dbData.materias[idx].topicos.push(t); }); } else { dbData.materias.push({id:gerarId(), nome:n.disciplina, cor:paleta17[0], topicos:n.topicos, provaId:pId}); } }); 
+                json.forEach(n => { let idx = dbData.materias.findIndex(x=>x.nome.toLowerCase()===n.disciplina.toLowerCase() && x.provaId===pId); if(idx !== -1) { if(!Array.isArray(dbData.materias[idx].topicos)) dbData.materias[idx].topicos = Object.values(dbData.materias[idx].topicos || {}); n.topicos.forEach(t=>{ if(!dbData.materias[idx].topicos.includes(t)) dbData.materias[idx].topicos.push(t); }); } else { dbData.materias.provas ? {} : null; dbData.materias.push({id:gerarId(), nome:n.disciplina, cor:paleta17[0], topicos:n.topicos, provaId:pId}); } }); 
                 refDb.child('materias').set(dbData.materias); 
                 document.getElementById('edital-texto').value=''; 
                 alert("Edital mapeado!"); 
