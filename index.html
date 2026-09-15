@@ -292,8 +292,8 @@
                 <div class="card">
                     <h2>Novo Caderno / Anotação</h2>
                     <div style="display:flex; gap:16px; flex-wrap:wrap;">
-                        <input type="text" id="err-mat" placeholder="Matéria (Opcional)" list="lista-materias-dl" oninput="atualizarTopicosDatalist('err-top', this.value)" style="flex:1; min-width:150px;" onclick="try{this.showPicker()}catch(e){}">
-                        <input type="text" id="err-top" placeholder="Tópico (Opcional)" list="dl-err-top" style="flex:1; min-width:150px;" onclick="try{this.showPicker()}catch(e){}">
+                        <input type="text" id="err-mat" placeholder="Caderno Principal (Ex: Dir. Penal)" list="lista-materias-dl" oninput="atualizarTopicosCaderno(this.value)" style="flex:1; min-width:150px;" onclick="try{this.showPicker()}catch(e){}">
+                        <input type="text" id="err-top" placeholder="Sub-caderno (Ex: Crimes contra a vida)" list="dl-err-top" style="flex:1; min-width:150px;" onclick="try{this.showPicker()}catch(e){}">
                         <datalist id="dl-err-top"></datalist>
                     </div>
                     <textarea id="err-texto" placeholder="Cole a questão, lei ou comentário (Opcional)..." rows="4"></textarea>
@@ -723,6 +723,13 @@
                 if(Array.isArray(m.topicos)) m.topicos.forEach(t => dl.innerHTML += `<option value="${t}">`);
             });
         }
+        function atualizarTopicosCaderno(matNome) {
+            let dl = document.getElementById('dl-err-top'); if(!dl) return; dl.innerHTML = '';
+            if(!Array.isArray(dbData.cadernos)) dbData.cadernos = Object.values(dbData.cadernos || {});
+            let tops = new Set();
+            dbData.cadernos.forEach(c => { if(c.materia === matNome && c.topico) tops.add(c.topico); });
+            [...tops].forEach(t => dl.innerHTML += `<option value="${t}">`);
+        }
 
         function atualizarResumoGeral() {
             let per = document.getElementById('resumo-geral-periodo').value;
@@ -1023,31 +1030,67 @@
             alert("📚 Enviado com sucesso para o seu Caderno de Erros!");
         }
 
+        // Função de Renderizar Cadernos Corrigida (Agora com Sub-cadernos REAIS)
         function renderizarCadernos() {
-            let stateCadernos = []; document.querySelectorAll('#lista-cadernos-div .pasta-body.aberta').forEach(el => { let id = el.previousElementSibling ? el.previousElementSibling.getAttribute('data-caderno-folder') : null; if(id) stateCadernos.push(id); });
+            let stateCadernos = []; 
+            document.querySelectorAll('#lista-cadernos-div .pasta-body.aberta:not(.sub-caderno-body)').forEach(el => { 
+                let id = el.previousElementSibling ? el.previousElementSibling.getAttribute('data-caderno-folder') : null; 
+                if(id) stateCadernos.push(id); 
+            });
+            let stateSubCadernos = [];
+            document.querySelectorAll('#lista-cadernos-div .sub-caderno-body.aberta').forEach(el => { 
+                let id = el.previousElementSibling ? el.previousElementSibling.getAttribute('data-subcaderno-folder') : null; 
+                if(id) stateSubCadernos.push(id); 
+            });
+
             let div = document.getElementById('lista-cadernos-div'); div.innerHTML = ''; let agr = {};
             if(!Array.isArray(dbData.cadernos)) dbData.cadernos = Object.values(dbData.cadernos || {});
-            dbData.cadernos.forEach(c => { if(!agr[c.materia]) agr[c.materia] = {}; if(!agr[c.materia][c.topico]) agr[c.materia][c.topico] = []; agr[c.materia][c.topico].push(c); });
+            
+            dbData.cadernos.forEach(c => { 
+                if(!agr[c.materia]) agr[c.materia] = {}; 
+                if(!agr[c.materia][c.topico]) agr[c.materia][c.topico] = []; 
+                agr[c.materia][c.topico].push(c); 
+            });
+            
             let cIndex = 0;
             for(let m in agr) {
                 let folderKey = 'cad_' + (cIndex++);
-                let htmlM = ''; for(let t in agr[m]) { htmlM += `<div style="font-weight:700; color:var(--brand-primary); margin:10px 0 4px 0;" title="${sanitizeText(t)}">📌 ${t}</div>`; agr[m][t].forEach(i => { 
-                    let textoCompleto = sanitizeText(i.texto);
-                    let isLongo = textoCompleto.length > 180;
-                    let textoExibido = isLongo ? textoCompleto.substring(0, 180) + '...' : textoCompleto;
-                    htmlM += `<div style="background:var(--bg-input); padding:10px; border-radius:var(--radius-sm); margin-bottom:6px; display:flex; justify-content:space-between; align-items:flex-start; gap:8px;">
-                        <div style="font-size:0.95rem; min-width:0; flex:1; word-break:break-word;">
-                            <span class="cad-txt-span" data-full="${encodeURIComponent(textoCompleto)}">${textoExibido}</span>
-                            ${isLongo ? `<button style="background:none;border:none;color:var(--brand-primary);cursor:pointer;font-weight:700;font-size:0.8rem;display:block;margin-top:4px;" onclick="let span=this.previousElementSibling; if(span.textContent.endsWith('...')){ span.textContent=decodeURIComponent(span.getAttribute('data-full')); this.textContent='(Mostrar menos)'; }else{ span.textContent=decodeURIComponent(span.getAttribute('data-full')).substring(0,180)+'...'; this.textContent='(Ler mais)'; }">Ler mais</button>` : ''}
-                            <span style="font-size:0.75rem; color:var(--text-muted); display:block; margin-top:4px;">${i.data}</span>
-                        </div>
-                        <button class="btn-x-vermelho" style="flex-shrink:0;" onclick="if(confirm('Excluir?')){ dbData.cadernos=dbData.cadernos.filter(x=>x.id!=='${i.id}'); refDb.child('cadernos').set(dbData.cadernos); }">✖</button>
-                    </div>`; 
-                }); }
-                div.innerHTML += `<div class="pasta-header" data-caderno-folder="${folderKey}" onclick="this.nextElementSibling.classList.toggle('aberta')"><span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1; min-width:0;" title="${sanitizeText(m)}">📓 ${m}</span></div><div class="pasta-body">${htmlM}</div>`;
+                let htmlM = ''; 
+                let tIndex = 0;
+                
+                for(let t in agr[m]) { 
+                    let subFolderKey = folderKey + '_sub_' + (tIndex++);
+                    let htmlT = '';
+                    
+                    agr[m][t].forEach(i => { 
+                        let textoCompleto = sanitizeText(i.texto);
+                        let isLongo = textoCompleto.length > 180;
+                        let textoExibido = isLongo ? textoCompleto.substring(0, 180) + '...' : textoCompleto;
+                        htmlT += `<div style="background:var(--bg-input); padding:10px; border-radius:var(--radius-sm); margin-bottom:6px; display:flex; justify-content:space-between; align-items:flex-start; gap:8px;">
+                            <div style="font-size:0.95rem; min-width:0; flex:1; word-break:break-word;">
+                                <span class="cad-txt-span" data-full="${encodeURIComponent(textoCompleto)}">${textoExibido}</span>
+                                ${isLongo ? `<button style="background:none;border:none;color:var(--brand-primary);cursor:pointer;font-weight:700;font-size:0.8rem;display:block;margin-top:4px;" onclick="let span=this.previousElementSibling; if(span.textContent.endsWith('...')){ span.textContent=decodeURIComponent(span.getAttribute('data-full')); this.textContent='(Mostrar menos)'; }else{ span.textContent=decodeURIComponent(span.getAttribute('data-full')).substring(0,180)+'...'; this.textContent='(Ler mais)'; }">Ler mais</button>` : ''}
+                                <span style="font-size:0.75rem; color:var(--text-muted); display:block; margin-top:4px;">${i.data}</span>
+                            </div>
+                            <button class="btn-x-vermelho" style="flex-shrink:0;" onclick="if(confirm('Excluir?')){ dbData.cadernos=dbData.cadernos.filter(x=>x.id!=='${i.id}'); refDb.child('cadernos').set(dbData.cadernos); }">✖</button>
+                        </div>`; 
+                    }); 
+                    
+                    htmlM += `<div class="pasta-header sub-caderno-header" data-subcaderno-folder="${subFolderKey}" onclick="this.nextElementSibling.classList.toggle('aberta')" style="background:var(--bg-body); border-left:3px solid var(--brand-warning); margin-bottom:4px; padding:10px 14px; border-radius:var(--radius-sm);">
+                        <span style="font-weight:700; color:var(--text-main); font-size:0.9rem;">📂 Sub-caderno: ${sanitizeText(t)} (${agr[m][t].length})</span>
+                    </div>
+                    <div class="pasta-body sub-caderno-body" style="border-left: 2px solid var(--border-color); margin-left: 14px; margin-bottom:12px; padding-left:12px;">
+                        ${htmlT}
+                    </div>`;
+                }
+                
+                div.innerHTML += `<div class="pasta-header" data-caderno-folder="${folderKey}" onclick="this.nextElementSibling.classList.toggle('aberta')"><span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1; min-width:0;" title="${sanitizeText(m)}">📓 Caderno Principal: ${sanitizeText(m)}</span></div><div class="pasta-body" style="padding-top:8px;">${htmlM}</div>`;
             }
+            
             stateCadernos.forEach(id => { let hdr = document.querySelector(`.pasta-header[data-caderno-folder="${id}"]`); if(hdr && hdr.nextElementSibling) hdr.nextElementSibling.classList.add('aberta'); });
+            stateSubCadernos.forEach(id => { let hdr = document.querySelector(`.sub-caderno-header[data-subcaderno-folder="${id}"]`); if(hdr && hdr.nextElementSibling) hdr.nextElementSibling.classList.add('aberta'); });
         }
+
         function renderizarFiltrosEstatisticas() {
             let dlProvas = document.getElementById('dl-est-provas'); if(dlProvas) { dlProvas.innerHTML = ''; if(!Array.isArray(dbData.provas)) dbData.provas = Object.values(dbData.provas || {}); dbData.provas.forEach(p => dlProvas.innerHTML += `<option value="${p.nome}">`); }
             atualizarTopicosFiltroEstatisticas();
@@ -1396,7 +1439,8 @@
             let ctx = extrairContextoSemantico(p);
             let isPerguntaFacil = p.length < 50;
             let baseSys = obterPromptDoSistema(tipo, p, isPerguntaFacil);
-            let modeloUsadoFinal = "gemini-2.5-flash"; 
+            
+            let modeloUsadoFinal = "gemini-3.8-flash"; 
             let loadInt = null;
 
             try {
@@ -1601,7 +1645,7 @@
         async function processarEdital(btn) {
             let k = localStorage.getItem('pruma_apikey'); if(!k) return alert("API Key ausente."); let txt = document.getElementById('edital-texto').value.trim(); if(!txt) return; let pId = document.getElementById('edital-ia-prova').value;
             
-            const modelo = "gemini-2.5-flash"; 
+            const modelo = "gemini-3.8-flash"; 
             
             let tx = btn.textContent; btn.disabled=true; btn.textContent="Processando com IA...";
             try { 
