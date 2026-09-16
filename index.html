@@ -1213,7 +1213,7 @@
 
                         htmlT += `<div style="background:var(--bg-input); padding:10px; border-radius:var(--radius-sm); margin-bottom:6px; display:flex; justify-content:space-between; align-items:flex-start; gap:8px;">
                             <div style="font-size:0.95rem; min-width:0; flex:1; word-break:break-word;">
-                                <div class="cad-txt-span" data-full="${encodeURIComponent(textoCompleto)}" data-ishtml="${isH}">${textoExibido}</div>
+                                <div class="cad-txt-span" data-full="${encodeURIComponent(textoCompleto).replace(/'/g, "%27")}" data-ishtml="${isH}">${textoExibido}</div>
                                 ${isLongo ? `<button style="background:none;border:none;color:var(--brand-primary);cursor:pointer;font-weight:700;font-size:0.8rem;display:block;margin-top:4px;" onclick="let span=this.previousElementSibling; if(span.textContent.endsWith('...')){ let full = decodeURIComponent(span.getAttribute('data-full')); span.innerHTML = span.getAttribute('data-ishtml') === 'true' ? DOMPurify.sanitize(full) : sanitizeText(full); this.textContent='(Mostrar menos)'; }else{ span.textContent=sanitizeText(decodeURIComponent(span.getAttribute('data-full')).substring(0,180))+'...'; this.textContent='(Ler mais)'; }">Ler mais</button>` : ''}
                                 <span style="font-size:0.75rem; color:var(--text-muted); display:block; margin-top:8px;">${i.data}</span>
                             </div>
@@ -1706,14 +1706,20 @@
                             <div style="display:none; margin-top:12px; color:var(--text-main); font-size:1rem; padding-top:10px; border-top:1px dashed var(--border-color);">💡 Resposta: ${sanitizeText(c.v)}</div>
                         </div>`;
                         
-                        // CORREÇÃO: Substituir aspas simples por %27 na string URI Encoded para não quebrar o HTML
+                        // CORREÇÃO DEFINITIVA: Usar atributos data- para evitar conflito de aspas no onclick
                         let encPayload = encodeURIComponent(fcContent).replace(/'/g, "%27");
+                        let encMat = encodeURIComponent(matNome).replace(/'/g, "%27");
+                        let encTop = encodeURIComponent(topNome).replace(/'/g, "%27");
                         
                         let itemHtml = `
                         <div style="margin-bottom:16px;">
                             ${fcContent}
                             <div style="margin-top:8px;">
-                                <button class="btn-outline" style="width:auto; padding:6px 12px; font-size:0.8rem;" onclick="abrirModalEnviarCaderno(decodeURIComponent('${encPayload}'), this, '${sanitizeText(matNome).replace(/'/g,"\\'")}', '${sanitizeText(topNome).replace(/'/g,"\\'")}', true)">💾 Salvar no Caderno</button>
+                                <button class="btn-outline" style="width:auto; padding:6px 12px; font-size:0.8rem;" 
+                                    data-payload="${encPayload}" data-mat="${encMat}" data-top="${encTop}" 
+                                    onclick="abrirModalEnviarCaderno(decodeURIComponent(this.getAttribute('data-payload')), this, decodeURIComponent(this.getAttribute('data-mat')), decodeURIComponent(this.getAttribute('data-top')), true)">
+                                    💾 Salvar no Caderno
+                                </button>
                             </div>
                         </div>`;
                         box.innerHTML += itemHtml;
@@ -1721,6 +1727,7 @@
                     });
                     box.insertAdjacentHTML('afterbegin', badgeModelo);
                     salvarFiltroHistorico('flashcards', {mat: matNome, top: topNome}, `${matNome} - ${topNome}`, htmlFCResult);
+                
                 } else if(tipo === 'questoes') {
                     let l = document.getElementById('load-ia'); if(l) l.remove();
                     try {
@@ -1752,15 +1759,20 @@
                                 </div>
                             </div>`;
                             
-                            // CORREÇÃO: Substituir aspas simples por %27
+                            // CORREÇÃO DEFINITIVA: Usar atributos data- para evitar conflito de aspas no onclick
                             let encPayloadQst = encodeURIComponent(cadQstHtml).replace(/'/g, "%27");
                             let t = document.getElementById('ia-qts-tema').value || 'Questões IA';
+                            let encMatQst = encodeURIComponent(t).replace(/'/g, "%27");
 
                             let itemHtmlQst = `
                             <div style="margin-bottom:16px;">
                                 ${cadQstHtml}
                                 <div style="margin-top:8px;">
-                                    <button class="btn-primary" style="width:auto; padding:6px 14px; font-size:0.8rem;" onclick="abrirModalEnviarCaderno(decodeURIComponent('${encPayloadQst}'), this, '${sanitizeText(t).replace(/'/g,"\\'")}', '', true)">📚 Enviar para Caderno de Erros</button>
+                                    <button class="btn-primary" style="width:auto; padding:6px 14px; font-size:0.8rem;" 
+                                        data-payload="${encPayloadQst}" data-mat="${encMatQst}" 
+                                        onclick="abrirModalEnviarCaderno(decodeURIComponent(this.getAttribute('data-payload')), this, decodeURIComponent(this.getAttribute('data-mat')), '', true)">
+                                        📚 Enviar para Caderno de Erros
+                                    </button>
                                 </div>
                             </div>`;
                             htmlQ += itemHtmlQst;
@@ -1774,16 +1786,25 @@
                     } catch(errParse) {
                         box.innerHTML = `<div class="msg msg-a" style="color:var(--brand-danger);">Erro ao estruturar as questões JSON. Tente gerar novamente.</div>`;
                     }
+                
                 } else {
                     let l = document.getElementById('load-ia'); if(l) l.remove();
                     let rawHtml = txtF.replace(/\n/g, '<br>');
                     let lHtml = sanitizeText(rawHtml);
                     
                     let chatHtmlToSave = `<div style="font-size:0.95rem; line-height:1.5; color:var(--text-main);">${lHtml}</div>`;
-                    // CORREÇÃO: Substituir aspas simples por %27
+                    
+                    // CORREÇÃO DEFINITIVA: Usar atributos data- para evitar conflito de aspas no onclick
                     let encPayloadChat = encodeURIComponent(chatHtmlToSave).replace(/'/g, "%27");
                     
-                    let finalChatHtml = `${badgeModelo}<div class="conteudo-resposta-ia">${lHtml}</div><br><br><div style="display:flex; gap:8px; flex-wrap:wrap;"><button class="btn-outline" style="width:auto; padding:6px 12px; font-size:0.8rem;" onclick="aprofundarRespostaContextual(this)">🔍 Aprofundar Resposta</button><button class="btn-primary" style="width:auto; padding:6px 12px; font-size:0.8rem;" onclick="abrirModalEnviarCaderno(decodeURIComponent('${encPayloadChat}'), this, '', '', true)">📚 Enviar Resposta para Caderno</button></div>`;
+                    let finalChatHtml = `${badgeModelo}<div class="conteudo-resposta-ia">${lHtml}</div><br><br><div style="display:flex; gap:8px; flex-wrap:wrap;">
+                        <button class="btn-outline" style="width:auto; padding:6px 12px; font-size:0.8rem;" onclick="aprofundarRespostaContextual(this)">🔍 Aprofundar Resposta</button>
+                        <button class="btn-primary" style="width:auto; padding:6px 12px; font-size:0.8rem;" 
+                            data-payload="${encPayloadChat}" 
+                            onclick="abrirModalEnviarCaderno(decodeURIComponent(this.getAttribute('data-payload')), this, '', '', true)">
+                            📚 Enviar Resposta para Caderno
+                        </button>
+                    </div>`;
                     
                     box.innerHTML += `<div class="msg msg-a" style="max-width:100%; width:100%;">${finalChatHtml}</div>`;
                     salvarFiltroHistorico('chat', p, p.length > 30 ? p.substring(0, 30) + '...' : p, finalChatHtml);
