@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR" data-theme="light">
 <head>
@@ -134,7 +133,6 @@
 
     <main class="main-content" onclick="if(window.innerWidth<=768) document.getElementById('sidebar-menu').classList.remove('open')">
         
-        <!-- Login -->
         <div id="tela-login" class="card" style="max-width:400px; margin:80px auto; text-align:center;">
             <h1 style="color:var(--brand-primary); font-size:2.8rem; margin:0 0 5px 0; font-weight:700;">PRUMA</h1>
             <p style="color:var(--text-muted); margin-bottom:30px; font-weight:500;">Painel de Estudos</p>
@@ -145,9 +143,7 @@
 
         <div id="tela-painel" class="container-interno" style="display:none;">
             
-            <!-- INÍCIO -->
             <div id="view-inicio">
-                <!-- Resumo Geral -->
                 <div class="card">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:12px;">
                         <h2 style="margin:0; border:none; padding:0;">Resumo Geral</h2>
@@ -163,7 +159,6 @@
                         <input type="date" id="rg-dt-ini" style="margin:0; flex:1; min-width:130px;"><input type="date" id="rg-dt-fim" style="margin:0; flex:1; min-width:130px;">
                         <button class="btn-success" style="width:auto; padding:8px 14px;" onclick="atualizarResumoGeral()">Filtrar</button>
                     </div>
-                    <!-- BALÕES DE RESUMO GERAL -->
                     <div class="stats-grid" style="margin-bottom:0;">
                         <div class="stat-card" style="background: linear-gradient(135deg, var(--brand-primary), var(--border-color));">
                             <span style="color: rgba(255,255,255,0.9);">Tempo Total</span>
@@ -176,9 +171,7 @@
                     </div>
                 </div>
 
-                <!-- Cronômetro, Calendário e Formulário Fixo -->
                 <div class="card" style="display:flex; flex-wrap:wrap; gap:24px; align-items:flex-start;">
-                    <!-- Coluna Esquerda -->
                     <div style="flex:1; min-width:260px; display:flex; flex-direction:column; gap:20px; max-width:100%;">
                         <div style="text-align:center; background:var(--bg-input); padding:20px; border-radius:var(--radius-md); width:100%;">
                             <div style="font-size: 0.7rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.8px;">Cronômetro</div>
@@ -192,7 +185,6 @@
                             </div>
                         </div>
 
-                        <!-- Calendário -->
                         <div style="background:var(--bg-input); padding:16px; border-radius:var(--radius-md); width:100%;">
                             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
                                 <button id="cal-btn-prev" style="background:none; border:none; cursor:pointer; font-size:1rem; color:var(--text-muted); padding:4px;" onclick="alterarMesCalendario(-1)">◀</button>
@@ -203,7 +195,6 @@
                         </div>
                     </div>
 
-                    <!-- Coluna Direita: Formulário de Sessão -->
                     <div style="flex:1.5; min-width:280px; max-width:100%;">
                         <h3 style="margin-top:0; color:var(--text-main); font-size:1.1rem; font-weight:700;" id="form-titulo-sessao">Registrar Sessão</h3>
                         <div style="margin-bottom:12px;">
@@ -234,7 +225,6 @@
                             <input type="number" id="ses-vid-ini" placeholder="Vídeo Ini" style="flex:1; min-width:80px;"><input type="number" id="ses-vid-fim" placeholder="Vídeo Fim (Opc)" style="flex:1; min-width:80px;"><input type="text" id="ses-vid-fonte" placeholder="Plataforma" style="flex:1; min-width:80px;">
                         </div>
 
-                        <!-- Caixas de Acertos e Erros -->
                         <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px; background:var(--bg-input); padding:10px; border-radius:var(--radius-sm); width:100%;">
                             <div style="flex:1; min-width:65px;"><label style="font-size:0.65rem; font-weight:700; color:var(--brand-success);">Acertos</label><input type="number" id="ses-acertos" placeholder="Ex: 10" value="" style="margin:0; padding:6px 8px; font-size:0.9rem;" onkeydown="if(event.key==='Enter'){event.preventDefault(); document.getElementById('ses-erros').focus();}"></div>
                             <div style="flex:1; min-width:65px;"><label style="font-size:0.65rem; font-weight:700; color:var(--brand-danger);">Erros</label><input type="number" id="ses-erros" placeholder="Ex: 2" value="" style="margin:0; padding:6px 8px; font-size:0.9rem;" onkeydown="if(event.key==='Enter'){event.preventDefault(); document.getElementById('ses-man-horas').focus();}"></div>
@@ -262,7 +252,6 @@
                 </div>
             </div>
 
-            <!-- MINHAS PROVAS -->
             <div id="view-provas" style="display:none;">
                 <div class="card">
                     <h2>Nova Prova / Concurso</h2>
@@ -275,7 +264,6 @@
                 <div id="lista-provas-div" class="stats-grid"></div>
             </div>
 
-            <!-- MATÉRIAS -->
             <div id="view-materias" style="display:none;">
                 <div class="card">
                     <h2>Criar Matéria / Tópico</h2>
@@ -292,7 +280,6 @@
                 <div id="lista-materias-cadastradas"></div>
             </div>
 
-            <!-- CADERNO DE ERROS -->
             <div id="view-caderno" style="display:none;">
                 <div class="card">
                     <h2>Novo Caderno / Anotação</h2>
@@ -305,15 +292,14 @@
                     <button class="btn-primary" onclick="salvarErro()">Salvar no Caderno</button>
                 </div>
                 
-                <div style="display:flex; justify-content:space-between; align-items:center; margin: 24px 0 16px 0; flex-wrap:wrap; gap:12px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border-color); padding-bottom:12px; margin: 24px 0 16px 0; flex-wrap:wrap; gap:10px;">
                     <h2 style="margin:0; border:none; padding:0;">Meus Cadernos</h2>
-                    <input type="text" id="busca-caderno" placeholder="🔍 Pesquisar cadernos, sub-cadernos ou anotações..." oninput="renderizarCadernos()" style="margin:0; padding:10px 14px; flex:1; min-width:200px; max-width:400px; border-radius:var(--radius-lg);">
+                    <input type="text" id="busca-caderno" placeholder="🔍 Filtrar cadernos, tópicos ou anotações..." oninput="renderizarCadernos()" style="width:auto; flex:1; min-width:220px; max-width:320px; margin:0; padding:8px 12px; font-size:0.85rem; border-radius:var(--radius-lg);">
                 </div>
                 
                 <div id="lista-cadernos-div"></div>
             </div>
 
-            <!-- ESTATÍSTICAS -->
             <div id="view-estatisticas" style="display:none;">
                 <div class="card">
                     <h2>Métricas e Gráficos</h2>
@@ -362,7 +348,6 @@
                 </div>
             </div>
 
-            <!-- PRUMA IA -->
             <div id="view-pruma" style="display:none;">
                 <div class="card" style="padding:0; overflow:hidden; border:2px solid var(--brand-primary);">
                     <div style="background:var(--brand-primary); padding:20px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
@@ -377,13 +362,11 @@
                             <button class="btn-outline" style="flex:1; min-width:140px;" onclick="mudarSubIa('edital', this)">📚 Edital Inteligente</button>
                         </div>
 
-                        <!-- Histórico dos últimos 5 filtros por aba -->
                         <div id="historico-filtros-ia-container" style="margin-bottom:16px; background:var(--bg-input); padding:12px; border-radius:var(--radius-sm); display:none;">
                             <label style="font-size:0.75rem; font-weight:700; color:var(--text-muted); display:block; margin-bottom:6px;">📌 ÚLTIMAS 5 CONSULTAS SALVAS (CLIQUE PARA REEXIBIR)</label>
                             <div id="lista-ultimos-filtros-ia" style="display:flex; gap:8px; flex-wrap:wrap;"></div>
                         </div>
 
-                        <!-- Sub: Chat -->
                         <div id="subia-chat">
                             <div class="chat-box" id="box-chat">
                                 <div class="msg msg-a">🛡️ PRUMA IA ativada. Como posso te ajudar hoje?</div>
@@ -391,13 +374,12 @@
                             <div style="display:flex; gap:12px; flex-wrap:wrap; align-items:flex-end;">
                                 <textarea id="inp-chat" placeholder="Digite sua dúvida..." rows="2" style="margin:0; resize:none; flex:1; min-width:200px;"></textarea>
                                 <div style="display:flex; flex-direction:column; gap:8px;">
-                                    <label style="display:flex; align-items:center; gap:6px; font-size:0.8rem; font-weight:600; cursor:pointer;" title="Faz uma busca ocula em múltiplos proxies para dados atualizados."><input type="checkbox" id="chk-busca-web"> 🌐 Buscar Web</label>
+                                    <label style="display:flex; align-items:center; gap:6px; font-size:0.8rem; font-weight:600; cursor:pointer;" title="Faz uma busca em múltiplos proxies para dados atualizados."><input type="checkbox" id="chk-busca-web"> 🌐 Buscar Web</label>
                                     <button class="btn-primary" onclick="executarIA('chat')" style="width:120px;">Enviar</button>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Sub: Simulador -->
                         <div id="subia-simulador" style="display:none;">
                             <div style="display:flex; gap:16px; margin-bottom:16px; flex-wrap:wrap;">
                                 <div style="flex:1; min-width:120px;">
@@ -418,7 +400,7 @@
                                 </div>
                             </div>
                             <div style="margin-bottom:16px; background:var(--bg-input); padding:14px; border-radius:var(--radius-sm);">
-                                <label style="font-size:0.75rem; font-weight:700; color:var(--text-muted); display:block; margin-bottom:8px;">NÍVEL DE DIFICULDADE (Selecione um, dois ou todos)</label>
+                                <label style="font-size:0.75rem; font-weight:700; color:var(--text-muted); display:block; margin-bottom:8px;">NÍVEL DE DIFICULDADE</label>
                                 <div style="display:flex; gap:16px; flex-wrap:wrap;">
                                     <label style="display:flex; align-items:center; gap:6px; cursor:pointer; font-weight:500;"><input type="checkbox" class="chk-nivel-q" value="Fácil" checked> Fácil</label>
                                     <label style="display:flex; align-items:center; gap:6px; cursor:pointer; font-weight:500;"><input type="checkbox" class="chk-nivel-q" value="Médio" checked> Médio</label>
@@ -429,9 +411,8 @@
                             <div class="chat-box" id="box-qts" style="margin-top:16px; display:none; height:auto; min-height:200px;"></div>
                         </div>
 
-                        <!-- Sub: Flashcards -->
                         <div id="subia-flashcards" style="display:none;">
-                            <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:16px;">⚡ Escolha abaixo a quantidade, matéria (opcional), assunto e/ou fonte (opcional) para gerar seus flashcards cirúrgicos.</p>
+                            <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:16px;">⚡ Escolha abaixo a quantidade, matéria e assunto para gerar seus flashcards cirúrgicos.</p>
                             <div style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:16px; background:var(--bg-input); padding:16px; border-radius:var(--radius-sm);">
                                 <div style="width:110px; min-width:110px;">
                                     <label style="font-size:0.75rem; font-weight:700; color:var(--text-muted); display:block; margin-bottom:4px;">QUANTIDADE</label>
@@ -447,7 +428,7 @@
                                 </div>
                             </div>
                             <div style="margin-bottom:16px; background:var(--bg-input); padding:14px; border-radius:var(--radius-sm);">
-                                <label style="font-size:0.75rem; font-weight:700; color:var(--text-muted); display:block; margin-bottom:8px;">NÍVEL DE DIFICULDADE (Selecione um, dois ou todos)</label>
+                                <label style="font-size:0.75rem; font-weight:700; color:var(--text-muted); display:block; margin-bottom:8px;">NÍVEL DE DIFICULDADE</label>
                                 <div style="display:flex; gap:16px; flex-wrap:wrap;">
                                     <label style="display:flex; align-items:center; gap:6px; cursor:pointer; font-weight:500;"><input type="checkbox" class="chk-nivel-fc" value="Fácil" checked> Fácil</label>
                                     <label style="display:flex; align-items:center; gap:6px; cursor:pointer; font-weight:500;"><input type="checkbox" class="chk-nivel-fc" value="Médio" checked> Médio</label>
@@ -458,7 +439,6 @@
                             <div class="chat-box" id="box-fc" style="margin-top:16px; display:none; background:transparent; border:none; padding:0; height:auto; overflow:visible;"></div>
                         </div>
 
-                        <!-- Sub: Edital -->
                         <div id="subia-edital" style="display:none;">
                             <select id="edital-ia-prova" style="margin-bottom:16px;"><option value="">Vincular a qual Prova? (Opcional)</option></select>
                             <textarea id="edital-texto" placeholder="Cole o texto gigante do edital aqui..." rows="6"></textarea>
@@ -468,7 +448,6 @@
                 </div>
             </div>
 
-            <!-- BIBLIOTECA -->
             <div id="view-biblioteca" style="display:none;">
                 <div class="card">
                     <h2>Nuvem PRUMA (Fontes)</h2>
@@ -491,7 +470,6 @@
                 <div id="lista-biblioteca"></div>
             </div>
 
-            <!-- MINHA CONTA -->
             <div id="view-conta" style="display:none;">
                 <div class="card" style="max-width:500px; margin:0 auto;">
                     <h2>Minha Conta</h2>
@@ -516,7 +494,6 @@
         </div>
     </main>
 
-    <!-- Modais -->
     <div id="modal-apikey" class="modal">
         <div class="modal-content" style="max-width:560px;">
             <button class="modal-close" style="position:absolute; top:16px; right:16px; background:transparent; border:none; font-size:1.5rem; cursor:pointer; color:var(--brand-danger); font-weight:700; z-index:10;" onclick="document.getElementById('modal-apikey').style.display='none'">✖</button>
@@ -524,15 +501,14 @@
                 <div style="font-size:2.5rem; background:var(--bg-input); padding:10px; border-radius:50%; line-height:1; flex-shrink:0;">👨‍💻</div>
                 <div style="background:var(--bg-input); padding:16px; border-radius:var(--radius-md); border:1px solid var(--border-color); flex:1; position:relative; font-size:0.95rem; line-height:1.4;">
                     <strong>Oi! Sou a PRUMA IA! 🤖✨</strong><br><br>
-                    Deixa eu te explicar de um jeito bem facinho como criar sua chave secreta (API Key) para eu poder funcionar para você:<br><br>
-                    1️⃣ Clique no link abaixo para ir direto para o site oficial da Google (Google Cloud / Google AI Studio).<br>
-                    2️⃣ Entre com sua conta Google e clique no botão para criar uma nova chave (Get API Key).<br>
-                    3️⃣ Copie essa chave e cole aqui embaixo!<br><br>
-                    💡 <em>Dica de ouro:</em> Você só precisa fazer isso <strong>uma única vez</strong> neste aparelho. Depois disso, ela fica salvadinha aqui para sempre!
+                    Deixa eu te explicar de um jeito bem facinho como criar sua chave secreta (API Key):<br><br>
+                    1️⃣ Clique no link abaixo para ir direto para o Google AI Studio.<br>
+                    2️⃣ Entre com sua conta Google e clique em criar chave (Get API Key).<br>
+                    3️⃣ Copie e cole aqui embaixo!
                 </div>
             </div>
             <div style="margin-bottom:16px; text-align:center;">
-                <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color:var(--brand-primary); font-weight:700; text-decoration:none; font-size:1rem;">🌐 Clique aqui para abrir o Google Cloud e pegar sua API Key</a>
+                <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color:var(--brand-primary); font-weight:700; text-decoration:none; font-size:1rem;">🌐 Clique aqui para abrir o Google AI Studio e pegar sua API Key</a>
             </div>
             <input type="password" id="input-api-key" placeholder="Cole sua API Key aqui...">
             <button class="btn-primary" onclick="salvarApiKey()">Salvar Chave</button>
@@ -543,14 +519,13 @@
         <div class="modal-content">
             <button class="modal-close" style="position:absolute; top:16px; right:16px; background:transparent; border:none; font-size:1.5rem; cursor:pointer; color:var(--brand-danger); font-weight:700; z-index:10;" onclick="document.getElementById('modal-juntar').style.display='none'">✖</button>
             <h2 style="margin-top:0;">🔗 Juntar Tópicos</h2>
-            <p>Juntar o tópico <strong id="lbl-topico-origem" style="color:var(--brand-primary)"></strong> com outro (Resultado: A. B.).</p>
+            <p>Juntar o tópico <strong id="lbl-topico-origem" style="color:var(--brand-primary)"></strong> com outro.</p>
             <select id="sel-topico-destino" style="margin-bottom:16px;"></select>
             <input type="hidden" id="hid-mat-id"><input type="hidden" id="hid-top-origem">
-            <button class="btn-primary" onclick="confirmarJuncao()">Confirmar Junção (A. B.)</button>
+            <button class="btn-primary" onclick="confirmarJuncao()">Confirmar Junção</button>
         </div>
     </div>
 
-    <!-- Modal: Enviar para Caderno -->
     <div id="modal-enviar-caderno" class="modal">
         <div class="modal-content">
             <button class="modal-close" style="position:absolute; top:16px; right:16px; background:transparent; border:none; font-size:1.5rem; cursor:pointer; color:var(--brand-danger); font-weight:700; z-index:10;" onclick="document.getElementById('modal-enviar-caderno').style.display='none'">✖</button>
@@ -570,7 +545,6 @@
         </div>
     </div>
 
-    <!-- Modal: Mover Caderno/Anotação -->
     <div id="modal-mover-caderno" class="modal">
         <div class="modal-content">
             <button class="modal-close" style="position:absolute; top:16px; right:16px; background:transparent; border:none; font-size:1.5rem; cursor:pointer; color:var(--brand-danger); font-weight:700; z-index:10;" onclick="document.getElementById('modal-mover-caderno').style.display='none'">✖</button>
@@ -1021,7 +995,7 @@
             if(!Array.isArray(dbData.materias)) dbData.materias = Object.values(dbData.materias || {});
             let existingSameName = dbData.materias.filter(m => m.nome.toLowerCase() === n.toLowerCase());
             if(existingSameName.length > 0) {
-                let apenasCor = confirm(`A matéria "${n}" já existe. Deseja alterar somente a cor de todas as pastas com este nome (OK) ou criar uma nova pasta/vincular (Cancelar)?`);
+                let apenasCor = confirm(`A matéria "${n}" já existe. Deseja alterar somente a cor (OK) ou criar nova pasta/vincular (Cancelar)?`);
                 if(apenasCor) { dbData.materias.forEach(m => { if(m.nome.toLowerCase() === n.toLowerCase()) { m.cor = corAtualMateria; if(t && (!m.topicos || !m.topicos.includes(t))) { if(!Array.isArray(m.topicos)) m.topicos = Object.values(m.topicos || {}); m.topicos.push(t); } } }); refDb.child('materias').set(dbData.materias); document.getElementById('mat-topico').value = ''; alert("Cor atualizada!"); return; }
             }
             let idx = dbData.materias.findIndex(m => m.nome.toLowerCase() === n.toLowerCase() && m.provaId === pId);
@@ -1087,7 +1061,6 @@
             let selP = [document.getElementById('mat-prova'), document.getElementById('edital-ia-prova')]; selP.forEach(s => { if(s) { s.innerHTML = '<option value="">Vincular a uma Prova? (Opcional)</option>'; if(!Array.isArray(dbData.provas)) dbData.provas = Object.values(dbData.provas || {}); dbData.provas.forEach(p => s.innerHTML += `<option value="${p.id}">${p.nome}</option>`); } });
         }
 
-        // Funções para Envio/Mover Caderno
         function salvarErro() {
             let m = sanitizeText(document.getElementById('err-mat').value) || 'Geral', t = sanitizeText(document.getElementById('err-top').value) || 'Geral', txt = sanitizeText(document.getElementById('err-texto').value) || '(Sem anotação)';
             dbData.cadernos.push({id: gerarId(), materia: m, topico: t, texto: txt, isHtml: false, timestamp: Date.now(), data: new Date().toLocaleDateString()}); refDb.child('cadernos').set(dbData.cadernos);
@@ -1176,7 +1149,8 @@
                 arrCad = arrCad.filter(c => 
                     (c.materia && c.materia.toLowerCase().includes(termo)) || 
                     (c.topico && c.topico.toLowerCase().includes(termo)) || 
-                    (c.texto && c.texto.toLowerCase().includes(termo))
+                    (c.texto && c.texto.toLowerCase().includes(termo)) ||
+                    (c.data && c.data.toLowerCase().includes(termo))
                 );
             }
 
@@ -1189,9 +1163,11 @@
 
             let agr = {};
             arrCad.forEach(c => { 
-                if(!agr[c.materia]) agr[c.materia] = {}; 
-                if(!agr[c.materia][c.topico]) agr[c.materia][c.topico] = []; 
-                agr[c.materia][c.topico].push(c); 
+                let mName = c.materia || 'Geral';
+                let tName = c.topico || 'Geral';
+                if(!agr[mName]) agr[mName] = {}; 
+                if(!agr[mName][tName]) agr[mName][tName] = []; 
+                agr[mName][tName].push(c); 
             });
             
             let cIndex = 0;
@@ -1205,35 +1181,36 @@
                     let htmlT = '';
                     
                     agr[m][t].forEach(i => { 
-                        let textoCompleto = i.texto;
+                        let textoCompleto = i.texto || '';
                         let isH = i.isHtml === true;
                         let textoExibido = isH ? renderHtmlSafely(textoCompleto) : sanitizeText(textoCompleto);
-                        let isLongo = !isH && textoCompleto.length > 180;
-                        if (isLongo) textoExibido = sanitizeText(textoCompleto.substring(0, 180)) + '...';
+                        let isLongo = !isH && textoCompleto.length > 250;
+                        if (isLongo) textoExibido = sanitizeText(textoCompleto.substring(0, 250)) + '...';
 
-                        htmlT += `<div style="background:var(--bg-input); padding:10px; border-radius:var(--radius-sm); margin-bottom:6px; display:flex; justify-content:space-between; align-items:flex-start; gap:8px;">
+                        let encText = encodeURIComponent(textoCompleto).replace(/'/g, "%27");
+
+                        htmlT += `<div style="padding:10px 0; border-bottom:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:flex-start; gap:8px;">
                             <div style="font-size:0.95rem; min-width:0; flex:1; word-break:break-word;">
-                                <div class="cad-txt-span" data-full="${encodeURIComponent(textoCompleto).replace(/'/g, "%27")}" data-ishtml="${isH}">${textoExibido}</div>
-                                ${isLongo ? `<button style="background:none;border:none;color:var(--brand-primary);cursor:pointer;font-weight:700;font-size:0.8rem;display:block;margin-top:4px;" onclick="let span=this.previousElementSibling; if(span.textContent.endsWith('...')){ let full = decodeURIComponent(span.getAttribute('data-full')); span.innerHTML = span.getAttribute('data-ishtml') === 'true' ? DOMPurify.sanitize(full) : sanitizeText(full); this.textContent='(Mostrar menos)'; }else{ span.textContent=sanitizeText(decodeURIComponent(span.getAttribute('data-full')).substring(0,180))+'...'; this.textContent='(Ler mais)'; }">Ler mais</button>` : ''}
-                                <span style="font-size:0.75rem; color:var(--text-muted); display:block; margin-top:8px;">${i.data}</span>
+                                <div class="cad-txt-span" data-full="${encText}" data-ishtml="${isH}">${textoExibido}</div>
+                                ${isLongo ? `<button style="background:none;border:none;color:var(--brand-primary);cursor:pointer;font-weight:700;font-size:0.8rem;display:block;margin-top:6px;padding:0;" onclick="let span=this.previousElementSibling; if(span.textContent.endsWith('...')){ let full = decodeURIComponent(span.getAttribute('data-full')); span.innerHTML = span.getAttribute('data-ishtml') === 'true' ? DOMPurify.sanitize(full) : sanitizeText(full); this.textContent='(Mostrar menos)'; }else{ span.textContent=sanitizeText(decodeURIComponent(span.getAttribute('data-full')).substring(0,250))+'...'; this.textContent='(Ler mais)'; }">Ler mais</button>` : ''}
+                                <span style="font-size:0.75rem; color:var(--text-muted); display:block; margin-top:8px;">📅 ${i.data || ''}</span>
                             </div>
-                            <div style="display:flex; flex-direction:column; gap:8px;">
-                                <button class="btn-outline" style="padding:4px 8px; font-size:1.1rem; border:none;" title="Mover" onclick="abrirModalMover('${i.id}', null, null, '${i.materia}', '${i.topico}')">🔄</button>
-                                <button class="btn-x-vermelho" style="flex-shrink:0;" title="Excluir" onclick="if(confirm('Excluir?')){ dbData.cadernos=dbData.cadernos.filter(x=>x.id!=='${i.id}'); refDb.child('cadernos').set(dbData.cadernos); }">✖</button>
+                            <div style="display:flex; align-items:center; gap:8px; flex-shrink:0;">
+                                <button style="background:transparent;border:none;cursor:pointer;font-size:1.1rem;padding:0;" title="Mover Anotação" onclick="abrirModalMover('${i.id}', null, null, '${sanitizeText(i.materia).replace(/'/g,"\\'")}', '${sanitizeText(i.topico).replace(/'/g,"\\'")}')">🔄</button>
+                                <button class="btn-x-vermelho" style="padding:0;font-size:1.1rem;" title="Excluir Anotação" onclick="if(confirm('Excluir?')){ dbData.cadernos=dbData.cadernos.filter(x=>x.id!=='${i.id}'); refDb.child('cadernos').set(dbData.cadernos); }">✖</button>
                             </div>
                         </div>`; 
                     }); 
                     
                     htmlM += `<div class="pasta-header sub-caderno-header ${termo ? 'aberta' : ''}" data-subcaderno-folder="${subFolderKey}" onclick="this.nextElementSibling.classList.toggle('aberta')" style="background:var(--bg-body); border-left:3px solid var(--brand-warning); margin-bottom:4px; padding:10px 14px; border-radius:var(--radius-sm);">
-                        <span style="font-weight:700; color:var(--text-main); font-size:0.9rem; flex:1; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">📂 ${sanitizeText(t)} (${agr[m][t].length})</span>
-                        <button class="btn-outline" style="background:transparent; border:none; padding:0 8px; font-size:1.1rem; flex-shrink:0;" title="Mover Sub-caderno inteiro" onclick="event.stopPropagation(); abrirModalMover(null, '${sanitizeText(m).replace(/'/g,"\\'")}', '${sanitizeText(t).replace(/'/g,"\\'")}', '${sanitizeText(m).replace(/'/g,"\\'")}', '${sanitizeText(t).replace(/'/g,"\\'")}')">🔄</button>
+                        <span style="font-weight:600; color:var(--text-main); font-size:0.9rem; flex:1; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">📂 ${sanitizeText(t)} (${agr[m][t].length})</span>
                     </div>
                     <div class="pasta-body sub-caderno-body ${termo ? 'aberta' : ''}" style="border-left: 2px solid var(--border-color); margin-left: 14px; margin-bottom:12px; padding-left:12px;">
                         ${htmlT}
                     </div>`;
                 }
                 
-                div.innerHTML += `<div class="pasta-header" data-caderno-folder="${folderKey}" onclick="this.nextElementSibling.classList.toggle('aberta')"><span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1; min-width:0;" title="${sanitizeText(m)}">📓 Caderno Principal: ${sanitizeText(m)}</span></div><div class="pasta-body ${termo ? 'aberta' : ''}" style="padding-top:8px;">${htmlM}</div>`;
+                div.innerHTML += `<div class="pasta-header" data-caderno-folder="${folderKey}" onclick="this.nextElementSibling.classList.toggle('aberta')"><span style="font-weight:700; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1; min-width:0;" title="${sanitizeText(m)}">📓 Caderno: ${sanitizeText(m)}</span></div><div class="pasta-body ${termo ? 'aberta' : ''}" style="padding-top:8px;">${htmlM}</div>`;
             }
             
             if(!termo) {
@@ -1284,38 +1261,24 @@
         }
 
         async function salvarLink() { 
-            let url = document.getElementById('bib-link').value.trim(); 
-            if(!url) return; 
-            
-            let btn = event.currentTarget; 
-            let tx = btn.textContent; 
-            btn.disabled = true; 
-            btn.textContent = "Lendo Site... ⏳"; 
-            
+            let url = document.getElementById('bib-link').value.trim(); if(!url) return; 
+            let btn = event.currentTarget; let tx = btn.textContent; btn.disabled = true; btn.textContent = "Lendo Site... ⏳"; 
             let mat = sanitizeText(document.getElementById('bib-mat-link').value||'Geral');
-            
             let proxyUrl1 = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
             let proxyUrl2 = `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`;
             let htmlObtido = null;
 
             try {
                 let res = await fetch(proxyUrl1);
-                if (res.ok) {
-                    let data = await res.json();
-                    htmlObtido = data.contents;
-                } else { throw new Error("Falha Proxy 1"); }
+                if (res.ok) { let data = await res.json(); htmlObtido = data.contents; } else { throw new Error("Falha Proxy 1"); }
             } catch(e) {
                 try {
                     let res2 = await fetch(proxyUrl2);
                     if (res2.ok) htmlObtido = await res2.text();
                     else throw new Error("Falha Proxy 2");
                 } catch(e2) {
-                    refDb.child('biblioteca').push({ 
-                        id: gerarId(), nome: "🌐 " + new URL(url).hostname, tipo: 'LINK', url: url, 
-                        texto: "Conteúdo Web referenciado (Leitura bloqueada): " + url, 
-                        materia: mat, data: new Date().toLocaleDateString() 
-                    }); 
-                    alert("Aviso: O site bloqueou a leitura em tempo real. O link foi salvo como referência na Nuvem.");
+                    refDb.child('biblioteca').push({ id: gerarId(), nome: "🌐 " + new URL(url).hostname, tipo: 'LINK', url: url, texto: "Conteúdo Web referenciado: " + url, materia: mat, data: new Date().toLocaleDateString() }); 
+                    alert("Aviso: O site bloqueou a leitura em tempo real. Salvo como referência.");
                     document.getElementById('bib-link').value = ''; btn.textContent = tx; btn.disabled = false;
                     return;
                 }
@@ -1323,36 +1286,23 @@
 
             try {
                 let doc = new DOMParser().parseFromString(htmlObtido, "text/html");
-                let inuteis = doc.querySelectorAll('script, style, nav, footer, header, aside, iframe, noscript, svg');
-                inuteis.forEach(el => el.remove());
-                
+                doc.querySelectorAll('script, style, nav, footer, header, aside, iframe, noscript, svg').forEach(el => el.remove());
                 let textoExtraido = doc.body ? doc.body.innerText.replace(/\s+/g, ' ').trim() : "";
                 let tituloSite = doc.title || new URL(url).hostname;
-                
                 if(!textoExtraido) throw new Error("Vazio");
 
-                refDb.child('biblioteca').push({ 
-                    id: gerarId(), nome: "🌐 " + tituloSite.substring(0, 40), tipo: 'LINK', url: url, 
-                    texto: `[CONTEÚDO LIDO DA URL: ${url}]\n\n${textoExtraido.substring(0, 15000)}`, 
-                    materia: mat, data: new Date().toLocaleDateString() 
-                }); 
-                alert("Site lido com sucesso e salvo na Nuvem!"); 
+                refDb.child('biblioteca').push({ id: gerarId(), nome: "🌐 " + tituloSite.substring(0, 40), tipo: 'LINK', url: url, texto: `[URL: ${url}]\n\n${textoExtraido.substring(0, 15000)}`, materia: mat, data: new Date().toLocaleDateString() }); 
+                alert("Site lido com sucesso!"); 
             } catch(e) {
-                refDb.child('biblioteca').push({ 
-                    id: gerarId(), nome: "🌐 " + new URL(url).hostname, tipo: 'LINK', url: url, 
-                    texto: "Conteúdo Web referenciado (Falha no processamento): " + url, 
-                    materia: mat, data: new Date().toLocaleDateString() 
-                }); 
-                alert("O site foi salvo, mas não conseguimos extrair o texto de forma limpa.");
+                refDb.child('biblioteca').push({ id: gerarId(), nome: "🌐 " + new URL(url).hostname, tipo: 'LINK', url: url, texto: "Referência: " + url, materia: mat, data: new Date().toLocaleDateString() }); 
+                alert("Site salvo, mas texto não extraído.");
             } finally {
-                document.getElementById('bib-link').value = ''; 
-                btn.textContent = tx; btn.disabled = false;
+                document.getElementById('bib-link').value = ''; btn.textContent = tx; btn.disabled = false;
             }
         }
         
         function renderizarBiblioteca() { 
-            let div = document.getElementById('lista-biblioteca'); 
-            div.innerHTML = ''; 
+            let div = document.getElementById('lista-biblioteca'); div.innerHTML = ''; 
             dbData.biblioteca.forEach(b => { 
                 div.innerHTML += `<div class="registro-curto" title="${sanitizeText(b.nome)}"><div class="info"><strong title="${sanitizeText(b.nome)}">${b.tipo==='LINK'?'🌐':'📄'} ${b.nome}</strong><span>${b.materia} | ${b.data}</span></div><button class="btn-x-vermelho" onclick="if(confirm('Excluir?')) { refDb.child('biblioteca/${b.fbKey}').remove(); if('${b.refPath||''}') try{ storage.ref('${b.refPath}').delete(); }catch(e){} }">✖</button></div>`; 
             }); 
@@ -1372,18 +1322,12 @@
             if(!container || !lista) return;
 
             let filtrados = dbData.iaFiltrosHistorico.filter(item => item.tipo === subIaAtual);
-            if(filtrados.length === 0) {
-                container.style.display = 'none';
-                return;
-            }
+            if(filtrados.length === 0) { container.style.display = 'none'; return; }
             container.style.display = 'block';
             lista.innerHTML = '';
-            filtrados.forEach((item, index) => {
+            filtrados.forEach((item) => {
                 let btn = document.createElement('button');
-                btn.className = 'btn-outline';
-                btn.style.width = 'auto';
-                btn.style.padding = '6px 12px';
-                btn.style.fontSize = '0.8rem';
+                btn.className = 'btn-outline'; btn.style.width = 'auto'; btn.style.padding = '6px 12px'; btn.style.fontSize = '0.8rem';
                 btn.textContent = `📌 ${item.resumo || item.params}`;
                 btn.onclick = () => carregarRespostaSalvaHistorico(item);
                 lista.appendChild(btn);
@@ -1408,60 +1352,39 @@
                 box.scrollTop = box.scrollHeight;
             } else if(item.tipo === 'questoes') {
                 document.getElementById('ia-qts-tema').value = item.params.tema || '';
-                let box = document.getElementById('box-qts');
-                box.style.display = 'block';
+                let box = document.getElementById('box-qts'); box.style.display = 'block';
                 box.innerHTML = `<div class="msg msg-a" style="max-width:100%; width:100%;">${item.respostaHtml}</div>`;
                 box.scrollTop = box.scrollHeight;
             } else if(item.tipo === 'flashcards') {
                 document.getElementById('fc-mat').value = item.params.mat || '';
                 document.getElementById('fc-top').value = item.params.top || '';
-                let box = document.getElementById('box-fc');
-                box.style.display = 'block';
+                let box = document.getElementById('box-fc'); box.style.display = 'block';
                 box.innerHTML = item.respostaHtml;
             }
         }
 
         function extrairContextoSemantico(query) {
             if (!dbData.biblioteca || dbData.biblioteca.length === 0) return "";
-            
             let stopWords = new Set(['o','a','os','as','um','uma','de','do','da','dos','das','em','no','na','nos','nas','por','para','com','como','que','e','ou','se']);
-            let tokensQuery = query.toLowerCase()
-                .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
-                .replace(/[^\w\s]/gi, ' ')
-                .split(/\s+/)
-                .filter(w => w.length > 2 && !stopWords.has(w));
-
+            let tokensQuery = query.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^\w\s]/gi, ' ').split(/\s+/).filter(w => w.length > 2 && !stopWords.has(w));
             if (tokensQuery.length === 0) return "";
 
             let blocosAvaliados = [];
-
             dbData.biblioteca.forEach(doc => {
                 if (!doc.texto) return;
                 let chunks = doc.texto.split(/(?:\r?\n){2,}|(?:\.\s+)/);
-                
                 chunks.forEach(chunk => {
                     let chunkLimpo = chunk.trim();
                     if (chunkLimpo.length < 50) return;
-                    
                     let chunkNorm = chunkLimpo.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-                    let matchesCount = 0;
-                    let denseScore = 0;
-
+                    let matchesCount = 0, denseScore = 0;
                     tokensQuery.forEach(token => {
                         let regex = new RegExp(`\\b${token}\\b`, 'g');
                         let matches = chunkNorm.match(regex);
-                        if (matches) {
-                            matchesCount++;
-                            denseScore += matches.length;
-                        }
+                        if (matches) { matchesCount++; denseScore += matches.length; }
                     });
-
                     if (matchesCount >= Math.max(1, Math.floor(tokensQuery.length * 0.4))) {
-                        blocosAvaliados.push({
-                            fonte: doc.nome,
-                            texto: chunkLimpo,
-                            score: denseScore + matchesCount * 2
-                        });
+                        blocosAvaliados.push({ fonte: doc.nome, texto: chunkLimpo, score: denseScore + matchesCount * 2 });
                     }
                 });
             });
@@ -1469,352 +1392,147 @@
             blocosAvaliados.sort((a, b) => b.score - a.score);
             let selecionados = blocosAvaliados.slice(0, 3);
             let contextoFinal = "";
-
             if (selecionados.length > 0) {
-                contextoFinal += "\n\n[TRECHO(S) RELEVANTE(S) ENCONTRADO(S) NA NUVEM PRUMA]:\n";
-                selecionados.forEach((b) => {
-                    contextoFinal += `\n--- Fonte [${b.fonte}] ---\n${b.texto}\n`;
-                });
+                contextoFinal += "\n\n[TRECHO(S) RELEVANTE(S) NA NUVEM PRUMA]:\n";
+                selecionados.forEach((b) => { contextoFinal += `\n--- Fonte [${b.fonte}] ---\n${b.texto}\n`; });
             }
-
             return contextoFinal;
         }
 
-        function obterPromptDoSistema(tipo, promptUsuario = "", isFacil = false) {
+        function obterPromptDoSistema(tipo, promptUsuario = "") {
             let pL = promptUsuario.toLowerCase();
-            let bancaDetectada = "";
-            if(pL.includes('cebraspe') || pL.includes('cespe')) bancaDetectada = "CEBRASPE";
-            else if(pL.includes('fgv')) bancaDetectada = "FGV";
-            else if(pL.includes('fcc')) bancaDetectada = "FCC";
-            else if(pL.includes('vunesp')) bancaDetectada = "VUNESP";
-
-            let bancaInstrucao = bancaDetectada ? `\n\nBANCA: ${bancaDetectada}. Seja extremamente objetivo quanto aos critérios dela, sem enrolação.` : "";
-
-            const instrucaoFormatacao = `\n\nDIRETRIZES RIGOROSAS DE RESPOSTA:
-1. VÁ DIRETO AO PONTO. Sem introduções longas, sem floreios, sem saudações desnecessárias.
-2. Seja objetivo e cirúrgico. Concentre seu esforço analítico exclusivamente na resolução do problema ou dúvida.
-3. Descarte tudo que seja irrelevante para a resposta direta.
-4. NUNCA use asteriscos triplos (###), asteriscos duplos (***) ou traços excessivos (---).
-5. Emojis e setas DEVEM iniciar SEMPRE novas linhas. Mantenha o texto limpo e legível.`;
-
-            const basePersona = "Você é a PRUMA IA, mentora jurídica de altíssimo rigor para concursos públicos. REGRA ANTIALUCINAÇÃO: É PROIBIDO inventar artigos ou prazos." + instrucaoFormatacao;
-            
-            const prompts = {
-                chat: `${basePersona} Responda com clareza objetiva e jurídica.${bancaInstrucao}`,
-                questoes: `${basePersona} Crie questões inéditas com rigor técnico, indicando o nível no início de cada linha, e gabarito comentado objetivo.${bancaInstrucao}`,
-                flashcards: `${basePersona} Crie flashcards cirúrgicos de alta retenção no formato estrito solicitado.`
-            };
-            return prompts[tipo] || basePersona;
+            let bancaDetectada = pL.includes('cebraspe') || pL.includes('cespe') ? "CEBRASPE" : (pL.includes('fgv') ? "FGV" : (pL.includes('fcc') ? "FCC" : (pL.includes('vunesp') ? "VUNESP" : "")));
+            let bancaInstrucao = bancaDetectada ? `\n\nBANCA: ${bancaDetectada}. Seja objetivo.` : "";
+            const instrucaoFormatacao = `\n\nDIRETRIZES: 1. VÁ DIRETO AO PONTO. 2. Seja objetivo. 3. NUNCA use asteriscos triplos (###) ou duplos (***). 4. Emojis sempre iniciam novas linhas.`;
+            const basePersona = "Você é a PRUMA IA, mentora jurídica." + instrucaoFormatacao;
+            return { chat: `${basePersona}${bancaInstrucao}`, questoes: `${basePersona}${bancaInstrucao}`, flashcards: basePersona }[tipo] || basePersona;
         }
 
         function aprofundarRespostaContextual(btn) {
-            let msgBalão = btn.closest('.msg');
-            if (!msgBalão) return alert("Não foi possível localizar o balão da resposta.");
-            let conteudoDiv = msgBalão.querySelector('.conteudo-resposta-ia');
-            let textoDoBalao = conteudoDiv ? conteudoDiv.innerText : msgBalão.innerText;
-            
-            let promptAprofundado = `Atue como um professor especialista. Aprofunde a seguinte explicação anterior:\n\n"${textoDoBalao}"\n\nForneça um aprofundamento técnico direto e fundamentado em jurisprudência.`;
-            executarIA('chat', promptAprofundado);
+            let msgBalao = btn.closest('.msg'); if (!msgBalao) return;
+            let conteudoDiv = msgBalao.querySelector('.conteudo-resposta-ia');
+            let textoDoBalao = conteudoDiv ? conteudoDiv.innerText : msgBalao.innerText;
+            executarIA('chat', `Atue como professor. Aprofunde a explicação anterior:\n\n"${textoDoBalao}"`);
         }
 
         async function buscarNaWeb(query) {
             let url = `https://html.duckduckgo.com/html/?q=${encodeURIComponent(query)}`;
-            let proxies = [
-                `https://corsproxy.io/?${encodeURIComponent(url)}`,
-                `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`,
-                `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`
-            ];
-            
+            let proxies = [`https://corsproxy.io/?${encodeURIComponent(url)}`, `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`];
             for(let proxy of proxies) {
                 try {
-                    const controller = new AbortController();
-                    const timeoutId = setTimeout(() => controller.abort(), 6000); 
-                    
-                    let res = await fetch(proxy, { signal: controller.signal });
-                    clearTimeout(timeoutId);
-                    
-                    if(!res.ok) continue;
+                    let res = await fetch(proxy); if(!res.ok) continue;
                     let text = await res.text();
                     let html = proxy.includes('allorigins') ? JSON.parse(text).contents : text;
-                    
                     let doc = new DOMParser().parseFromString(html, "text/html");
                     let results = doc.querySelectorAll('.result__snippet');
-                    
                     let snippets = [];
-                    for(let i=0; i<Math.min(4, results.length); i++) {
-                        snippets.push("- " + results[i].textContent.trim());
-                    }
+                    for(let i=0; i<Math.min(4, results.length); i++) snippets.push("- " + results[i].textContent.trim());
                     if(snippets.length > 0) return snippets.join('\n');
-                } catch(e) { 
-                    console.warn(`Proxy ${proxy} falhou ou deu timeout. Tentando o próximo...`); 
-                }
+                } catch(e) {}
             }
-            return "🌐 Aviso: Não foi possível acessar a internet em tempo real no momento devido a bloqueios de segurança dos proxies (Erros 408/CORS). A IA usará apenas sua base de conhecimento consolidada.";
+            return "🌐 Web indisponível no momento.";
         }
 
         async function executarIA(tipo, promptEspecifico = null) {
-            let k = localStorage.getItem('pruma_apikey'); if(!k) return alert("Configure a API Key na aba lateral.");
-            let p = "", box = null; 
+            let k = localStorage.getItem('pruma_apikey'); if(!k) return alert("Configure a API Key.");
+            let p = "", box = null; let niveisSelecionados = [];
 
-            let niveisSelecionados = [];
             if(tipo === 'questoes') {
                 document.querySelectorAll('.chk-nivel-q:checked').forEach(el => niveisSelecionados.push(el.value));
-                if(niveisSelecionados.length === 0) return alert("Selecione ao menos um nível de dificuldade.");
+                if(niveisSelecionados.length === 0) return alert("Selecione um nível.");
                 let qtd = document.getElementById('ia-qts-num').value || '5';
-                let t = document.getElementById('ia-qts-tema').value || 'o contexto geral';
+                let t = document.getElementById('ia-qts-tema').value || 'Geral';
                 let tipoQVal = document.getElementById('ia-tipo-q').value;
-                let instrucaoTipoQ = tipoQVal === 'ce' ? "Formato estrito Certo / Errado (C/E)." : (tipoQVal === 'ambas' ? "Misture múltipla escolha e Certo/Errado." : "Múltipla escolha.");
-                
-                p = `Gere exatamente ${qtd} questões inéditas em formato JSON PURO sobre: ${t}. ${instrucaoTipoQ} 
-                CRITÉRIO OBRIGATÓRIO DE DIFICULDADE: Distribua ou aplique estritamente os níveis solicitados entre as questões: [${niveisSelecionados.join(', ')}]. 
-                - Se o nível for Fácil: cobre texto de lei seco ou conceito direto e memorizável.
-                - Se o nível for Médio: cobre aplicação simples de regra a um caso prático ou exceções comuns.
-                - Se o nível for Difícil: cobre pegadinhas jurisprudenciais profundas, cruzamento de artigos ou casos complexos.
-                Cada questão no JSON DEVE conter explicitamente o seu nível correspondente no campo "nivel".
-                
-                Retorne EXATAMENTE UM JSON ARRAY PURO:
-                [
-                  {
-                    "enunciado": "Texto da questão...",
-                    "alternativas": ["A) Opção 1", "B) Opção 2", "C) Opção 3", "D) Opção 4"],
-                    "correta": "A",
-                    "comentario": "Comentário...",
-                    "nivel": "Difícil"
-                  }
-                ]
-                Sem markdown como \`\`\`json.`;
+                p = `Gere ${qtd} questões em JSON PURO sobre: ${t}. Níveis: [${niveisSelecionados.join(', ')}]. Formato estrito JSON array: [{"enunciado": "...", "alternativas": ["A) ..."], "correta": "A", "comentario": "...", "nivel": "Médio"}]. Sem markdown.`;
                 box = document.getElementById('box-qts'); box.style.display='flex'; box.innerHTML='';
             } else if(tipo === 'flashcards') {
                 document.querySelectorAll('.chk-nivel-fc:checked').forEach(el => niveisSelecionados.push(el.value));
-                if(niveisSelecionados.length === 0) return alert("Selecione ao menos um nível de dificuldade.");
+                if(niveisSelecionados.length === 0) return alert("Selecione um nível.");
                 let qtd = document.getElementById('fc-num').value || '5';
                 let m = sanitizeText(document.getElementById('fc-mat').value) || 'Geral';
-                let tp = sanitizeText(document.getElementById('fc-top').value) || 'Assunto Geral';
-                p = `Gere ${qtd} flashcards para Matéria: "${m}" e Tópico: "${tp}". Níveis estritos a respeitar: ${niveisSelecionados.join(', ')}. Cada flashcard deve refletir exatamente o seu nível (Fácil = memorização direta, Médio = aplicação, Difícil = exceções/detalhes profundos). Retorne EXATAMENTE UM JSON ARRAY PURO: [{"f":"Pergunta","v":"Resposta","nivel":"Fácil/Médio/Difícil"}]. Sem markdowns.`;
+                let tp = sanitizeText(document.getElementById('fc-top').value) || 'Geral';
+                p = `Gere ${qtd} flashcards para Matéria: "${m}" e Tópico: "${tp}". Níveis: ${niveisSelecionados.join(', ')}. Retorne JSON PURO: [{"f":"Pergunta","v":"Resposta","nivel":"Fácil"}]. Sem markdown.`;
                 box = document.getElementById('box-fc'); box.style.display='block'; box.innerHTML='';
             } else if(tipo === 'chat') {
                 p = promptEspecifico || document.getElementById('inp-chat').value.trim(); if(!p) return;
                 box = document.getElementById('box-chat'); 
-                if(!promptEspecifico) {
-                    box.innerHTML += `<div class="msg msg-u">${sanitizeText(p)}</div>`; 
-                    document.getElementById('inp-chat').value=''; 
-                }
+                if(!promptEspecifico) { box.innerHTML += `<div class="msg msg-u">${sanitizeText(p)}</div>`; document.getElementById('inp-chat').value=''; }
                 box.scrollTop = box.scrollHeight;
             }
 
             let ctx = extrairContextoSemantico(p);
-            let isPerguntaFacil = p.length < 50;
-            let baseSys = obterPromptDoSistema(tipo, p, isPerguntaFacil);
+            let baseSys = obterPromptDoSistema(tipo, p);
             
-            let modeloUsadoFinal = "gemini-3.8-flash"; 
-            let loadInt = null;
-
             try {
                 if(tipo!=='flashcards') { 
-                    box.innerHTML += `<div class="msg msg-a" id="load-ia"><span id="load-ia-text">Analisando...</span> ⏳</div>`; 
-                    box.scrollTop = box.scrollHeight; 
-                    
-                    let loadingMsgs = ["Analisando o banco...", "Buscando diretrizes...", "Processando resposta..."];
-                    
+                    box.innerHTML += `<div class="msg msg-a" id="load-ia"><span id="load-ia-text">Analisando...</span> ⏳</div>`; box.scrollTop = box.scrollHeight; 
                     let chk = document.getElementById('chk-busca-web');
                     if(tipo === 'chat' && chk && chk.checked) {
-                        document.getElementById('load-ia-text').textContent = "🕵️ Buscando na Web...";
                         let resultadosWeb = await buscarNaWeb(p);
-                        ctx += `\n\n[RESULTADOS DA BUSCA NA WEB EM TEMPO REAL]:\n${resultadosWeb}\n`;
+                        ctx += `\n\n[BUSCA WEB]:\n${resultadosWeb}\n`;
                     }
-
-                    loadInt = setInterval(() => { let msgEl = document.getElementById('load-ia-text'); if(msgEl) msgEl.textContent = loadingMsgs[Math.floor(Math.random() * loadingMsgs.length)]; }, 2500);
                 } else { 
-                    box.innerHTML = `<div id="load-ia" style="color:var(--brand-primary); font-weight:600;"><span id="load-ia-text">Construindo flashcards...</span> ⏳</div>`; 
+                    box.innerHTML = `<div id="load-ia" style="color:var(--brand-primary); font-weight:600;"><span>Construindo flashcards...</span> ⏳</div>`; 
                 }
 
                 async function chamarGemini(modelo) {
-                    let agoraMs = Date.now();
-                    let tempoDecorrido = agoraMs - ultimoEnvioIA;
-                    
-                    if (tempoDecorrido < 8000) {
-                        let esperaMs = 8000 - tempoDecorrido;
-                        await new Promise(r => setTimeout(r, esperaMs));
-                    }
-                    ultimoEnvioIA = Date.now();
-
-                    let retentativas = 4;
-                    let atraso = 4000;
-                    let res = null;
-
-                    for (let i = 0; i < retentativas; i++) {
-                        res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelo}:generateContent?key=${k}`, { 
-                            method:'POST', 
-                            headers:{'Content-Type':'application/json'}, 
-                            body:JSON.stringify({ 
-                                contents:[{
-                                    parts:[{
-                                        text: `${baseSys}\n\n${ctx ? "CONTEXTO ENCONTRADO NA NUVEM PRUMA:\n"+ctx.substring(0,10000) : ""}\n\nPROMPT: ${p}`
-                                    }]
-                                }]
-                            }) 
-                        });
-
-                        if (res.ok) break;
-
-                        if ((res.status === 503 || res.status === 429) && i < retentativas - 1) {
-                            console.warn(`Erro ${res.status} detectado. Aguardando maior tempo para burlar o bloqueio de taxa...`);
-                            await new Promise(r => setTimeout(r, atraso * (i + 2))); 
-                            continue;
-                        }
-                        break;
-                    }
-
-                    if(!res.ok) {
-                        let erroTexto = await res.text();
-                        let mensagemErroReal = `Erro HTTP ${res.status}`;
-                        try {
-                            let erroObj = JSON.parse(erroTexto);
-                            if(erroObj.error && erroObj.error.message) {
-                                mensagemErroReal = erroObj.error.message;
-                            }
-                        } catch(e) {
-                            mensagemErroReal = erroTexto || res.statusText;
-                        }
-                        throw new Error(`Limite da chave atingido (Código ${res.status}). Espere um minuto e tente de novo. Erro: ${mensagemErroReal}`);
-                    }
-
+                    let res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelo}:generateContent?key=${k}`, { 
+                        method:'POST', headers:{'Content-Type':'application/json'}, 
+                        body:JSON.stringify({ contents:[{parts:[{text: `${baseSys}\n\n${ctx}\n\nPROMPT: ${p}`}]}] }) 
+                    });
+                    if(!res.ok) throw new Error(`Erro API (${res.status})`);
                     const data = await res.json(); 
-                    if(data.error) throw new Error(`Erro da API Gemini (Código ${data.error.code}): ${data.error.message}`);
-                    if(!data.candidates || !data.candidates[0] || !data.candidates[0].content) throw new Error('Resposta vazia da IA');
                     return data.candidates[0].content.parts[0].text;
                 }
 
-                let txtF = await chamarGemini(modeloUsadoFinal);
-
-                if(loadInt) clearInterval(loadInt);
-
-                let badgeModelo = `<div style="font-size:0.7rem; color:var(--text-muted); opacity:0.7; margin-bottom:6px; text-align:right;">🛡️ PRUMA IA ativada</div>`;
+                let txtF = await chamarGemini("gemini-3.8-flash");
+                let l = document.getElementById('load-ia'); if(l) l.remove();
+                let badgeModelo = `<div style="font-size:0.7rem; color:var(--text-muted); opacity:0.7; margin-bottom:6px; text-align:right;">🛡️ PRUMA IA</div>`;
 
                 if(tipo === 'flashcards') {
                     let json = JSON.parse(txtF.replace(/```json/g,'').replace(/```/g,'').match(/\[.*\]/s)[0]);
-                    let matNome = sanitizeText(document.getElementById('fc-mat').value) || 'Flashcards IA';
+                    let matNome = sanitizeText(document.getElementById('fc-mat').value) || 'Flashcards';
                     let topNome = sanitizeText(document.getElementById('fc-top').value) || 'Geral';
-                    box.innerHTML = '';
-                    
-                    let htmlFCResult = badgeModelo;
+                    box.innerHTML = ''; let htmlFCResult = badgeModelo;
                     json.forEach(c => {
-                        let fcContent = `
-                        <div style="background:var(--bg-card); padding:14px; border-radius:8px; border-left:4px solid var(--brand-warning); border:1px solid var(--border-color); width:100%;">
-                            <div style="font-weight:700; font-size:1.05rem; color:var(--text-main);">❓ ${sanitizeText(c.f)} <span style="font-size:0.75rem; font-weight:normal; opacity:0.8;">(📌 ${c.nivel || 'Geral'})</span></div>
-                            <button onclick="this.nextElementSibling.style.display='block'; this.style.display='none'" class="btn-outline" style="margin-top:12px; width:auto; padding:6px 12px; font-size:0.85rem;">Ver Resposta</button>
-                            <div style="display:none; margin-top:12px; color:var(--text-main); font-size:1rem; padding-top:10px; border-top:1px dashed var(--border-color);">💡 Resposta: ${sanitizeText(c.v)}</div>
-                        </div>`;
-                        
-                        // CORREÇÃO DEFINITIVA: Usar atributos data- para evitar conflito de aspas no onclick
-                        let encPayload = encodeURIComponent(fcContent).replace(/'/g, "%27");
-                        let encMat = encodeURIComponent(matNome).replace(/'/g, "%27");
-                        let encTop = encodeURIComponent(topNome).replace(/'/g, "%27");
-                        
-                        let itemHtml = `
-                        <div style="margin-bottom:16px;">
-                            ${fcContent}
-                            <div style="margin-top:8px;">
-                                <button class="btn-outline" style="width:auto; padding:6px 12px; font-size:0.8rem;" 
-                                    data-payload="${encPayload}" data-mat="${encMat}" data-top="${encTop}" 
-                                    onclick="abrirModalEnviarCaderno(decodeURIComponent(this.getAttribute('data-payload')), this, decodeURIComponent(this.getAttribute('data-mat')), decodeURIComponent(this.getAttribute('data-top')), true)">
-                                    💾 Salvar no Caderno
-                                </button>
-                            </div>
-                        </div>`;
-                        box.innerHTML += itemHtml;
-                        htmlFCResult += itemHtml;
+                        let fcContent = `<div style="background:var(--bg-card); padding:14px; border-radius:8px; border-left:4px solid var(--brand-warning); border:1px solid var(--border-color); width:100%;"><div style="font-weight:700; color:var(--text-main);">❓ ${sanitizeText(c.f)} (${c.nivel || ''})</div><button onclick="this.nextElementSibling.style.display='block'; this.style.display='none'" class="btn-outline" style="margin-top:12px; width:auto; padding:6px 12px; font-size:0.85rem;">Ver Resposta</button><div style="display:none; margin-top:12px; color:var(--text-main); padding-top:10px; border-top:1px dashed var(--border-color);">💡 Resposta: ${sanitizeText(c.v)}</div></div>`;
+                        let itemHtml = `<div style="margin-bottom:16px;">${fcContent}<div style="margin-top:8px;"><button class="btn-outline" style="width:auto; padding:6px 12px; font-size:0.8rem;" data-payload="${encodeURIComponent(fcContent)}" data-mat="${encodeURIComponent(matNome)}" data-top="${encodeURIComponent(topNome)}" onclick="abrirModalEnviarCaderno(decodeURIComponent(this.getAttribute('data-payload')), this, decodeURIComponent(this.getAttribute('data-mat')), decodeURIComponent(this.getAttribute('data-top')), true)">💾 Salvar</button></div></div>`;
+                        box.innerHTML += itemHtml; htmlFCResult += itemHtml;
                     });
                     box.insertAdjacentHTML('afterbegin', badgeModelo);
-                    salvarFiltroHistorico('flashcards', {mat: matNome, top: topNome}, `${matNome} - ${topNome}`, htmlFCResult);
-                
+                    salvarFiltroHistorico('flashcards', {mat: matNome, top: topNome}, `${matNome}`, htmlFCResult);
                 } else if(tipo === 'questoes') {
-                    let l = document.getElementById('load-ia'); if(l) l.remove();
-                    try {
-                        let jsonClean = txtF.replace(/```json/g,'').replace(/```/g,'').trim();
-                        let matchJson = jsonClean.match(/\[.*\]/s);
-                        let qArray = JSON.parse(matchJson ? matchJson[0] : jsonClean);
-                        
-                        let htmlQ = `<div style="display:flex; flex-direction:column; gap:20px;">`;
-                        qArray.forEach((q, qIdx) => {
-                            let altHtml = '';
-                            if(Array.isArray(q.alternativas)) {
-                                q.alternativas.forEach(alt => {
-                                    let letra = alt.charAt(0).toUpperCase();
-                                    let isCorreta = (letra === (q.correta || '').toUpperCase()) || alt.toLowerCase().includes('correta');
-                                    altHtml += `<button class="btn-outline alt-btn" data-correta="${isCorreta ? '1' : '0'}" onclick="responderQuestaoUnica(this)" style="text-align:left; padding:10px 14px; margin:4px 0; border-radius:8px; font-size:0.9rem; width:100%;">${sanitizeText(alt)}</button>`;
-                                });
-                            }
-                            
-                            let cadQstHtml = `
-                            <div style="background:var(--bg-card); padding:16px; border-radius:var(--radius-sm); border:1px solid var(--border-color); width:100%;">
-                                <div style="font-weight:700; margin-bottom:10px; font-size:0.95rem; display:flex; justify-content:space-between;">
-                                    <span>🎯 Questão</span>
-                                    <span style="font-size:0.75rem; background:var(--bg-input); padding:2px 8px; border-radius:4px; border:1px solid var(--border-color);">${sanitizeText(q.nivel || 'Geral')}</span>
-                                </div>
-                                <div style="margin-bottom:12px; font-size:0.95rem; line-height:1.5;">${sanitizeText(q.enunciado)}</div>
-                                <div style="display:flex; flex-direction:column; gap:4px; margin-bottom:12px;" class="bloco-alternativas-qst">${altHtml}</div>
-                                <div class="bloco-explicacao-qst" style="display:none; margin-top:8px;">
-                                    <div style="font-size:0.85rem; color:var(--text-muted); padding-top:8px; border-top:1px solid var(--border-color);">💡 Comentário: ${sanitizeText(q.comentario || '')}</div>
-                                </div>
-                            </div>`;
-                            
-                            // CORREÇÃO DEFINITIVA: Usar atributos data- para evitar conflito de aspas no onclick
-                            let encPayloadQst = encodeURIComponent(cadQstHtml).replace(/'/g, "%27");
-                            let t = document.getElementById('ia-qts-tema').value || 'Questões IA';
-                            let encMatQst = encodeURIComponent(t).replace(/'/g, "%27");
-
-                            let itemHtmlQst = `
-                            <div style="margin-bottom:16px;">
-                                ${cadQstHtml}
-                                <div style="margin-top:8px;">
-                                    <button class="btn-primary" style="width:auto; padding:6px 14px; font-size:0.8rem;" 
-                                        data-payload="${encPayloadQst}" data-mat="${encMatQst}" 
-                                        onclick="abrirModalEnviarCaderno(decodeURIComponent(this.getAttribute('data-payload')), this, decodeURIComponent(this.getAttribute('data-mat')), '', true)">
-                                        📚 Enviar para Caderno de Erros
-                                    </button>
-                                </div>
-                            </div>`;
-                            htmlQ += itemHtmlQst;
-                        });
-                        htmlQ += `</div>`;
-                        let finalQstHtml = `${badgeModelo}${htmlQ}`;
-                        box.innerHTML = `<div class="msg msg-a" style="max-width:100%; width:100%;">${finalQstHtml}</div>`;
-                        
-                        let temaStr = document.getElementById('ia-qts-tema').value || 'Questões IA';
-                        salvarFiltroHistorico('questoes', {tema: temaStr}, temaStr, finalQstHtml);
-                    } catch(errParse) {
-                        box.innerHTML = `<div class="msg msg-a" style="color:var(--brand-danger);">Erro ao estruturar as questões JSON. Tente gerar novamente.</div>`;
-                    }
-                
+                    let jsonClean = txtF.replace(/```json/g,'').replace(/```/g,'').trim();
+                    let qArray = JSON.parse(jsonClean.match(/\[.*\]/s)[0]);
+                    let htmlQ = `<div style="display:flex; flex-direction:column; gap:20px;">`;
+                    qArray.forEach(q => {
+                        let altHtml = '';
+                        if(Array.isArray(q.alternativas)) {
+                            q.alternativas.forEach(alt => {
+                                let letra = alt.charAt(0).toUpperCase();
+                                let isCorreta = (letra === (q.correta || '').toUpperCase());
+                                altHtml += `<button class="btn-outline alt-btn" data-correta="${isCorreta ? '1' : '0'}" onclick="responderQuestaoUnica(this)" style="text-align:left; padding:10px 14px; margin:4px 0; border-radius:8px; font-size:0.9rem; width:100%;">${sanitizeText(alt)}</button>`;
+                            });
+                        }
+                        let cadQstHtml = `<div style="background:var(--bg-card); padding:16px; border-radius:var(--radius-sm); border:1px solid var(--border-color); width:100%;"><div style="font-weight:700; margin-bottom:10px;">🎯 Questão (${sanitizeText(q.nivel || '')})</div><div style="margin-bottom:12px;">${sanitizeText(q.enunciado)}</div><div style="display:flex; flex-direction:column; gap:4px; margin-bottom:12px;" class="bloco-alternativas-qst">${altHtml}</div><div class="bloco-explicacao-qst" style="display:none; margin-top:8px;"><div style="font-size:0.85rem; color:var(--text-muted); padding-top:8px; border-top:1px solid var(--border-color);">💡 Comentário: ${sanitizeText(q.comentario || '')}</div></div></div>`;
+                        let itemHtmlQst = `<div style="margin-bottom:16px;">${cadQstHtml}<div style="margin-top:8px;"><button class="btn-primary" style="width:auto; padding:6px 14px; font-size:0.8rem;" data-payload="${encodeURIComponent(cadQstHtml)}" data-mat="${encodeURIComponent(document.getElementById('ia-qts-tema').value || 'Questões')}" onclick="abrirModalEnviarCaderno(decodeURIComponent(this.getAttribute('data-payload')), this, decodeURIComponent(this.getAttribute('data-mat')), '', true)">📚 Enviar para Caderno</button></div></div>`;
+                        htmlQ += itemHtmlQst;
+                    });
+                    htmlQ += `</div>`;
+                    let finalQstHtml = `${badgeModelo}${htmlQ}`;
+                    box.innerHTML = `<div class="msg msg-a" style="max-width:100%; width:100%;">${finalQstHtml}</div>`;
+                    salvarFiltroHistorico('questoes', {tema: document.getElementById('ia-qts-tema').value}, 'Questões', finalQstHtml);
                 } else {
-                    let l = document.getElementById('load-ia'); if(l) l.remove();
-                    let rawHtml = txtF.replace(/\n/g, '<br>');
-                    let lHtml = sanitizeText(rawHtml);
-                    
+                    let rawHtml = txtF.replace(/\n/g, '<br>'); let lHtml = sanitizeText(rawHtml);
                     let chatHtmlToSave = `<div style="font-size:0.95rem; line-height:1.5; color:var(--text-main);">${lHtml}</div>`;
-                    
-                    // CORREÇÃO DEFINITIVA: Usar atributos data- para evitar conflito de aspas no onclick
-                    let encPayloadChat = encodeURIComponent(chatHtmlToSave).replace(/'/g, "%27");
-                    
-                    let finalChatHtml = `${badgeModelo}<div class="conteudo-resposta-ia">${lHtml}</div><br><br><div style="display:flex; gap:8px; flex-wrap:wrap;">
-                        <button class="btn-outline" style="width:auto; padding:6px 12px; font-size:0.8rem;" onclick="aprofundarRespostaContextual(this)">🔍 Aprofundar Resposta</button>
-                        <button class="btn-primary" style="width:auto; padding:6px 12px; font-size:0.8rem;" 
-                            data-payload="${encPayloadChat}" 
-                            onclick="abrirModalEnviarCaderno(decodeURIComponent(this.getAttribute('data-payload')), this, '', '', true)">
-                            📚 Enviar Resposta para Caderno
-                        </button>
-                    </div>`;
-                    
+                    let finalChatHtml = `${badgeModelo}<div class="conteudo-resposta-ia">${lHtml}</div><br><br><div style="display:flex; gap:8px;"><button class="btn-outline" style="width:auto; padding:6px 12px; font-size:0.8rem;" onclick="aprofundarRespostaContextual(this)">🔍 Aprofundar</button><button class="btn-primary" style="width:auto; padding:6px 12px; font-size:0.8rem;" data-payload="${encodeURIComponent(chatHtmlToSave)}" onclick="abrirModalEnviarCaderno(decodeURIComponent(this.getAttribute('data-payload')), this, '', '', true)">📚 Salvar</button></div>`;
                     box.innerHTML += `<div class="msg msg-a" style="max-width:100%; width:100%;">${finalChatHtml}</div>`;
-                    salvarFiltroHistorico('chat', p, p.length > 30 ? p.substring(0, 30) + '...' : p, finalChatHtml);
+                    salvarFiltroHistorico('chat', p, p.substring(0, 25), finalChatHtml);
                 }
                 box.scrollTop = box.scrollHeight;
-            } catch(e) { 
-                if(loadInt) clearInterval(loadInt);
-                let l = document.getElementById('load-ia'); if(l) l.remove(); 
-                let msgErro = e.message; 
-                if(box) box.innerHTML += `<div class="msg msg-a" style="color:var(--brand-danger);">⚠️ ${msgErro}</div>`; 
+            } catch(e) {
+                let l = document.getElementById('load-ia'); if(l) l.remove();
+                if(box) box.innerHTML += `<div class="msg msg-a" style="color:var(--brand-danger);">⚠️ ${e.message}</div>`;
             }
         }
 
@@ -1822,83 +1540,41 @@
             let container = btn.parentElement;
             let blocoPai = container.closest('.bloco-alternativas-qst').parentElement;
             let blocoExpl = blocoPai.querySelector('.bloco-explicacao-qst');
-            let botoes = container.querySelectorAll('.alt-btn');
-            botoes.forEach(b => b.disabled = true);
-
+            container.querySelectorAll('.alt-btn').forEach(b => b.disabled = true);
             if(blocoExpl) blocoExpl.style.display = 'block';
-
-            let isCorreta = btn.getAttribute('data-correta') === '1';
-            if(isCorreta) {
-                btn.style.background = 'var(--brand-success)';
-                btn.style.color = '#FFFFFF';
-                btn.style.borderColor = 'var(--brand-success)';
-                btn.innerHTML = '✅ ' + btn.innerHTML;
+            if(btn.getAttribute('data-correta') === '1') {
+                btn.style.background = 'var(--brand-success)'; btn.style.color = '#FFFFFF'; btn.innerHTML = '✅ ' + btn.innerHTML;
             } else {
-                btn.style.background = 'var(--brand-danger)';
-                btn.style.color = '#FFFFFF';
-                btn.style.borderColor = 'var(--brand-danger)';
-                btn.innerHTML = '❌ ' + btn.innerHTML;
-                
-                botoes.forEach(b => {
-                    if(b.getAttribute('data-correta') === '1') {
-                        b.style.background = 'rgba(52, 199, 89, 0.2)';
-                        b.style.borderColor = 'var(--brand-success)';
-                    }
-                });
+                btn.style.background = 'var(--brand-danger)'; btn.style.color = '#FFFFFF'; btn.innerHTML = '❌ ' + btn.innerHTML;
+                container.querySelectorAll('.alt-btn').forEach(b => { if(b.getAttribute('data-correta') === '1') b.style.background = 'rgba(52, 199, 89, 0.2)'; });
             }
         }
 
         async function processarEdital(btn) {
-            let k = localStorage.getItem('pruma_apikey'); if(!k) return alert("API Key ausente."); let txt = document.getElementById('edital-texto').value.trim(); if(!txt) return; let pId = document.getElementById('edital-ia-prova').value;
-            
-            const modelo = "gemini-3.8-flash"; 
-            
-            let tx = btn.textContent; btn.disabled=true; btn.textContent="Processando com IA...";
-            try { 
-                let res = null;
-                let retentativas = 3;
-                let atraso = 3000;
-
-                for (let i = 0; i < retentativas; i++) {
-                    res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelo}:generateContent?key=${k}`, { 
-                        method:'POST', 
-                        headers:{'Content-Type':'application/json'}, 
-                        body:JSON.stringify({
-                            contents:[{parts:[{text:`Organize em JSON PURO: [{"disciplina": "Nome", "topicos": ["T1", "T2"]}]. Sem markdown. Edital:\n${txt.substring(0,20000)}`}]}]
-                        }) 
-                    });
-
-                    if (res.ok) break;
-
-                    if ((res.status === 503 || res.status === 429) && i < retentativas - 1) {
-                        await new Promise(r => setTimeout(r, atraso * (i + 1)));
-                        continue;
+            let k = localStorage.getItem('pruma_apikey'); if(!k) return alert("API Key ausente."); 
+            let txt = document.getElementById('edital-texto').value.trim(); if(!txt) return; 
+            let pId = document.getElementById('edital-ia-prova').value;
+            let tx = btn.textContent; btn.disabled=true; btn.textContent="Processando...";
+            try {
+                let res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${k}`, { 
+                    method:'POST', headers:{'Content-Type':'application/json'}, 
+                    body:JSON.stringify({ contents:[{parts:[{text:`Organize em JSON PURO: [{"disciplina": "Nome", "topicos": ["T1"]}]. Sem markdown. Edital:\n${txt.substring(0,15000)}`}]}] }) 
+                });
+                if(!res.ok) throw new Error("Erro ao processar edital.");
+                const data = await res.json();
+                let json = JSON.parse(data.candidates[0].content.parts[0].text.match(/\[.*\]/s)[0]);
+                if(!Array.isArray(dbData.materias)) dbData.materias = Object.values(dbData.materias || {});
+                json.forEach(n => {
+                    let idx = dbData.materias.findIndex(x=>x.nome.toLowerCase()===n.disciplina.toLowerCase() && x.provaId===pId);
+                    if(idx !== -1) {
+                        if(!Array.isArray(dbData.materias[idx].topicos)) dbData.materias[idx].topicos = Object.values(dbData.materias[idx].topicos || {});
+                        n.topicos.forEach(t=>{ if(!dbData.materias[idx].topicos.includes(t)) dbData.materias[idx].topicos.push(t); });
+                    } else {
+                        dbData.materias.push({id:gerarId(), nome:n.disciplina, cor:paleta17[0], topicos:n.topicos, provaId:pId});
                     }
-                    break;
-                }
-
-                if(!res.ok) {
-                    let erroTexto = await res.text();
-                    let mensagemErroReal = `Erro HTTP ${res.status}`;
-                    try {
-                        let erroObj = JSON.parse(erroTexto);
-                        if(erroObj.error && erroObj.error.message) {
-                            mensagemErroReal = erroObj.error.message;
-                        }
-                    } catch(e) {
-                        mensagemErroReal = erroTexto || res.statusText;
-                    }
-                    throw new Error(`Falha ao processar edital (Código ${res.status}): ${mensagemErroReal}`);
-                }
-
-                const data = await res.json(); 
-                if(data.error) throw new Error(`Erro da API (Código ${data.error.code || 'Desconhecido'}): ${data.error.message}`); 
-                let json = JSON.parse(data.candidates[0].content.parts[0].text.match(/\[.*\]/s)[0]); 
-                if(!Array.isArray(dbData.materias)) dbData.materias = Object.values(dbData.materias || {}); 
-                json.forEach(n => { let idx = dbData.materias.findIndex(x=>x.nome.toLowerCase()===n.disciplina.toLowerCase() && x.provaId===pId); if(idx !== -1) { if(!Array.isArray(dbData.materias[idx].topicos)) dbData.materias[idx].topicos = Object.values(dbData.materias[idx].topicos || {}); n.topicos.forEach(t=>{ if(!dbData.materias[idx].topicos.includes(t)) dbData.materias[idx].topicos.push(t); }); } else { dbData.materias.provas ? {} : null; dbData.materias.push({id:gerarId(), nome:n.disciplina, cor:paleta17[0], topicos:n.topicos, provaId:pId}); } }); 
-                refDb.child('materias').set(dbData.materias); 
-                document.getElementById('edital-texto').value=''; 
-                alert("Edital mapeado!"); 
+                });
+                refDb.child('materias').set(dbData.materias);
+                document.getElementById('edital-texto').value=''; alert("Edital mapeado!");
             } catch(e) { alert(e.message); } finally { btn.textContent=tx; btn.disabled=false; }
         }
     </script>
