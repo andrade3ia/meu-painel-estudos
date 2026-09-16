@@ -617,7 +617,6 @@
 
         function sanitizeText(str) { return typeof str === 'string' ? DOMPurify.sanitize(str) : ''; }
         function renderHtmlSafely(html) { 
-            // Permite onclick e botões estritos gerados pela IA no caderno (renderização interna isolada)
             return DOMPurify.sanitize(html, { ADD_ATTR: ['onclick', 'data-correta', 'style'] }); 
         }
         function gerarId() { return Date.now().toString(36) + Math.random().toString(36).substr(2); }
@@ -1520,13 +1519,19 @@
         async function buscarNaWeb(query) {
             let url = `https://html.duckduckgo.com/html/?q=${encodeURIComponent(query)}`;
             let proxies = [
+                `https://corsproxy.io/?${encodeURIComponent(url)}`,
                 `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`,
                 `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`
             ];
             
             for(let proxy of proxies) {
                 try {
-                    let res = await fetch(proxy);
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), 6000); 
+                    
+                    let res = await fetch(proxy, { signal: controller.signal });
+                    clearTimeout(timeoutId);
+                    
                     if(!res.ok) continue;
                     let text = await res.text();
                     let html = proxy.includes('allorigins') ? JSON.parse(text).contents : text;
@@ -1539,9 +1544,11 @@
                         snippets.push("- " + results[i].textContent.trim());
                     }
                     if(snippets.length > 0) return snippets.join('\n');
-                } catch(e) { console.warn("Proxy falhou silenciosamente, tentando redundância:", proxy); }
+                } catch(e) { 
+                    console.warn(`Proxy ${proxy} falhou ou deu timeout. Tentando o próximo...`); 
+                }
             }
-            return "🌐 Aviso: Não foi possível acessar a internet em tempo real no momento devido a bloqueios de segurança do navegador. A IA usará apenas sua base de conhecimento consolidada para responder.";
+            return "🌐 Aviso: Não foi possível acessar a internet em tempo real no momento devido a bloqueios de segurança dos proxies (Erros 408/CORS). A IA usará apenas sua base de conhecimento consolidada.";
         }
 
         async function executarIA(tipo, promptEspecifico = null) {
@@ -1623,14 +1630,15 @@
                 async function chamarGemini(modelo) {
                     let agoraMs = Date.now();
                     let tempoDecorrido = agoraMs - ultimoEnvioIA;
-                    if (tempoDecorrido < 6000) {
-                        let esperaMs = 6000 - tempoDecorrido;
+                    
+                    if (tempoDecorrido < 8000) {
+                        let esperaMs = 8000 - tempoDecorrido;
                         await new Promise(r => setTimeout(r, esperaMs));
                     }
                     ultimoEnvioIA = Date.now();
 
-                    let retentativas = 3;
-                    let atraso = 3000;
+                    let retentativas = 4;
+                    let atraso = 4000;
                     let res = null;
 
                     for (let i = 0; i < retentativas; i++) {
@@ -1649,7 +1657,8 @@
                         if (res.ok) break;
 
                         if ((res.status === 503 || res.status === 429) && i < retentativas - 1) {
-                            await new Promise(r => setTimeout(r, atraso * (i + 1))); 
+                            console.warn(`Erro ${res.status} detectado. Aguardando maior tempo para burlar o bloqueio de taxa...`);
+                            await new Promise(r => setTimeout(r, atraso * (i + 2))); 
                             continue;
                         }
                         break;
@@ -1666,13 +1675,11 @@
                         } catch(e) {
                             mensagemErroReal = erroTexto || res.statusText;
                         }
-                        throw new Error(`Limite atingido ou erro (Código ${res.status}): ${mensagemErroReal}`);
+                        throw new Error(`Limite da chave atingido (Código ${res.status}). Espere um minuto e tente de novo. Erro: ${mensagemErroReal}`);
                     }
 
                     const data = await res.json(); 
-                    if(data.error) {
-                        throw new Error(`Erro da API Gemini (Código ${data.error.code || 'Desconhecido'}): ${data.error.message}`);
-                    }
+                    if(data.error) throw new Error(`Erro da API Gemini (Código ${data.error.code}): ${data.error.message}`);
                     if(!data.candidates || !data.candidates[0] || !data.candidates[0].content) throw new Error('Resposta vazia da IA');
                     return data.candidates[0].content.parts[0].text;
                 }
@@ -1691,8 +1698,6 @@
                     
                     let htmlFCResult = badgeModelo;
                     json.forEach(c => {
-                        let bId = gerarId();
-                        // Estrutura do flashcard preservando interatividade
                         let fcContent = `
                         <div style="background:var(--bg-card); padding:14px; border-radius:8px; border-left:4px solid var(--brand-warning); border:1px solid var(--border-color); width:100%;">
                             <div style="font-weight:700; font-size:1.05rem; color:var(--text-main);">❓ ${sanitizeText(c.f)} <span style="font-size:0.75rem; font-weight:normal; opacity:0.8;">(📌 ${c.nivel || 'Geral'})</span></div>
@@ -1701,7 +1706,6 @@
                         </div>`;
                         
                         let encPayload = encodeURIComponent(fcContent);
-
                         let itemHtml = `
                         <div style="margin-bottom:16px;">
                             ${fcContent}
@@ -1709,7 +1713,6 @@
                                 <button class="btn-outline" style="width:auto; padding:6px 12px; font-size:0.8rem;" onclick="abrirModalEnviarCaderno(decodeURIComponent('${encPayload}'), this, '${sanitizeText(matNome).replace(/'/g,"\\'")}', '${sanitizeText(topNome).replace(/'/g,"\\'")}', true)">💾 Salvar no Caderno</button>
                             </div>
                         </div>`;
-                        
                         box.innerHTML += itemHtml;
                         htmlFCResult += itemHtml;
                     });
@@ -1756,7 +1759,6 @@
                                     <button class="btn-primary" style="width:auto; padding:6px 14px; font-size:0.8rem;" onclick="abrirModalEnviarCaderno(decodeURIComponent('${encPayloadQst}'), this, '${sanitizeText(t).replace(/'/g,"\\'")}', '', true)">📚 Enviar para Caderno de Erros</button>
                                 </div>
                             </div>`;
-                            
                             htmlQ += itemHtmlQst;
                         });
                         htmlQ += `</div>`;
@@ -1779,7 +1781,6 @@
                     let finalChatHtml = `${badgeModelo}<div class="conteudo-resposta-ia">${lHtml}</div><br><br><div style="display:flex; gap:8px; flex-wrap:wrap;"><button class="btn-outline" style="width:auto; padding:6px 12px; font-size:0.8rem;" onclick="aprofundarRespostaContextual(this)">🔍 Aprofundar Resposta</button><button class="btn-primary" style="width:auto; padding:6px 12px; font-size:0.8rem;" onclick="abrirModalEnviarCaderno(decodeURIComponent('${encPayloadChat}'), this, '', '', true)">📚 Enviar Resposta para Caderno</button></div>`;
                     
                     box.innerHTML += `<div class="msg msg-a" style="max-width:100%; width:100%;">${finalChatHtml}</div>`;
-                    
                     salvarFiltroHistorico('chat', p, p.length > 30 ? p.substring(0, 30) + '...' : p, finalChatHtml);
                 }
                 box.scrollTop = box.scrollHeight;
