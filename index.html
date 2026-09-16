@@ -368,6 +368,7 @@
                         </div>
 
                         <div id="subia-chat">
+                            <!-- Seleção manual de fontes (múltiplas, discreta e intuitiva) -->
                             <div style="margin-bottom:12px;">
                                 <div onclick="let b = document.getElementById('lista-fontes-ia-container'); b.style.display = b.style.display==='none' ? 'block' : 'none';" style="font-size:0.8rem; font-weight:600; color:var(--brand-primary); cursor:pointer; display:inline-flex; align-items:center; gap:4px; user-select:none;">
                                     📎 <span id="label-fontes-selecionadas">Selecionar fontes da Biblioteca (0)</span> ▾
@@ -377,6 +378,7 @@
                                     <div id="checkboxes-fontes-ia" style="display:flex; flex-direction:column; gap:6px;"></div>
                                 </div>
                             </div>
+
                             <div class="chat-box" id="box-chat">
                                 <div class="msg msg-a">🛡️ PRUMA IA ativada. Como posso te ajudar hoje?</div>
                             </div>
@@ -1495,7 +1497,7 @@
                     return data.candidates[0].content.parts[0].text;
                 }
 
-                let txtF = await chamarGemini("gemini-3.8-flash");
+                let txtF = await chamarGemini("gemini-2.5-flash");
                 let l = document.getElementById('load-ia'); if(l) l.remove();
                 let badgeModelo = `<div style="font-size:0.7rem; color:var(--text-muted); opacity:0.7; margin-bottom:6px; text-align:right;">🛡️ PRUMA IA</div>`;
 
@@ -1566,7 +1568,7 @@
             let pId = document.getElementById('edital-ia-prova').value;
             let tx = btn.textContent; btn.disabled=true; btn.textContent="Processando...";
             try {
-                let res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${k}`, { 
+                let res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${k}`, { 
                     method:'POST', headers:{'Content-Type':'application/json'}, 
                     body:JSON.stringify({ contents:[{parts:[{text:`Organize em JSON PURO: [{"disciplina": "Nome", "topicos": ["T1"]}]. Sem markdown. Edital:\n${txt.substring(0,15000)}`}]}] }) 
                 });
