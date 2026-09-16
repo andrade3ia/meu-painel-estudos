@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR" data-theme="light">
 <head>
@@ -1705,7 +1706,9 @@
                             <div style="display:none; margin-top:12px; color:var(--text-main); font-size:1rem; padding-top:10px; border-top:1px dashed var(--border-color);">💡 Resposta: ${sanitizeText(c.v)}</div>
                         </div>`;
                         
-                        let encPayload = encodeURIComponent(fcContent);
+                        // CORREÇÃO: Substituir aspas simples por %27 na string URI Encoded para não quebrar o HTML
+                        let encPayload = encodeURIComponent(fcContent).replace(/'/g, "%27");
+                        
                         let itemHtml = `
                         <div style="margin-bottom:16px;">
                             ${fcContent}
@@ -1749,7 +1752,8 @@
                                 </div>
                             </div>`;
                             
-                            let encPayloadQst = encodeURIComponent(cadQstHtml);
+                            // CORREÇÃO: Substituir aspas simples por %27
+                            let encPayloadQst = encodeURIComponent(cadQstHtml).replace(/'/g, "%27");
                             let t = document.getElementById('ia-qts-tema').value || 'Questões IA';
 
                             let itemHtmlQst = `
@@ -1776,7 +1780,8 @@
                     let lHtml = sanitizeText(rawHtml);
                     
                     let chatHtmlToSave = `<div style="font-size:0.95rem; line-height:1.5; color:var(--text-main);">${lHtml}</div>`;
-                    let encPayloadChat = encodeURIComponent(chatHtmlToSave);
+                    // CORREÇÃO: Substituir aspas simples por %27
+                    let encPayloadChat = encodeURIComponent(chatHtmlToSave).replace(/'/g, "%27");
                     
                     let finalChatHtml = `${badgeModelo}<div class="conteudo-resposta-ia">${lHtml}</div><br><br><div style="display:flex; gap:8px; flex-wrap:wrap;"><button class="btn-outline" style="width:auto; padding:6px 12px; font-size:0.8rem;" onclick="aprofundarRespostaContextual(this)">🔍 Aprofundar Resposta</button><button class="btn-primary" style="width:auto; padding:6px 12px; font-size:0.8rem;" onclick="abrirModalEnviarCaderno(decodeURIComponent('${encPayloadChat}'), this, '', '', true)">📚 Enviar Resposta para Caderno</button></div>`;
                     
