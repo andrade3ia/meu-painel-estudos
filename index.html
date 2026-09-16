@@ -1403,10 +1403,9 @@
         function obterPromptDoSistema(tipo, promptUsuario = "") {
             let pL = promptUsuario.toLowerCase();
             let bancaDetectada = pL.includes('cebraspe') || pL.includes('cespe') ? "CEBRASPE" : (pL.includes('fgv') ? "FGV" : (pL.includes('fcc') ? "FCC" : (pL.includes('vunesp') ? "VUNESP" : "")));
-            let bancaInstrucao = bancaDetectada ? `\n\nBANCA: ${bancaDetectada}. Seja objetivo.` : "";
-            const instrucaoFormatacao = `\n\nDIRETRIZES: 1. VÁ DIRETO AO PONTO. 2. Seja objetivo. 3. NUNCA use asteriscos triplos (###) ou duplos (***). 4. Emojis sempre iniciam novas linhas.`;
-            const basePersona = "Você é a PRUMA IA, mentora jurídica." + instrucaoFormatacao;
-            return { chat: `${basePersona}${bancaInstrucao}`, questoes: `${basePersona}${bancaInstrucao}`, flashcards: basePersona }[tipo] || basePersona;
+            let bancaInstrucao = bancaDetectada ? `\n\nDiretrizes específicas para a banca ${bancaDetectada}: analise o perfil de cobrança típico desta banca (jurisprudência dominante, letra de lei ou doutrina).` : "";
+            const basePersona = "Você é a PRUMA IA, uma mentora e especialista em estudos e jurídica de altíssimo nível, comparável aos melhores assistentes educacionais do mercado. Forneça explicações profundas, claras, didáticas, ricamente estruturadas e detalhadas para garantir o máximo aprendizado." + bancaInstrucao;
+            return { chat: basePersona, questoes: basePersona, flashcards: basePersona }[tipo] || basePersona;
         }
 
         function aprofundarRespostaContextual(btn) {
@@ -1418,20 +1417,33 @@
 
         async function buscarNaWeb(query) {
             let url = `https://html.duckduckgo.com/html/?q=${encodeURIComponent(query)}`;
-            let proxies = [`https://corsproxy.io/?${encodeURIComponent(url)}`, `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`];
+            let proxies = [
+                `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`,
+                `https://corsproxy.io/?${encodeURIComponent(url)}`,
+                `https://r.jina.ai/https://html.duckduckgo.com/html/?q=${encodeURIComponent(query)}`
+            ];
             for(let proxy of proxies) {
                 try {
-                    let res = await fetch(proxy); if(!res.ok) continue;
+                    let res = await fetch(proxy); 
+                    if(!res.ok) continue;
                     let text = await res.text();
-                    let html = proxy.includes('allorigins') ? JSON.parse(text).contents : text;
+                    let html = text;
+                    if(proxy.includes('allorigins')) {
+                        let json = JSON.parse(text);
+                        html = json.contents;
+                    }
                     let doc = new DOMParser().parseFromString(html, "text/html");
-                    let results = doc.querySelectorAll('.result__snippet');
+                    let results = doc.querySelectorAll('.result__snippet, .result__body, .result');
                     let snippets = [];
-                    for(let i=0; i<Math.min(4, results.length); i++) snippets.push("- " + results[i].textContent.trim());
+                    results.forEach((el, idx) => {
+                        if(idx < 5 && el.textContent.trim()) {
+                            snippets.push("- " + el.textContent.trim());
+                        }
+                    });
                     if(snippets.length > 0) return snippets.join('\n');
                 } catch(e) {}
             }
-            return "🌐 Web indisponível no momento.";
+            return "🌐 Web indisponível no momento ou bloqueada pelos servidores de proxy.";
         }
 
         async function executarIA(tipo, promptEspecifico = null) {
@@ -1481,7 +1493,7 @@
                     let chk = document.getElementById('chk-busca-web');
                     if(tipo === 'chat' && chk && chk.checked) {
                         let resultadosWeb = await buscarNaWeb(p);
-                        ctx += `\n\n[BUSCA WEB]:\n${resultadosWeb}\n`;
+                        ctx += `\n\n[BUSCA WEB RECENTE - ANO 2026]:\n${resultadosWeb}\n`;
                     }
                 } else { 
                     box.innerHTML = `<div id="load-ia" style="color:var(--brand-primary); font-weight:600;"><span>Construindo flashcards...</span> ⏳</div>`; 
