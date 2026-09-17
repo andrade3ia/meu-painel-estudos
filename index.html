@@ -447,7 +447,7 @@
                             <div style="display:flex; gap:12px; flex-wrap:wrap; align-items:flex-end;">
                                 <textarea id="inp-chat" placeholder="Digite sua dúvida..." rows="2" style="margin:0; resize:none; flex:1; min-width:200px;"></textarea>
                                 <div style="display:flex; flex-direction:column; gap:8px;">
-                                    <label style="display:flex; align-items:center; gap:6px; font-size:0.8rem; font-weight:600; cursor:pointer;" title="Faz uma busca usando a ferramenta nativa do Google."><input type="checkbox" id="chk-busca-web"> 🌐 Buscar Web</label>
+                                    <label style="display:flex; align-items:center; gap:6px; font-size:0.8rem; font-weight:600; cursor:pointer;" title="Faz uma busca usando proxies na web."><input type="checkbox" id="chk-busca-web"> 🌐 Buscar Web</label>
                                     <button class="btn-primary" onclick="executarIA('chat')" style="width:120px;">Enviar</button>
                                 </div>
                             </div>
@@ -651,7 +651,6 @@
         const paleta17 = ['#007AFF','#34C759','#FF3B30','#FF9500','#5856D6','#AF52DE','#5AC8FA','#FF2D55','#E5C07B','#98C379','#E06C75','#C678DD','#56B6C2','#D19A66','#61AFEF', '#000000', '#FFFFFF'];
         let corAtualMateria = paleta17[0];
 
-        // Váriaveis globais do Firebase para uso nas funções após o carregamento assíncrono
         let db, storage;
 
         document.addEventListener("DOMContentLoaded", () => {
@@ -1768,12 +1767,9 @@
 
             executarIA('chat', `Atue como professor. Aprofunde a explicação anterior:\n\n"${textoDoBalao}"`);
         }
-        
-async function buscarNaWeb(query) {
-            // Versão super leve do DuckDuckGo, focada apenas em HTML para facilitar a raspagem
+
+        async function buscarNaWeb(query) {
             const urlBusca = `https://html.duckduckgo.com/html/?q=${encodeURIComponent(query)}`;
-            
-            // Cadeia de sobrevivência: tenta um, se der erro, pula pro próximo
             const proxies = [
                 `https://api.allorigins.win/get?url=${encodeURIComponent(urlBusca)}`,
                 `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(urlBusca)}`,
@@ -1784,7 +1780,6 @@ async function buscarNaWeb(query) {
                 try {
                     let res = await fetch(proxy);
                     if (!res.ok) continue;
-                    
                     let html = "";
                     if (proxy.includes('allorigins')) {
                         let json = await res.json();
@@ -1792,15 +1787,10 @@ async function buscarNaWeb(query) {
                     } else {
                         html = await res.text();
                     }
-
-                    // Verifica se o DuckDuckGo bloqueou nosso proxy com uma página de erro ou captcha
                     if(html.includes("If this error persists") || html.includes("captcha")) continue;
-
                     let doc = new DOMParser().parseFromString(html, "text/html");
                     let snippets = doc.querySelectorAll('.result__snippet');
-                    
                     if (snippets.length > 0) {
-                        // Extrai os 4 primeiros resultados do site
                         return Array.from(snippets)
                             .slice(0, 4)
                             .map((el, i) => `[Fonte ${i+1}]: ${el.textContent.trim()}`)
@@ -1811,7 +1801,6 @@ async function buscarNaWeb(query) {
                 }
             }
             
-            // PLANO C: Se todos os proxies falharem, consulta a Wikipedia abertamente
             try {
                 let wikiUrl = `https://pt.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(query)}&utf8=&format=json&origin=*`;
                 let resWiki = await fetch(wikiUrl);
@@ -1821,8 +1810,9 @@ async function buscarNaWeb(query) {
                 }
             } catch(e) { }
 
-            return null; // Retorna nulo se todas as tentativas falharem
+            return null;
         }
+
         async function executarIA(tipo, promptEspecifico = null) {
             let k = localStorage.getItem('pruma_apikey'); if(!k) return alert("Configure a API Key na aba Minha Conta.");
             let p = "", box = null; let niveisSelecionados = [];
@@ -1900,7 +1890,7 @@ async function buscarNaWeb(query) {
 
                 let chkWeb = document.getElementById('chk-busca-web');
                 let usaWeb = (tipo === 'chat' && chkWeb && chkWeb.checked);
-                let tagWeb = ''; // Variável para controlar a tag visual da mensagem
+                let tagWeb = '';
 
                 let instrucaoFinal = `${baseSys}\n\n`;
                 if(textoContexto) instrucaoFinal += `[FONTES DE TEXTO/SITES DA NUVEM]:\n${textoContexto}\n\n`;
@@ -1909,7 +1899,6 @@ async function buscarNaWeb(query) {
                     instrucaoFinal += "[ATENÇÃO: FONTES OBRIGATÓRIAS EM ANEXO]: Responda à dúvida UTILIZANDO DADOS E TRECHOS DOS PDFs ANEXOS. Se o conteúdo não estiver no documento, avise o usuário.\n\n";
                 }
 
-                // INÍCIO DA LÓGICA DE BUSCA WEB POR GAMBIARRA (PROXY)
                 if (usaWeb) {
                     let spanLoad = document.getElementById('load-ia-text') || document.querySelector('#load-ia span');
                     if(spanLoad) spanLoad.textContent = "Raspando a Web (via Proxies)... ⏳";
@@ -1945,7 +1934,6 @@ async function buscarNaWeb(query) {
                     return data.candidates[0].content.parts[0].text;
                 }
 
-                // Mantendo o seu modelo leve
                 let txtF = await chamarGemini("gemini-3.5-flash-lite");
                 
                 let l = document.getElementById('load-ia'); if(l) l.remove();
@@ -2006,82 +1994,6 @@ async function buscarNaWeb(query) {
             } catch(e) {
                 let l = document.getElementById('load-ia'); if(l) l.remove();
                 if(box) box.insertAdjacentHTML('beforeend', `<div class="msg msg-a" style="color:var(--brand-danger);">⚠️ Erro: ${e.message}</div>`);
-            }
-        }
-
-                async function chamarGemini(modelo) {
-                    let res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelo}:generateContent?key=${k}`, { 
-                        method:'POST', headers:{'Content-Type':'application/json'}, 
-                        body: JSON.stringify(reqBody) 
-                    });
-                    if(!res.ok) {
-                        let errStr = await res.text();
-                        throw new Error(`Erro API (${res.status}): ${errStr}`);
-                    }
-                    const data = await res.json(); 
-                    return data.candidates[0].content.parts[0].text;
-                }
-
-                let txtF = await chamarGemini("gemini-3.5-flash-lite");
-                
-                let l = document.getElementById('load-ia'); if(l) l.remove();
-                
-                let badgeModelo = `<div style="font-size:0.7rem; color:var(--text-muted); opacity:0.7; margin-bottom:6px; text-align:right;">🛡️ PRUMA IA ${usaWeb ? '(🌐 Fonte: Google Search)' : ''}</div>`;
-
-                if(tipo === 'flashcards') {
-                    let json = JSON.parse(txtF.replace(/```json/g,'').replace(/```/g,'').match(/\[.*\]/s)[0]);
-                    let matNome = sanitizeText(document.getElementById('fc-mat').value) || 'Flashcards Diversos';
-                    let topNome = sanitizeText(document.getElementById('fc-top').value) || 'Geral';
-                    
-                    let htmlFCResult = badgeModelo;
-                    
-                    json.forEach(c => {
-                        let perguntaParsed = sanitizeText(marked.parse(c.f));
-                        let respostaParsed = sanitizeText(marked.parse(c.v));
-
-                        let fcContent = `<div style="background:var(--bg-card); padding:14px; border-radius:8px; border-left:4px solid var(--brand-warning); border:1px solid var(--border-color); width:100%;"><div style="font-weight:700; color:var(--text-main);">❓ Pergunta (${c.nivel || ''}):</div><div style="margin-top:6px; font-weight:normal;" class="conteudo-resposta-ia">${perguntaParsed}</div><button onclick="let resp = this.nextElementSibling; if(resp.style.display==='none'){resp.style.display='block'; this.textContent='Ocultar Resposta';}else{resp.style.display='none'; this.textContent='Ver Resposta';}" class="btn-outline" style="margin-top:12px; width:auto; padding:6px 12px; font-size:0.85rem;">Ver Resposta</button><div style="display:none; margin-top:12px; color:var(--text-main); padding-top:10px; border-top:1px dashed var(--border-color);">💡 Resposta:<div style="margin-top:8px;" class="conteudo-resposta-ia">${respostaParsed}</div></div></div>`;
-                        let itemHtml = `<div style="margin-bottom:16px;">${fcContent}<div style="margin-top:8px;"><button class="btn-outline" style="width:auto; padding:6px 12px; font-size:0.8rem;" data-payload="${encodeURIComponent(fcContent)}" data-mat="${encodeURIComponent(matNome)}" data-top="${encodeURIComponent(topNome)}" onclick="abrirModalEnviarFlashcard(decodeURIComponent(this.getAttribute('data-payload')), this, decodeURIComponent(this.getAttribute('data-mat')), decodeURIComponent(this.getAttribute('data-top')))">💾 Salvar Flashcard</button></div></div>`;
-                        htmlFCResult += itemHtml;
-                    });
-                    box.innerHTML = htmlFCResult;
-                    salvarFiltroHistorico('flashcards', {mat: matNome, top: topNome}, `${matNome}`, htmlFCResult);
-                
-                } else if(tipo === 'questoes') {
-                    let jsonClean = txtF.replace(/```json/g,'').replace(/```/g,'').trim();
-                    let qArray = JSON.parse(jsonClean.match(/\[.*\]/s)[0]);
-                    let htmlQ = `<div style="display:flex; flex-direction:column; gap:20px;">`;
-                    qArray.forEach(q => {
-                        let altHtml = '';
-                        if(Array.isArray(q.alternativas)) {
-                            q.alternativas.forEach(alt => {
-                                let letra = alt.charAt(0).toUpperCase();
-                                let isCorreta = (letra === (q.correta || '').toUpperCase());
-                                altHtml += `<button class="btn-outline alt-btn" data-correta="${isCorreta ? '1' : '0'}" onclick="responderQuestaoUnica(this)" style="text-align:left; padding:10px 14px; margin:4px 0; border-radius:8px; font-size:0.9rem; width:100%;">${sanitizeText(alt)}</button>`;
-                            });
-                        }
-                        let cadQstHtml = `<div style="background:var(--bg-card); padding:16px; border-radius:var(--radius-sm); border:1px solid var(--border-color); width:100%;"><div style="font-weight:700; margin-bottom:10px;">🎯 Questão (${sanitizeText(q.nivel || '')})</div><div style="margin-bottom:12px;">${sanitizeText(q.enunciado)}</div><div style="display:flex; flex-direction:column; gap:4px; margin-bottom:12px;" class="bloco-alternativas-qst">${altHtml}</div><div class="bloco-explicacao-qst" style="display:none; margin-top:8px;"><div style="font-size:0.85rem; color:var(--text-muted); padding-top:8px; border-top:1px solid var(--border-color);">💡 Comentário: ${sanitizeText(q.comentario || '')}</div></div></div>`;
-                        let itemHtmlQst = `<div style="margin-bottom:16px;">${cadQstHtml}<div style="margin-top:8px;"><button class="btn-primary" style="width:auto; padding:6px 14px; font-size:0.8rem;" data-payload="${encodeURIComponent(cadQstHtml)}" data-mat="${encodeURIComponent(document.getElementById('ia-qts-tema').value || 'Questões')}" onclick="abrirModalEnviarCaderno(decodeURIComponent(this.getAttribute('data-payload')), this, decodeURIComponent(this.getAttribute('data-mat')), '', true)">📚 Enviar para Caderno de Erros</button></div></div>`;
-                        htmlQ += itemHtmlQst;
-                    });
-                    htmlQ += `</div>`;
-                    let finalQstHtml = `${badgeModelo}${htmlQ}`;
-                    box.insertAdjacentHTML('beforeend', `<div class="msg msg-a" style="max-width:100%; width:100%;">${finalQstHtml}</div>`);
-                    salvarFiltroHistorico('questoes', {tema: document.getElementById('ia-qts-tema').value}, 'Questões', finalQstHtml);
-                
-                } else {
-                    let parsedMarkdown = marked.parse(txtF); 
-                    let lHtml = sanitizeText(parsedMarkdown);
-                    
-                    let chatHtmlToSave = `<div style="font-size:0.95rem; line-height:1.5; color:var(--text-main);">${lHtml}</div>`;
-                    let finalChatHtml = `${badgeModelo}<div class="conteudo-resposta-ia">${lHtml}</div><br><div style="display:flex; gap:8px;"><button class="btn-outline" style="width:auto; padding:6px 12px; font-size:0.8rem;" onclick="aprofundarRespostaContextual(this)">🔍 Aprofundar</button><button class="btn-primary" style="width:auto; padding:6px 12px; font-size:0.8rem;" data-payload="${encodeURIComponent(chatHtmlToSave)}" onclick="abrirModalEnviarCaderno(decodeURIComponent(this.getAttribute('data-payload')), this, '', '', true)">📚 Salvar no Caderno</button></div>`;
-                    
-                    box.insertAdjacentHTML('beforeend', `<div class="msg msg-a" style="max-width:100%; width:100%;">${finalChatHtml}</div>`);
-                    salvarFiltroHistorico('chat', p, p.substring(0, 25), finalChatHtml);
-                }
-                box.scrollTop = box.scrollHeight;
-            } catch(e) {
-                let l = document.getElementById('load-ia'); if(l) l.remove();
-                if(box) box.insertAdjacentHTML('beforeend', `<div class="msg msg-a" style="color:var(--brand-danger);">⚠️ ${e.message}</div>`);
             }
         }
 
