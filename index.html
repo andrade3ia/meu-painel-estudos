@@ -144,6 +144,7 @@
         <button class="nav-btn" onclick="irTela('estatisticas', event)">📈 Estatísticas</button>
         
         <div style="border-top: 1px solid var(--border-color); margin-top: 10px; padding-top: 10px; display: flex; flex-direction: column; gap: 6px;">
+            <button class="nav-btn" onclick="alternarTema()">🌓 Alternar Tema</button>
             <button class="nav-btn" onclick="document.getElementById('modal-apikey').style.display='flex'">🔑 <span style="color:var(--brand-danger); font-weight:700;">X</span> API Key</button>
             <button class="nav-btn" onclick="irTela('conta', event)">👤 Minha Conta</button>
         </div>
@@ -323,7 +324,6 @@
                     <h2>⚡ Gerador de Flashcards Automáticos</h2>
                     <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:16px;">Escolha abaixo a quantidade, matéria e assunto para gerar seus flashcards cirúrgicos.</p>
                     
-                    <!-- NOVO BLOCO FONTES -->
                     <div style="margin-bottom:16px;" class="bloco-fontes-ia">
                         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; flex-wrap:wrap; gap:10px;">
                             <label style="font-size:0.75rem; font-weight:700; color:var(--text-muted); margin-bottom:0;">📚 FONTES DE CONTEXTO (OPCIONAL)</label>
@@ -331,7 +331,6 @@
                         </div>
                         <div id="chk-container-flashcards" class="container-checkboxes-fontes-ia" style="display:flex; gap:10px; overflow-x:auto; padding-bottom:8px; scrollbar-width: none;"></div>
                     </div>
-                    <!-- FIM NOVO BLOCO FONTES -->
 
                     <div style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:16px; background:var(--bg-input); padding:16px; border-radius:var(--radius-sm);">
                         <div style="width:110px; min-width:110px;">
@@ -539,7 +538,6 @@
                     <label style="font-weight:700; display:block; margin-bottom:10px;">Paleta de Cores do Sistema (17 Opções):</label>
                     <div id="paleta-cores-sistema" style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:24px;"></div>
 
-                    <button class="btn-outline" style="width:100%; padding:14px; font-size:1rem; margin-bottom:16px;" onclick="alternarTema()">🌓 Alternar Tema (Claro/Escuro)</button>
                     <button class="btn-danger" style="width:100%; padding:14px; font-size:1rem; margin-bottom:16px;" onclick="firebase.auth().signOut()">🚪 Sair da Conta</button>
                     
                     <button class="btn-outline" style="width:100%; padding:14px; font-size:0.85rem; border-color:var(--brand-danger); color:var(--brand-danger);" onclick="excluirConta()">Excluir Minha Conta Permanentemente</button>
@@ -1392,6 +1390,23 @@
             }
         }
 
+        function excluirCadernoOuSub(tipoDb, matAtual, topAtual) {
+            let dbRef = tipoDb === 'flashcards' ? dbData.flashcards : dbData.cadernos;
+            
+            if (topAtual === null) {
+                if (!confirm(`Tem certeza que deseja excluir o caderno inteiro "${matAtual}" e todas as suas anotações de uma vez?`)) return;
+                dbRef = dbRef.filter(item => item.materia !== matAtual);
+            } else {
+                if (!confirm(`Tem certeza que deseja excluir o sub-caderno "${topAtual}" e todas as suas anotações de uma vez?`)) return;
+                dbRef = dbRef.filter(item => !(item.materia === matAtual && item.topico === topAtual));
+            }
+            
+            if (tipoDb === 'flashcards') dbData.flashcards = dbRef;
+            else dbData.cadernos = dbRef;
+            
+            refDb.child(tipoDb).set(dbRef);
+        }
+
         function renderizarCadernosGen(dbArray, divId, termo, dbStringName) {
             let stateCadernos = []; 
             document.querySelectorAll(`#${divId} .pasta-body.aberta:not(.sub-caderno-body)`).forEach(el => { 
@@ -1475,7 +1490,10 @@
                     
                     htmlM += `<div class="pasta-header sub-caderno-header ${termo ? 'aberta' : ''}" data-subcaderno-folder="${subFolderKey}" onclick="this.nextElementSibling.classList.toggle('aberta')" style="background:var(--bg-body); border-left:3px solid var(--brand-warning); margin-bottom:4px; padding:10px 14px; border-radius:var(--radius-sm);">
                         <span style="font-weight:600; color:var(--text-main); font-size:0.9rem; flex:1; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">📂 ${sanitizeText(t)} (${agr[m][t].length})</span>
-                        <button style="background:transparent;border:none;cursor:pointer;font-size:1.1rem;padding:0;margin-left:8px;" title="Renomear Sub-caderno" onclick="event.stopPropagation(); renomearCadernoOuSub('${dbStringName}', '${sanitizeText(m).replace(/'/g,"\\'")}', '${sanitizeText(t).replace(/'/g,"\\'")}')">✏️</button>
+                        <div style="display:flex; align-items:center; gap:4px; flex-shrink:0;">
+                            <button style="background:transparent;border:none;cursor:pointer;font-size:1rem;padding:0 4px;" title="Renomear Sub-caderno" onclick="event.stopPropagation(); renomearCadernoOuSub('${dbStringName}', '${sanitizeText(m).replace(/'/g,"\\'")}', '${sanitizeText(t).replace(/'/g,"\\'")}')">✏️</button>
+                            <button class="btn-x-vermelho" style="font-size:1rem; padding:0 4px;" title="Excluir Sub-caderno" onclick="event.stopPropagation(); excluirCadernoOuSub('${dbStringName}', '${sanitizeText(m).replace(/'/g,"\\'")}', '${sanitizeText(t).replace(/'/g,"\\'")}')">✖</button>
+                        </div>
                     </div>
                     <div class="pasta-body sub-caderno-body ${termo ? 'aberta' : ''}" style="border-left: 2px solid var(--border-color); margin-left: 14px; margin-bottom:12px; padding-left:12px;">
                         ${htmlT}
@@ -1484,7 +1502,10 @@
                 
                 finalDivHtml += `<div class="pasta-header" data-caderno-folder="${folderKey}" onclick="this.nextElementSibling.classList.toggle('aberta')">
                     <span style="font-weight:700; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1; min-width:0;" title="${sanitizeText(m)}">${dbStringName==='flashcards'?'⚡':'📓'} ${sanitizeText(m)}</span>
-                    <button style="background:transparent;border:none;cursor:pointer;font-size:1.2rem;padding:0;margin-left:8px;" title="Renomear Caderno" onclick="event.stopPropagation(); renomearCadernoOuSub('${dbStringName}', '${sanitizeText(m).replace(/'/g,"\\'")}', null)">✏️</button>
+                    <div style="display:flex; align-items:center; gap:4px; flex-shrink:0;">
+                        <button style="background:transparent;border:none;cursor:pointer;font-size:1.1rem;padding:0 4px;" title="Renomear Caderno" onclick="event.stopPropagation(); renomearCadernoOuSub('${dbStringName}', '${sanitizeText(m).replace(/'/g,"\\'")}', null)">✏️</button>
+                        <button class="btn-x-vermelho" style="font-size:1.1rem; padding:0 4px;" title="Excluir Caderno" onclick="event.stopPropagation(); excluirCadernoOuSub('${dbStringName}', '${sanitizeText(m).replace(/'/g,"\\'")}', null)">✖</button>
+                    </div>
                 </div><div class="pasta-body ${termo ? 'aberta' : ''}" style="padding-top:8px;">${htmlM}</div>`;
             }
             div.innerHTML = finalDivHtml;
