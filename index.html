@@ -1,3 +1,8 @@
+Respondendo primeiro à sua dúvida: Não, a busca web não está nativa/automática para flashcards e questões. Atualmente, ela só funciona na aba "Chat Especialista" (quando você marca a caixinha "🌐 Buscar Web"). As opções de flashcards e questões usam apenas a base de dados interna da Inteligência Artificial e os PDFs/arquivos que você porventura anexar.
+Sobre as duas alterações solicitadas:
+ * Adicionado o botão de renomear (✏️): Agora, tanto na aba Caderno de Erros quanto em Flashcards, você verá um ícone de lápis ao lado do nome do Caderno principal e do Subcaderno. Ao clicar, poderá alterar o nome e ele atualizará todos os itens daquela pasta de uma vez.
+ * Botão de Ocultar Resposta (Flashcards): Alterei a geração dos Flashcards. O botão "Ver Resposta" não desaparece mais após clicado; ele se transforma em "Ocultar Resposta", permitindo que você abra e feche a explicação quantas vezes quiser. (Nota: isso valerá para os novos flashcards que você gerar a partir de agora).
+Aqui está o código completo com as duas exclusivas modificações implementadas. Copie e substitua no seu projeto:
 <!DOCTYPE html>
 <html lang="pt-BR" data-theme="light">
 <head>
@@ -1335,6 +1340,44 @@
             document.getElementById('modal-mover-caderno').style.display='none';
         }
 
+        function renomearCadernoOuSub(tipoDb, matAtual, topAtual) {
+            let dbRef = tipoDb === 'flashcards' ? dbData.flashcards : dbData.cadernos;
+            
+            if (topAtual === null) {
+                let novoNome = prompt(`Renomear pasta "${matAtual}" para:`, matAtual);
+                if (!novoNome || novoNome.trim() === '' || novoNome === matAtual) return;
+                novoNome = sanitizeText(novoNome.trim());
+                
+                let count = 0;
+                dbRef.forEach(item => {
+                    if (item.materia === matAtual) {
+                        item.materia = novoNome;
+                        count++;
+                    }
+                });
+                if (count > 0) {
+                    refDb.child(tipoDb).set(dbRef);
+                    alert(`Pasta renomeada com sucesso!`);
+                }
+            } else {
+                let novoNome = prompt(`Renomear sub-pasta "${topAtual}" (dentro de ${matAtual}) para:`, topAtual);
+                if (!novoNome || novoNome.trim() === '' || novoNome === topAtual) return;
+                novoNome = sanitizeText(novoNome.trim());
+                
+                let count = 0;
+                dbRef.forEach(item => {
+                    if (item.materia === matAtual && item.topico === topAtual) {
+                        item.topico = novoNome;
+                        count++;
+                    }
+                });
+                if (count > 0) {
+                    refDb.child(tipoDb).set(dbRef);
+                    alert(`Sub-pasta renomeada com sucesso!`);
+                }
+            }
+        }
+
         function renderizarCadernosGen(dbArray, divId, termo, dbStringName) {
             let stateCadernos = []; 
             document.querySelectorAll(`#${divId} .pasta-body.aberta:not(.sub-caderno-body)`).forEach(el => { 
@@ -1418,13 +1461,17 @@
                     
                     htmlM += `<div class="pasta-header sub-caderno-header ${termo ? 'aberta' : ''}" data-subcaderno-folder="${subFolderKey}" onclick="this.nextElementSibling.classList.toggle('aberta')" style="background:var(--bg-body); border-left:3px solid var(--brand-warning); margin-bottom:4px; padding:10px 14px; border-radius:var(--radius-sm);">
                         <span style="font-weight:600; color:var(--text-main); font-size:0.9rem; flex:1; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">📂 ${sanitizeText(t)} (${agr[m][t].length})</span>
+                        <button style="background:transparent;border:none;cursor:pointer;font-size:1.1rem;padding:0;margin-left:8px;" title="Renomear Sub-caderno" onclick="event.stopPropagation(); renomearCadernoOuSub('${dbStringName}', '${sanitizeText(m).replace(/'/g,"\\'")}', '${sanitizeText(t).replace(/'/g,"\\'")}')">✏️</button>
                     </div>
                     <div class="pasta-body sub-caderno-body ${termo ? 'aberta' : ''}" style="border-left: 2px solid var(--border-color); margin-left: 14px; margin-bottom:12px; padding-left:12px;">
                         ${htmlT}
                     </div>`;
                 }
                 
-                finalDivHtml += `<div class="pasta-header" data-caderno-folder="${folderKey}" onclick="this.nextElementSibling.classList.toggle('aberta')"><span style="font-weight:700; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1; min-width:0;" title="${sanitizeText(m)}">${dbStringName==='flashcards'?'⚡':'📓'} ${sanitizeText(m)}</span></div><div class="pasta-body ${termo ? 'aberta' : ''}" style="padding-top:8px;">${htmlM}</div>`;
+                finalDivHtml += `<div class="pasta-header" data-caderno-folder="${folderKey}" onclick="this.nextElementSibling.classList.toggle('aberta')">
+                    <span style="font-weight:700; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1; min-width:0;" title="${sanitizeText(m)}">${dbStringName==='flashcards'?'⚡':'📓'} ${sanitizeText(m)}</span>
+                    <button style="background:transparent;border:none;cursor:pointer;font-size:1.2rem;padding:0;margin-left:8px;" title="Renomear Caderno" onclick="event.stopPropagation(); renomearCadernoOuSub('${dbStringName}', '${sanitizeText(m).replace(/'/g,"\\'")}', null)">✏️</button>
+                </div><div class="pasta-body ${termo ? 'aberta' : ''}" style="padding-top:8px;">${htmlM}</div>`;
             }
             div.innerHTML = finalDivHtml;
             
@@ -1831,7 +1878,7 @@
                         let perguntaParsed = sanitizeText(marked.parse(c.f));
                         let respostaParsed = sanitizeText(marked.parse(c.v));
 
-                        let fcContent = `<div style="background:var(--bg-card); padding:14px; border-radius:8px; border-left:4px solid var(--brand-warning); border:1px solid var(--border-color); width:100%;"><div style="font-weight:700; color:var(--text-main);">❓ Pergunta (${c.nivel || ''}):</div><div style="margin-top:6px; font-weight:normal;" class="conteudo-resposta-ia">${perguntaParsed}</div><button onclick="this.nextElementSibling.style.display='block'; this.style.display='none'" class="btn-outline" style="margin-top:12px; width:auto; padding:6px 12px; font-size:0.85rem;">Ver Resposta</button><div style="display:none; margin-top:12px; color:var(--text-main); padding-top:10px; border-top:1px dashed var(--border-color);">💡 Resposta:<div style="margin-top:8px;" class="conteudo-resposta-ia">${respostaParsed}</div></div></div>`;
+                        let fcContent = `<div style="background:var(--bg-card); padding:14px; border-radius:8px; border-left:4px solid var(--brand-warning); border:1px solid var(--border-color); width:100%;"><div style="font-weight:700; color:var(--text-main);">❓ Pergunta (${c.nivel || ''}):</div><div style="margin-top:6px; font-weight:normal;" class="conteudo-resposta-ia">${perguntaParsed}</div><button onclick="let resp = this.nextElementSibling; if(resp.style.display==='none'){resp.style.display='block'; this.textContent='Ocultar Resposta';}else{resp.style.display='none'; this.textContent='Ver Resposta';}" class="btn-outline" style="margin-top:12px; width:auto; padding:6px 12px; font-size:0.85rem;">Ver Resposta</button><div style="display:none; margin-top:12px; color:var(--text-main); padding-top:10px; border-top:1px dashed var(--border-color);">💡 Resposta:<div style="margin-top:8px;" class="conteudo-resposta-ia">${respostaParsed}</div></div></div>`;
                         let itemHtml = `<div style="margin-bottom:16px;">${fcContent}<div style="margin-top:8px;"><button class="btn-outline" style="width:auto; padding:6px 12px; font-size:0.8rem;" data-payload="${encodeURIComponent(fcContent)}" data-mat="${encodeURIComponent(matNome)}" data-top="${encodeURIComponent(topNome)}" onclick="abrirModalEnviarFlashcard(decodeURIComponent(this.getAttribute('data-payload')), this, decodeURIComponent(this.getAttribute('data-mat')), decodeURIComponent(this.getAttribute('data-top')))">💾 Salvar Flashcard</button></div></div>`;
                         htmlFCResult += itemHtml;
                     });
@@ -1921,3 +1968,4 @@
     </script>
 </body>
 </html>
+
