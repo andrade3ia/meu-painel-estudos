@@ -10,6 +10,9 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" crossorigin="anonymous"></script>
+    <!-- Adicionado: Biblioteca Marked.js para renderizar Markdown (Tabelas, Negritos, Listas) -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js" crossorigin="anonymous"></script>
+    
     <link href="https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <style>
@@ -85,6 +88,19 @@
         .msg-u { background: var(--brand-primary); color: white; align-self: flex-end; font-weight: 500; border-bottom-right-radius: 4px; box-shadow: var(--shadow-sm); }
         .msg-a { background: var(--bg-card); border: 1px solid var(--border-color); align-self: flex-start; color: var(--text-main); box-shadow: var(--shadow-sm); border-bottom-left-radius: 4px; }
 
+        /* Estilização para o texto gerado pela PRUMA IA (Tabelas, Listas, Títulos, Negritos) */
+        .conteudo-resposta-ia { font-size: 0.95rem; line-height: 1.6; }
+        .conteudo-resposta-ia h1, .conteudo-resposta-ia h2, .conteudo-resposta-ia h3 { margin: 16px 0 10px 0; color: var(--brand-primary); font-weight: 700; line-height: 1.3; }
+        .conteudo-resposta-ia h1 { font-size: 1.3rem; } .conteudo-resposta-ia h2 { font-size: 1.15rem; } .conteudo-resposta-ia h3 { font-size: 1.05rem; }
+        .conteudo-resposta-ia p { margin-bottom: 12px; }
+        .conteudo-resposta-ia ul, .conteudo-resposta-ia ol { margin-bottom: 12px; padding-left: 24px; }
+        .conteudo-resposta-ia li { margin-bottom: 6px; }
+        .conteudo-resposta-ia table { width: 100%; border-collapse: collapse; margin-bottom: 16px; font-size: 0.85rem; background: var(--bg-card); }
+        .conteudo-resposta-ia th, .conteudo-resposta-ia td { border: 1px solid var(--border-color); padding: 10px; text-align: left; }
+        .conteudo-resposta-ia th { background: var(--bg-input); font-weight: 700; color: var(--text-main); }
+        .conteudo-resposta-ia strong { color: var(--text-main); }
+        /* Fim da estilização Markdown */
+
         .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: center; z-index: 2000; backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); padding: 20px; }
         .modal-content { background: var(--bg-card); padding: 32px; border-radius: var(--radius-lg); width: 100%; max-width: 520px; max-height: 90vh; overflow-y: auto; box-shadow: var(--shadow-md); position: relative; }
 
@@ -132,8 +148,6 @@
     </aside>
 
     <main class="main-content" onclick="if(window.innerWidth<=768) document.getElementById('sidebar-menu').classList.remove('open')">
-        
-        <!-- RESTANTE DA ESTRUTURA HTML (Telas Início, Provas, Matérias, Caderno, Estatísticas) PERMANECE 100% IGUAL -->
         
         <div id="tela-login" class="card" style="max-width:400px; margin:80px auto; text-align:center;">
             <h1 style="color:var(--brand-primary); font-size:2.8rem; margin:0 0 5px 0; font-weight:700;">PRUMA</h1>
@@ -370,6 +384,7 @@
                         </div>
 
                         <div id="subia-chat">
+                            <!-- Seleção manual de fontes (múltiplas, discreta e intuitiva) -->
                             <div style="margin-bottom:12px;">
                                 <div onclick="let b = document.getElementById('lista-fontes-ia-container'); b.style.display = b.style.display==='none' ? 'block' : 'none';" style="font-size:0.8rem; font-weight:600; color:var(--brand-primary); cursor:pointer; display:inline-flex; align-items:center; gap:4px; user-select:none;">
                                     📎 <span id="label-fontes-selecionadas">Selecionar fontes da Biblioteca (0)</span> ▾
@@ -465,9 +480,9 @@
                     <h2>Nuvem PRUMA (Fontes)</h2>
                     <div style="display:flex; gap:20px; flex-wrap:wrap;">
                         <div style="flex:1; min-width:250px; background:var(--bg-input); padding:20px; border-radius:var(--radius-md);">
-                            <h3 style="margin-top:0; font-size:1.1rem;">Enviar PDF</h3>
+                            <h3 style="margin-top:0; font-size:1.1rem;">Enviar PDF / Texto</h3>
                             <input type="text" id="bib-mat-arq" placeholder="Matéria/Assunto (Opcional)" list="lista-materias-dl" onclick="try{this.showPicker()}catch(e){}">
-                            <input type="file" id="bib-file" accept=".pdf" style="background:var(--bg-card); padding:8px;">
+                            <input type="file" id="bib-file" accept=".pdf,.txt" style="background:var(--bg-card); padding:8px;">
                             <button class="btn-primary" onclick="uploadArquivo()">Subir Arquivo</button>
                         </div>
                         <div style="flex:1; min-width:250px; background:var(--bg-input); padding:20px; border-radius:var(--radius-md);">
@@ -483,7 +498,6 @@
             </div>
 
             <div id="view-conta" style="display:none;">
-                <!-- ... Tela Conta Intacta ... -->
                 <div class="card" style="max-width:500px; margin:0 auto;">
                     <h2>Minha Conta</h2>
                     
@@ -507,7 +521,6 @@
         </div>
     </main>
 
-    <!-- Modais Intactos -->
     <div id="modal-apikey" class="modal">
         <div class="modal-content" style="max-width:560px;">
             <button class="modal-close" style="position:absolute; top:16px; right:16px; background:transparent; border:none; font-size:1.5rem; cursor:pointer; color:var(--brand-danger); font-weight:700; z-index:10;" onclick="document.getElementById('modal-apikey').style.display='none'">✖</button>
@@ -606,7 +619,7 @@
 
         function sanitizeText(str) { return typeof str === 'string' ? DOMPurify.sanitize(str) : ''; }
         function renderHtmlSafely(html) { 
-            return DOMPurify.sanitize(html, { ADD_ATTR: ['onclick', 'data-correta', 'style'] }); 
+            return DOMPurify.sanitize(html, { ADD_ATTR: ['onclick', 'data-correta', 'style', 'class'] }); 
         }
         function gerarId() { return Date.now().toString(36) + Math.random().toString(36).substr(2); }
         
@@ -1270,43 +1283,20 @@
             graficoInstance = new Chart(document.getElementById('graficoEst').getContext('2d'), { type: tipo, data: { labels: keys, datasets: [{ label: 'Tempo', data: vals, backgroundColor: cores, borderWidth: 0, borderRadius: tipo==='bar'?6:0 }] }, options: { responsive: true, maintainAspectRatio: false, color: txtCor, plugins: { legend: { labels: { color: txtCor } }, tooltip: { callbacks: { label: function(c) { let t = c.raw || 0; return ` ${c.label || ''}: ${Math.floor(t / 3600)}h ${Math.floor((t % 3600) / 60)}m ${t % 60}s`; } } } }, scales: tipo==='bar' ? { x:{ticks:{color:txtCor}}, y:{ticks:{color:txtCor}} } : {} } });
         }
 
-        // ---------- FUNÇÃO DE UPLOAD ALTERADA ---------- //
         async function uploadArquivo() {
-            let f = document.getElementById('bib-file').files[0]; 
-            if(!f) return alert("Selecione um arquivo PDF."); 
-            if(f.size > 100 * 1024 * 1024) return alert("Arquivo máx 100MB."); 
-            
-            let btn = event.currentTarget; 
-            let tx = btn.textContent; 
-            btn.disabled = true; 
-            btn.textContent = "Salvando PDF...";
-            
+            let f = document.getElementById('bib-file').files[0]; if(!f) return alert("Selecione."); if(f.size > 100 * 1024 * 1024) return alert("Arquivo máx 100MB."); let btn = event.currentTarget; let tx = btn.textContent; btn.disabled = true; btn.textContent = "Enviando...";
             try { 
-                let refF = refStore.child('biblioteca/' + gerarId() + '_' + f.name); 
+                let refF = refStore.child('biblioteca/'+gerarId()+'_'+f.name); 
                 await refF.put(f); 
                 let url = await refF.getDownloadURL(); 
-                let m = sanitizeText(document.getElementById('bib-mat-arq').value || 'Geral'); 
-                
-                // Salva os dados brutos, sem extração local com pdf.js
-                refDb.child('biblioteca').push({ 
-                    id: gerarId(), 
-                    nome: f.name, 
-                    tipo: 'ARQUIVO', 
-                    url: url, 
-                    texto: "[Documento PDF anexo pronto para leitura dinâmica na IA via Base64]", 
-                    materia: m, 
-                    data: new Date().toLocaleDateString(), 
-                    refPath: refF.fullPath 
-                }); 
-                
+                let txt = ""; 
+                if(!f.type.includes('pdf')) { txt = await f.text(); } 
+                let m = sanitizeText(document.getElementById('bib-mat-arq').value||'Geral'); 
+                refDb.child('biblioteca').push({ id: gerarId(), nome: f.name, tipo: 'ARQUIVO', url: url, texto: txt.substring(0,20000), materia: m, data: new Date().toLocaleDateString(), refPath: refF.fullPath }); 
                 document.getElementById('bib-file').value = ''; 
                 btn.textContent = "✅ Salvo!"; 
-                setTimeout(() => { btn.textContent = tx; btn.disabled = false; }, 2000); 
-            } catch(e) { 
-                alert("Erro: " + e.message); 
-                btn.textContent = tx; 
-                btn.disabled = false; 
-            }
+                setTimeout(()=> {btn.textContent=tx; btn.disabled=false;}, 2000); 
+            } catch(e) { alert("Erro: "+e.message); btn.textContent=tx; btn.disabled=false; }
         }
 
         async function salvarLink() { 
@@ -1441,7 +1431,7 @@
             let pL = promptUsuario.toLowerCase();
             let bancaDetectada = pL.includes('cebraspe') || pL.includes('cespe') ? "CEBRASPE" : (pL.includes('fgv') ? "FGV" : (pL.includes('fcc') ? "FCC" : (pL.includes('vunesp') ? "VUNESP" : "")));
             let bancaInstrucao = bancaDetectada ? `\n\nDiretrizes específicas para a banca ${bancaDetectada}: analise o perfil de cobrança típico desta banca (jurisprudência dominante, letra de lei ou doutrina).` : "";
-            const basePersona = "Você é a PRUMA IA, uma mentora e especialista em estudos e jurídica de altíssimo nível, comparável aos melhores assistentes educacionais do mercado. Forneça explicações profundas, claras, didáticas, ricamente estruturadas e detalhadas para garantir o máximo aprendizado." + bancaInstrucao;
+            const basePersona = "Você é a PRUMA IA, uma mentora e especialista em estudos e jurídica de altíssimo nível. Forneça explicações profundas, claras, didáticas e ricamente estruturadas. USE E ABUSE de formatação visual: utilize emojis adequados para ilustrar os temas, crie tópicos, listas, tabelas comparativas e use negrito para destacar palavras-chave. Sua resposta deve ser extremamente agradável de ler e organizada para facilitar a memorização." + bancaInstrucao;
             return { chat: basePersona, questoes: basePersona, flashcards: basePersona }[tipo] || basePersona;
         }
 
@@ -1483,12 +1473,10 @@
             return "🌐 Web indisponível no momento ou bloqueada pelos servidores de proxy.";
         }
 
-        // ---------- FUNÇÃO EXECUTAR IA ALTERADA ---------- //
         async function executarIA(tipo, promptEspecifico = null) {
             let k = localStorage.getItem('pruma_apikey'); if(!k) return alert("Configure a API Key.");
             let p = "", box = null; let niveisSelecionados = [];
 
-            // Validações por tipo
             if(tipo === 'questoes') {
                 document.querySelectorAll('.chk-nivel-q:checked').forEach(el => niveisSelecionados.push(el.value));
                 if(niveisSelecionados.length === 0) return alert("Selecione um nível.");
@@ -1507,7 +1495,7 @@
                 box = document.getElementById('box-fc'); box.style.display='block'; box.innerHTML='';
             } else if(tipo === 'chat') {
                 p = promptEspecifico || document.getElementById('inp-chat').value.trim(); if(!p) return;
-                box = document.getElementById('box-chat'); 
+                box = document.getElementById('box-chat');
                 if(!promptEspecifico) { box.innerHTML += `<div class="msg msg-u">${sanitizeText(p)}</div>`; document.getElementById('inp-chat').value=''; }
                 box.scrollTop = box.scrollHeight;
             }
@@ -1515,94 +1503,75 @@
             let baseSys = obterPromptDoSistema(tipo, p);
             
             try {
-                // UI de carregamento
-                if(tipo !== 'flashcards') { 
-                    box.innerHTML += `<div class="msg msg-a" id="load-ia"><span id="load-ia-text">Analisando fontes e gerando resposta...</span> ⏳</div>`; box.scrollTop = box.scrollHeight; 
+                if(tipo!=='flashcards') { 
+                    box.innerHTML += `<div class="msg msg-a" id="load-ia"><span id="load-ia-text">Analisando...</span> ⏳</div>`; box.scrollTop = box.scrollHeight; 
                 } else { 
-                    box.innerHTML = `<div id="load-ia" style="color:var(--brand-primary); font-weight:600;"><span>Analisando fontes e construindo flashcards...</span> ⏳</div>`; 
+                    box.innerHTML = `<div id="load-ia" style="color:var(--brand-primary); font-weight:600;"><span>Construindo flashcards...</span> ⏳</div>`; 
                 }
 
-                let ctxTexto = "";
+                let ctxWeb = "";
+                let chkWeb = document.getElementById('chk-busca-web');
+                if(tipo === 'chat' && chkWeb && chkWeb.checked) {
+                    let resultadosWeb = await buscarNaWeb(p);
+                    ctxWeb = `\n\n[BUSCA WEB RECENTE - ANO 2026]:\n${resultadosWeb}\n`;
+                }
+
                 let partesDaMensagem = [];
+                let textoContexto = "";
                 let chksSelecionados = document.querySelectorAll('.chk-fonte-biblioteca:checked');
-                
-                // Mapeia e prepara todas as fontes selecionadas
-                if(chksSelecionados.length > 0) {
-                    ctxTexto += "\n\n[ATENÇÃO: FONTES OBRIGATÓRIAS DA BIBLIOTECA]:\nResponda à dúvida UTILIZANDO DADOS E TRECHOS DAS FONTES ABAIXO. Se o conteúdo não estiver no documento, avise o usuário explicitamente.\n";
-                    for(let chk of chksSelecionados) {
-                        let doc = dbData.biblioteca.find(d => d.fbKey === chk.value);
-                        if(doc) {
-                            if(doc.tipo === 'ARQUIVO' && doc.refPath) {
-                                try {
-                                    // 1. Pega URL do Storage
-                                    let url = await storage.ref(doc.refPath).getDownloadURL();
-                                    let blob;
-                                    
-                                    // 2. Baixa o arquivo para a memória (com proxy de backup caso falhe por CORS)
-                                    try {
-                                        let res = await fetch(url);
-                                        if(!res.ok) throw new Error("CORS fail");
-                                        blob = await res.blob();
-                                    } catch(err) {
-                                        let proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
-                                        let res = await fetch(proxyUrl);
-                                        blob = await res.blob();
-                                    }
-                                    
-                                    // 3. Converte para Base64
-                                    let b64 = await new Promise((resolve, reject) => {
-                                        let reader = new FileReader();
-                                        reader.onload = () => resolve(reader.result.split(',')[1]);
-                                        reader.onerror = reject;
-                                        reader.readAsDataURL(blob);
-                                    });
-                                    
-                                    // 4. Anexa no corpo da API
-                                    partesDaMensagem.push({
-                                        inlineData: { mimeType: "application/pdf", data: b64 }
-                                    });
-                                    ctxTexto += `\n--- Arquivo PDF Anexado LIDO COM SUCESSO: [${doc.nome}] ---\n`;
-                                } catch (err) {
-                                    console.error("Erro total ao baixar PDF:", err);
-                                    ctxTexto += `\n--- ERRO: Falha ao tentar carregar o PDF [${doc.nome}]. A Inteligência Artificial não conseguiu acessar este arquivo. ---\n`;
-                                }
-                            } else if(doc.texto) {
-                                // Se for site ou link salvo, passa o texto normal
-                                ctxTexto += `\n--- Fonte Texto/Site: [${doc.nome}] ---\n${doc.texto}\n`;
+
+                for(let chk of chksSelecionados) {
+                    let doc = dbData.biblioteca.find(d => d.fbKey === chk.value);
+                    if(doc) {
+                        if(doc.nome.toLowerCase().endsWith('.pdf') || (doc.url && doc.url.includes('.pdf'))) {
+                            try {
+                                if(document.getElementById('load-ia-text')) document.getElementById('load-ia-text').textContent = "Lendo PDF anexo... ⏳";
+                                let resBlob;
+                                try { resBlob = await fetch(doc.url); } catch(e) { resBlob = await fetch(`https://corsproxy.io/?${encodeURIComponent(doc.url)}`); }
+                                let blob = await resBlob.blob();
+                                let base64 = await new Promise((resolve, reject) => {
+                                    let reader = new FileReader();
+                                    reader.onload = () => resolve(reader.result.split(',')[1]);
+                                    reader.onerror = reject;
+                                    reader.readAsDataURL(blob);
+                                });
+                                partesDaMensagem.push({ inlineData: { mimeType: "application/pdf", data: base64 } });
+                            } catch(err) {
+                                console.error("Erro ao converter PDF:", err);
+                                if(doc.texto) textoContexto += `\n--- Fonte [${doc.nome}] (Extração Parcial) ---\n${doc.texto}\n`;
                             }
+                        } else if (doc.texto) {
+                            textoContexto += `\n--- Fonte [${doc.nome}] ---\n${doc.texto}\n`;
                         }
                     }
                 }
+                
+                if(document.getElementById('load-ia-text')) document.getElementById('load-ia-text').textContent = "Analisando...";
 
-                // Busca Web
-                let chkBusca = document.getElementById('chk-busca-web');
-                if(tipo === 'chat' && chkBusca && chkBusca.checked) {
-                    let resultadosWeb = await buscarNaWeb(p);
-                    ctxTexto += `\n\n[BUSCA WEB RECENTE]:\n${resultadosWeb}\n`;
+                let instrucaoFinal = `${baseSys}\n\n`;
+                if(textoContexto) instrucaoFinal += `[FONTES DE TEXTO/SITES DA BIBLIOTECA]:\n${textoContexto}\n\n`;
+                if(ctxWeb) instrucaoFinal += `${ctxWeb}\n\n`;
+                
+                if(partesDaMensagem.length > 0) {
+                    instrucaoFinal += "[ATENÇÃO: FONTES OBRIGATÓRIAS EM ANEXO]: Responda à dúvida UTILIZANDO DADOS E TRECHOS DOS PDFs ANEXOS. Se o conteúdo não estiver no documento, avise o usuário.\n\n";
                 }
+                
+                instrucaoFinal += `PROMPT: ${p}`;
+                partesDaMensagem.push({ text: instrucaoFinal });
 
-                // Insere as instruções + contexto textual + pergunta do usuário no final da lista
-                partesDaMensagem.push({
-                    text: `${baseSys}\n\n${ctxTexto}\n\nPROMPT: ${p}`
-                });
-
-                // Chamada para a API
                 async function chamarGemini(modelo) {
                     let res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelo}:generateContent?key=${k}`, { 
                         method:'POST', headers:{'Content-Type':'application/json'}, 
-                        body: JSON.stringify({ contents: [{ parts: partesDaMensagem }] }) 
+                        body:JSON.stringify({ contents:[{parts: partesDaMensagem}] }) 
                     });
-                    if(!res.ok) {
-                        let errTxt = await res.text();
-                        throw new Error(`Erro API (${res.status}): ${errTxt}`);
-                    }
+                    if(!res.ok) throw new Error(`Erro API (${res.status})`);
                     const data = await res.json(); 
                     return data.candidates[0].content.parts[0].text;
                 }
 
                 let txtF = await chamarGemini("gemini-3.5-flash-lite");
                 let l = document.getElementById('load-ia'); if(l) l.remove();
-                let badgeModelo = `<div style="font-size:0.7rem; color:var(--text-muted); opacity:0.7; margin-bottom:6px; text-align:right;">🛡️ PRUMA IA (Modo Leitura Completa)</div>`;
+                let badgeModelo = `<div style="font-size:0.7rem; color:var(--text-muted); opacity:0.7; margin-bottom:6px; text-align:right;">🛡️ PRUMA IA</div>`;
 
                 if(tipo === 'flashcards') {
                     let json = JSON.parse(txtF.replace(/```json/g,'').replace(/```/g,'').match(/\[.*\]/s)[0]);
@@ -1638,9 +1607,13 @@
                     box.innerHTML = `<div class="msg msg-a" style="max-width:100%; width:100%;">${finalQstHtml}</div>`;
                     salvarFiltroHistorico('questoes', {tema: document.getElementById('ia-qts-tema').value}, 'Questões', finalQstHtml);
                 } else {
-                    let rawHtml = txtF.replace(/\n/g, '<br>'); let lHtml = sanitizeText(rawHtml);
+                    // ALTERAÇÃO CRUCIAL AQUI: Usa a biblioteca marked para processar negritos, tabelas e títulos!
+                    let parsedMarkdown = marked.parse(txtF); 
+                    let lHtml = sanitizeText(parsedMarkdown);
+                    
                     let chatHtmlToSave = `<div style="font-size:0.95rem; line-height:1.5; color:var(--text-main);">${lHtml}</div>`;
-                    let finalChatHtml = `${badgeModelo}<div class="conteudo-resposta-ia">${lHtml}</div><br><br><div style="display:flex; gap:8px;"><button class="btn-outline" style="width:auto; padding:6px 12px; font-size:0.8rem;" onclick="aprofundarRespostaContextual(this)">🔍 Aprofundar</button><button class="btn-primary" style="width:auto; padding:6px 12px; font-size:0.8rem;" data-payload="${encodeURIComponent(chatHtmlToSave)}" onclick="abrirModalEnviarCaderno(decodeURIComponent(this.getAttribute('data-payload')), this, '', '', true)">📚 Salvar</button></div>`;
+                    let finalChatHtml = `${badgeModelo}<div class="conteudo-resposta-ia">${lHtml}</div><br><div style="display:flex; gap:8px;"><button class="btn-outline" style="width:auto; padding:6px 12px; font-size:0.8rem;" onclick="aprofundarRespostaContextual(this)">🔍 Aprofundar</button><button class="btn-primary" style="width:auto; padding:6px 12px; font-size:0.8rem;" data-payload="${encodeURIComponent(chatHtmlToSave)}" onclick="abrirModalEnviarCaderno(decodeURIComponent(this.getAttribute('data-payload')), this, '', '', true)">📚 Salvar</button></div>`;
+                    
                     box.innerHTML += `<div class="msg msg-a" style="max-width:100%; width:100%;">${finalChatHtml}</div>`;
                     salvarFiltroHistorico('chat', p, p.substring(0, 25), finalChatHtml);
                 }
