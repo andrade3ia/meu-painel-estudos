@@ -6,11 +6,11 @@
     <title>PRUMA | Painel de Estudos</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>👨‍💻</text></svg>">
     
-    <script src="https://cdn.jsdelivr.net/npm/chart.js" crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js" crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js" crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js" crossorigin="anonymous" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js" crossorigin="anonymous" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js" crossorigin="anonymous" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" crossorigin="anonymous" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js" crossorigin="anonymous" defer></script>
     
     <link href="https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
 
@@ -117,10 +117,10 @@
         }
     </style>
 
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js" defer></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js" defer></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js" defer></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js" defer></script>
 </head>
 <body>
 
@@ -623,18 +623,6 @@
     </div>
 
     <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyCIPK3YBKulMbjJzm_UahdtQrNjgqLmYho",
-            authDomain: "plataforma-de-estudos-98ec8.firebaseapp.com",
-            databaseURL: "https://plataforma-de-estudos-98ec8-default-rtdb.firebaseio.com",
-            projectId: "plataforma-de-estudos-98ec8",
-            storageBucket: "plataforma-de-estudos-98ec8.firebasestorage.app",
-            messagingSenderId: "237117351737",
-            appId: "1:237117351737:web:32a01ded955abc3d302ae8"
-        };
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.database(); const storage = firebase.storage();
-
         let userAtual = null, refDb = null, refStore = null, isAdmin = false;
         let dbData = { sessoes: [], provas: [], materias: [], cadernos: [], flashcards: [], biblioteca: [], iaFiltrosHistorico: [] };
         let segundosCronometro = 0, cronometroInterval = null, graficoInstance = null;
@@ -646,6 +634,44 @@
         const paleta17 = ['#007AFF','#34C759','#FF3B30','#FF9500','#5856D6','#AF52DE','#5AC8FA','#FF2D55','#E5C07B','#98C379','#E06C75','#C678DD','#56B6C2','#D19A66','#61AFEF', '#000000', '#FFFFFF'];
         let corAtualMateria = paleta17[0];
 
+        // Váriaveis globais do Firebase para uso nas funções após o carregamento assíncrono
+        let db, storage;
+
+        document.addEventListener("DOMContentLoaded", () => {
+            const firebaseConfig = {
+                apiKey: "AIzaSyCIPK3YBKulMbjJzm_UahdtQrNjgqLmYho",
+                authDomain: "plataforma-de-estudos-98ec8.firebaseapp.com",
+                databaseURL: "https://plataforma-de-estudos-98ec8-default-rtdb.firebaseio.com",
+                projectId: "plataforma-de-estudos-98ec8",
+                storageBucket: "plataforma-de-estudos-98ec8.firebasestorage.app",
+                messagingSenderId: "237117351737",
+                appId: "1:237117351737:web:32a01ded955abc3d302ae8"
+            };
+            firebase.initializeApp(firebaseConfig);
+            db = firebase.database(); 
+            storage = firebase.storage();
+
+            firebase.auth().onAuthStateChanged(async user => {
+                if(user) {
+                    userAtual = user; refDb = db.ref('usuarios/' + user.uid); refStore = storage.ref('usuarios/' + user.uid);
+                    document.getElementById('tela-login').style.display = 'none'; document.getElementById('tela-painel').style.display = 'block';
+                    document.getElementById('conta-email').textContent = user.email;
+                    
+                    try {
+                        let adminSnap = await db.ref('admins/' + user.uid).once('value');
+                        isAdmin = adminSnap.val() === true;
+                    } catch(e) { isAdmin = false; }
+                    
+                    carregarPaletaSistema(); carregarApiKey(); carregarDadosGlobais(); irTela('inicio');
+                    
+                    let sesDataEl = document.getElementById('ses-data');
+                    if(sesDataEl && !sesDataEl.value) sesDataEl.value = new Date().toISOString().split('T')[0];
+                } else {
+                    userAtual = null; isAdmin = false; document.getElementById('tela-login').style.display = 'block'; document.getElementById('tela-painel').style.display = 'none';
+                }
+            });
+        });
+
         function sanitizeText(str) { return typeof str === 'string' ? DOMPurify.sanitize(str) : ''; }
         function renderHtmlSafely(html) { return DOMPurify.sanitize(html, { ADD_ATTR: ['onclick', 'data-correta', 'style', 'class'] }); }
         function gerarId() { return Date.now().toString(36) + Math.random().toString(36).substr(2); }
@@ -656,26 +682,6 @@
             if(document.getElementById('view-estatisticas').style.display === 'block') atualizarEstatisticas();
         }
         if(localStorage.getItem('pruma_tema') === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
-
-        firebase.auth().onAuthStateChanged(async user => {
-            if(user) {
-                userAtual = user; refDb = db.ref('usuarios/' + user.uid); refStore = storage.ref('usuarios/' + user.uid);
-                document.getElementById('tela-login').style.display = 'none'; document.getElementById('tela-painel').style.display = 'block';
-                document.getElementById('conta-email').textContent = user.email;
-                
-                try {
-                    let adminSnap = await db.ref('admins/' + user.uid).once('value');
-                    isAdmin = adminSnap.val() === true;
-                } catch(e) { isAdmin = false; }
-                
-                carregarPaletaSistema(); carregarApiKey(); carregarDadosGlobais(); irTela('inicio');
-                
-                let sesDataEl = document.getElementById('ses-data');
-                if(sesDataEl && !sesDataEl.value) sesDataEl.value = new Date().toISOString().split('T')[0];
-            } else {
-                userAtual = null; isAdmin = false; document.getElementById('tela-login').style.display = 'block'; document.getElementById('tela-painel').style.display = 'none';
-            }
-        });
 
         function irTela(t, e) {
             ['inicio', 'provas', 'materias', 'caderno', 'flashcards', 'estatisticas', 'pruma', 'conta'].forEach(v => {
@@ -750,7 +756,6 @@
                 let v = s.val(); 
                 let rawCadernos = v ? (Array.isArray(v) ? v : Object.values(v)) : []; 
                 
-                // MIGRACÃO AUTOMÁTICA DE FLASHCARDS DO CADERNO PARA A ABA FLASHCARDS
                 let mudou = false;
                 let cadsRestantes = [];
                 let fcsParaMigrar = [];
@@ -788,7 +793,6 @@
             refDb.child('ia_filtros_historico').on('value', s => { dbData.iaFiltrosHistorico = s.val() || []; renderizarFiltrosIAHistorico(); });
         }
 
-        // Funções do Cronômetro
         function iniciarCronometro() { 
             if(pausaInterval) { clearInterval(pausaInterval); pausaInterval = null; }
             document.getElementById('visor-pausa-container').style.display = 'none';
@@ -828,20 +832,25 @@
         }
 
         function atualizarTopicosSessao(matNome) {
-            let dl = document.getElementById('dl-ses-top'); if(!dl) return; dl.innerHTML = '';
+            let dl = document.getElementById('dl-ses-top'); if(!dl) return; 
+            let htmlOpts = '';
             if(!Array.isArray(dbData.materias)) dbData.materias = Object.values(dbData.materias || {});
             dbData.materias.filter(m => m.nome.toLowerCase() === matNome.toLowerCase()).forEach(m => {
-                if(Array.isArray(m.topicos)) m.topicos.forEach(t => dl.innerHTML += `<option value="${t}">`);
+                if(Array.isArray(m.topicos)) m.topicos.forEach(t => htmlOpts += `<option value="${t}">`);
             });
+            dl.innerHTML = htmlOpts;
         }
 
         function atualizarTopicosCaderno(matNome, idDatalist, tipoDb) {
-            let dl = document.getElementById(idDatalist); if(!dl) return; dl.innerHTML = '';
+            let dl = document.getElementById(idDatalist); if(!dl) return; 
             let arrayDb = tipoDb === 'flashcards' ? dbData.flashcards : dbData.cadernos;
             if(!Array.isArray(arrayDb)) arrayDb = Object.values(arrayDb || {});
             let tops = new Set();
             arrayDb.forEach(c => { if(c.materia === matNome && c.topico) tops.add(c.topico); });
-            [...tops].forEach(t => dl.innerHTML += `<option value="${t}">`);
+            
+            let htmlOpts = '';
+            [...tops].forEach(t => htmlOpts += `<option value="${t}">`);
+            dl.innerHTML = htmlOpts;
         }
 
         function atualizarResumoGeral() {
@@ -866,7 +875,6 @@
             document.getElementById('rg-erros').textContent = tE; document.getElementById('rg-perc').textContent = (tA + tE) > 0 ? Math.round((tA / (tA + tE)) * 100) + '%' : '0%';
         }
 
-        // Funções do Calendário
         function alterarMesCalendario(delta) {
             let pSessao = dbData.sessoes.length > 0 ? dbData.sessoes.reduce((min, s) => Math.min(min, s.timestamp), Date.now()) : Date.now();
             let dataMinima = new Date(pSessao); dataMinima.setDate(1); dataMinima.setHours(0,0,0,0);
@@ -882,7 +890,7 @@
         }
 
         function renderizarCalendarioMes() {
-            let grid = document.getElementById('calendario-grid'); if(!grid) return; grid.innerHTML = '';
+            let grid = document.getElementById('calendario-grid'); if(!grid) return; 
             let agora = new Date();
             let targetDate = new Date(agora.getFullYear(), agora.getMonth() + calMesOff, 1);
             let ano = targetDate.getFullYear(), mes = targetDate.getMonth();
@@ -901,12 +909,13 @@
             const nomesMeses = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
             document.getElementById('calendario-titulo').textContent = `${nomesMeses[mes]} ${ano}`;
 
-            ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'].forEach(d => { grid.innerHTML += `<div style="font-weight:700; color:var(--text-muted); font-size:0.75rem; padding-bottom:4px;">${d}</div>`; });
+            let gridHtml = '';
+            ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'].forEach(d => { gridHtml += `<div style="font-weight:700; color:var(--text-muted); font-size:0.75rem; padding-bottom:4px;">${d}</div>`; });
 
             let primeiroDiaDoMes = new Date(ano, mes, 1).getDay();
             let ultimoDiaDoMes = new Date(ano, mes + 1, 0).getDate();
 
-            for(let i=0; i<primeiroDiaDoMes; i++) grid.innerHTML += `<div></div>`;
+            for(let i=0; i<primeiroDiaDoMes; i++) gridHtml += `<div></div>`;
 
             for(let dia=1; dia<=ultimoDiaDoMes; dia++) {
                 let dObj = new Date(ano, mes, dia);
@@ -918,11 +927,11 @@
                     if(temEstudo) { icone = '✅'; corFundo = 'rgba(52, 199, 89, 0.12)'; } 
                     else { icone = '❌'; corFundo = 'rgba(255, 59, 48, 0.12)'; }
                 }
-                grid.innerHTML += `<div style="background:${corFundo}; border:1px solid var(--border-color); border-radius:8px; padding:6px 2px; display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:42px;"><span style="font-size:0.8rem; font-weight:600; color:var(--text-main);">${dia}</span><span style="font-size:0.85rem; margin-top:2px;">${icone}</span></div>`;
+                gridHtml += `<div style="background:${corFundo}; border:1px solid var(--border-color); border-radius:8px; padding:6px 2px; display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:42px;"><span style="font-size:0.8rem; font-weight:600; color:var(--text-main);">${dia}</span><span style="font-size:0.85rem; margin-top:2px;">${icone}</span></div>`;
             }
+            grid.innerHTML = gridHtml;
         }
 
-        // Funções de Registro
         function salvarRegistro() {
             let mat = sanitizeText(document.getElementById('ses-mat').value), topRaw = sanitizeText(document.getElementById('ses-top').value);
             if(!mat) return alert("Preencha a matéria.");
@@ -1007,7 +1016,7 @@
         }
 
         function renderizarInicio() {
-            let divReg = document.getElementById('lista-ultimos-registros'); divReg.innerHTML = '';
+            let divReg = document.getElementById('lista-ultimos-registros');
             let termoReg = document.getElementById('busca-registros-inicio') ? document.getElementById('busca-registros-inicio').value.toLowerCase().trim() : '';
             let arr = [...dbData.sessoes].sort((a,b)=> b.timestamp - a.timestamp);
             
@@ -1027,6 +1036,7 @@
             arr.forEach(s => { let d = s.data || new Date(s.timestamp).toLocaleDateString(); if(!agrupadoPorData[d]) agrupadoPorData[d] = []; agrupadoPorData[d].push(s); });
 
             let count = 0; let limiteExibicao = termoReg ? 100 : 15;
+            let finalHtml = '';
 
             for(let dataStr in agrupadoPorData) {
                 if(count >= limiteExibicao) break;
@@ -1041,7 +1051,6 @@
                     let perc = s.totalQts > 0 ? Math.round((s.acertos/s.totalQts)*100)+'%' : '0%'; let accStr = `${perc} (${s.acertos||0}/${s.totalQts||0})`;
                     let tooltipText = `${s.materia} - ${s.topico||'Geral'} | Lançado às: ${s.hora||'--:--'} | ⏱️ ${timeStr} | 🎯 ${accStr}`;
 
-                    // Lógica para as observações integradas
                     let obsHtml = '';
                     if (s.obs) {
                         obsHtml = `<div style="width:100%; border-top:1px dashed var(--border-color); margin-top:8px; padding-top:6px;">
@@ -1065,12 +1074,13 @@
                         ${obsHtml}
                     </div>`;
                 });
-                if(sessoesHtml) divReg.innerHTML += headerHtml + sessoesHtml;
+                if(sessoesHtml) finalHtml += headerHtml + sessoesHtml;
             }
+            
+            divReg.innerHTML = finalHtml;
             atualizarResumoGeral(); renderizarCalendarioMes();
         }
 
-        // Funções de Provas e Matérias
         function salvarProva() {
             let n = sanitizeText(document.getElementById('conc-nome').value), d = document.getElementById('conc-data').value;
             if(!n) return alert("Preencha o nome da prova.");
@@ -1086,18 +1096,20 @@
             if(mudou) refDb.child('materias').set(dbData.materias);
         }
         function renderizarProvas() {
-            let div = document.getElementById('lista-provas-div'); div.innerHTML = '';
+            let div = document.getElementById('lista-provas-div'); 
+            let htmlFinal = '';
             if(!Array.isArray(dbData.provas)) dbData.provas = Object.values(dbData.provas || {});
             dbData.provas.forEach(p => {
                 let diasText = 'data indefinida'; let corD = 'var(--text-muted)';
                 if(p.data) { let dias = Math.ceil((new Date(p.data) - new Date()) / (1000*60*60*24)); diasText = `Faltam ${dias} dias`; corD = (dias < 30) ? 'var(--brand-danger)' : 'var(--brand-primary)'; }
-                div.innerHTML += `<div class="stat-card" style="position:relative;" title="${sanitizeText(p.nome)}">
+                htmlFinal += `<div class="stat-card" style="position:relative;" title="${sanitizeText(p.nome)}">
                     <strong style="font-size: 1.5rem; color: var(--text-main); display: block; margin: 4px 0 8px 0; word-break: break-word;">${sanitizeText(p.nome)}</strong>
                     <span style="font-size: 1.1rem; font-weight: 700; color: ${corD}; display: block; margin-bottom: 6px;">${diasText}</span>
                     <span style="font-weight: normal; font-size: 0.8rem; color: var(--text-muted);">📅 ${p.data || 'data indefinida'}</span>
                     <button class="btn-x-vermelho" style="position:absolute; top:8px; right:8px;" onclick="excluirProva('${p.id}')">✖</button>
                 </div>`;
             });
+            div.innerHTML = htmlFinal;
         }
         
         document.getElementById('mat-paleta').innerHTML = paleta17.map(c => `<div style="width:28px; height:28px; border-radius:50%; background:${c}; border:1px solid #CCC; cursor:pointer;" onclick="corAtualMateria='${c}'; document.querySelectorAll('#mat-paleta div').forEach(el=>el.style.border='1px solid #CCC'); this.style.border='2px solid var(--text-main)';"></div>`).join('');
@@ -1125,10 +1137,13 @@
         function renderizarMaterias() {
             let statePastas = []; document.querySelectorAll('.pasta-body.aberta').forEach(el => { let id = el.previousElementSibling ? el.previousElementSibling.getAttribute('data-folder-id') : null; if(id) statePastas.push(id); });
             let stateBlocos = []; document.querySelectorAll('.bloco-prova').forEach(bp => { let content = bp.querySelector('.bloco-prova-content'); let bId = bp.getAttribute('data-prova-id'); if(content && content.style.display !== 'none' && bId) stateBlocos.push(bId); });
-            let div = document.getElementById('lista-materias-cadastradas'); div.innerHTML = '';
+            let div = document.getElementById('lista-materias-cadastradas'); 
+            
+            let htmlFinal = '';
             if(!Array.isArray(dbData.materias)) dbData.materias = Object.values(dbData.materias || {}); if(!Array.isArray(dbData.provas)) dbData.provas = Object.values(dbData.provas || {});
             let grupos = { 'geral': [] };
             dbData.materias.forEach(m => { let p = m.provaId; if(!p || !dbData.provas.some(pr => pr.id === p)) { p = 'geral'; } if(!grupos[p]) grupos[p] = []; grupos[p].push(m); });
+            
             for(let p in grupos) {
                 if(grupos[p].length === 0) continue;
                 let isGeral = p === 'geral'; let nomeP = isGeral ? 'Matérias Gerais' : (dbData.provas.find(x=>x.id===p)?.nome || 'Matérias Gerais');
@@ -1140,9 +1155,11 @@
                 }).join('');
                 if(!isGeral) {
                     let isBlockOpen = stateBlocos.includes(p);
-                    div.innerHTML += `<div class="bloco-prova" data-prova-id="${p}"><div class="bloco-prova-titulo" style="cursor:pointer; user-select:none; margin-bottom:0; justify-content:space-between;" onclick="let el=this.nextElementSibling; el.style.display = (el.style.display==='none'||!el.style.display)?'block':'none';" title="${sanitizeText(nomeP)}"><span>🎯 ${nomeP}</span><span style="font-size:0.85rem; font-weight:normal; color:var(--text-muted);">▼ Expandir / Minimizar</span></div><div class="bloco-prova-content" style="display:${isBlockOpen?'block':'none'}; margin-top:16px;">${conteudoMat}</div></div>`;
-                } else { div.innerHTML += `<h3 style="color:var(--text-muted); margin-top:20px; font-size:1.1rem;" title="${sanitizeText(nomeP)}">${nomeP}</h3>${conteudoMat}`; }
+                    htmlFinal += `<div class="bloco-prova" data-prova-id="${p}"><div class="bloco-prova-titulo" style="cursor:pointer; user-select:none; margin-bottom:0; justify-content:space-between;" onclick="let el=this.nextElementSibling; el.style.display = (el.style.display==='none'||!el.style.display)?'block':'none';" title="${sanitizeText(nomeP)}"><span>🎯 ${nomeP}</span><span style="font-size:0.85rem; font-weight:normal; color:var(--text-muted);">▼ Expandir / Minimizar</span></div><div class="bloco-prova-content" style="display:${isBlockOpen?'block':'none'}; margin-top:16px;">${conteudoMat}</div></div>`;
+                } else { htmlFinal += `<h3 style="color:var(--text-muted); margin-top:20px; font-size:1.1rem;" title="${sanitizeText(nomeP)}">${nomeP}</h3>${conteudoMat}`; }
             }
+            div.innerHTML = htmlFinal;
+
             statePastas.forEach(id => { let hdr = document.querySelector(`.pasta-header[data-caderno-folder="${id}"]`) || document.querySelector(`.pasta-header[data-folder-id="${id}"]`); if(hdr && hdr.nextElementSibling) hdr.nextElementSibling.classList.add('aberta'); });
         }
         function editarTopico(mId, index) {
@@ -1154,7 +1171,8 @@
         function abrirModalJuntar(mId, topOri) {
             if(!Array.isArray(dbData.materias)) dbData.materias = Object.values(dbData.materias || {}); let mat = dbData.materias.find(m => m.id === mId); if(!mat) return;
             if(!Array.isArray(mat.topicos)) mat.topicos = Object.values(mat.topicos || {}); document.getElementById('lbl-topico-origem').textContent = topOri; document.getElementById('hid-mat-id').value = mId; document.getElementById('hid-top-origem').value = topOri;
-            let sel = document.getElementById('sel-topico-destino'); sel.innerHTML = ''; mat.topicos.forEach(t => { if(t !== topOri) sel.innerHTML += `<option value="${t}">${t}</option>`; });
+            let sel = document.getElementById('sel-topico-destino'); 
+            let htmlOpts = ''; mat.topicos.forEach(t => { if(t !== topOri) htmlOpts += `<option value="${t}">${t}</option>`; }); sel.innerHTML = htmlOpts;
             if(sel.options.length === 0) return alert("Não há outros tópicos."); document.getElementById('modal-juntar').style.display='flex';
         }
         function confirmarJuncao() {
@@ -1171,28 +1189,27 @@
         function atualizarSelectsUI() {
             let dlMatsPuras = document.getElementById('dl-materias-cadastradas');
             if(dlMatsPuras) { 
-                dlMatsPuras.innerHTML = ''; 
                 if(!Array.isArray(dbData.materias)) dbData.materias = Object.values(dbData.materias || {});
                 let setNomesPuros = new Set();
                 dbData.materias.forEach(m => { if(m.nome) setNomesPuros.add(m.nome); });
-                [...setNomesPuros].forEach(m => dlMatsPuras.innerHTML += `<option value="${m}">`);
+                let h1 = ''; [...setNomesPuros].forEach(m => h1 += `<option value="${m}">`); dlMatsPuras.innerHTML = h1;
             }
 
             let dlMats = document.getElementById('lista-materias-dl'); 
             if(dlMats) { 
-                dlMats.innerHTML = ''; 
                 if(!Array.isArray(dbData.cadernos)) dbData.cadernos = Object.values(dbData.cadernos || {}); 
                 let setNomes = new Set(); 
                 dbData.materias.forEach(m => { if(m.nome) setNomes.add(m.nome); }); 
                 dbData.cadernos.forEach(c => { if(c.materia) setNomes.add(c.materia); }); 
-                [...setNomes].forEach(m => dlMats.innerHTML += `<option value="${m}">`); 
+                let h2 = ''; [...setNomes].forEach(m => h2 += `<option value="${m}">`); dlMats.innerHTML = h2;
             }
             let selP = [document.getElementById('mat-prova'), document.getElementById('edital-ia-prova')]; 
             selP.forEach(s => { 
                 if(s) { 
-                    s.innerHTML = '<option value="">Vincular a uma Prova? (Opcional)</option>'; 
+                    let htmlOpts = '<option value="">Vincular a uma Prova? (Opcional)</option>'; 
                     if(!Array.isArray(dbData.provas)) dbData.provas = Object.values(dbData.provas || {}); 
-                    dbData.provas.forEach(p => s.innerHTML += `<option value="${p.id}">${p.nome}</option>`); 
+                    dbData.provas.forEach(p => htmlOpts += `<option value="${p.id}">${p.nome}</option>`); 
+                    s.innerHTML = htmlOpts;
                 } 
             });
         }
@@ -1212,7 +1229,6 @@
             }
         }
 
-        // Funções do Caderno de Erros
         function salvarErro() {
             let m = sanitizeText(document.getElementById('err-mat').value) || 'Geral', t = sanitizeText(document.getElementById('err-top').value) || 'Geral', txt = sanitizeText(document.getElementById('err-texto').value) || '(Sem anotação)';
             if(!Array.isArray(dbData.cadernos)) dbData.cadernos = [];
@@ -1254,7 +1270,6 @@
             }
         }
 
-        // Funções de Flashcards Viewer e Modal Especial
         function abrirModalEnviarFlashcard(conteudoTexto, btnElement, defaultMat, defaultTop) {
             document.getElementById('env-fc-conteudo').value = conteudoTexto;
             document.getElementById('env-fc-mat').value = defaultMat;
@@ -1342,7 +1357,7 @@
                 );
             }
 
-            let div = document.getElementById(divId); div.innerHTML = ''; 
+            let div = document.getElementById(divId);
             
             if(arrCad.length === 0) {
                 div.innerHTML = '<p style="color:var(--text-muted);">Nenhum item encontrado.</p>';
@@ -1358,6 +1373,7 @@
                 agr[mName][tName].push(c); 
             });
             
+            let finalDivHtml = '';
             let cIndex = 0;
             for(let m in agr) {
                 let folderKey = `${dbStringName}_` + (cIndex++);
@@ -1408,8 +1424,9 @@
                     </div>`;
                 }
                 
-                div.innerHTML += `<div class="pasta-header" data-caderno-folder="${folderKey}" onclick="this.nextElementSibling.classList.toggle('aberta')"><span style="font-weight:700; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1; min-width:0;" title="${sanitizeText(m)}">${dbStringName==='flashcards'?'⚡':'📓'} ${sanitizeText(m)}</span></div><div class="pasta-body ${termo ? 'aberta' : ''}" style="padding-top:8px;">${htmlM}</div>`;
+                finalDivHtml += `<div class="pasta-header" data-caderno-folder="${folderKey}" onclick="this.nextElementSibling.classList.toggle('aberta')"><span style="font-weight:700; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1; min-width:0;" title="${sanitizeText(m)}">${dbStringName==='flashcards'?'⚡':'📓'} ${sanitizeText(m)}</span></div><div class="pasta-body ${termo ? 'aberta' : ''}" style="padding-top:8px;">${htmlM}</div>`;
             }
+            div.innerHTML = finalDivHtml;
             
             if(!termo) {
                 stateCadernos.forEach(id => { let hdr = document.querySelector(`#${divId} .pasta-header[data-caderno-folder="${id}"]`); if(hdr && hdr.nextElementSibling) hdr.nextElementSibling.classList.add('aberta'); });
@@ -1428,11 +1445,26 @@
         }
 
         function atualizarTopicosFiltroEstatisticas() {
-            let dlTop = document.getElementById('dl-est-topicos'); if(!dlTop) return; dlTop.innerHTML = ''; let matInput = document.getElementById('est-filtro-materias').value.trim().toLowerCase(); if(!matInput) return; let mats = matInput.split(',').map(m => m.trim()).filter(Boolean); if(mats.length !== 1) return;
-            let topicosSet = new Set(); if(!Array.isArray(dbData.materias)) dbData.materias = Object.values(dbData.materias || {}); dbData.materias.forEach(m => { if(mats.some(mat => m.nome.toLowerCase() === mat) && Array.isArray(m.topicos)) { m.topicos.forEach(t => topicosSet.add(t)); } }); dbData.sessoes.forEach(s => { if(s.materia && mats.some(mat => s.materia.toLowerCase() === mat) && s.topico) { topicosSet.add(s.topico); } }); [...topicosSet].forEach(t => dlTop.innerHTML += `<option value="${t}">`);
+            let dlTop = document.getElementById('dl-est-topicos'); if(!dlTop) return; 
+            let matInput = document.getElementById('est-filtro-materias').value.trim().toLowerCase(); if(!matInput) return; 
+            let mats = matInput.split(',').map(m => m.trim()).filter(Boolean); if(mats.length !== 1) return;
+            let topicosSet = new Set(); 
+            if(!Array.isArray(dbData.materias)) dbData.materias = Object.values(dbData.materias || {}); 
+            dbData.materias.forEach(m => { if(mats.some(mat => m.nome.toLowerCase() === mat) && Array.isArray(m.topicos)) { m.topicos.forEach(t => topicosSet.add(t)); } }); 
+            dbData.sessoes.forEach(s => { if(s.materia && mats.some(mat => s.materia.toLowerCase() === mat) && s.topico) { topicosSet.add(s.topico); } }); 
+            
+            let htmlOpts = '';
+            [...topicosSet].forEach(t => htmlOpts += `<option value="${t}">`);
+            dlTop.innerHTML = htmlOpts;
         }
         function renderizarFiltrosEstatisticas() {
-            let dlProvas = document.getElementById('dl-est-provas'); if(dlProvas) { dlProvas.innerHTML = ''; if(!Array.isArray(dbData.provas)) dbData.provas = Object.values(dbData.provas || {}); dbData.provas.forEach(p => dlProvas.innerHTML += `<option value="${p.nome}">`); }
+            let dlProvas = document.getElementById('dl-est-provas'); 
+            if(dlProvas) { 
+                let htmlP = ''; 
+                if(!Array.isArray(dbData.provas)) dbData.provas = Object.values(dbData.provas || {}); 
+                dbData.provas.forEach(p => htmlP += `<option value="${p.nome}">`); 
+                dlProvas.innerHTML = htmlP;
+            }
             atualizarTopicosFiltroEstatisticas();
         }
         function onEstMateriasInput() {
@@ -1522,10 +1554,12 @@
         }
         
         function renderizarBiblioteca() { 
-            let div = document.getElementById('lista-biblioteca'); div.innerHTML = ''; 
+            let div = document.getElementById('lista-biblioteca'); 
+            let htmlFinal = '';
             dbData.biblioteca.forEach(b => { 
-                div.innerHTML += `<div class="registro-curto" title="${sanitizeText(b.nome)}"><div class="info"><strong title="${sanitizeText(b.nome)}">${b.tipo==='LINK'?'🌐':'📄'} ${b.nome}</strong><span>${b.materia} | ${b.data}</span></div><button class="btn-x-vermelho" onclick="if(confirm('Excluir?')) { refDb.child('biblioteca/${b.fbKey}').remove(); if('${b.refPath||''}') try{ storage.ref('${b.refPath}').delete(); }catch(e){} }">✖</button></div>`; 
+                htmlFinal += `<div class="registro-curto" title="${sanitizeText(b.nome)}"><div class="info"><strong title="${sanitizeText(b.nome)}">${b.tipo==='LINK'?'🌐':'📄'} ${b.nome}</strong><span>${b.materia} | ${b.data}</span></div><button class="btn-x-vermelho" onclick="if(confirm('Excluir?')) { refDb.child('biblioteca/${b.fbKey}').remove(); if('${b.refPath||''}') try{ storage.ref('${b.refPath}').delete(); }catch(e){} }">✖</button></div>`; 
             }); 
+            div.innerHTML = htmlFinal;
         }
 
         function renderizarCheckboxesFontesIA() {
@@ -1644,7 +1678,6 @@
             let conteudoDiv = msgBalao.querySelector('.conteudo-resposta-ia');
             let textoDoBalao = conteudoDiv ? conteudoDiv.innerText : msgBalao.innerText;
             
-            // Corrige o erro de CORS gigantesco:
             let chkWeb = document.getElementById('chk-busca-web');
             if (chkWeb) chkWeb.checked = false;
 
@@ -1699,12 +1732,15 @@
                 let qtd = document.getElementById('fc-num').value || '5';
                 let m = sanitizeText(document.getElementById('fc-mat').value) || 'Geral';
                 let tp = sanitizeText(document.getElementById('fc-top').value) || 'Geral';
-                p = `Gere ${qtd} flashcards para Matéria: "${m}" e Tópico: "${tp}". Níveis: ${niveisSelecionados.join(', ')}. Retorne JSON PURO: [{"f":"Pergunta","v":"Resposta","nivel":"Fácil"}]. Sem markdown.`;
+                p = `Gere ${qtd} flashcards TÉCNICOS, porém MUITO OBJETIVOS E DIRETOS para Matéria: "${m}" e Tópico: "${tp}". Níveis: ${niveisSelecionados.join(', ')}. Evite textos enormes, seja cirúrgico (padrão flashcard clássico de revisão rápida). USE MARKDOWN para negritos ou listas curtas na resposta se necessário. Retorne JSON PURO: [{"f":"Pergunta","v":"Resposta","nivel":"Fácil"}].`;
                 box = document.getElementById('box-fc'); box.style.display='block'; box.innerHTML='';
             } else if(tipo === 'chat') {
                 p = promptEspecifico || document.getElementById('inp-chat').value.trim(); if(!p) return;
                 box = document.getElementById('box-chat');
-                if(!promptEspecifico) { box.innerHTML += `<div class="msg msg-u">${sanitizeText(p)}</div>`; document.getElementById('inp-chat').value=''; }
+                if(!promptEspecifico) { 
+                    box.insertAdjacentHTML('beforeend', `<div class="msg msg-u">${sanitizeText(p)}</div>`); 
+                    document.getElementById('inp-chat').value=''; 
+                }
                 box.scrollTop = box.scrollHeight;
             }
 
@@ -1712,9 +1748,10 @@
             
             try {
                 if(tipo!=='flashcards') { 
-                    box.innerHTML += `<div class="msg msg-a" id="load-ia"><span id="load-ia-text">Analisando...</span> ⏳</div>`; box.scrollTop = box.scrollHeight; 
+                    box.insertAdjacentHTML('beforeend', `<div class="msg msg-a" id="load-ia"><span id="load-ia-text">Analisando...</span> ⏳</div>`);
+                    box.scrollTop = box.scrollHeight; 
                 } else { 
-                    box.innerHTML = `<div id="load-ia" style="color:var(--brand-primary); font-weight:600;"><span>Construindo flashcards...</span> ⏳</div>`; 
+                    box.innerHTML = `<div id="load-ia" style="color:var(--brand-primary); font-weight:600;"><span>Construindo flashcards objetivos...</span> ⏳</div>`; 
                 }
 
                 let ctxWeb = "";
@@ -1787,14 +1824,20 @@
                     let json = JSON.parse(txtF.replace(/```json/g,'').replace(/```/g,'').match(/\[.*\]/s)[0]);
                     let matNome = sanitizeText(document.getElementById('fc-mat').value) || 'Flashcards Diversos';
                     let topNome = sanitizeText(document.getElementById('fc-top').value) || 'Geral';
-                    box.innerHTML = ''; let htmlFCResult = badgeModelo;
+                    
+                    let htmlFCResult = badgeModelo;
+                    
                     json.forEach(c => {
-                        let fcContent = `<div style="background:var(--bg-card); padding:14px; border-radius:8px; border-left:4px solid var(--brand-warning); border:1px solid var(--border-color); width:100%;"><div style="font-weight:700; color:var(--text-main);">❓ ${sanitizeText(c.f)} (${c.nivel || ''})</div><button onclick="this.nextElementSibling.style.display='block'; this.style.display='none'" class="btn-outline" style="margin-top:12px; width:auto; padding:6px 12px; font-size:0.85rem;">Ver Resposta</button><div style="display:none; margin-top:12px; color:var(--text-main); padding-top:10px; border-top:1px dashed var(--border-color);">💡 Resposta: ${sanitizeText(c.v)}</div></div>`;
+                        let perguntaParsed = sanitizeText(marked.parse(c.f));
+                        let respostaParsed = sanitizeText(marked.parse(c.v));
+
+                        let fcContent = `<div style="background:var(--bg-card); padding:14px; border-radius:8px; border-left:4px solid var(--brand-warning); border:1px solid var(--border-color); width:100%;"><div style="font-weight:700; color:var(--text-main);">❓ Pergunta (${c.nivel || ''}):</div><div style="margin-top:6px; font-weight:normal;" class="conteudo-resposta-ia">${perguntaParsed}</div><button onclick="this.nextElementSibling.style.display='block'; this.style.display='none'" class="btn-outline" style="margin-top:12px; width:auto; padding:6px 12px; font-size:0.85rem;">Ver Resposta</button><div style="display:none; margin-top:12px; color:var(--text-main); padding-top:10px; border-top:1px dashed var(--border-color);">💡 Resposta:<div style="margin-top:8px;" class="conteudo-resposta-ia">${respostaParsed}</div></div></div>`;
                         let itemHtml = `<div style="margin-bottom:16px;">${fcContent}<div style="margin-top:8px;"><button class="btn-outline" style="width:auto; padding:6px 12px; font-size:0.8rem;" data-payload="${encodeURIComponent(fcContent)}" data-mat="${encodeURIComponent(matNome)}" data-top="${encodeURIComponent(topNome)}" onclick="abrirModalEnviarFlashcard(decodeURIComponent(this.getAttribute('data-payload')), this, decodeURIComponent(this.getAttribute('data-mat')), decodeURIComponent(this.getAttribute('data-top')))">💾 Salvar Flashcard</button></div></div>`;
-                        box.innerHTML += itemHtml; htmlFCResult += itemHtml;
+                        htmlFCResult += itemHtml;
                     });
-                    box.insertAdjacentHTML('afterbegin', badgeModelo);
+                    box.innerHTML = htmlFCResult;
                     salvarFiltroHistorico('flashcards', {mat: matNome, top: topNome}, `${matNome}`, htmlFCResult);
+                
                 } else if(tipo === 'questoes') {
                     let jsonClean = txtF.replace(/```json/g,'').replace(/```/g,'').trim();
                     let qArray = JSON.parse(jsonClean.match(/\[.*\]/s)[0]);
@@ -1814,8 +1857,9 @@
                     });
                     htmlQ += `</div>`;
                     let finalQstHtml = `${badgeModelo}${htmlQ}`;
-                    box.innerHTML = `<div class="msg msg-a" style="max-width:100%; width:100%;">${finalQstHtml}</div>`;
+                    box.insertAdjacentHTML('beforeend', `<div class="msg msg-a" style="max-width:100%; width:100%;">${finalQstHtml}</div>`);
                     salvarFiltroHistorico('questoes', {tema: document.getElementById('ia-qts-tema').value}, 'Questões', finalQstHtml);
+                
                 } else {
                     let parsedMarkdown = marked.parse(txtF); 
                     let lHtml = sanitizeText(parsedMarkdown);
@@ -1823,13 +1867,13 @@
                     let chatHtmlToSave = `<div style="font-size:0.95rem; line-height:1.5; color:var(--text-main);">${lHtml}</div>`;
                     let finalChatHtml = `${badgeModelo}<div class="conteudo-resposta-ia">${lHtml}</div><br><div style="display:flex; gap:8px;"><button class="btn-outline" style="width:auto; padding:6px 12px; font-size:0.8rem;" onclick="aprofundarRespostaContextual(this)">🔍 Aprofundar</button><button class="btn-primary" style="width:auto; padding:6px 12px; font-size:0.8rem;" data-payload="${encodeURIComponent(chatHtmlToSave)}" onclick="abrirModalEnviarCaderno(decodeURIComponent(this.getAttribute('data-payload')), this, '', '', true)">📚 Salvar no Caderno</button></div>`;
                     
-                    box.innerHTML += `<div class="msg msg-a" style="max-width:100%; width:100%;">${finalChatHtml}</div>`;
+                    box.insertAdjacentHTML('beforeend', `<div class="msg msg-a" style="max-width:100%; width:100%;">${finalChatHtml}</div>`);
                     salvarFiltroHistorico('chat', p, p.substring(0, 25), finalChatHtml);
                 }
                 box.scrollTop = box.scrollHeight;
             } catch(e) {
                 let l = document.getElementById('load-ia'); if(l) l.remove();
-                if(box) box.innerHTML += `<div class="msg msg-a" style="color:var(--brand-danger);">⚠️ ${e.message}</div>`;
+                if(box) box.insertAdjacentHTML('beforeend', `<div class="msg msg-a" style="color:var(--brand-danger);">⚠️ ${e.message}</div>`);
             }
         }
 
