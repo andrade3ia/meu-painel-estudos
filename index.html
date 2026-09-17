@@ -1,8 +1,3 @@
-Respondendo primeiro à sua dúvida: Não, a busca web não está nativa/automática para flashcards e questões. Atualmente, ela só funciona na aba "Chat Especialista" (quando você marca a caixinha "🌐 Buscar Web"). As opções de flashcards e questões usam apenas a base de dados interna da Inteligência Artificial e os PDFs/arquivos que você porventura anexar.
-Sobre as duas alterações solicitadas:
- * Adicionado o botão de renomear (✏️): Agora, tanto na aba Caderno de Erros quanto em Flashcards, você verá um ícone de lápis ao lado do nome do Caderno principal e do Subcaderno. Ao clicar, poderá alterar o nome e ele atualizará todos os itens daquela pasta de uma vez.
- * Botão de Ocultar Resposta (Flashcards): Alterei a geração dos Flashcards. O botão "Ver Resposta" não desaparece mais após clicado; ele se transforma em "Ocultar Resposta", permitindo que você abra e feche a explicação quantas vezes quiser. (Nota: isso valerá para os novos flashcards que você gerar a partir de agora).
-Aqui está o código completo com as duas exclusivas modificações implementadas. Copie e substitua no seu projeto:
 <!DOCTYPE html>
 <html lang="pt-BR" data-theme="light">
 <head>
@@ -40,8 +35,8 @@ Aqui está o código completo com as duas exclusivas modificações implementada
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 10px; }
         
-        #checkboxes-fontes-ia::-webkit-scrollbar { height: 6px; }
-        #checkboxes-fontes-ia::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 6px; }
+        .container-checkboxes-fontes-ia::-webkit-scrollbar { height: 6px; }
+        .container-checkboxes-fontes-ia::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 6px; }
 
         .mobile-header { display: none; background: rgba(255, 255, 255, 0.82); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); padding: 14px 20px; border-bottom: 1px solid var(--border-color); width: 100%; justify-content: space-between; align-items: center; z-index: 1000; box-shadow: var(--shadow-sm); }
         [data-theme="dark"] .mobile-header { background: rgba(28, 28, 30, 0.82); }
@@ -327,6 +322,17 @@ Aqui está o código completo com as duas exclusivas modificações implementada
                 <div class="card">
                     <h2>⚡ Gerador de Flashcards Automáticos</h2>
                     <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:16px;">Escolha abaixo a quantidade, matéria e assunto para gerar seus flashcards cirúrgicos.</p>
+                    
+                    <!-- NOVO BLOCO FONTES -->
+                    <div style="margin-bottom:16px;" class="bloco-fontes-ia">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; flex-wrap:wrap; gap:10px;">
+                            <label style="font-size:0.75rem; font-weight:700; color:var(--text-muted); margin-bottom:0;">📚 FONTES DE CONTEXTO (OPCIONAL)</label>
+                            <input type="text" placeholder="🔍 Buscar fonte..." oninput="filtrarFontesIA(this, 'chk-container-flashcards')" style="width:200px; padding:6px 12px; margin:0; font-size:0.8rem; border-radius:12px;">
+                        </div>
+                        <div id="chk-container-flashcards" class="container-checkboxes-fontes-ia" style="display:flex; gap:10px; overflow-x:auto; padding-bottom:8px; scrollbar-width: none;"></div>
+                    </div>
+                    <!-- FIM NOVO BLOCO FONTES -->
+
                     <div style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:16px; background:var(--bg-input); padding:16px; border-radius:var(--radius-sm);">
                         <div style="width:110px; min-width:110px;">
                             <label style="font-size:0.75rem; font-weight:700; color:var(--text-muted); display:block; margin-bottom:4px;">QUANTIDADE</label>
@@ -428,12 +434,12 @@ Aqui está o código completo com as duas exclusivas modificações implementada
                         </div>
 
                         <div id="subia-chat">
-                            <div style="margin-bottom:16px;">
+                            <div style="margin-bottom:16px;" class="bloco-fontes-ia">
                                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; flex-wrap:wrap; gap:10px;">
-                                    <label style="font-size:0.75rem; font-weight:700; color:var(--text-muted); mardin-bottom:0;">📚 FONTES DE CONTEXTO (CLIQUE PARA SELECIONAR)</label>
-                                    <input type="text" id="busca-fonte-ia" placeholder="🔍 Buscar fonte..." oninput="filtrarFontesIA()" style="width:200px; padding:6px 12px; margin:0; font-size:0.8rem; border-radius:12px;">
+                                    <label style="font-size:0.75rem; font-weight:700; color:var(--text-muted); margin-bottom:0;">📚 FONTES DE CONTEXTO (CLIQUE PARA SELECIONAR)</label>
+                                    <input type="text" placeholder="🔍 Buscar fonte..." oninput="filtrarFontesIA(this, 'chk-container-chat')" style="width:200px; padding:6px 12px; margin:0; font-size:0.8rem; border-radius:12px;">
                                 </div>
-                                <div id="checkboxes-fontes-ia" style="display:flex; gap:10px; overflow-x:auto; padding-bottom:8px; scrollbar-width: none;"></div>
+                                <div id="chk-container-chat" class="container-checkboxes-fontes-ia" style="display:flex; gap:10px; overflow-x:auto; padding-bottom:8px; scrollbar-width: none;"></div>
                             </div>
 
                             <div class="chat-box" id="box-chat">
@@ -449,6 +455,14 @@ Aqui está o código completo com as duas exclusivas modificações implementada
                         </div>
 
                         <div id="subia-simulador" style="display:none;">
+                            <div style="margin-bottom:16px;" class="bloco-fontes-ia">
+                                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; flex-wrap:wrap; gap:10px;">
+                                    <label style="font-size:0.75rem; font-weight:700; color:var(--text-muted); margin-bottom:0;">📚 FONTES DE CONTEXTO (OPCIONAL)</label>
+                                    <input type="text" placeholder="🔍 Buscar fonte..." oninput="filtrarFontesIA(this, 'chk-container-simulador')" style="width:200px; padding:6px 12px; margin:0; font-size:0.8rem; border-radius:12px;">
+                                </div>
+                                <div id="chk-container-simulador" class="container-checkboxes-fontes-ia" style="display:flex; gap:10px; overflow-x:auto; padding-bottom:8px; scrollbar-width: none;"></div>
+                            </div>
+
                             <div style="display:flex; gap:16px; margin-bottom:16px; flex-wrap:wrap;">
                                 <div style="flex:1; min-width:120px;">
                                     <label style="font-size:0.75rem; font-weight:700; color:var(--text-muted); display:block; margin-bottom:4px;">QUANTIDADE</label>
@@ -1610,37 +1624,40 @@ Aqui está o código completo com as duas exclusivas modificações implementada
         }
 
         function renderizarCheckboxesFontesIA() {
-            let container = document.getElementById('checkboxes-fontes-ia');
-            if(!container) return;
-            container.innerHTML = '';
-            if(!dbData.biblioteca || dbData.biblioteca.length === 0) {
-                container.innerHTML = '<span style="font-size:0.8rem; color:var(--text-muted);">Nenhuma fonte na Nuvem. Suba seus PDFs na aba Nuvem PRUMA.</span>';
-                return;
-            }
-            dbData.biblioteca.forEach(b => {
-                let lbl = document.createElement('label');
-                lbl.style.cssText = "display:inline-flex; align-items:center; gap:6px; font-size:0.85rem; cursor:pointer; font-weight:600; padding:8px 14px; border-radius:20px; border:1px solid var(--border-color); background:var(--bg-input); color:var(--text-main); transition:all 0.2s; user-select:none; max-width: 100%;";
-                lbl.innerHTML = `<input type="checkbox" class="chk-fonte-biblioteca" value="${b.fbKey}" style="display:none;"> <span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${b.tipo==='LINK'?'🌐':'📄'} ${sanitizeText(b.nome)}</span>`;
-                
-                let chk = lbl.querySelector('input');
-                chk.onchange = (e) => {
-                    if(e.target.checked) {
-                        lbl.style.background = 'var(--brand-primary)';
-                        lbl.style.color = '#FFF';
-                        lbl.style.borderColor = 'var(--brand-primary)';
-                    } else {
-                        lbl.style.background = 'var(--bg-input)';
-                        lbl.style.color = 'var(--text-main)';
-                        lbl.style.borderColor = 'var(--border-color)';
-                    }
-                };
-                container.appendChild(lbl);
+            let containers = document.querySelectorAll('.container-checkboxes-fontes-ia');
+            if(!containers.length) return;
+            
+            containers.forEach(container => {
+                container.innerHTML = '';
+                if(!dbData.biblioteca || dbData.biblioteca.length === 0) {
+                    container.innerHTML = '<span style="font-size:0.8rem; color:var(--text-muted);">Nenhuma fonte na Nuvem. Suba seus PDFs na aba Nuvem PRUMA.</span>';
+                    return;
+                }
+                dbData.biblioteca.forEach(b => {
+                    let lbl = document.createElement('label');
+                    lbl.style.cssText = "display:inline-flex; align-items:center; gap:6px; font-size:0.85rem; cursor:pointer; font-weight:600; padding:8px 14px; border-radius:20px; border:1px solid var(--border-color); background:var(--bg-input); color:var(--text-main); transition:all 0.2s; user-select:none; max-width: 100%; flex-shrink: 0;";
+                    lbl.innerHTML = `<input type="checkbox" class="chk-fonte-biblioteca" value="${b.fbKey}" style="display:none;"> <span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${b.tipo==='LINK'?'🌐':'📄'} ${sanitizeText(b.nome)}</span>`;
+                    
+                    let chk = lbl.querySelector('input');
+                    chk.onchange = (e) => {
+                        if(e.target.checked) {
+                            lbl.style.background = 'var(--brand-primary)';
+                            lbl.style.color = '#FFF';
+                            lbl.style.borderColor = 'var(--brand-primary)';
+                        } else {
+                            lbl.style.background = 'var(--bg-input)';
+                            lbl.style.color = 'var(--text-main)';
+                            lbl.style.borderColor = 'var(--border-color)';
+                        }
+                    };
+                    container.appendChild(lbl);
+                });
             });
         }
 
-        function filtrarFontesIA() {
-            let termo = document.getElementById('busca-fonte-ia').value.toLowerCase().trim();
-            document.querySelectorAll('#checkboxes-fontes-ia label').forEach(lbl => {
+        function filtrarFontesIA(inputEl, containerId) {
+            let termo = inputEl.value.toLowerCase().trim();
+            document.querySelectorAll(`#${containerId} label`).forEach(lbl => {
                 let spanTxt = lbl.querySelector('span').textContent.toLowerCase();
                 if (spanTxt.includes(termo)) {
                     lbl.style.display = 'inline-flex';
@@ -1811,14 +1828,18 @@ Aqui está o código completo com as duas exclusivas modificações implementada
                 let partesDaMensagem = [];
                 let textoContexto = "";
                 
-                if (tipo === 'chat' || tipo === 'questoes') {
-                    let chksSelecionados = document.querySelectorAll('.chk-fonte-biblioteca:checked');
+                if (tipo === 'chat' || tipo === 'questoes' || tipo === 'flashcards') {
+                    let idContainer = tipo === 'chat' ? 'chk-container-chat' : (tipo === 'questoes' ? 'chk-container-simulador' : 'chk-container-flashcards');
+                    let chksSelecionados = document.querySelectorAll(`#${idContainer} .chk-fonte-biblioteca:checked`);
+                    
                     for(let chk of chksSelecionados) {
                         let doc = dbData.biblioteca.find(d => d.fbKey === chk.value);
                         if(doc) {
                             if(doc.nome.toLowerCase().endsWith('.pdf') || (doc.url && doc.url.includes('.pdf'))) {
                                 try {
-                                    if(document.getElementById('load-ia-text')) document.getElementById('load-ia-text').textContent = "Lendo PDF anexo... ⏳";
+                                    let spanLoad = document.getElementById('load-ia-text') || document.querySelector('#load-ia span');
+                                    if(spanLoad) spanLoad.textContent = "Lendo PDF anexo... ⏳";
+                                    
                                     let resBlob;
                                     try { resBlob = await fetch(doc.url); } catch(e) { resBlob = await fetch(`https://corsproxy.io/?${encodeURIComponent(doc.url)}`); }
                                     let blob = await resBlob.blob();
@@ -1840,7 +1861,8 @@ Aqui está o código completo com as duas exclusivas modificações implementada
                     }
                 }
                 
-                if(document.getElementById('load-ia-text')) document.getElementById('load-ia-text').textContent = "Analisando...";
+                let spanLoadRestaurar = document.getElementById('load-ia-text') || document.querySelector('#load-ia span');
+                if(spanLoadRestaurar) spanLoadRestaurar.textContent = (tipo === 'flashcards') ? "Construindo flashcards objetivos..." : "Analisando...";
 
                 let instrucaoFinal = `${baseSys}\n\n`;
                 if(textoContexto) instrucaoFinal += `[FONTES DE TEXTO/SITES DA NUVEM]:\n${textoContexto}\n\n`;
@@ -1968,4 +1990,3 @@ Aqui está o código completo com as duas exclusivas modificações implementada
     </script>
 </body>
 </html>
-
