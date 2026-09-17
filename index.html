@@ -35,7 +35,6 @@
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 10px; }
         
-        /* Custom scrollbar para a lista horizontal de fontes */
         #checkboxes-fontes-ia::-webkit-scrollbar { height: 6px; }
         #checkboxes-fontes-ia::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 6px; }
 
@@ -72,7 +71,8 @@
         .stat-card span { display: block; font-size: 0.7rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .stat-card strong { display: block; font-size: 1.6rem; color: var(--text-main); font-weight: 700; margin-top: 6px; }
 
-        .registro-curto { display: flex; justify-content: space-between; align-items: center; background: var(--bg-input); padding: 12px 16px; border-radius: var(--radius-sm); margin-bottom: 10px; border: 1px solid var(--border-color); width: 100%; gap: 10px; }
+        .registro-curto { display: flex; justify-content: space-between; align-items: flex-start; background: var(--bg-input); padding: 12px 16px; border-radius: var(--radius-sm); margin-bottom: 10px; border: 1px solid var(--border-color); width: 100%; gap: 10px; flex-direction: column; }
+        .registro-curto-header { display: flex; justify-content: space-between; align-items: center; width: 100%; gap: 10px; }
         .registro-curto .info { display: flex; flex-direction: column; gap: 4px; min-width: 0; flex: 1; }
         .registro-curto .info strong { font-size: 0.95rem; color: var(--text-main); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .acoes-reg { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
@@ -101,6 +101,9 @@
         .conteudo-resposta-ia th, .conteudo-resposta-ia td { border: 1px solid var(--border-color); padding: 10px; text-align: left; }
         .conteudo-resposta-ia th { background: var(--bg-input); font-weight: 700; color: var(--text-main); }
         .conteudo-resposta-ia strong { color: var(--text-main); }
+
+        mark { background-color: rgba(255, 235, 59, 0.6); color: var(--text-main); padding: 0 2px; border-radius: 3px; font-weight: 600; }
+        .balao-caderno { background: var(--bg-card); padding: 18px; border-radius: 18px; border-bottom-left-radius: 4px; border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); width: 100%; margin-bottom: 12px; position: relative; }
 
         .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: center; z-index: 2000; backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); padding: 20px; }
         .modal-content { background: var(--bg-card); padding: 32px; border-radius: var(--radius-lg); width: 100%; max-width: 520px; max-height: 90vh; overflow-y: auto; box-shadow: var(--shadow-md); position: relative; }
@@ -136,15 +139,13 @@
         <button class="nav-btn" onclick="irTela('provas', event)">🎯 Minhas Provas</button>
         <button class="nav-btn" onclick="irTela('materias', event)">📚 Matérias</button>
         <button class="nav-btn" onclick="irTela('caderno', event)">📓 Caderno de Erros</button>
-        <button class="nav-btn" onclick="irTela('estatisticas', event)">📈 Estatísticas</button>
+        <button class="nav-btn" onclick="irTela('flashcards', event)">⚡ Flashcards</button>
         <button class="nav-btn" onclick="irTela('pruma', event)" style="color:var(--brand-primary); font-weight:600;">✨ PRUMA IA</button>
-        <button class="nav-btn" onclick="irTela('biblioteca', event)">📁 Biblioteca</button>
+        <button class="nav-btn" onclick="irTela('estatisticas', event)">📈 Estatísticas</button>
         
         <div style="border-top: 1px solid var(--border-color); margin-top: 10px; padding-top: 10px; display: flex; flex-direction: column; gap: 6px;">
-            <button class="nav-btn" onclick="irTela('conta', event)">👤 Minha Conta</button>
             <button class="nav-btn" onclick="document.getElementById('modal-apikey').style.display='flex'">🔑 <span style="color:var(--brand-danger); font-weight:700;">X</span> API Key</button>
-            <button class="nav-btn" onclick="alternarTema()">🌓 Claro / Escuro</button>
-            <button class="nav-btn" onclick="firebase.auth().signOut()" style="color:var(--brand-danger);">🚪 Sair</button>
+            <button class="nav-btn" onclick="irTela('conta', event)">👤 Minha Conta</button>
         </div>
     </aside>
 
@@ -220,8 +221,8 @@
                         </div>
                         <div style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:4px; width:100%;">
                             <div style="flex:1; min-width:120px;">
-                                <input type="text" id="ses-mat" placeholder="Matéria" list="lista-materias-dl" oninput="this.title=this.value; atualizarTopicosSessao(this.value)" onmouseenter="this.title=this.value" onfocus="this.select()" onclick="this.select(); try{this.showPicker()}catch(e){}">
-                                <datalist id="lista-materias-dl"></datalist>
+                                <input type="text" id="ses-mat" placeholder="Matéria" list="dl-materias-cadastradas" oninput="this.title=this.value; atualizarTopicosSessao(this.value)" onmouseenter="this.title=this.value" onfocus="this.select()" onclick="this.select(); try{this.showPicker()}catch(e){}">
+                                <datalist id="dl-materias-cadastradas"></datalist>
                             </div>
                             <div style="flex:1; min-width:120px;">
                                 <input type="text" id="ses-top" placeholder="Tópico(s) (separados por vírgula)" list="dl-ses-top" oninput="this.title=this.value" onmouseenter="this.title=this.value" onfocus="this.select()" onclick="this.select(); try{this.showPicker()}catch(e){}">
@@ -285,7 +286,7 @@
                 <div class="card">
                     <h2>Criar Matéria / Tópico</h2>
                     <div style="display:flex; gap:16px; flex-wrap:wrap; margin-bottom:12px;">
-                        <input type="text" id="mat-nome" placeholder="Nome da Matéria" style="flex:1; min-width:140px;" list="lista-materias-dl" onclick="try{this.showPicker()}catch(e){}">
+                        <input type="text" id="mat-nome" placeholder="Nome da Matéria" style="flex:1; min-width:140px;" list="dl-materias-cadastradas" onclick="try{this.showPicker()}catch(e){}">
                         <input type="text" id="mat-topico" placeholder="Novo Tópico (Opcional)" style="flex:1; min-width:140px;">
                         <select id="mat-prova" style="flex:1; min-width:140px;"><option value="">Vincular a uma Prova? (Opcional)</option></select>
                     </div>
@@ -301,7 +302,7 @@
                 <div class="card">
                     <h2>Novo Caderno / Anotação</h2>
                     <div style="display:flex; gap:16px; flex-wrap:wrap;">
-                        <input type="text" id="err-mat" placeholder="Caderno Principal (Ex: Dir. Penal)" list="lista-materias-dl" oninput="atualizarTopicosCaderno(this.value, 'dl-err-top')" style="flex:1; min-width:150px;" onclick="try{this.showPicker()}catch(e){}">
+                        <input type="text" id="err-mat" placeholder="Caderno Principal (Ex: Dir. Penal)" list="lista-materias-dl" oninput="atualizarTopicosCaderno(this.value, 'dl-err-top', 'cadernos')" style="flex:1; min-width:150px;" onclick="try{this.showPicker()}catch(e){}">
                         <input type="text" id="err-top" placeholder="Sub-caderno (Ex: Crimes contra a vida)" list="dl-err-top" style="flex:1; min-width:150px;" onclick="try{this.showPicker()}catch(e){}">
                         <datalist id="dl-err-top"></datalist>
                     </div>
@@ -315,6 +316,44 @@
                 </div>
                 
                 <div id="lista-cadernos-div"></div>
+            </div>
+
+            <div id="view-flashcards" style="display:none;">
+                <div class="card">
+                    <h2>⚡ Gerador de Flashcards Automáticos</h2>
+                    <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:16px;">Escolha abaixo a quantidade, matéria e assunto para gerar seus flashcards cirúrgicos.</p>
+                    <div style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:16px; background:var(--bg-input); padding:16px; border-radius:var(--radius-sm);">
+                        <div style="width:110px; min-width:110px;">
+                            <label style="font-size:0.75rem; font-weight:700; color:var(--text-muted); display:block; margin-bottom:4px;">QUANTIDADE</label>
+                            <input type="number" id="fc-num" value="5" min="1" max="30" style="margin:0;">
+                        </div>
+                        <div style="flex:1; min-width:130px;">
+                            <label style="font-size:0.75rem; font-weight:700; color:var(--text-muted); display:block; margin-bottom:4px;">MATÉRIA (OPCIONAL)</label>
+                            <input type="text" id="fc-mat" placeholder="Ex: Direito Constitucional" list="dl-materias-cadastradas" style="margin:0;" onclick="try{this.showPicker()}catch(e){}">
+                        </div>
+                        <div style="flex:1; min-width:130px;">
+                            <label style="font-size:0.75rem; font-weight:700; color:var(--text-muted); display:block; margin-bottom:4px;">TÓPICO / ASSUNTO</label>
+                            <input type="text" id="fc-top" placeholder="Ex: Direitos Fundamentais" style="margin:0;">
+                        </div>
+                    </div>
+                    <div style="margin-bottom:16px; background:var(--bg-input); padding:14px; border-radius:var(--radius-sm);">
+                        <label style="font-size:0.75rem; font-weight:700; color:var(--text-muted); display:block; margin-bottom:8px;">NÍVEL DE DIFICULDADE</label>
+                        <div style="display:flex; gap:16px; flex-wrap:wrap;">
+                            <label style="display:flex; align-items:center; gap:6px; cursor:pointer; font-weight:500;"><input type="checkbox" class="chk-nivel-fc" value="Fácil" checked> Fácil</label>
+                            <label style="display:flex; align-items:center; gap:6px; cursor:pointer; font-weight:500;"><input type="checkbox" class="chk-nivel-fc" value="Médio" checked> Médio</label>
+                            <label style="display:flex; align-items:center; gap:6px; cursor:pointer; font-weight:500;"><input type="checkbox" class="chk-nivel-fc" value="Difícil" checked> Difícil</label>
+                        </div>
+                    </div>
+                    <button class="btn-primary" onclick="executarIA('flashcards')">✨ Gerar Flashcards com PRUMA IA</button>
+                    <div class="chat-box" id="box-fc" style="margin-top:16px; display:none; background:transparent; border:none; padding:0; height:auto; overflow:visible;"></div>
+                </div>
+
+                <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border-color); padding-bottom:12px; margin: 24px 0 16px 0; flex-wrap:wrap; gap:10px;">
+                    <h2 style="margin:0; border:none; padding:0;">Meus Flashcards Salvos</h2>
+                    <input type="text" id="busca-flashcard" placeholder="🔍 Buscar flashcards..." oninput="renderizarFlashcards()" style="width:auto; flex:1; min-width:220px; max-width:320px; margin:0; padding:8px 12px; font-size:0.85rem; border-radius:var(--radius-lg);">
+                </div>
+                
+                <div id="lista-flashcards-div"></div>
             </div>
 
             <div id="view-estatisticas" style="display:none;">
@@ -333,7 +372,7 @@
                         </div>
                         <div style="flex:1; min-width:140px;">
                             <label style="font-size:0.75rem; font-weight:700; color:var(--text-muted); display:block; margin-bottom:4px;">MATÉRIA(S)</label>
-                            <input type="text" id="est-filtro-materias" placeholder="Várias matérias (sep. por vírgula)" list="lista-materias-dl" oninput="onEstMateriasInput()" style="margin:0;" onclick="try{this.showPicker()}catch(e){}">
+                            <input type="text" id="est-filtro-materias" placeholder="Várias matérias (sep. por vírgula)" list="dl-materias-cadastradas" oninput="onEstMateriasInput()" style="margin:0;" onclick="try{this.showPicker()}catch(e){}">
                         </div>
                         <div style="flex:1; min-width:140px;">
                             <label style="font-size:0.75rem; font-weight:700; color:var(--text-muted); display:block; margin-bottom:4px;">TÓPICO(S)</label>
@@ -366,23 +405,29 @@
             </div>
 
             <div id="view-pruma" style="display:none;">
-                <div class="card" style="padding:0; overflow:hidden; border:2px solid var(--brand-primary);">
+                <div class="card" style="padding:0; overflow:hidden; border:2px solid var(--brand-primary); position:relative;">
                     <div style="background:var(--brand-primary); padding:20px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
                         <h2 style="color:white; margin:0; border:none; padding:0;">✨ PRUMA IA</h2>
+                        <div style="position:relative;" id="historico-filtros-ia-container">
+                            <button class="btn-outline" style="padding:6px 12px; font-size:0.85rem; background:rgba(255,255,255,0.2); color:white; border:none; font-weight:700;" onclick="document.getElementById('lista-ultimos-filtros-ia').classList.toggle('show'); this.nextElementSibling.style.display = this.nextElementSibling.style.display==='flex'?'none':'flex';">⏳ Histórico Recente ▼</button>
+                            <div id="lista-ultimos-filtros-ia" style="display:none; position:absolute; right:0; top:35px; background:var(--bg-card); border:1px solid var(--border-color); border-radius:var(--radius-sm); padding:12px; z-index:100; box-shadow:var(--shadow-md); width:320px; flex-direction:column; gap:8px;"></div>
+                        </div>
                     </div>
                     
                     <div style="padding:24px;">
                         <div style="display:flex; gap:10px; margin-bottom:24px; overflow-x:auto; padding-bottom:4px;">
                             <button class="btn-outline" style="flex:1; min-width:140px; border-color:var(--brand-primary); color:var(--brand-primary);" onclick="mudarSubIa('chat', this)">💬 Chat Especialista</button>
                             <button class="btn-outline" style="flex:1; min-width:140px;" onclick="mudarSubIa('simulador', this)">🎯 Gerar Questões</button>
-                            <button class="btn-outline" style="flex:1; min-width:140px;" onclick="mudarSubIa('flashcards', this)">⚡ Flashcards</button>
                             <button class="btn-outline" style="flex:1; min-width:140px;" onclick="mudarSubIa('edital', this)">📚 Edital Inteligente</button>
+                            <button class="btn-outline" style="flex:1; min-width:140px;" onclick="mudarSubIa('nuvem', this)">☁️ Nuvem PRUMA</button>
                         </div>
 
                         <div id="subia-chat">
-                            <!-- Seleção moderna de fontes (Chips horizontais) -->
                             <div style="margin-bottom:16px;">
-                                <label style="font-size:0.75rem; font-weight:700; color:var(--text-muted); display:block; margin-bottom:8px;">📚 FONTES DE CONTEXTO (CLIQUE PARA SELECIONAR)</label>
+                                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; flex-wrap:wrap; gap:10px;">
+                                    <label style="font-size:0.75rem; font-weight:700; color:var(--text-muted); mardin-bottom:0;">📚 FONTES DE CONTEXTO (CLIQUE PARA SELECIONAR)</label>
+                                    <input type="text" id="busca-fonte-ia" placeholder="🔍 Buscar fonte..." oninput="filtrarFontesIA()" style="width:200px; padding:6px 12px; margin:0; font-size:0.8rem; border-radius:12px;">
+                                </div>
                                 <div id="checkboxes-fontes-ia" style="display:flex; gap:10px; overflow-x:auto; padding-bottom:8px; scrollbar-width: none;"></div>
                             </div>
 
@@ -429,70 +474,33 @@
                             <div class="chat-box" id="box-qts" style="margin-top:16px; display:none; height:auto; min-height:200px;"></div>
                         </div>
 
-                        <div id="subia-flashcards" style="display:none;">
-                            <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:16px;">⚡ Escolha abaixo a quantidade, matéria e assunto para gerar seus flashcards cirúrgicos.</p>
-                            <div style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:16px; background:var(--bg-input); padding:16px; border-radius:var(--radius-sm);">
-                                <div style="width:110px; min-width:110px;">
-                                    <label style="font-size:0.75rem; font-weight:700; color:var(--text-muted); display:block; margin-bottom:4px;">QUANTIDADE</label>
-                                    <input type="number" id="fc-num" value="5" min="1" max="30" style="margin:0;">
-                                </div>
-                                <div style="flex:1; min-width:130px;">
-                                    <label style="font-size:0.75rem; font-weight:700; color:var(--text-muted); display:block; margin-bottom:4px;">MATÉRIA (OPCIONAL)</label>
-                                    <input type="text" id="fc-mat" placeholder="Ex: Direito Constitucional" list="lista-materias-dl" style="margin:0;" onclick="try{this.showPicker()}catch(e){}">
-                                </div>
-                                <div style="flex:1; min-width:130px;">
-                                    <label style="font-size:0.75rem; font-weight:700; color:var(--text-muted); display:block; margin-bottom:4px;">TÓPICO / ASSUNTO</label>
-                                    <input type="text" id="fc-top" placeholder="Ex: Direitos Fundamentais" style="margin:0;">
-                                </div>
-                            </div>
-                            <div style="margin-bottom:16px; background:var(--bg-input); padding:14px; border-radius:var(--radius-sm);">
-                                <label style="font-size:0.75rem; font-weight:700; color:var(--text-muted); display:block; margin-bottom:8px;">NÍVEL DE DIFICULDADE</label>
-                                <div style="display:flex; gap:16px; flex-wrap:wrap;">
-                                    <label style="display:flex; align-items:center; gap:6px; cursor:pointer; font-weight:500;"><input type="checkbox" class="chk-nivel-fc" value="Fácil" checked> Fácil</label>
-                                    <label style="display:flex; align-items:center; gap:6px; cursor:pointer; font-weight:500;"><input type="checkbox" class="chk-nivel-fc" value="Médio" checked> Médio</label>
-                                    <label style="display:flex; align-items:center; gap:6px; cursor:pointer; font-weight:500;"><input type="checkbox" class="chk-nivel-fc" value="Difícil" checked> Difícil</label>
-                                </div>
-                            </div>
-                            <button class="btn-primary" onclick="executarIA('flashcards')">Gerar Flashcards Automáticos</button>
-                            <div class="chat-box" id="box-fc" style="margin-top:16px; display:none; background:transparent; border:none; padding:0; height:auto; overflow:visible;"></div>
-                        </div>
-
                         <div id="subia-edital" style="display:none;">
                             <select id="edital-ia-prova" style="margin-bottom:16px;"><option value="">Vincular a qual Prova? (Opcional)</option></select>
                             <textarea id="edital-texto" placeholder="Cole o texto gigante do edital aqui..." rows="6"></textarea>
                             <button class="btn-primary" onclick="processarEdital(this)">✨ Mapear Estrutura com IA</button>
                         </div>
                         
-                        <!-- Histórico movido para a parte inferior da tela -->
-                        <div id="historico-filtros-ia-container" style="margin-top:32px; background:var(--bg-input); padding:16px; border-radius:var(--radius-sm); border:1px solid var(--border-color); display:none;">
-                            <label style="font-size:0.75rem; font-weight:700; color:var(--text-muted); display:block; margin-bottom:8px;">📌 ÚLTIMAS 5 CONSULTAS (HISTÓRICO RECENTE)</label>
-                            <div id="lista-ultimos-filtros-ia" style="display:flex; gap:8px; flex-wrap:wrap;"></div>
+                        <div id="subia-nuvem" style="display:none;">
+                            <div style="display:flex; gap:20px; flex-wrap:wrap; margin-bottom:24px;">
+                                <div style="flex:1; min-width:250px; background:var(--bg-input); padding:20px; border-radius:var(--radius-md);">
+                                    <h3 style="margin-top:0; font-size:1.1rem;">Enviar PDF / Texto</h3>
+                                    <input type="text" id="bib-mat-arq" placeholder="Matéria/Assunto (Opcional)" list="dl-materias-cadastradas" onclick="try{this.showPicker()}catch(e){}">
+                                    <input type="file" id="bib-file" accept=".pdf,.txt" style="background:var(--bg-card); padding:8px;">
+                                    <button class="btn-primary" onclick="uploadArquivo()">Subir Arquivo</button>
+                                </div>
+                                <div style="flex:1; min-width:250px; background:var(--bg-input); padding:20px; border-radius:var(--radius-md);">
+                                    <h3 style="margin-top:0; font-size:1.1rem;">Salvar Link Web</h3>
+                                    <input type="text" id="bib-mat-link" placeholder="Matéria/Assunto (Opcional)" list="dl-materias-cadastradas" onclick="try{this.showPicker()}catch(e){}">
+                                    <input type="url" id="bib-link" placeholder="https://...">
+                                    <button class="btn-success" onclick="salvarLink()">Ler e Salvar Site</button>
+                                </div>
+                            </div>
+                            <h2 style="font-size:1.2rem; border-bottom:none; margin-bottom:12px;">Arquivos Salvos na Nuvem</h2>
+                            <div id="lista-biblioteca"></div>
                         </div>
 
                     </div>
                 </div>
-            </div>
-
-            <div id="view-biblioteca" style="display:none;">
-                <div class="card">
-                    <h2>Nuvem PRUMA (Fontes)</h2>
-                    <div style="display:flex; gap:20px; flex-wrap:wrap;">
-                        <div style="flex:1; min-width:250px; background:var(--bg-input); padding:20px; border-radius:var(--radius-md);">
-                            <h3 style="margin-top:0; font-size:1.1rem;">Enviar PDF / Texto</h3>
-                            <input type="text" id="bib-mat-arq" placeholder="Matéria/Assunto (Opcional)" list="lista-materias-dl" onclick="try{this.showPicker()}catch(e){}">
-                            <input type="file" id="bib-file" accept=".pdf,.txt" style="background:var(--bg-card); padding:8px;">
-                            <button class="btn-primary" onclick="uploadArquivo()">Subir Arquivo</button>
-                        </div>
-                        <div style="flex:1; min-width:250px; background:var(--bg-input); padding:20px; border-radius:var(--radius-md);">
-                            <h3 style="margin-top:0; font-size:1.1rem;">Salvar Link Web</h3>
-                            <input type="text" id="bib-mat-link" placeholder="Matéria/Assunto (Opcional)" list="lista-materias-dl" onclick="try{this.showPicker()}catch(e){}">
-                            <input type="url" id="bib-link" placeholder="https://...">
-                            <button class="btn-success" onclick="salvarLink()">Ler e Salvar Site</button>
-                        </div>
-                    </div>
-                </div>
-                <h2>Arquivos Salvos</h2>
-                <div id="lista-biblioteca"></div>
             </div>
 
             <div id="view-conta" style="display:none;">
@@ -510,9 +518,12 @@
                     <button class="btn-outline" style="width:auto; padding:8px 16px; margin-bottom:24px;" onclick="salvarNomePerfil()">Salvar Nome</button>
                     
                     <label style="font-weight:700; display:block; margin-bottom:10px;">Paleta de Cores do Sistema (17 Opções):</label>
-                    <div id="paleta-cores-sistema" style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:30px;"></div>
+                    <div id="paleta-cores-sistema" style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:24px;"></div>
 
-                    <button class="btn-danger" style="width:100%; padding:14px; font-size:1rem;" onclick="excluirConta()">Excluir Minha Conta Permanentemente</button>
+                    <button class="btn-outline" style="width:100%; padding:14px; font-size:1rem; margin-bottom:16px;" onclick="alternarTema()">🌓 Alternar Tema (Claro/Escuro)</button>
+                    <button class="btn-danger" style="width:100%; padding:14px; font-size:1rem; margin-bottom:16px;" onclick="firebase.auth().signOut()">🚪 Sair da Conta</button>
+                    
+                    <button class="btn-outline" style="width:100%; padding:14px; font-size:0.85rem; border-color:var(--brand-danger); color:var(--brand-danger);" onclick="excluirConta()">Excluir Minha Conta Permanentemente</button>
                 </div>
             </div>
 
@@ -551,13 +562,14 @@
         </div>
     </div>
 
+    <!-- MODAL DE CADERNO -->
     <div id="modal-enviar-caderno" class="modal">
         <div class="modal-content">
             <button class="modal-close" style="position:absolute; top:16px; right:16px; background:transparent; border:none; font-size:1.5rem; cursor:pointer; color:var(--brand-danger); font-weight:700; z-index:10;" onclick="document.getElementById('modal-enviar-caderno').style.display='none'">✖</button>
             <h2 style="margin-top:0;">📚 Enviar para Caderno</h2>
             <div style="margin-bottom:12px;">
                 <label style="font-size:0.75rem; font-weight:700; color:var(--text-muted); display:block; margin-bottom:4px;">CADERNO PRINCIPAL</label>
-                <input type="text" id="env-cad-mat" placeholder="Ex: Dir. Penal" list="lista-materias-dl" oninput="atualizarTopicosCaderno(this.value, 'dl-env-top')" onclick="try{this.showPicker()}catch(e){}">
+                <input type="text" id="env-cad-mat" placeholder="Ex: Dir. Penal" list="lista-materias-dl" oninput="atualizarTopicosCaderno(this.value, 'dl-env-top', 'cadernos')" onclick="try{this.showPicker()}catch(e){}">
             </div>
             <div style="margin-bottom:16px;">
                 <label style="font-size:0.75rem; font-weight:700; color:var(--text-muted); display:block; margin-bottom:4px;">SUB-CADERNO (OPCIONAL)</label>
@@ -570,23 +582,43 @@
         </div>
     </div>
 
+    <!-- MODAL DE FLASHCARDS -->
+    <div id="modal-enviar-flashcard" class="modal">
+        <div class="modal-content">
+            <button class="modal-close" style="position:absolute; top:16px; right:16px; background:transparent; border:none; font-size:1.5rem; cursor:pointer; color:var(--brand-danger); font-weight:700; z-index:10;" onclick="document.getElementById('modal-enviar-flashcard').style.display='none'">✖</button>
+            <h2 style="margin-top:0;">⚡ Salvar Flashcard</h2>
+            <div style="margin-bottom:12px;">
+                <label style="font-size:0.75rem; font-weight:700; color:var(--text-muted); display:block; margin-bottom:4px;">MATÉRIA PRINCIPAL</label>
+                <input type="text" id="env-fc-mat" placeholder="Ex: Dir. Constitucional" list="dl-materias-cadastradas" oninput="atualizarTopicosCaderno(this.value, 'dl-env-fc-top', 'flashcards')" onclick="try{this.showPicker()}catch(e){}">
+            </div>
+            <div style="margin-bottom:16px;">
+                <label style="font-size:0.75rem; font-weight:700; color:var(--text-muted); display:block; margin-bottom:4px;">TÓPICO (OPCIONAL)</label>
+                <input type="text" id="env-fc-top" placeholder="Ex: Remédios Constitucionais" list="dl-env-fc-top" onclick="try{this.showPicker()}catch(e){}">
+                <datalist id="dl-env-fc-top"></datalist>
+            </div>
+            <input type="hidden" id="env-fc-conteudo">
+            <button class="btn-primary" onclick="confirmarEnvioFlashcard()">Salvar Flashcard</button>
+        </div>
+    </div>
+
     <div id="modal-mover-caderno" class="modal">
         <div class="modal-content">
             <button class="modal-close" style="position:absolute; top:16px; right:16px; background:transparent; border:none; font-size:1.5rem; cursor:pointer; color:var(--brand-danger); font-weight:700; z-index:10;" onclick="document.getElementById('modal-mover-caderno').style.display='none'">✖</button>
-            <h2 style="margin-top:0;">🔄 Mover Anotação/Sub-caderno</h2>
+            <h2 style="margin-top:0;">🔄 Mover Anotação</h2>
             <div style="margin-bottom:12px;">
-                <label style="font-size:0.75rem; font-weight:700; color:var(--text-muted); display:block; margin-bottom:4px;">NOVO CADERNO PRINCIPAL</label>
-                <input type="text" id="mov-cad-mat" list="lista-materias-dl" oninput="atualizarTopicosCaderno(this.value, 'dl-mov-top')" onclick="try{this.showPicker()}catch(e){}">
+                <label style="font-size:0.75rem; font-weight:700; color:var(--text-muted); display:block; margin-bottom:4px;">NOVO CADERNO/MATÉRIA</label>
+                <input type="text" id="mov-cad-mat" list="lista-materias-dl" oninput="atualizarTopicosMover(this.value)" onclick="try{this.showPicker()}catch(e){}">
             </div>
             <div style="margin-bottom:16px;">
-                <label style="font-size:0.75rem; font-weight:700; color:var(--text-muted); display:block; margin-bottom:4px;">NOVO SUB-CADERNO (OPCIONAL)</label>
+                <label style="font-size:0.75rem; font-weight:700; color:var(--text-muted); display:block; margin-bottom:4px;">NOVO SUB-CADERNO/TÓPICO</label>
                 <input type="text" id="mov-cad-top" list="dl-mov-top" onclick="try{this.showPicker()}catch(e){}">
                 <datalist id="dl-mov-top"></datalist>
             </div>
             <input type="hidden" id="mov-id">
             <input type="hidden" id="mov-mat-origem">
             <input type="hidden" id="mov-top-origem">
-            <button class="btn-primary" onclick="confirmarMoverCaderno()">Confirmar Movimentação</button>
+            <input type="hidden" id="mov-tipo-db">
+            <button class="btn-primary" onclick="confirmarMover()">Confirmar Movimentação</button>
         </div>
     </div>
 
@@ -604,21 +636,18 @@
         const db = firebase.database(); const storage = firebase.storage();
 
         let userAtual = null, refDb = null, refStore = null, isAdmin = false;
-        let dbData = { sessoes: [], provas: [], materias: [], cadernos: [], biblioteca: [], iaFiltrosHistorico: [] };
+        let dbData = { sessoes: [], provas: [], materias: [], cadernos: [], flashcards: [], biblioteca: [], iaFiltrosHistorico: [] };
         let segundosCronometro = 0, cronometroInterval = null, graficoInstance = null;
         let segundosPausa = 0, pausaInterval = null;
         let editandoRegistroId = null;
         let calMesOff = 0;
         let subIaAtual = 'chat';
-        let ultimoEnvioIA = 0; 
         
         const paleta17 = ['#007AFF','#34C759','#FF3B30','#FF9500','#5856D6','#AF52DE','#5AC8FA','#FF2D55','#E5C07B','#98C379','#E06C75','#C678DD','#56B6C2','#D19A66','#61AFEF', '#000000', '#FFFFFF'];
         let corAtualMateria = paleta17[0];
 
         function sanitizeText(str) { return typeof str === 'string' ? DOMPurify.sanitize(str) : ''; }
-        function renderHtmlSafely(html) { 
-            return DOMPurify.sanitize(html, { ADD_ATTR: ['onclick', 'data-correta', 'style', 'class'] }); 
-        }
+        function renderHtmlSafely(html) { return DOMPurify.sanitize(html, { ADD_ATTR: ['onclick', 'data-correta', 'style', 'class'] }); }
         function gerarId() { return Date.now().toString(36) + Math.random().toString(36).substr(2); }
         
         function alternarTema() { 
@@ -649,7 +678,7 @@
         });
 
         function irTela(t, e) {
-            ['inicio', 'provas', 'materias', 'caderno', 'estatisticas', 'pruma', 'biblioteca', 'conta'].forEach(v => {
+            ['inicio', 'provas', 'materias', 'caderno', 'flashcards', 'estatisticas', 'pruma', 'conta'].forEach(v => {
                 let el = document.getElementById('view-' + v); if(el) el.style.display = (v === t) ? 'block' : 'none';
             });
             document.querySelectorAll('.nav-btn').forEach(b => { b.classList.remove('active'); b.style.borderColor='transparent'; b.style.background='transparent'; });
@@ -710,7 +739,45 @@
             refDb.child('sessoes').on('value', s => { dbData.sessoes = s.val() ? Object.values(s.val()) : []; renderizarInicio(); if(document.getElementById('view-estatisticas').style.display==='block') { renderizarFiltrosEstatisticas(); atualizarEstatisticas(); } });
             refDb.child('provas').on('value', s => { let v = s.val(); dbData.provas = v ? (Array.isArray(v) ? v : Object.values(v)) : []; renderizarProvas(); atualizarSelectsUI(); if(document.getElementById('view-estatisticas').style.display==='block') renderizarFiltrosEstatisticas(); });
             refDb.child('materias').on('value', s => { let v = s.val(); dbData.materias = v ? (Array.isArray(v) ? v : Object.values(v)) : []; renderizarMaterias(); atualizarSelectsUI(); if(document.getElementById('view-estatisticas').style.display==='block') renderizarFiltrosEstatisticas(); });
-            refDb.child('cadernos').on('value', s => { let v = s.val(); dbData.cadernos = v ? (Array.isArray(v) ? v : Object.values(v)) : []; renderizarCadernos(); atualizarSelectsUI(); });
+            
+            refDb.child('flashcards').on('value', s => { 
+                let v = s.val(); 
+                dbData.flashcards = v ? (Array.isArray(v) ? v : Object.values(v)) : []; 
+                renderizarFlashcards();
+            });
+
+            refDb.child('cadernos').on('value', s => { 
+                let v = s.val(); 
+                let rawCadernos = v ? (Array.isArray(v) ? v : Object.values(v)) : []; 
+                
+                // MIGRACÃO AUTOMÁTICA DE FLASHCARDS DO CADERNO PARA A ABA FLASHCARDS
+                let mudou = false;
+                let cadsRestantes = [];
+                let fcsParaMigrar = [];
+                
+                rawCadernos.forEach(c => {
+                    if(c.texto && (c.texto.includes('❓') && c.texto.includes('💡'))) {
+                        fcsParaMigrar.push(c);
+                        mudou = true;
+                    } else {
+                        cadsRestantes.push(c);
+                    }
+                });
+
+                if(mudou) {
+                    if(!Array.isArray(dbData.flashcards)) dbData.flashcards = [];
+                    dbData.flashcards.push(...fcsParaMigrar);
+                    refDb.child('flashcards').set(dbData.flashcards);
+                    refDb.child('cadernos').set(cadsRestantes);
+                    dbData.cadernos = cadsRestantes;
+                } else {
+                    dbData.cadernos = rawCadernos;
+                }
+
+                renderizarCadernos(); 
+                atualizarSelectsUI(); 
+            });
+
             refDb.child('biblioteca').on('value', s => { 
                 let v = s.val(); 
                 dbData.biblioteca = v ? Object.entries(v).map(([k, val]) => ({ ...val, fbKey: k })) : []; 
@@ -721,6 +788,7 @@
             refDb.child('ia_filtros_historico').on('value', s => { dbData.iaFiltrosHistorico = s.val() || []; renderizarFiltrosIAHistorico(); });
         }
 
+        // Funções do Cronômetro
         function iniciarCronometro() { 
             if(pausaInterval) { clearInterval(pausaInterval); pausaInterval = null; }
             document.getElementById('visor-pausa-container').style.display = 'none';
@@ -752,11 +820,13 @@
             let h = Math.floor(segundosPausa/3600).toString().padStart(2,'0'), m = Math.floor((segundosPausa%3600)/60).toString().padStart(2,'0'), s = (segundosPausa%60).toString().padStart(2,'0');
             document.getElementById('visor-pausa').textContent = `${h}:${m}:${s}`;
         }
+
         function toggleCamposDetalhes() {
             let mat = document.getElementById('ses-tipo-mat').value;
             document.getElementById('campos-pdf').style.display = mat.includes('PDF') ? 'flex' : 'none';
             document.getElementById('campos-video').style.display = mat==='Vídeo Aula' ? 'flex' : 'none';
         }
+
         function atualizarTopicosSessao(matNome) {
             let dl = document.getElementById('dl-ses-top'); if(!dl) return; dl.innerHTML = '';
             if(!Array.isArray(dbData.materias)) dbData.materias = Object.values(dbData.materias || {});
@@ -764,11 +834,13 @@
                 if(Array.isArray(m.topicos)) m.topicos.forEach(t => dl.innerHTML += `<option value="${t}">`);
             });
         }
-        function atualizarTopicosCaderno(matNome, idDatalist) {
+
+        function atualizarTopicosCaderno(matNome, idDatalist, tipoDb) {
             let dl = document.getElementById(idDatalist); if(!dl) return; dl.innerHTML = '';
-            if(!Array.isArray(dbData.cadernos)) dbData.cadernos = Object.values(dbData.cadernos || {});
+            let arrayDb = tipoDb === 'flashcards' ? dbData.flashcards : dbData.cadernos;
+            if(!Array.isArray(arrayDb)) arrayDb = Object.values(arrayDb || {});
             let tops = new Set();
-            dbData.cadernos.forEach(c => { if(c.materia === matNome && c.topico) tops.add(c.topico); });
+            arrayDb.forEach(c => { if(c.materia === matNome && c.topico) tops.add(c.topico); });
             [...tops].forEach(t => dl.innerHTML += `<option value="${t}">`);
         }
 
@@ -794,14 +866,13 @@
             document.getElementById('rg-erros').textContent = tE; document.getElementById('rg-perc').textContent = (tA + tE) > 0 ? Math.round((tA / (tA + tE)) * 100) + '%' : '0%';
         }
 
+        // Funções do Calendário
         function alterarMesCalendario(delta) {
             let pSessao = dbData.sessoes.length > 0 ? dbData.sessoes.reduce((min, s) => Math.min(min, s.timestamp), Date.now()) : Date.now();
             let dataMinima = new Date(pSessao); dataMinima.setDate(1); dataMinima.setHours(0,0,0,0);
-            
             let agora = new Date();
             let mesAtualIndex = agora.getFullYear() * 12 + agora.getMonth();
             let minIndex = dataMinima.getFullYear() * 12 + dataMinima.getMonth();
-            
             let targetDate = new Date(agora.getFullYear(), agora.getMonth() + calMesOff + delta, 1);
             let targetIndex = targetDate.getFullYear() * 12 + targetDate.getMonth();
             
@@ -812,7 +883,6 @@
 
         function renderizarCalendarioMes() {
             let grid = document.getElementById('calendario-grid'); if(!grid) return; grid.innerHTML = '';
-            
             let agora = new Date();
             let targetDate = new Date(agora.getFullYear(), agora.getMonth() + calMesOff, 1);
             let ano = targetDate.getFullYear(), mes = targetDate.getMonth();
@@ -852,6 +922,7 @@
             }
         }
 
+        // Funções de Registro
         function salvarRegistro() {
             let mat = sanitizeText(document.getElementById('ses-mat').value), topRaw = sanitizeText(document.getElementById('ses-top').value);
             if(!mat) return alert("Preencha a matéria.");
@@ -937,7 +1008,6 @@
 
         function renderizarInicio() {
             let divReg = document.getElementById('lista-ultimos-registros'); divReg.innerHTML = '';
-            
             let termoReg = document.getElementById('busca-registros-inicio') ? document.getElementById('busca-registros-inicio').value.toLowerCase().trim() : '';
             let arr = [...dbData.sessoes].sort((a,b)=> b.timestamp - a.timestamp);
             
@@ -946,7 +1016,8 @@
                     let d = s.data || new Date(s.timestamp).toLocaleDateString();
                     return (s.materia && s.materia.toLowerCase().includes(termoReg)) ||
                            (s.topico && s.topico.toLowerCase().includes(termoReg)) ||
-                           (d && d.toLowerCase().includes(termoReg));
+                           (d && d.toLowerCase().includes(termoReg)) ||
+                           (s.obs && s.obs.toLowerCase().includes(termoReg));
                 });
             }
 
@@ -955,8 +1026,7 @@
             let agrupadoPorData = {};
             arr.forEach(s => { let d = s.data || new Date(s.timestamp).toLocaleDateString(); if(!agrupadoPorData[d]) agrupadoPorData[d] = []; agrupadoPorData[d].push(s); });
 
-            let count = 0;
-            let limiteExibicao = termoReg ? 100 : 15;
+            let count = 0; let limiteExibicao = termoReg ? 100 : 15;
 
             for(let dataStr in agrupadoPorData) {
                 if(count >= limiteExibicao) break;
@@ -969,16 +1039,30 @@
                     if(count >= limiteExibicao) return; count++;
                     let ht = Math.floor(s.segundos/3600), mt = Math.floor((s.segundos%3600)/60), st = s.segundos%60; let timeStr = `${ht}h ${mt}m ${st}s`;
                     let perc = s.totalQts > 0 ? Math.round((s.acertos/s.totalQts)*100)+'%' : '0%'; let accStr = `${perc} (${s.acertos||0}/${s.totalQts||0})`;
-                    let tooltipText = `${s.materia} - ${s.topico||'Geral'} | Lançado às: ${s.hora||'--:--'} | ⏱️ ${timeStr} | 🎯 ${accStr}${s.obs ? ' | ' + s.obs : ''}`;
+                    let tooltipText = `${s.materia} - ${s.topico||'Geral'} | Lançado às: ${s.hora||'--:--'} | ⏱️ ${timeStr} | 🎯 ${accStr}`;
+
+                    // Lógica para as observações integradas
+                    let obsHtml = '';
+                    if (s.obs) {
+                        obsHtml = `<div style="width:100%; border-top:1px dashed var(--border-color); margin-top:8px; padding-top:6px;">
+                            <div class="obs-limitada" style="font-size:0.85rem; color:var(--text-muted); max-height:45px; overflow:hidden; position:relative; transition:max-height 0.3s;">
+                                📝 ${sanitizeText(s.obs)}
+                            </div>
+                            ${s.obs.length > 100 ? `<button style="background:none; border:none; color:var(--brand-primary); cursor:pointer; font-size:0.75rem; padding:0; margin-top:4px; font-weight:600;" onclick="let d=this.previousElementSibling; if(d.style.maxHeight==='45px'){d.style.maxHeight='none'; this.textContent='Mostrar menos';}else{d.style.maxHeight='45px'; this.textContent='Ler mais';}">Ler mais</button>` : ''}
+                        </div>`;
+                    }
 
                     sessoesHtml += `<div class="registro-curto" title="${sanitizeText(tooltipText)}">
-                        <div class="info">
-                            <strong title="${sanitizeText(s.materia)}">${s.tipoMat.includes('PDF')?'📖':s.tipoMat==='Vídeo Aula'?'🎥':'📝'} ${s.materia} <span style="font-size:0.75rem; color:var(--text-muted); font-weight:normal;">(Lançado às ${s.hora||'--:--'})</span></strong>
-                            <span style="display:flex; align-items:center; gap:6px; font-size:0.8rem; color:var(--text-muted); min-width:0; max-width:100%;">
-                                <span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; flex:1; max-width:140px;" title="${sanitizeText(s.topico||'Geral')}">${s.topico||'Geral'}</span><span style="flex-shrink:0;">| ⏱️ ${timeStr} | 🎯 ${accStr}</span>
-                            </span>
+                        <div class="registro-curto-header">
+                            <div class="info">
+                                <strong title="${sanitizeText(s.materia)}">${s.tipoMat.includes('PDF')?'📖':s.tipoMat==='Vídeo Aula'?'🎥':'📝'} ${s.materia} <span style="font-size:0.75rem; color:var(--text-muted); font-weight:normal;">(às ${s.hora||'--:--'})</span></strong>
+                                <span style="display:flex; align-items:center; gap:6px; font-size:0.8rem; color:var(--text-muted); min-width:0; max-width:100%;">
+                                    <span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; flex:1; max-width:140px;" title="${sanitizeText(s.topico||'Geral')}">${s.topico||'Geral'}</span><span style="flex-shrink:0;">| ⏱️ ${timeStr} | 🎯 ${accStr}</span>
+                                </span>
+                            </div>
+                            <div class="acoes-reg"><button style="background:transparent;border:none;cursor:pointer;font-size:1rem;" title="Editar" onclick="editarRegistro('${s.id}')">✏️</button><button class="btn-x-vermelho" onclick="if(confirm('Excluir?')) refDb.child('sessoes/${s.id}').remove()">✖</button></div>
                         </div>
-                        <div class="acoes-reg"><button style="background:transparent;border:none;cursor:pointer;font-size:1rem;" title="Editar" onclick="editarRegistro('${s.id}')">✏️</button><button class="btn-x-vermelho" onclick="if(confirm('Excluir?')) refDb.child('sessoes/${s.id}').remove()">✖</button></div>
+                        ${obsHtml}
                     </div>`;
                 });
                 if(sessoesHtml) divReg.innerHTML += headerHtml + sessoesHtml;
@@ -986,6 +1070,7 @@
             atualizarResumoGeral(); renderizarCalendarioMes();
         }
 
+        // Funções de Provas e Matérias
         function salvarProva() {
             let n = sanitizeText(document.getElementById('conc-nome').value), d = document.getElementById('conc-data').value;
             if(!n) return alert("Preencha o nome da prova.");
@@ -1014,7 +1099,8 @@
                 </div>`;
             });
         }
-        document.getElementById('mat-paleta').innerHTML = paleta17.map(c => `<div style="width:28px; height:28px; border-radius:50%; background:${c}; border:1px solid #CCC; cursor:pointer;" onclick="corAtualMateria='${c}'; this.style.border='2px solid var(--text-main)';"></div>`).join('');
+        
+        document.getElementById('mat-paleta').innerHTML = paleta17.map(c => `<div style="width:28px; height:28px; border-radius:50%; background:${c}; border:1px solid #CCC; cursor:pointer;" onclick="corAtualMateria='${c}'; document.querySelectorAll('#mat-paleta div').forEach(el=>el.style.border='1px solid #CCC'); this.style.border='2px solid var(--text-main)';"></div>`).join('');
         
         function salvarMateria() {
             let n = sanitizeText(document.getElementById('mat-nome').value), t = sanitizeText(document.getElementById('mat-topico').value), pId = document.getElementById('mat-prova').value; if(!n) return;
@@ -1081,14 +1167,55 @@
             dbData.cadernos.forEach(c => { if(c.materia === mat.nome && (c.topico === tOri || c.topico === tDest)) c.topico = novoTopico; }); refDb.child('cadernos').set(dbData.cadernos);
             refDb.child('materias').set(dbData.materias); document.getElementById('modal-juntar').style.display='none'; alert(`Tópicos juntados!`);
         }
+        
         function atualizarSelectsUI() {
+            let dlMatsPuras = document.getElementById('dl-materias-cadastradas');
+            if(dlMatsPuras) { 
+                dlMatsPuras.innerHTML = ''; 
+                if(!Array.isArray(dbData.materias)) dbData.materias = Object.values(dbData.materias || {});
+                let setNomesPuros = new Set();
+                dbData.materias.forEach(m => { if(m.nome) setNomesPuros.add(m.nome); });
+                [...setNomesPuros].forEach(m => dlMatsPuras.innerHTML += `<option value="${m}">`);
+            }
+
             let dlMats = document.getElementById('lista-materias-dl'); 
-            if(dlMats) { dlMats.innerHTML = ''; if(!Array.isArray(dbData.materias)) dbData.materias = Object.values(dbData.materias || {}); if(!Array.isArray(dbData.cadernos)) dbData.cadernos = Object.values(dbData.cadernos || {}); let setNomes = new Set(); dbData.materias.forEach(m => { if(m.nome) setNomes.add(m.nome); }); dbData.cadernos.forEach(c => { if(c.materia) setNomes.add(c.materia); }); [...setNomes].forEach(m => dlMats.innerHTML += `<option value="${m}">`); }
-            let selP = [document.getElementById('mat-prova'), document.getElementById('edital-ia-prova')]; selP.forEach(s => { if(s) { s.innerHTML = '<option value="">Vincular a uma Prova? (Opcional)</option>'; if(!Array.isArray(dbData.provas)) dbData.provas = Object.values(dbData.provas || {}); dbData.provas.forEach(p => s.innerHTML += `<option value="${p.id}">${p.nome}</option>`); } });
+            if(dlMats) { 
+                dlMats.innerHTML = ''; 
+                if(!Array.isArray(dbData.cadernos)) dbData.cadernos = Object.values(dbData.cadernos || {}); 
+                let setNomes = new Set(); 
+                dbData.materias.forEach(m => { if(m.nome) setNomes.add(m.nome); }); 
+                dbData.cadernos.forEach(c => { if(c.materia) setNomes.add(c.materia); }); 
+                [...setNomes].forEach(m => dlMats.innerHTML += `<option value="${m}">`); 
+            }
+            let selP = [document.getElementById('mat-prova'), document.getElementById('edital-ia-prova')]; 
+            selP.forEach(s => { 
+                if(s) { 
+                    s.innerHTML = '<option value="">Vincular a uma Prova? (Opcional)</option>'; 
+                    if(!Array.isArray(dbData.provas)) dbData.provas = Object.values(dbData.provas || {}); 
+                    dbData.provas.forEach(p => s.innerHTML += `<option value="${p.id}">${p.nome}</option>`); 
+                } 
+            });
         }
 
+        function toggleLerMais(btn) {
+            let wrapper = btn.previousElementSibling;
+            if (wrapper.style.maxHeight === '120px') {
+                wrapper.style.maxHeight = 'none';
+                let fade = wrapper.querySelector('.fade-bottom');
+                if (fade) fade.style.display = 'none';
+                btn.textContent = 'Mostrar menos';
+            } else {
+                wrapper.style.maxHeight = '120px';
+                let fade = wrapper.querySelector('.fade-bottom');
+                if (fade) fade.style.display = 'block';
+                btn.textContent = 'Ler mais';
+            }
+        }
+
+        // Funções do Caderno de Erros
         function salvarErro() {
             let m = sanitizeText(document.getElementById('err-mat').value) || 'Geral', t = sanitizeText(document.getElementById('err-top').value) || 'Geral', txt = sanitizeText(document.getElementById('err-texto').value) || '(Sem anotação)';
+            if(!Array.isArray(dbData.cadernos)) dbData.cadernos = [];
             dbData.cadernos.push({id: gerarId(), materia: m, topico: t, texto: txt, isHtml: false, timestamp: Date.now(), data: new Date().toLocaleDateString()}); refDb.child('cadernos').set(dbData.cadernos);
             document.getElementById('err-texto').value = ''; document.getElementById('err-mat').value = ''; document.getElementById('err-top').value = ''; alert("Salvo no Caderno!");
         }
@@ -1098,7 +1225,7 @@
             document.getElementById('env-cad-mat').value = defaultMat;
             document.getElementById('env-cad-top').value = defaultTop;
             document.getElementById('env-cad-ishtml').value = isHtml ? 'true' : 'false';
-            atualizarTopicosCaderno(defaultMat, 'dl-env-top');
+            atualizarTopicosCaderno(defaultMat, 'dl-env-top', 'cadernos');
             document.getElementById('modal-enviar-caderno').style.display = 'flex';
             window.btnAtualFc = btnElement;
         }
@@ -1109,6 +1236,7 @@
             let txt = document.getElementById('env-cad-conteudo').value;
             let isH = document.getElementById('env-cad-ishtml').value === 'true';
             
+            if(!Array.isArray(dbData.cadernos)) dbData.cadernos = [];
             dbData.cadernos.push({ id: gerarId(), materia: m, topico: t, texto: txt, isHtml: isH, timestamp: Date.now(), data: new Date().toLocaleDateString() });
             refDb.child('cadernos').set(dbData.cadernos);
             
@@ -1126,51 +1254,85 @@
             }
         }
 
-        function abrirModalMover(id, matOrigem, topOrigem, matAtual, topAtual) {
+        // Funções de Flashcards Viewer e Modal Especial
+        function abrirModalEnviarFlashcard(conteudoTexto, btnElement, defaultMat, defaultTop) {
+            document.getElementById('env-fc-conteudo').value = conteudoTexto;
+            document.getElementById('env-fc-mat').value = defaultMat;
+            document.getElementById('env-fc-top').value = defaultTop;
+            atualizarTopicosCaderno(defaultMat, 'dl-env-fc-top', 'flashcards');
+            document.getElementById('modal-enviar-flashcard').style.display = 'flex';
+            window.btnAtualFc = btnElement;
+        }
+
+        function confirmarEnvioFlashcard() {
+            let m = document.getElementById('env-fc-mat').value || 'Flashcards Diversos';
+            let t = document.getElementById('env-fc-top').value || 'Geral';
+            let txt = document.getElementById('env-fc-conteudo').value;
+            
+            if(!Array.isArray(dbData.flashcards)) dbData.flashcards = [];
+            dbData.flashcards.push({ id: gerarId(), materia: m, topico: t, texto: txt, isHtml: true, timestamp: Date.now(), data: new Date().toLocaleDateString() });
+            refDb.child('flashcards').set(dbData.flashcards);
+            
+            document.getElementById('modal-enviar-flashcard').style.display = 'none';
+            
+            if(window.btnAtualFc) {
+                window.btnAtualFc.textContent = "✅ Salvo!"; 
+                window.btnAtualFc.disabled = true; 
+                window.btnAtualFc.style.background = 'var(--brand-success)'; 
+                window.btnAtualFc.style.color = '#FFF'; 
+                window.btnAtualFc.style.borderColor = 'var(--brand-success)';
+                window.btnAtualFc = null;
+            } else {
+                alert("⚡ Flashcard salvo com sucesso na sua base!");
+            }
+        }
+
+        function abrirModalMover(id, matOrigem, topOrigem, matAtual, topAtual, tipoDb) {
             document.getElementById('mov-id').value = id || '';
             document.getElementById('mov-mat-origem').value = matOrigem || '';
             document.getElementById('mov-top-origem').value = topOrigem || '';
             document.getElementById('mov-cad-mat').value = matAtual;
             document.getElementById('mov-cad-top').value = topAtual;
-            atualizarTopicosCaderno(matAtual, 'dl-mov-top');
+            document.getElementById('mov-tipo-db').value = tipoDb || 'cadernos';
+            atualizarTopicosCaderno(matAtual, 'dl-mov-top', tipoDb);
             document.getElementById('modal-mover-caderno').style.display='flex';
         }
 
-        function confirmarMoverCaderno() {
+        function confirmarMover() {
             let id = document.getElementById('mov-id').value;
             let mOri = document.getElementById('mov-mat-origem').value;
             let tOri = document.getElementById('mov-top-origem').value;
             let mNovo = document.getElementById('mov-cad-mat').value || 'Geral';
             let tNovo = document.getElementById('mov-cad-top').value || 'Geral';
+            let tipoDb = document.getElementById('mov-tipo-db').value;
+
+            let arrRef = tipoDb === 'flashcards' ? dbData.flashcards : dbData.cadernos;
 
             if(id) {
-                let item = dbData.cadernos.find(x => x.id === id);
+                let item = arrRef.find(x => x.id === id);
                 if(item) { item.materia = mNovo; item.topico = tNovo; }
             } else if(mOri && tOri) {
-                dbData.cadernos.forEach(c => {
+                arrRef.forEach(c => {
                     if(c.materia === mOri && c.topico === tOri) { c.materia = mNovo; c.topico = tNovo; }
                 });
             }
-            refDb.child('cadernos').set(dbData.cadernos);
+            refDb.child(tipoDb).set(arrRef);
             document.getElementById('modal-mover-caderno').style.display='none';
-            alert("Movido com sucesso!");
         }
 
-        function renderizarCadernos() {
+        function renderizarCadernosGen(dbArray, divId, termo, dbStringName) {
             let stateCadernos = []; 
-            document.querySelectorAll('#lista-cadernos-div .pasta-body.aberta:not(.sub-caderno-body)').forEach(el => { 
+            document.querySelectorAll(`#${divId} .pasta-body.aberta:not(.sub-caderno-body)`).forEach(el => { 
                 let id = el.previousElementSibling ? el.previousElementSibling.getAttribute('data-caderno-folder') : null; 
                 if(id) stateCadernos.push(id); 
             });
             let stateSubCadernos = [];
-            document.querySelectorAll('#lista-cadernos-div .sub-caderno-body.aberta').forEach(el => { 
+            document.querySelectorAll(`#${divId} .sub-caderno-body.aberta`).forEach(el => { 
                 let id = el.previousElementSibling ? el.previousElementSibling.getAttribute('data-subcaderno-folder') : null; 
                 if(id) stateSubCadernos.push(id); 
             });
 
-            let termo = document.getElementById('busca-caderno') ? document.getElementById('busca-caderno').value.toLowerCase().trim() : '';
-            let arrCad = dbData.cadernos || [];
-            
+            let arrCad = dbArray || [];
             if(termo) {
                 arrCad = arrCad.filter(c => 
                     (c.materia && c.materia.toLowerCase().includes(termo)) || 
@@ -1180,10 +1342,10 @@
                 );
             }
 
-            let div = document.getElementById('lista-cadernos-div'); div.innerHTML = ''; 
+            let div = document.getElementById(divId); div.innerHTML = ''; 
             
             if(arrCad.length === 0) {
-                div.innerHTML = '<p style="color:var(--text-muted);">Nenhuma anotação encontrada.</p>';
+                div.innerHTML = '<p style="color:var(--text-muted);">Nenhum item encontrado.</p>';
                 return;
             }
 
@@ -1198,7 +1360,7 @@
             
             let cIndex = 0;
             for(let m in agr) {
-                let folderKey = 'cad_' + (cIndex++);
+                let folderKey = `${dbStringName}_` + (cIndex++);
                 let htmlM = ''; 
                 let tIndex = 0;
                 
@@ -1209,21 +1371,31 @@
                     agr[m][t].forEach(i => { 
                         let textoCompleto = i.texto || '';
                         let isH = i.isHtml === true;
-                        let textoExibido = isH ? renderHtmlSafely(textoCompleto) : sanitizeText(textoCompleto);
-                        let isLongo = !isH && textoCompleto.length > 250;
-                        if (isLongo) textoExibido = sanitizeText(textoCompleto.substring(0, 250)) + '...';
+                        
+                        let safeText = isH ? renderHtmlSafely(textoCompleto) : sanitizeText(textoCompleto);
+                        if(termo && termo.trim() !== '') {
+                            let regex = new RegExp(`(?![^<]*>)(${termo})`, 'gi');
+                            safeText = safeText.replace(regex, '<mark>$1</mark>');
+                        }
 
-                        let encText = encodeURIComponent(textoCompleto).replace(/'/g, "%27");
+                        let isLongo = textoCompleto.length > 300;
+                        let divTextHtml = `<div class="conteudo-limitado" style="${isLongo ? 'max-height:120px; overflow:hidden; position:relative;' : ''}">
+                            ${safeText}
+                            ${isLongo ? `<div class="fade-bottom" style="position:absolute; bottom:0; left:0; width:100%; height:40px; background:linear-gradient(transparent, var(--bg-card));"></div>` : ''}
+                        </div>`;
+                        let btnTextHtml = isLongo ? `<button style="background:none; border:none; color:var(--brand-primary); cursor:pointer; font-weight:700; font-size:0.8rem; margin-top:8px; padding:0;" onclick="toggleLerMais(this)">Ler mais</button>` : '';
 
-                        htmlT += `<div style="padding:10px 0; border-bottom:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:flex-start; gap:8px;">
-                            <div style="font-size:0.95rem; min-width:0; flex:1; word-break:break-word;">
-                                <div class="cad-txt-span" data-full="${encText}" data-ishtml="${isH}">${textoExibido}</div>
-                                ${isLongo ? `<button style="background:none;border:none;color:var(--brand-primary);cursor:pointer;font-weight:700;font-size:0.8rem;display:block;margin-top:6px;padding:0;" onclick="let span=this.previousElementSibling; if(span.textContent.endsWith('...')){ let full = decodeURIComponent(span.getAttribute('data-full')); span.innerHTML = span.getAttribute('data-ishtml') === 'true' ? DOMPurify.sanitize(full) : sanitizeText(full); this.textContent='(Mostrar menos)'; }else{ span.textContent=sanitizeText(decodeURIComponent(span.getAttribute('data-full')).substring(0,250))+'...'; this.textContent='(Ler mais)'; }">Ler mais</button>` : ''}
-                                <span style="font-size:0.75rem; color:var(--text-muted); display:block; margin-top:8px;">📅 ${i.data || ''}</span>
-                            </div>
-                            <div style="display:flex; align-items:center; gap:8px; flex-shrink:0;">
-                                <button style="background:transparent;border:none;cursor:pointer;font-size:1.1rem;padding:0;" title="Mover Anotação" onclick="abrirModalMover('${i.id}', null, null, '${sanitizeText(i.materia).replace(/'/g,"\\'")}', '${sanitizeText(i.topico).replace(/'/g,"\\'")}')">🔄</button>
-                                <button class="btn-x-vermelho" style="padding:0;font-size:1.1rem;" title="Excluir Anotação" onclick="if(confirm('Excluir?')){ dbData.cadernos=dbData.cadernos.filter(x=>x.id!=='${i.id}'); refDb.child('cadernos').set(dbData.cadernos); }">✖</button>
+                        htmlT += `<div class="balao-caderno">
+                            <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:8px;">
+                                <div style="font-size:0.95rem; min-width:0; flex:1; word-break:break-word;">
+                                    ${divTextHtml}
+                                    ${btnTextHtml}
+                                    <span style="font-size:0.75rem; color:var(--text-muted); display:block; margin-top:12px; border-top:1px solid var(--border-color); padding-top:6px;">📅 ${i.data || ''}</span>
+                                </div>
+                                <div style="display:flex; align-items:center; gap:8px; flex-shrink:0;">
+                                    <button style="background:transparent;border:none;cursor:pointer;font-size:1.1rem;padding:0;" title="Mover" onclick="abrirModalMover('${i.id}', null, null, '${sanitizeText(i.materia).replace(/'/g,"\\'")}', '${sanitizeText(i.topico).replace(/'/g,"\\'")}', '${dbStringName}')">🔄</button>
+                                    <button class="btn-x-vermelho" style="padding:0;font-size:1.1rem;" title="Excluir" onclick="if(confirm('Excluir?')){ dbData.${dbStringName}=dbData.${dbStringName}.filter(x=>x.id!=='${i.id}'); refDb.child('${dbStringName}').set(dbData.${dbStringName}); }">✖</button>
+                                </div>
                             </div>
                         </div>`; 
                     }); 
@@ -1236,15 +1408,29 @@
                     </div>`;
                 }
                 
-                div.innerHTML += `<div class="pasta-header" data-caderno-folder="${folderKey}" onclick="this.nextElementSibling.classList.toggle('aberta')"><span style="font-weight:700; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1; min-width:0;" title="${sanitizeText(m)}">📓 Caderno: ${sanitizeText(m)}</span></div><div class="pasta-body ${termo ? 'aberta' : ''}" style="padding-top:8px;">${htmlM}</div>`;
+                div.innerHTML += `<div class="pasta-header" data-caderno-folder="${folderKey}" onclick="this.nextElementSibling.classList.toggle('aberta')"><span style="font-weight:700; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1; min-width:0;" title="${sanitizeText(m)}">${dbStringName==='flashcards'?'⚡':'📓'} ${sanitizeText(m)}</span></div><div class="pasta-body ${termo ? 'aberta' : ''}" style="padding-top:8px;">${htmlM}</div>`;
             }
             
             if(!termo) {
-                stateCadernos.forEach(id => { let hdr = document.querySelector(`.pasta-header[data-caderno-folder="${id}"]`); if(hdr && hdr.nextElementSibling) hdr.nextElementSibling.classList.add('aberta'); });
-                stateSubCadernos.forEach(id => { let hdr = document.querySelector(`.sub-caderno-header[data-subcaderno-folder="${id}"]`); if(hdr && hdr.nextElementSibling) hdr.nextElementSibling.classList.add('aberta'); });
+                stateCadernos.forEach(id => { let hdr = document.querySelector(`#${divId} .pasta-header[data-caderno-folder="${id}"]`); if(hdr && hdr.nextElementSibling) hdr.nextElementSibling.classList.add('aberta'); });
+                stateSubCadernos.forEach(id => { let hdr = document.querySelector(`#${divId} .sub-caderno-header[data-subcaderno-folder="${id}"]`); if(hdr && hdr.nextElementSibling) hdr.nextElementSibling.classList.add('aberta'); });
             }
         }
 
+        function renderizarCadernos() {
+            let termo = document.getElementById('busca-caderno') ? document.getElementById('busca-caderno').value.toLowerCase().trim() : '';
+            renderizarCadernosGen(dbData.cadernos, 'lista-cadernos-div', termo, 'cadernos');
+        }
+
+        function renderizarFlashcards() {
+            let termo = document.getElementById('busca-flashcard') ? document.getElementById('busca-flashcard').value.toLowerCase().trim() : '';
+            renderizarCadernosGen(dbData.flashcards, 'lista-flashcards-div', termo, 'flashcards');
+        }
+
+        function atualizarTopicosFiltroEstatisticas() {
+            let dlTop = document.getElementById('dl-est-topicos'); if(!dlTop) return; dlTop.innerHTML = ''; let matInput = document.getElementById('est-filtro-materias').value.trim().toLowerCase(); if(!matInput) return; let mats = matInput.split(',').map(m => m.trim()).filter(Boolean); if(mats.length !== 1) return;
+            let topicosSet = new Set(); if(!Array.isArray(dbData.materias)) dbData.materias = Object.values(dbData.materias || {}); dbData.materias.forEach(m => { if(mats.some(mat => m.nome.toLowerCase() === mat) && Array.isArray(m.topicos)) { m.topicos.forEach(t => topicosSet.add(t)); } }); dbData.sessoes.forEach(s => { if(s.materia && mats.some(mat => s.materia.toLowerCase() === mat) && s.topico) { topicosSet.add(s.topico); } }); [...topicosSet].forEach(t => dlTop.innerHTML += `<option value="${t}">`);
+        }
         function renderizarFiltrosEstatisticas() {
             let dlProvas = document.getElementById('dl-est-provas'); if(dlProvas) { dlProvas.innerHTML = ''; if(!Array.isArray(dbData.provas)) dbData.provas = Object.values(dbData.provas || {}); dbData.provas.forEach(p => dlProvas.innerHTML += `<option value="${p.nome}">`); }
             atualizarTopicosFiltroEstatisticas();
@@ -1253,10 +1439,7 @@
             atualizarTopicosFiltroEstatisticas(); let matInput = document.getElementById('est-filtro-materias').value.trim(); let mats = matInput ? matInput.split(',').map(x => x.trim()).filter(Boolean) : []; let topInputEl = document.getElementById('est-filtro-topicos');
             if(topInputEl) { if(mats.length === 1) { topInputEl.disabled = false; topInputEl.placeholder = "Todos (sep. por vírgula)"; } else { topInputEl.value = ''; topInputEl.disabled = true; topInputEl.placeholder = mats.length > 1 ? "Apenas para 1 matéria" : "Todos"; } } atualizarEstatisticas();
         }
-        function atualizarTopicosFiltroEstatisticas() {
-            let dlTop = document.getElementById('dl-est-topicos'); if(!dlTop) return; dlTop.innerHTML = ''; let matInput = document.getElementById('est-filtro-materias').value.trim().toLowerCase(); if(!matInput) return; let mats = matInput.split(',').map(m => m.trim()).filter(Boolean); if(mats.length !== 1) return;
-            let topicosSet = new Set(); if(!Array.isArray(dbData.materias)) dbData.materias = Object.values(dbData.materias || {}); dbData.materias.forEach(m => { if(mats.some(mat => m.nome.toLowerCase() === mat) && Array.isArray(m.topicos)) { m.topicos.forEach(t => topicosSet.add(t)); } }); dbData.sessoes.forEach(s => { if(s.materia && mats.some(mat => s.materia.toLowerCase() === mat) && s.topico) { topicosSet.add(s.topico); } }); [...topicosSet].forEach(t => dlTop.innerHTML += `<option value="${t}">`);
-        }
+        
         function atualizarEstatisticas() {
             let per = document.getElementById('est-periodo').value, tipo = document.getElementById('est-tipo-grafico').value; document.getElementById('est-custom-dates').style.display = per==='custom' ? 'flex' : 'none';
             let dtI = document.getElementById('est-dt-ini').value, dtF = document.getElementById('est-dt-fim').value; let agora = Date.now(), tA = 0, tE = 0, tSeg = 0, tPag = 0, tVid = 0, tQts = 0; let dadosGraf = {}; let setDias = new Set();
@@ -1350,13 +1533,13 @@
             if(!container) return;
             container.innerHTML = '';
             if(!dbData.biblioteca || dbData.biblioteca.length === 0) {
-                container.innerHTML = '<span style="font-size:0.8rem; color:var(--text-muted);">Nenhuma fonte na biblioteca. Faça o upload na aba Biblioteca.</span>';
+                container.innerHTML = '<span style="font-size:0.8rem; color:var(--text-muted);">Nenhuma fonte na Nuvem. Suba seus PDFs na aba Nuvem PRUMA.</span>';
                 return;
             }
             dbData.biblioteca.forEach(b => {
                 let lbl = document.createElement('label');
-                lbl.style.cssText = "display:inline-flex; align-items:center; gap:6px; font-size:0.85rem; cursor:pointer; font-weight:600; padding:8px 14px; border-radius:20px; border:1px solid var(--border-color); background:var(--bg-input); color:var(--text-main); white-space:nowrap; transition:all 0.2s; user-select:none;";
-                lbl.innerHTML = `<input type="checkbox" class="chk-fonte-biblioteca" value="${b.fbKey}" style="display:none;"> <span>${b.tipo==='LINK'?'🌐':'📄'} ${sanitizeText(b.nome)}</span>`;
+                lbl.style.cssText = "display:inline-flex; align-items:center; gap:6px; font-size:0.85rem; cursor:pointer; font-weight:600; padding:8px 14px; border-radius:20px; border:1px solid var(--border-color); background:var(--bg-input); color:var(--text-main); transition:all 0.2s; user-select:none; max-width: 100%;";
+                lbl.innerHTML = `<input type="checkbox" class="chk-fonte-biblioteca" value="${b.fbKey}" style="display:none;"> <span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${b.tipo==='LINK'?'🌐':'📄'} ${sanitizeText(b.nome)}</span>`;
                 
                 let chk = lbl.querySelector('input');
                 chk.onchange = (e) => {
@@ -1374,28 +1557,47 @@
             });
         }
 
+        function filtrarFontesIA() {
+            let termo = document.getElementById('busca-fonte-ia').value.toLowerCase().trim();
+            document.querySelectorAll('#checkboxes-fontes-ia label').forEach(lbl => {
+                let spanTxt = lbl.querySelector('span').textContent.toLowerCase();
+                if (spanTxt.includes(termo)) {
+                    lbl.style.display = 'inline-flex';
+                } else {
+                    lbl.style.display = 'none';
+                }
+            });
+        }
+
         function mudarSubIa(sub, btn) {
             subIaAtual = sub;
-            ['chat', 'simulador', 'flashcards', 'edital'].forEach(s => { let el = document.getElementById('subia-'+s); if(el) el.style.display = (s===sub)?'block':'none'; }); 
+            ['chat', 'simulador', 'edital', 'nuvem'].forEach(s => { let el = document.getElementById('subia-'+s); if(el) el.style.display = (s===sub)?'block':'none'; }); 
             document.querySelectorAll('#view-pruma .btn-outline').forEach(b => { b.style.background='transparent'; b.style.color='var(--text-main)'; }); 
             if(btn) { btn.style.background='var(--brand-primary);'; btn.style.color='white'; } 
             renderizarFiltrosIAHistorico();
         }
 
         function renderizarFiltrosIAHistorico() {
-            let container = document.getElementById('historico-filtros-ia-container');
             let lista = document.getElementById('lista-ultimos-filtros-ia');
-            if(!container || !lista) return;
+            if(!lista) return;
 
-            let filtrados = dbData.iaFiltrosHistorico.filter(item => item.tipo === subIaAtual);
-            if(filtrados.length === 0) { container.style.display = 'none'; return; }
-            container.style.display = 'block';
+            let abaAtiva = document.getElementById('view-pruma').style.display === 'block' ? subIaAtual : 'flashcards';
+            
+            let filtrados = dbData.iaFiltrosHistorico.filter(item => item.tipo === abaAtiva);
+            if(filtrados.length === 0) { 
+                lista.innerHTML = '<span style="font-size:0.8rem; color:var(--text-muted); padding:4px;">Nenhum histórico recente.</span>'; 
+                return; 
+            }
+            
             lista.innerHTML = '';
             filtrados.forEach((item) => {
                 let btn = document.createElement('button');
-                btn.className = 'btn-outline'; btn.style.width = 'auto'; btn.style.padding = '6px 12px'; btn.style.fontSize = '0.8rem';
+                btn.className = 'btn-outline'; btn.style.width = '100%'; btn.style.padding = '8px 12px'; btn.style.fontSize = '0.85rem'; btn.style.textAlign = 'left'; btn.style.border = 'none'; btn.style.borderBottom = '1px solid var(--border-color)'; btn.style.borderRadius = '0';
                 btn.textContent = `📌 ${item.resumo || item.params}`;
-                btn.onclick = () => carregarRespostaSalvaHistorico(item);
+                btn.onclick = () => {
+                    document.getElementById('lista-ultimos-filtros-ia').style.display = 'none';
+                    carregarRespostaSalvaHistorico(item);
+                }
                 lista.appendChild(btn);
             });
         }
@@ -1438,16 +1640,16 @@
         }
 
         function aprofundarRespostaContextual(btn) {
-    let msgBalao = btn.closest('.msg'); if (!msgBalao) return;
-    let conteudoDiv = msgBalao.querySelector('.conteudo-resposta-ia');
-    let textoDoBalao = conteudoDiv ? conteudoDiv.innerText : msgBalao.innerText;
-    
-    // DESLIGA A BUSCA WEB PARA EVITAR ERROS DE URL GIGANTE
-    let chkWeb = document.getElementById('chk-busca-web');
-    if (chkWeb) chkWeb.checked = false; 
-    
-    executarIA('chat', `Atue como professor. Aprofunde a explicação anterior:\n\n"${textoDoBalao}"`);
-}
+            let msgBalao = btn.closest('.msg'); if (!msgBalao) return;
+            let conteudoDiv = msgBalao.querySelector('.conteudo-resposta-ia');
+            let textoDoBalao = conteudoDiv ? conteudoDiv.innerText : msgBalao.innerText;
+            
+            // Corrige o erro de CORS gigantesco:
+            let chkWeb = document.getElementById('chk-busca-web');
+            if (chkWeb) chkWeb.checked = false;
+
+            executarIA('chat', `Atue como professor. Aprofunde a explicação anterior:\n\n"${textoDoBalao}"`);
+        }
 
         async function buscarNaWeb(query) {
             let url = `https://html.duckduckgo.com/html/?q=${encodeURIComponent(query)}`;
@@ -1481,7 +1683,7 @@
         }
 
         async function executarIA(tipo, promptEspecifico = null) {
-            let k = localStorage.getItem('pruma_apikey'); if(!k) return alert("Configure a API Key.");
+            let k = localStorage.getItem('pruma_apikey'); if(!k) return alert("Configure a API Key na aba Minha Conta.");
             let p = "", box = null; let niveisSelecionados = [];
 
             if(tipo === 'questoes') {
@@ -1489,7 +1691,6 @@
                 if(niveisSelecionados.length === 0) return alert("Selecione um nível.");
                 let qtd = document.getElementById('ia-qts-num').value || '5';
                 let t = document.getElementById('ia-qts-tema').value || 'Geral';
-                let tipoQVal = document.getElementById('ia-tipo-q').value;
                 p = `Gere ${qtd} questões em JSON PURO sobre: ${t}. Níveis: [${niveisSelecionados.join(', ')}]. Formato estrito JSON array: [{"enunciado": "...", "alternativas": ["A) ..."], "correta": "A", "comentario": "...", "nivel": "Médio"}]. Sem markdown.`;
                 box = document.getElementById('box-qts'); box.style.display='flex'; box.innerHTML='';
             } else if(tipo === 'flashcards') {
@@ -1525,30 +1726,32 @@
 
                 let partesDaMensagem = [];
                 let textoContexto = "";
-                let chksSelecionados = document.querySelectorAll('.chk-fonte-biblioteca:checked');
-
-                for(let chk of chksSelecionados) {
-                    let doc = dbData.biblioteca.find(d => d.fbKey === chk.value);
-                    if(doc) {
-                        if(doc.nome.toLowerCase().endsWith('.pdf') || (doc.url && doc.url.includes('.pdf'))) {
-                            try {
-                                if(document.getElementById('load-ia-text')) document.getElementById('load-ia-text').textContent = "Lendo PDF anexo... ⏳";
-                                let resBlob;
-                                try { resBlob = await fetch(doc.url); } catch(e) { resBlob = await fetch(`https://corsproxy.io/?${encodeURIComponent(doc.url)}`); }
-                                let blob = await resBlob.blob();
-                                let base64 = await new Promise((resolve, reject) => {
-                                    let reader = new FileReader();
-                                    reader.onload = () => resolve(reader.result.split(',')[1]);
-                                    reader.onerror = reject;
-                                    reader.readAsDataURL(blob);
-                                });
-                                partesDaMensagem.push({ inlineData: { mimeType: "application/pdf", data: base64 } });
-                            } catch(err) {
-                                console.error("Erro ao converter PDF:", err);
-                                if(doc.texto) textoContexto += `\n--- Fonte [${doc.nome}] (Extração Parcial) ---\n${doc.texto}\n`;
+                
+                if (tipo === 'chat' || tipo === 'questoes') {
+                    let chksSelecionados = document.querySelectorAll('.chk-fonte-biblioteca:checked');
+                    for(let chk of chksSelecionados) {
+                        let doc = dbData.biblioteca.find(d => d.fbKey === chk.value);
+                        if(doc) {
+                            if(doc.nome.toLowerCase().endsWith('.pdf') || (doc.url && doc.url.includes('.pdf'))) {
+                                try {
+                                    if(document.getElementById('load-ia-text')) document.getElementById('load-ia-text').textContent = "Lendo PDF anexo... ⏳";
+                                    let resBlob;
+                                    try { resBlob = await fetch(doc.url); } catch(e) { resBlob = await fetch(`https://corsproxy.io/?${encodeURIComponent(doc.url)}`); }
+                                    let blob = await resBlob.blob();
+                                    let base64 = await new Promise((resolve, reject) => {
+                                        let reader = new FileReader();
+                                        reader.onload = () => resolve(reader.result.split(',')[1]);
+                                        reader.onerror = reject;
+                                        reader.readAsDataURL(blob);
+                                    });
+                                    partesDaMensagem.push({ inlineData: { mimeType: "application/pdf", data: base64 } });
+                                } catch(err) {
+                                    console.error("Erro ao converter PDF:", err);
+                                    if(doc.texto) textoContexto += `\n--- Fonte [${doc.nome}] (Extração Parcial) ---\n${doc.texto}\n`;
+                                }
+                            } else if (doc.texto) {
+                                textoContexto += `\n--- Fonte [${doc.nome}] ---\n${doc.texto}\n`;
                             }
-                        } else if (doc.texto) {
-                            textoContexto += `\n--- Fonte [${doc.nome}] ---\n${doc.texto}\n`;
                         }
                     }
                 }
@@ -1556,7 +1759,7 @@
                 if(document.getElementById('load-ia-text')) document.getElementById('load-ia-text').textContent = "Analisando...";
 
                 let instrucaoFinal = `${baseSys}\n\n`;
-                if(textoContexto) instrucaoFinal += `[FONTES DE TEXTO/SITES DA BIBLIOTECA]:\n${textoContexto}\n\n`;
+                if(textoContexto) instrucaoFinal += `[FONTES DE TEXTO/SITES DA NUVEM]:\n${textoContexto}\n\n`;
                 if(ctxWeb) instrucaoFinal += `${ctxWeb}\n\n`;
                 
                 if(partesDaMensagem.length > 0) {
@@ -1582,12 +1785,12 @@
 
                 if(tipo === 'flashcards') {
                     let json = JSON.parse(txtF.replace(/```json/g,'').replace(/```/g,'').match(/\[.*\]/s)[0]);
-                    let matNome = sanitizeText(document.getElementById('fc-mat').value) || 'Flashcards';
+                    let matNome = sanitizeText(document.getElementById('fc-mat').value) || 'Flashcards Diversos';
                     let topNome = sanitizeText(document.getElementById('fc-top').value) || 'Geral';
                     box.innerHTML = ''; let htmlFCResult = badgeModelo;
                     json.forEach(c => {
                         let fcContent = `<div style="background:var(--bg-card); padding:14px; border-radius:8px; border-left:4px solid var(--brand-warning); border:1px solid var(--border-color); width:100%;"><div style="font-weight:700; color:var(--text-main);">❓ ${sanitizeText(c.f)} (${c.nivel || ''})</div><button onclick="this.nextElementSibling.style.display='block'; this.style.display='none'" class="btn-outline" style="margin-top:12px; width:auto; padding:6px 12px; font-size:0.85rem;">Ver Resposta</button><div style="display:none; margin-top:12px; color:var(--text-main); padding-top:10px; border-top:1px dashed var(--border-color);">💡 Resposta: ${sanitizeText(c.v)}</div></div>`;
-                        let itemHtml = `<div style="margin-bottom:16px;">${fcContent}<div style="margin-top:8px;"><button class="btn-outline" style="width:auto; padding:6px 12px; font-size:0.8rem;" data-payload="${encodeURIComponent(fcContent)}" data-mat="${encodeURIComponent(matNome)}" data-top="${encodeURIComponent(topNome)}" onclick="abrirModalEnviarCaderno(decodeURIComponent(this.getAttribute('data-payload')), this, decodeURIComponent(this.getAttribute('data-mat')), decodeURIComponent(this.getAttribute('data-top')), true)">💾 Salvar</button></div></div>`;
+                        let itemHtml = `<div style="margin-bottom:16px;">${fcContent}<div style="margin-top:8px;"><button class="btn-outline" style="width:auto; padding:6px 12px; font-size:0.8rem;" data-payload="${encodeURIComponent(fcContent)}" data-mat="${encodeURIComponent(matNome)}" data-top="${encodeURIComponent(topNome)}" onclick="abrirModalEnviarFlashcard(decodeURIComponent(this.getAttribute('data-payload')), this, decodeURIComponent(this.getAttribute('data-mat')), decodeURIComponent(this.getAttribute('data-top')))">💾 Salvar Flashcard</button></div></div>`;
                         box.innerHTML += itemHtml; htmlFCResult += itemHtml;
                     });
                     box.insertAdjacentHTML('afterbegin', badgeModelo);
@@ -1606,7 +1809,7 @@
                             });
                         }
                         let cadQstHtml = `<div style="background:var(--bg-card); padding:16px; border-radius:var(--radius-sm); border:1px solid var(--border-color); width:100%;"><div style="font-weight:700; margin-bottom:10px;">🎯 Questão (${sanitizeText(q.nivel || '')})</div><div style="margin-bottom:12px;">${sanitizeText(q.enunciado)}</div><div style="display:flex; flex-direction:column; gap:4px; margin-bottom:12px;" class="bloco-alternativas-qst">${altHtml}</div><div class="bloco-explicacao-qst" style="display:none; margin-top:8px;"><div style="font-size:0.85rem; color:var(--text-muted); padding-top:8px; border-top:1px solid var(--border-color);">💡 Comentário: ${sanitizeText(q.comentario || '')}</div></div></div>`;
-                        let itemHtmlQst = `<div style="margin-bottom:16px;">${cadQstHtml}<div style="margin-top:8px;"><button class="btn-primary" style="width:auto; padding:6px 14px; font-size:0.8rem;" data-payload="${encodeURIComponent(cadQstHtml)}" data-mat="${encodeURIComponent(document.getElementById('ia-qts-tema').value || 'Questões')}" onclick="abrirModalEnviarCaderno(decodeURIComponent(this.getAttribute('data-payload')), this, decodeURIComponent(this.getAttribute('data-mat')), '', true)">📚 Enviar para Caderno</button></div></div>`;
+                        let itemHtmlQst = `<div style="margin-bottom:16px;">${cadQstHtml}<div style="margin-top:8px;"><button class="btn-primary" style="width:auto; padding:6px 14px; font-size:0.8rem;" data-payload="${encodeURIComponent(cadQstHtml)}" data-mat="${encodeURIComponent(document.getElementById('ia-qts-tema').value || 'Questões')}" onclick="abrirModalEnviarCaderno(decodeURIComponent(this.getAttribute('data-payload')), this, decodeURIComponent(this.getAttribute('data-mat')), '', true)">📚 Enviar para Caderno de Erros</button></div></div>`;
                         htmlQ += itemHtmlQst;
                     });
                     htmlQ += `</div>`;
@@ -1618,7 +1821,7 @@
                     let lHtml = sanitizeText(parsedMarkdown);
                     
                     let chatHtmlToSave = `<div style="font-size:0.95rem; line-height:1.5; color:var(--text-main);">${lHtml}</div>`;
-                    let finalChatHtml = `${badgeModelo}<div class="conteudo-resposta-ia">${lHtml}</div><br><div style="display:flex; gap:8px;"><button class="btn-outline" style="width:auto; padding:6px 12px; font-size:0.8rem;" onclick="aprofundarRespostaContextual(this)">🔍 Aprofundar</button><button class="btn-primary" style="width:auto; padding:6px 12px; font-size:0.8rem;" data-payload="${encodeURIComponent(chatHtmlToSave)}" onclick="abrirModalEnviarCaderno(decodeURIComponent(this.getAttribute('data-payload')), this, '', '', true)">📚 Salvar</button></div>`;
+                    let finalChatHtml = `${badgeModelo}<div class="conteudo-resposta-ia">${lHtml}</div><br><div style="display:flex; gap:8px;"><button class="btn-outline" style="width:auto; padding:6px 12px; font-size:0.8rem;" onclick="aprofundarRespostaContextual(this)">🔍 Aprofundar</button><button class="btn-primary" style="width:auto; padding:6px 12px; font-size:0.8rem;" data-payload="${encodeURIComponent(chatHtmlToSave)}" onclick="abrirModalEnviarCaderno(decodeURIComponent(this.getAttribute('data-payload')), this, '', '', true)">📚 Salvar no Caderno</button></div>`;
                     
                     box.innerHTML += `<div class="msg msg-a" style="max-width:100%; width:100%;">${finalChatHtml}</div>`;
                     salvarFiltroHistorico('chat', p, p.substring(0, 25), finalChatHtml);
