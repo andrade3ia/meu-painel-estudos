@@ -1438,11 +1438,16 @@
         }
 
         function aprofundarRespostaContextual(btn) {
-            let msgBalao = btn.closest('.msg'); if (!msgBalao) return;
-            let conteudoDiv = msgBalao.querySelector('.conteudo-resposta-ia');
-            let textoDoBalao = conteudoDiv ? conteudoDiv.innerText : msgBalao.innerText;
-            executarIA('chat', `Atue como professor. Aprofunde a explicação anterior:\n\n"${textoDoBalao}"`);
-        }
+    let msgBalao = btn.closest('.msg'); if (!msgBalao) return;
+    let conteudoDiv = msgBalao.querySelector('.conteudo-resposta-ia');
+    let textoDoBalao = conteudoDiv ? conteudoDiv.innerText : msgBalao.innerText;
+    
+    // DESLIGA A BUSCA WEB PARA EVITAR ERROS DE URL GIGANTE
+    let chkWeb = document.getElementById('chk-busca-web');
+    if (chkWeb) chkWeb.checked = false; 
+    
+    executarIA('chat', `Atue como professor. Aprofunde a explicação anterior:\n\n"${textoDoBalao}"`);
+}
 
         async function buscarNaWeb(query) {
             let url = `https://html.duckduckgo.com/html/?q=${encodeURIComponent(query)}`;
