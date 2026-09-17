@@ -133,6 +133,8 @@
 
     <main class="main-content" onclick="if(window.innerWidth<=768) document.getElementById('sidebar-menu').classList.remove('open')">
         
+        <!-- RESTANTE DA ESTRUTURA HTML (Telas Início, Provas, Matérias, Caderno, Estatísticas) PERMANECE 100% IGUAL -->
+        
         <div id="tela-login" class="card" style="max-width:400px; margin:80px auto; text-align:center;">
             <h1 style="color:var(--brand-primary); font-size:2.8rem; margin:0 0 5px 0; font-weight:700;">PRUMA</h1>
             <p style="color:var(--text-muted); margin-bottom:30px; font-weight:500;">Painel de Estudos</p>
@@ -368,7 +370,6 @@
                         </div>
 
                         <div id="subia-chat">
-                            <!-- Seleção manual de fontes (múltiplas, discreta e intuitiva) -->
                             <div style="margin-bottom:12px;">
                                 <div onclick="let b = document.getElementById('lista-fontes-ia-container'); b.style.display = b.style.display==='none' ? 'block' : 'none';" style="font-size:0.8rem; font-weight:600; color:var(--brand-primary); cursor:pointer; display:inline-flex; align-items:center; gap:4px; user-select:none;">
                                     📎 <span id="label-fontes-selecionadas">Selecionar fontes da Biblioteca (0)</span> ▾
@@ -464,9 +465,9 @@
                     <h2>Nuvem PRUMA (Fontes)</h2>
                     <div style="display:flex; gap:20px; flex-wrap:wrap;">
                         <div style="flex:1; min-width:250px; background:var(--bg-input); padding:20px; border-radius:var(--radius-md);">
-                            <h3 style="margin-top:0; font-size:1.1rem;">Enviar PDF / Texto</h3>
+                            <h3 style="margin-top:0; font-size:1.1rem;">Enviar PDF</h3>
                             <input type="text" id="bib-mat-arq" placeholder="Matéria/Assunto (Opcional)" list="lista-materias-dl" onclick="try{this.showPicker()}catch(e){}">
-                            <input type="file" id="bib-file" accept=".pdf,.txt" style="background:var(--bg-card); padding:8px;">
+                            <input type="file" id="bib-file" accept=".pdf" style="background:var(--bg-card); padding:8px;">
                             <button class="btn-primary" onclick="uploadArquivo()">Subir Arquivo</button>
                         </div>
                         <div style="flex:1; min-width:250px; background:var(--bg-input); padding:20px; border-radius:var(--radius-md);">
@@ -482,6 +483,7 @@
             </div>
 
             <div id="view-conta" style="display:none;">
+                <!-- ... Tela Conta Intacta ... -->
                 <div class="card" style="max-width:500px; margin:0 auto;">
                     <h2>Minha Conta</h2>
                     
@@ -505,6 +507,7 @@
         </div>
     </main>
 
+    <!-- Modais Intactos -->
     <div id="modal-apikey" class="modal">
         <div class="modal-content" style="max-width:560px;">
             <button class="modal-close" style="position:absolute; top:16px; right:16px; background:transparent; border:none; font-size:1.5rem; cursor:pointer; color:var(--brand-danger); font-weight:700; z-index:10;" onclick="document.getElementById('modal-apikey').style.display='none'">✖</button>
@@ -1267,9 +1270,43 @@
             graficoInstance = new Chart(document.getElementById('graficoEst').getContext('2d'), { type: tipo, data: { labels: keys, datasets: [{ label: 'Tempo', data: vals, backgroundColor: cores, borderWidth: 0, borderRadius: tipo==='bar'?6:0 }] }, options: { responsive: true, maintainAspectRatio: false, color: txtCor, plugins: { legend: { labels: { color: txtCor } }, tooltip: { callbacks: { label: function(c) { let t = c.raw || 0; return ` ${c.label || ''}: ${Math.floor(t / 3600)}h ${Math.floor((t % 3600) / 60)}m ${t % 60}s`; } } } }, scales: tipo==='bar' ? { x:{ticks:{color:txtCor}}, y:{ticks:{color:txtCor}} } : {} } });
         }
 
+        // ---------- FUNÇÃO DE UPLOAD ALTERADA ---------- //
         async function uploadArquivo() {
-            let f = document.getElementById('bib-file').files[0]; if(!f) return alert("Selecione."); if(f.size > 100 * 1024 * 1024) return alert("Arquivo máx 100MB."); let btn = event.currentTarget; let tx = btn.textContent; btn.disabled = true; btn.textContent = "Lendo...";
-            try { let refF = refStore.child('biblioteca/'+gerarId()+'_'+f.name); await refF.put(f); let url = await refF.getDownloadURL(); let txt = ""; if(f.type.includes('pdf')) { const arr = await f.arrayBuffer(); const pdf = await pdfjsLib.getDocument({data:arr}).promise; for(let i=1; i<=Math.min(pdf.numPages, 15); i++) { let c = await (await pdf.getPage(i)).getTextContent(); txt += c.items.map(it=>it.str).join(" ") + "\n"; } } else { txt = await f.text(); } let m = sanitizeText(document.getElementById('bib-mat-arq').value||'Geral'); refDb.child('biblioteca').push({ id: gerarId(), nome: f.name, tipo: 'ARQUIVO', url: url, texto: txt.substring(0,20000), materia: m, data: new Date().toLocaleDateString(), refPath: refF.fullPath }); document.getElementById('bib-file').value = ''; btn.textContent = "✅ Salvo!"; setTimeout(()=> {btn.textContent=tx; btn.disabled=false;}, 2000); } catch(e) { alert("Erro: "+e.message); btn.textContent=tx; btn.disabled=false; }
+            let f = document.getElementById('bib-file').files[0]; 
+            if(!f) return alert("Selecione um arquivo PDF."); 
+            if(f.size > 100 * 1024 * 1024) return alert("Arquivo máx 100MB."); 
+            
+            let btn = event.currentTarget; 
+            let tx = btn.textContent; 
+            btn.disabled = true; 
+            btn.textContent = "Salvando PDF...";
+            
+            try { 
+                let refF = refStore.child('biblioteca/' + gerarId() + '_' + f.name); 
+                await refF.put(f); 
+                let url = await refF.getDownloadURL(); 
+                let m = sanitizeText(document.getElementById('bib-mat-arq').value || 'Geral'); 
+                
+                // Salva os dados brutos, sem extração local com pdf.js
+                refDb.child('biblioteca').push({ 
+                    id: gerarId(), 
+                    nome: f.name, 
+                    tipo: 'ARQUIVO', 
+                    url: url, 
+                    texto: "[Documento PDF anexo pronto para leitura dinâmica na IA via Base64]", 
+                    materia: m, 
+                    data: new Date().toLocaleDateString(), 
+                    refPath: refF.fullPath 
+                }); 
+                
+                document.getElementById('bib-file').value = ''; 
+                btn.textContent = "✅ Salvo!"; 
+                setTimeout(() => { btn.textContent = tx; btn.disabled = false; }, 2000); 
+            } catch(e) { 
+                alert("Erro: " + e.message); 
+                btn.textContent = tx; 
+                btn.disabled = false; 
+            }
         }
 
         async function salvarLink() { 
@@ -1446,10 +1483,12 @@
             return "🌐 Web indisponível no momento ou bloqueada pelos servidores de proxy.";
         }
 
+        // ---------- FUNÇÃO EXECUTAR IA ALTERADA ---------- //
         async function executarIA(tipo, promptEspecifico = null) {
             let k = localStorage.getItem('pruma_apikey'); if(!k) return alert("Configure a API Key.");
             let p = "", box = null; let niveisSelecionados = [];
 
+            // Validações por tipo
             if(tipo === 'questoes') {
                 document.querySelectorAll('.chk-nivel-q:checked').forEach(el => niveisSelecionados.push(el.value));
                 if(niveisSelecionados.length === 0) return alert("Selecione um nível.");
@@ -1473,45 +1512,97 @@
                 box.scrollTop = box.scrollHeight;
             }
 
-            let ctx = "";
-            let chksSelecionados = document.querySelectorAll('.chk-fonte-biblioteca:checked');
-            if(chksSelecionados.length > 0) {
-                ctx += "\n\n[FONTES SELECIONADAS DA BIBLIOTECA]:\n";
-                chksSelecionados.forEach(chk => {
-                    let doc = dbData.biblioteca.find(d => d.fbKey === chk.value);
-                    if(doc && doc.texto) {
-                        ctx += `\n--- Fonte [${doc.nome}] ---\n${doc.texto}\n`;
-                    }
-                });
-            }
-
             let baseSys = obterPromptDoSistema(tipo, p);
             
             try {
-                if(tipo!=='flashcards') { 
-                    box.innerHTML += `<div class="msg msg-a" id="load-ia"><span id="load-ia-text">Analisando...</span> ⏳</div>`; box.scrollTop = box.scrollHeight; 
-                    let chk = document.getElementById('chk-busca-web');
-                    if(tipo === 'chat' && chk && chk.checked) {
-                        let resultadosWeb = await buscarNaWeb(p);
-                        ctx += `\n\n[BUSCA WEB RECENTE - ANO 2026]:\n${resultadosWeb}\n`;
-                    }
+                // UI de carregamento
+                if(tipo !== 'flashcards') { 
+                    box.innerHTML += `<div class="msg msg-a" id="load-ia"><span id="load-ia-text">Analisando fontes e gerando resposta...</span> ⏳</div>`; box.scrollTop = box.scrollHeight; 
                 } else { 
-                    box.innerHTML = `<div id="load-ia" style="color:var(--brand-primary); font-weight:600;"><span>Construindo flashcards...</span> ⏳</div>`; 
+                    box.innerHTML = `<div id="load-ia" style="color:var(--brand-primary); font-weight:600;"><span>Analisando fontes e construindo flashcards...</span> ⏳</div>`; 
                 }
 
+                let ctxTexto = "";
+                let partesDaMensagem = [];
+                let chksSelecionados = document.querySelectorAll('.chk-fonte-biblioteca:checked');
+                
+                // Mapeia e prepara todas as fontes selecionadas
+                if(chksSelecionados.length > 0) {
+                    ctxTexto += "\n\n[ATENÇÃO: FONTES OBRIGATÓRIAS DA BIBLIOTECA]:\nResponda à dúvida UTILIZANDO DADOS E TRECHOS DAS FONTES ABAIXO. Se o conteúdo não estiver no documento, avise o usuário explicitamente.\n";
+                    for(let chk of chksSelecionados) {
+                        let doc = dbData.biblioteca.find(d => d.fbKey === chk.value);
+                        if(doc) {
+                            if(doc.tipo === 'ARQUIVO' && doc.refPath) {
+                                try {
+                                    // 1. Pega URL do Storage
+                                    let url = await storage.ref(doc.refPath).getDownloadURL();
+                                    let blob;
+                                    
+                                    // 2. Baixa o arquivo para a memória (com proxy de backup caso falhe por CORS)
+                                    try {
+                                        let res = await fetch(url);
+                                        if(!res.ok) throw new Error("CORS fail");
+                                        blob = await res.blob();
+                                    } catch(err) {
+                                        let proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
+                                        let res = await fetch(proxyUrl);
+                                        blob = await res.blob();
+                                    }
+                                    
+                                    // 3. Converte para Base64
+                                    let b64 = await new Promise((resolve, reject) => {
+                                        let reader = new FileReader();
+                                        reader.onload = () => resolve(reader.result.split(',')[1]);
+                                        reader.onerror = reject;
+                                        reader.readAsDataURL(blob);
+                                    });
+                                    
+                                    // 4. Anexa no corpo da API
+                                    partesDaMensagem.push({
+                                        inlineData: { mimeType: "application/pdf", data: b64 }
+                                    });
+                                    ctxTexto += `\n--- Arquivo PDF Anexado LIDO COM SUCESSO: [${doc.nome}] ---\n`;
+                                } catch (err) {
+                                    console.error("Erro total ao baixar PDF:", err);
+                                    ctxTexto += `\n--- ERRO: Falha ao tentar carregar o PDF [${doc.nome}]. A Inteligência Artificial não conseguiu acessar este arquivo. ---\n`;
+                                }
+                            } else if(doc.texto) {
+                                // Se for site ou link salvo, passa o texto normal
+                                ctxTexto += `\n--- Fonte Texto/Site: [${doc.nome}] ---\n${doc.texto}\n`;
+                            }
+                        }
+                    }
+                }
+
+                // Busca Web
+                let chkBusca = document.getElementById('chk-busca-web');
+                if(tipo === 'chat' && chkBusca && chkBusca.checked) {
+                    let resultadosWeb = await buscarNaWeb(p);
+                    ctxTexto += `\n\n[BUSCA WEB RECENTE]:\n${resultadosWeb}\n`;
+                }
+
+                // Insere as instruções + contexto textual + pergunta do usuário no final da lista
+                partesDaMensagem.push({
+                    text: `${baseSys}\n\n${ctxTexto}\n\nPROMPT: ${p}`
+                });
+
+                // Chamada para a API
                 async function chamarGemini(modelo) {
                     let res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelo}:generateContent?key=${k}`, { 
                         method:'POST', headers:{'Content-Type':'application/json'}, 
-                        body:JSON.stringify({ contents:[{parts:[{text: `${baseSys}\n\n${ctx}\n\nPROMPT: ${p}`}]}] }) 
+                        body: JSON.stringify({ contents: [{ parts: partesDaMensagem }] }) 
                     });
-                    if(!res.ok) throw new Error(`Erro API (${res.status})`);
+                    if(!res.ok) {
+                        let errTxt = await res.text();
+                        throw new Error(`Erro API (${res.status}): ${errTxt}`);
+                    }
                     const data = await res.json(); 
                     return data.candidates[0].content.parts[0].text;
                 }
 
                 let txtF = await chamarGemini("gemini-3.5-flash-lite");
                 let l = document.getElementById('load-ia'); if(l) l.remove();
-                let badgeModelo = `<div style="font-size:0.7rem; color:var(--text-muted); opacity:0.7; margin-bottom:6px; text-align:right;">🛡️ PRUMA IA</div>`;
+                let badgeModelo = `<div style="font-size:0.7rem; color:var(--text-muted); opacity:0.7; margin-bottom:6px; text-align:right;">🛡️ PRUMA IA (Modo Leitura Completa)</div>`;
 
                 if(tipo === 'flashcards') {
                     let json = JSON.parse(txtF.replace(/```json/g,'').replace(/```/g,'').match(/\[.*\]/s)[0]);
