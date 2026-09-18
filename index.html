@@ -442,12 +442,12 @@
                             </div>
 
                             <div class="chat-box" id="box-chat">
-                                <div class="msg msg-a">🛡️ PRUMA IA ativada. Como posso te ajudar hoje?</div>
+                                <div class="msg msg-a">🛡️ Pruma IA ativada, como posso te ajudar?</div>
                             </div>
                             <div style="display:flex; gap:12px; flex-wrap:wrap; align-items:flex-end;">
                                 <textarea id="inp-chat" placeholder="Digite sua dúvida..." rows="2" style="margin:0; resize:none; flex:1; min-width:200px;"></textarea>
                                 <div style="display:flex; flex-direction:column; gap:8px;">
-                                    <label style="display:flex; align-items:center; gap:6px; font-size:0.8rem; font-weight:600; cursor:pointer;" title="Faz uma busca usando proxies na web."><input type="checkbox" id="chk-busca-web"> 🌐 Buscar Web</label>
+                                    <label style="display:flex; align-items:center; gap:6px; font-size:0.8rem; font-weight:600; cursor:pointer;" title="Faz uma busca usando a API Tavily."><input type="checkbox" id="chk-busca-web"> 🌐 Buscar Web</label>
                                     <button class="btn-primary" onclick="executarIA('chat')" style="width:120px;">Enviar</button>
                                 </div>
                             </div>
@@ -1752,8 +1752,15 @@
         function obterPromptDoSistema(tipo, promptUsuario = "") {
             let pL = promptUsuario.toLowerCase();
             let bancaDetectada = pL.includes('cebraspe') || pL.includes('cespe') ? "CEBRASPE" : (pL.includes('fgv') ? "FGV" : (pL.includes('fcc') ? "FCC" : (pL.includes('vunesp') ? "VUNESP" : "")));
-            let bancaInstrucao = bancaDetectada ? `\n\nDiretrizes específicas para a banca ${bancaDetectada}: analise o perfil de cobrança típico desta banca (jurisprudência dominante, letra de lei ou doutrina).` : "";
-            const basePersona = "Você é a PRUMA IA, uma mentora e especialista em estudos e jurídica de altíssimo nível. Forneça explicações profundas, claras, didáticas e ricamente estruturadas. USE E ABUSE de formatação visual: utilize emojis adequados para ilustrar os temas, crie tópicos, listas, tabelas comparativas e use negrito para destacar palavras-chave. Sua resposta deve ser extremamente agradável de ler e organizada para facilitar a memorização." + bancaInstrucao;
+            let bancaInstrucao = bancaDetectada ? `\nDiretrizes da banca ${bancaDetectada}: analise o perfil típico de cobrança desta banca.` : "";
+            
+            const basePersona = `Você é a PRUMA IA, mentora focada em estudos gerais (direito, português, raciocínio lógico, exatas, etc.).
+        DIRETRIZES:
+        1. Seja direto e objetivo. Não use saudações, introduções ou encerramentos.
+        2. USE TABELAS SOMENTE para assuntos complexos ou que envolvam comparar muitos elementos. No restante, use listas com marcadores pontuais.
+        3. Você tem acesso à memória da conversa para entender pronomes e continuidade, MAS NÃO tente comparar ou relacionar a pergunta nova com os assuntos antigos caso o usuário mude de assunto. Trate novos temas com independência.
+        4. Forneça dados essenciais e atualizados que o estudante precisa para a prova.${bancaInstrucao}`;
+            
             return { chat: basePersona, questoes: basePersona, flashcards: basePersona }[tipo] || basePersona;
         }
 
@@ -1769,46 +1776,30 @@
         }
 
         async function buscarNaWeb(query) {
-    try {
-        // 1. Tenta a API Oficial do DuckDuckGo (Retorna resumo estruturado em JSON sem bloqueio de CORS)
-        let ddgUrl = `https://api.duckduckgo.com/?q=${encodeURIComponent(query)}&format=json&no_html=1&skip_disambig=1`;
-        let resDdg = await fetch(ddgUrl);
-        if (resDdg.ok) {
-            let jsonDdg = await resDdg.json();
-            let resultados = [];
-            
-            if (jsonDdg.AbstractText) {
-                resultados.push(`[DuckDuckGo Resumo]: ${jsonDdg.AbstractText}`);
-            }
-            
-            if (jsonDdg.RelatedTopics && jsonDdg.RelatedTopics.length > 0) {
-                jsonDdg.RelatedTopics.slice(0, 3).forEach((item, i) => {
-                    if (item.Text) resultados.push(`[Tópico ${i+1}]: ${item.Text}`);
+            try {
+                let res = await fetch('https://api.tavily.com/search', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        api_key: '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',
+                        query: query,
+                        search_depth: "basic",
+                        include_answer: false,
+                        max_results: 3
+                    })
                 });
+                if(res.ok) {
+                    let data = await res.json();
+                    if(data.results && data.results.length > 0) {
+                        return data.results.map((r, i) => `[Fonte ${i+1}: ${r.title}]\n${r.content}`).join('\n\n');
+                    }
+                }
+            } catch(e) {
+                console.warn("Erro na Tavily API:", e);
             }
-            
-            if (resultados.length > 0) {
-                return resultados.join('\n\n');
-            }
+            return null;
         }
-    } catch (e) {
-        console.warn("Falha na API do DuckDuckGo, tentando Wikipedia...", e);
-    }
 
-    // 2. Plano de segurança: Consulta a Wikipedia (100% funcional via front-end)
-    try {
-        let wikiUrl = `https://pt.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(query)}&utf8=&format=json&origin=*`;
-        let resWiki = await fetch(wikiUrl);
-        let jsonWiki = await resWiki.json();
-        if (jsonWiki.query && jsonWiki.query.search.length > 0) {
-            return jsonWiki.query.search.slice(0, 3).map((item, i) => `[Wiki ${i+1}]: ${item.title} - ${item.snippet.replace(/<\/?[^>]+(>|$)/g, "")}`).join('\n\n');
-        }
-    } catch (e) {
-        console.warn("Falha na Wikipedia também.", e);
-    }
-
-    return null;
-}
         async function executarIA(tipo, promptEspecifico = null) {
             let k = localStorage.getItem('pruma_apikey'); if(!k) return alert("Configure a API Key na aba Minha Conta.");
             let p = "", box = null; let niveisSelecionados = [];
@@ -1831,8 +1822,9 @@
             } else if(tipo === 'chat') {
                 p = promptEspecifico || document.getElementById('inp-chat').value.trim(); if(!p) return;
                 box = document.getElementById('box-chat');
+                
+                box.insertAdjacentHTML('beforeend', `<div class="msg msg-u">${sanitizeText(p)}</div>`); 
                 if(!promptEspecifico) { 
-                    box.insertAdjacentHTML('beforeend', `<div class="msg msg-u">${sanitizeText(p)}</div>`); 
                     document.getElementById('inp-chat').value=''; 
                 }
                 box.scrollTop = box.scrollHeight;
@@ -1897,12 +1889,12 @@
 
                 if (usaWeb) {
                     let spanLoad = document.getElementById('load-ia-text') || document.querySelector('#load-ia span');
-                    if(spanLoad) spanLoad.textContent = "Raspando a Web (via Proxies)... ⏳";
+                    if(spanLoad) spanLoad.textContent = "Raspando a Web (via Tavily)... ⏳";
                     
                     let dadosWeb = await buscarNaWeb(p);
                     if(dadosWeb) {
-                        instrucaoFinal += `[RESULTADOS DA BUSCA NA WEB RECENTES]:\n${dadosWeb}\n\nUse essas informações para formular sua resposta.\n\n`;
-                        tagWeb = '(🌐 Busca Web via Proxy)';
+                        instrucaoFinal += `[RESULTADOS DA BUSCA NA WEB RECENTES]:\n${dadosWeb}\n\nUse essas informações atualizadas para formular sua resposta.\n\n`;
+                        tagWeb = '(🌐 Busca Web via Tavily API)';
                     } else {
                         instrucaoFinal += `[AVISO]: A busca na web falhou devido a bloqueios. Responda apenas com o seu conhecimento interno.\n\n`;
                         tagWeb = '(⚠️ Busca Web Bloqueada)';
@@ -1915,7 +1907,39 @@
                 instrucaoFinal += `PROMPT DO USUÁRIO: ${p}`;
                 partesDaMensagem.push({ text: instrucaoFinal });
                 
-                let reqBody = { contents: [{ parts: partesDaMensagem }] };
+                let reqBody = { contents: [] };
+
+                if (tipo === 'chat') {
+                    let msgElements = Array.from(document.querySelectorAll('#box-chat .msg')).filter(el => el.id !== 'load-ia');
+                    let recentMsgs = msgElements.slice(-7, -1); 
+                    
+                    let historyContents = [];
+                    for (let el of recentMsgs) {
+                        let role = el.classList.contains('msg-u') ? "user" : "model";
+                        if (el.innerText.includes("Pruma IA ativada, como posso te ajudar?")) continue;
+                        
+                        let text = el.innerText.replace(/🛡️ PRUMA IA.*/g, "").replace(/🔍 Aprofundar/g, "").replace(/📚 Salvar no Caderno/g, "").trim();
+                        if (text) {
+                            if (historyContents.length > 0 && historyContents[historyContents.length - 1].role === role) {
+                                historyContents[historyContents.length - 1].parts[0].text += `\n\n${text}`;
+                            } else {
+                                historyContents.push({ role: role, parts: [{ text: text }] });
+                            }
+                        }
+                    }
+                    
+                    while(historyContents.length > 0 && historyContents[0].role !== 'user') {
+                        historyContents.shift();
+                    }
+                    
+                    if (historyContents.length > 0 && historyContents[historyContents.length - 1].role === 'user') {
+                        historyContents.pop();
+                    }
+                    
+                    reqBody.contents = [...historyContents, { role: "user", parts: partesDaMensagem }];
+                } else {
+                    reqBody.contents = [{ role: "user", parts: partesDaMensagem }];
+                }
 
                 async function chamarGemini(modelo) {
                     let res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelo}:generateContent?key=${k}`, { 
