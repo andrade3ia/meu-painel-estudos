@@ -354,6 +354,9 @@
                             <label style="display:flex; align-items:center; gap:6px; cursor:pointer; font-weight:500;"><input type="checkbox" class="chk-nivel-fc" value="Difícil" checked> Difícil</label>
                         </div>
                     </div>
+                    <div style="margin-bottom:16px;">
+                        <label style="display:flex; align-items:center; gap:6px; font-size:0.85rem; font-weight:600; cursor:pointer;" title="Buscar conteúdo atualizado na Web"><input type="checkbox" id="chk-busca-web-fc"> 🌐 Buscar Web (Garante dados e jurisprudências atualizadas)</label>
+                    </div>
                     <button class="btn-primary" onclick="executarIA('flashcards')">✨ Gerar Flashcards com PRUMA IA</button>
                     <div class="chat-box" id="box-fc" style="margin-top:16px; display:none; background:transparent; border:none; padding:0; height:auto; overflow:visible;"></div>
                 </div>
@@ -487,6 +490,9 @@
                                     <label style="display:flex; align-items:center; gap:6px; cursor:pointer; font-weight:500;"><input type="checkbox" class="chk-nivel-q" value="Médio" checked> Médio</label>
                                     <label style="display:flex; align-items:center; gap:6px; cursor:pointer; font-weight:500;"><input type="checkbox" class="chk-nivel-q" value="Difícil" checked> Difícil</label>
                                 </div>
+                            </div>
+                            <div style="margin-bottom:16px;">
+                                <label style="display:flex; align-items:center; gap:6px; font-size:0.85rem; font-weight:600; cursor:pointer;" title="Buscar conteúdo atualizado na Web"><input type="checkbox" id="chk-busca-web-qts"> 🌐 Buscar Web (Para basear as questões em dados recentes)</label>
                             </div>
                             <button class="btn-primary" onclick="executarIA('questoes')">Gerar Bateria de Questões</button>
                             <div class="chat-box" id="box-qts" style="margin-top:16px; display:none; height:auto; min-height:200px;"></div>
@@ -1772,7 +1778,8 @@
             let chkWeb = document.getElementById('chk-busca-web');
             if (chkWeb) chkWeb.checked = false;
 
-            executarIA('chat', `Atue como professor. Aprofunde a explicação anterior:\n\n"${textoDoBalao}"`);
+            // Passamos o texto completo da pergunta, mas enviamos "🔍 Aprofundar explicação" para exibir na interface.
+            executarIA('chat', `Atue como professor. Aprofunde a explicação anterior:\n\n"${textoDoBalao}"`, "🔍 Aprofundar explicação");
         }
 
         async function buscarNaWeb(query) {
@@ -1800,7 +1807,7 @@
             return null;
         }
 
-        async function executarIA(tipo, promptEspecifico = null) {
+        async function executarIA(tipo, promptEspecifico = null, textoExibicao = null) {
             let k = localStorage.getItem('pruma_apikey'); if(!k) return alert("Configure a API Key na aba Minha Conta.");
             let p = "", box = null; let niveisSelecionados = [];
 
@@ -1823,7 +1830,8 @@
                 p = promptEspecifico || document.getElementById('inp-chat').value.trim(); if(!p) return;
                 box = document.getElementById('box-chat');
                 
-                box.insertAdjacentHTML('beforeend', `<div class="msg msg-u">${sanitizeText(p)}</div>`); 
+                let exibicao = textoExibicao || p;
+                box.insertAdjacentHTML('beforeend', `<div class="msg msg-u">${sanitizeText(exibicao)}</div>`); 
                 if(!promptEspecifico) { 
                     document.getElementById('inp-chat').value=''; 
                 }
@@ -1876,8 +1884,9 @@
                     }
                 }
 
-                let chkWeb = document.getElementById('chk-busca-web');
-                let usaWeb = (tipo === 'chat' && chkWeb && chkWeb.checked);
+                let chkWebId = tipo === 'chat' ? 'chk-busca-web' : (tipo === 'questoes' ? 'chk-busca-web-qts' : 'chk-busca-web-fc');
+                let chkWeb = document.getElementById(chkWebId);
+                let usaWeb = (chkWeb && chkWeb.checked);
                 let tagWeb = '';
 
                 let instrucaoFinal = `${baseSys}\n\n`;
@@ -1891,7 +1900,16 @@
                     let spanLoad = document.getElementById('load-ia-text') || document.querySelector('#load-ia span');
                     if(spanLoad) spanLoad.textContent = "Raspando a Web (via Tavily)... ⏳";
                     
-                    let dadosWeb = await buscarNaWeb(p);
+                    let queryBuscaWeb = p;
+                    if (tipo === 'questoes') {
+                        queryBuscaWeb = document.getElementById('ia-qts-tema').value || 'Atualidades e concursos';
+                    } else if (tipo === 'flashcards') {
+                        let m = document.getElementById('fc-mat').value || '';
+                        let tp = document.getElementById('fc-top').value || '';
+                        queryBuscaWeb = `${m} ${tp}`.trim() || 'Atualidades e concursos';
+                    }
+
+                    let dadosWeb = await buscarNaWeb(queryBuscaWeb);
                     if(dadosWeb) {
                         instrucaoFinal += `[RESULTADOS DA BUSCA NA WEB RECENTES]:\n${dadosWeb}\n\nUse essas informações atualizadas para formular sua resposta.\n\n`;
                         tagWeb = '(🌐 Busca Web via Tavily API)';
@@ -1918,7 +1936,7 @@
                         let role = el.classList.contains('msg-u') ? "user" : "model";
                         if (el.innerText.includes("Pruma IA ativada, como posso te ajudar?")) continue;
                         
-                        let text = el.innerText.replace(/🛡️ PRUMA IA.*/g, "").replace(/🔍 Aprofundar/g, "").replace(/📚 Salvar no Caderno/g, "").trim();
+                        let text = el.innerText.replace(/🛡️ PRUMA IA.*/g, "").replace(/🔍 Aprofundar.*/g, "").replace(/📚 Salvar no Caderno/g, "").trim();
                         if (text) {
                             if (historyContents.length > 0 && historyContents[historyContents.length - 1].role === role) {
                                 historyContents[historyContents.length - 1].parts[0].text += `\n\n${text}`;
