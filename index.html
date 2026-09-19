@@ -12,6 +12,9 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" crossorigin="anonymous" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js" crossorigin="anonymous" defer></script>
     
+    <!-- Biblioteca para Mapas Mentais -->
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10.6.1/dist/mermaid.min.js" crossorigin="anonymous"></script>
+    
     <link href="https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <style>
@@ -66,6 +69,24 @@
         button.btn-success { background: var(--brand-success); color: white; border: none; padding: 12px 20px; border-radius: var(--radius-sm); font-weight: 600; cursor: pointer; box-shadow: var(--shadow-sm); }
         button.btn-danger { background: var(--brand-danger); color: white; border: none; padding: 10px 16px; border-radius: var(--radius-sm); cursor: pointer; font-size: 0.85rem; font-weight: 600; box-shadow: var(--shadow-sm); }
         
+        /* CÁPSULA PARA BUSCA WEB E MAPAS */
+        .toggle-capsule {
+            background: var(--bg-input); color: var(--text-muted);
+            border: 1px solid var(--border-color); border-radius: 20px;
+            padding: 8px 18px; font-size: 0.85rem; font-weight: 700;
+            cursor: pointer; display: inline-flex; align-items: center; gap: 8px;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            user-select: none; width: auto;
+        }
+        .toggle-capsule:hover { filter: brightness(0.95); transform: scale(1.02); }
+        .toggle-capsule.active {
+            background: var(--brand-primary); color: #fff;
+            border-color: var(--brand-primary); box-shadow: 0 4px 12px rgba(0, 122, 255, 0.3);
+        }
+
+        .mermaid-container { background: var(--bg-body); border-radius: 8px; padding: 10px; text-align: center; overflow: auto; border: 1px solid var(--border-color); margin-bottom: 12px; }
+        .mermaid-container svg { max-width: 100%; height: auto; }
+
         .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 16px; margin-bottom: 24px; width: 100%; }
         .stat-card { background: var(--bg-card); padding: 20px; border-radius: var(--radius-md); text-align: center; border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); min-width: 0; }
         .stat-card span { display: block; font-size: 0.7rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -448,10 +469,13 @@
                                 <div class="msg msg-a">🛡️ Pruma IA ativada, como posso te ajudar?</div>
                             </div>
                             <div style="display:flex; gap:12px; flex-wrap:wrap; align-items:flex-end;">
-                                <textarea id="inp-chat" placeholder="Digite sua dúvida..." rows="2" style="margin:0; resize:none; flex:1; min-width:200px;"></textarea>
+                                <textarea id="inp-chat" placeholder="Digite sua dúvida ou peça um mapa mental..." rows="2" style="margin:0; resize:none; flex:1; min-width:200px;"></textarea>
                                 <div style="display:flex; flex-direction:column; gap:8px;">
                                     <label style="display:flex; align-items:center; gap:6px; font-size:0.8rem; font-weight:600; cursor:pointer;" title="Faz uma busca usando a API Tavily."><input type="checkbox" id="chk-busca-web"> 🌐 Buscar Web</label>
-                                    <button class="btn-primary" onclick="executarIA('chat')" style="width:120px;">Enviar</button>
+                                    <div style="display:flex; gap:8px;">
+                                        <button class="btn-outline" onclick="executarIA('mapa_mental')" style="width:auto; padding:10px 14px; border-color:var(--brand-warning); color:var(--brand-warning); font-weight:600;">🧠 Mapa Mental</button>
+                                        <button class="btn-primary" onclick="executarIA('chat')" style="width:120px;">Enviar</button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -601,7 +625,24 @@
             </div>
             <input type="hidden" id="env-cad-conteudo">
             <input type="hidden" id="env-cad-ishtml">
+            <input type="hidden" id="env-cad-ismapa">
             <button class="btn-primary" onclick="confirmarEnvioCaderno()">Salvar no Caderno</button>
+        </div>
+    </div>
+
+    <!-- MODAL DO MAPA MENTAL FULLSCREEN -->
+    <div id="modal-mapa" class="modal">
+        <div class="modal-content" style="max-width: 95vw; height: 95vh; display: flex; flex-direction: column; padding: 20px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+                <h2 style="margin:0; font-size:1.4rem;">🧠 Super Mapa Mental</h2>
+                <button style="background:transparent; border:none; font-size:2rem; cursor:pointer; color:var(--brand-danger);" onclick="document.getElementById('modal-mapa').style.display='none'">✖</button>
+            </div>
+            
+            <div id="mapa-fullscreen-container" style="flex:1; overflow:auto; background:#fff; border:1px solid var(--border-color); border-radius:8px; padding:20px; display:flex; justify-content:center; align-items:center;"></div>
+            
+            <div style="margin-top:16px; display:flex; gap:12px; justify-content:flex-end;">
+                <button class="btn-primary" style="width:auto; padding:12px 24px; background:var(--brand-success); border:none;" onclick="baixarMapaSVG()">📥 Baixar Mapa (SVG HD)</button>
+            </div>
         </div>
     </div>
 
@@ -646,6 +687,9 @@
     </div>
 
     <script>
+        mermaid.initialize({ startOnLoad: false, theme: 'default', mindmap: { padding: 20 } });
+        let svgMapaAtual = '';
+
         let userAtual = null, refDb = null, refStore = null, isAdmin = false;
         let dbData = { sessoes: [], provas: [], materias: [], cadernos: [], flashcards: [], biblioteca: [], iaFiltrosHistorico: [] };
         let segundosCronometro = 0, cronometroInterval = null, graficoInstance = null;
@@ -694,8 +738,26 @@
             });
         });
 
+        function toggleWebCapsule(btn) {
+            btn.classList.toggle('active');
+            btn.innerHTML = btn.classList.contains('active') ? '🌐 Busca Web: Ativada' : '🌐 Busca Web: Desativada';
+        }
+
+        function expandirMapaMental(encodedSvg) {
+            svgMapaAtual = decodeURIComponent(encodedSvg);
+            document.getElementById('mapa-fullscreen-container').innerHTML = svgMapaAtual;
+            document.getElementById('modal-mapa').style.display = 'flex';
+        }
+
+        function baixarMapaSVG() {
+            if(!svgMapaAtual) return;
+            let blob = new Blob([svgMapaAtual], {type: "image/svg+xml;charset=utf-8"});
+            let a = document.createElement('a'); a.href = URL.createObjectURL(blob); 
+            a.download = 'Mapa_Mental_PRUMA.svg'; document.body.appendChild(a); a.click(); document.body.removeChild(a);
+        }
+
         function sanitizeText(str) { return typeof str === 'string' ? DOMPurify.sanitize(str) : ''; }
-        function renderHtmlSafely(html) { return DOMPurify.sanitize(html, { ADD_ATTR: ['onclick', 'data-correta', 'style', 'class'] }); }
+        function renderHtmlSafely(html) { return DOMPurify.sanitize(html, { ADD_ATTR: ['onclick', 'data-correta', 'style', 'class', 'data-svg'] }); }
         function gerarId() { return Date.now().toString(36) + Math.random().toString(36).substr(2); }
         
         function alternarTema() { 
@@ -1254,15 +1316,16 @@
         function salvarErro() {
             let m = sanitizeText(document.getElementById('err-mat').value) || 'Geral', t = sanitizeText(document.getElementById('err-top').value) || 'Geral', txt = sanitizeText(document.getElementById('err-texto').value) || '(Sem anotação)';
             if(!Array.isArray(dbData.cadernos)) dbData.cadernos = [];
-            dbData.cadernos.push({id: gerarId(), materia: m, topico: t, texto: txt, isHtml: false, timestamp: Date.now(), data: new Date().toLocaleDateString()}); refDb.child('cadernos').set(dbData.cadernos);
+            dbData.cadernos.push({id: gerarId(), materia: m, topico: t, texto: txt, isHtml: false, isMapa: false, timestamp: Date.now(), data: new Date().toLocaleDateString()}); refDb.child('cadernos').set(dbData.cadernos);
             document.getElementById('err-texto').value = ''; document.getElementById('err-mat').value = ''; document.getElementById('err-top').value = ''; alert("Salvo no Caderno!");
         }
         
-        function abrirModalEnviarCaderno(conteudoTexto, btnElement = null, defaultMat = '', defaultTop = '', isHtml = false) {
+        function abrirModalEnviarCaderno(conteudoTexto, btnElement = null, defaultMat = '', defaultTop = '', isHtml = false, isMapa = false) {
             document.getElementById('env-cad-conteudo').value = conteudoTexto;
             document.getElementById('env-cad-mat').value = defaultMat;
             document.getElementById('env-cad-top').value = defaultTop;
             document.getElementById('env-cad-ishtml').value = isHtml ? 'true' : 'false';
+            document.getElementById('env-cad-ismapa').value = isMapa ? 'true' : 'false';
             atualizarTopicosCaderno(defaultMat, 'dl-env-top', 'cadernos');
             document.getElementById('modal-enviar-caderno').style.display = 'flex';
             window.btnAtualFc = btnElement;
@@ -1273,9 +1336,10 @@
             let t = document.getElementById('env-cad-top').value || 'Geral';
             let txt = document.getElementById('env-cad-conteudo').value;
             let isH = document.getElementById('env-cad-ishtml').value === 'true';
+            let isM = document.getElementById('env-cad-ismapa').value === 'true';
             
             if(!Array.isArray(dbData.cadernos)) dbData.cadernos = [];
-            dbData.cadernos.push({ id: gerarId(), materia: m, topico: t, texto: txt, isHtml: isH, timestamp: Date.now(), data: new Date().toLocaleDateString() });
+            dbData.cadernos.push({ id: gerarId(), materia: m, topico: t, texto: txt, isHtml: isH, isMapa: isM, timestamp: Date.now(), data: new Date().toLocaleDateString() });
             refDb.child('cadernos').set(dbData.cadernos);
             
             document.getElementById('modal-enviar-caderno').style.display = 'none';
@@ -1464,19 +1528,28 @@
                     agr[m][t].forEach(i => { 
                         let textoCompleto = i.texto || '';
                         let isH = i.isHtml === true;
-                        
-                        let safeText = isH ? renderHtmlSafely(textoCompleto) : sanitizeText(textoCompleto);
-                        if(termo && termo.trim() !== '') {
-                            let regex = new RegExp(`(?![^<]*>)(${termo})`, 'gi');
-                            safeText = safeText.replace(regex, '<mark>$1</mark>');
-                        }
+                        let divTextHtml = '';
+                        let btnTextHtml = '';
 
-                        let isLongo = textoCompleto.length > 300;
-                        let divTextHtml = `<div class="conteudo-limitado" style="${isLongo ? 'max-height:120px; overflow:hidden; position:relative;' : ''}">
-                            ${safeText}
-                            ${isLongo ? `<div class="fade-bottom" style="position:absolute; bottom:0; left:0; width:100%; height:40px; background:linear-gradient(transparent, var(--bg-card));"></div>` : ''}
-                        </div>`;
-                        let btnTextHtml = isLongo ? `<button style="background:none; border:none; color:var(--brand-primary); cursor:pointer; font-weight:700; font-size:0.8rem; margin-top:8px; padding:0;" onclick="toggleLerMais(this)">Ler mais</button>` : '';
+                        if(i.isMapa) {
+                            divTextHtml = `<div style="background:var(--bg-body); padding:16px; border-radius:8px; border:1px dashed var(--brand-primary); text-align:center;">
+                                <h4 style="margin:0 0 10px 0; color:var(--brand-primary);">🧠 Mapa Mental</h4>
+                                <button class="btn-primary" style="width:auto; padding:8px 16px; font-size:0.85rem;" data-svg="${encodeURIComponent(i.texto)}" onclick="expandirMapaMental(this.getAttribute('data-svg'))">🔍 Ampliar e Baixar</button>
+                            </div>`;
+                        } else {
+                            let safeText = isH ? renderHtmlSafely(textoCompleto) : sanitizeText(textoCompleto);
+                            if(termo && termo.trim() !== '') {
+                                let regex = new RegExp(`(?![^<]*>)(${termo})`, 'gi');
+                                safeText = safeText.replace(regex, '<mark>$1</mark>');
+                            }
+
+                            let isLongo = textoCompleto.length > 300;
+                            divTextHtml = `<div class="conteudo-limitado" style="${isLongo ? 'max-height:120px; overflow:hidden; position:relative;' : ''}">
+                                ${safeText}
+                                ${isLongo ? `<div class="fade-bottom" style="position:absolute; bottom:0; left:0; width:100%; height:40px; background:linear-gradient(transparent, var(--bg-card));"></div>` : ''}
+                            </div>`;
+                            btnTextHtml = isLongo ? `<button style="background:none; border:none; color:var(--brand-primary); cursor:pointer; font-weight:700; font-size:0.8rem; margin-top:8px; padding:0;" onclick="toggleLerMais(this)">Ler mais</button>` : '';
+                        }
 
                         htmlT += `<div class="balao-caderno">
                             <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:8px;">
@@ -1767,7 +1840,7 @@
         3. Você tem acesso à memória da conversa para entender pronomes e continuidade, MAS NÃO tente comparar ou relacionar a pergunta nova com os assuntos antigos caso o usuário mude de assunto. Trate novos temas com independência.
         4. Forneça dados essenciais e atualizados que o estudante precisa para a prova.${bancaInstrucao}`;
             
-            return { chat: basePersona, questoes: basePersona, flashcards: basePersona }[tipo] || basePersona;
+            return { chat: basePersona, questoes: basePersona, flashcards: basePersona, mapa_mental: basePersona }[tipo] || basePersona;
         }
 
         function aprofundarRespostaContextual(btn) {
@@ -1778,7 +1851,6 @@
             let chkWeb = document.getElementById('chk-busca-web');
             if (chkWeb) chkWeb.checked = false;
 
-            // Passamos o texto completo da pergunta, mas enviamos "🔍 Aprofundar explicação" para exibir na interface.
             executarIA('chat', `Atue como professor. Aprofunde a explicação anterior:\n\n"${textoDoBalao}"`, "🔍 Aprofundar explicação");
         }
 
@@ -1826,6 +1898,13 @@
                 let tp = sanitizeText(document.getElementById('fc-top').value) || 'Geral';
                 p = `Gere ${qtd} flashcards TÉCNICOS, porém MUITO OBJETIVOS E DIRETOS para Matéria: "${m}" e Tópico: "${tp}". Níveis: ${niveisSelecionados.join(', ')}. Evite textos enormes, seja cirúrgico (padrão flashcard clássico de revisão rápida). USE MARKDOWN para negritos ou listas curtas na resposta se necessário. Retorne JSON PURO: [{"f":"Pergunta","v":"Resposta","nivel":"Fácil"}].`;
                 box = document.getElementById('box-fc'); box.style.display='block'; box.innerHTML='';
+            } else if(tipo === 'mapa_mental') {
+                p = promptEspecifico || document.getElementById('inp-chat').value.trim();
+                if(!p) p = "Crie um mapa mental sobre Direito e seus ramos principais.";
+                box = document.getElementById('box-chat');
+                box.insertAdjacentHTML('beforeend', `<div class="msg msg-u">🧠 Gerar Mapa Mental: ${sanitizeText(p)}</div>`); 
+                document.getElementById('inp-chat').value=''; 
+                box.scrollTop = box.scrollHeight;
             } else if(tipo === 'chat') {
                 p = promptEspecifico || document.getElementById('inp-chat').value.trim(); if(!p) return;
                 box = document.getElementById('box-chat');
@@ -1851,8 +1930,8 @@
                 let partesDaMensagem = [];
                 let textoContexto = "";
                 
-                if (tipo === 'chat' || tipo === 'questoes' || tipo === 'flashcards') {
-                    let idContainer = tipo === 'chat' ? 'chk-container-chat' : (tipo === 'questoes' ? 'chk-container-simulador' : 'chk-container-flashcards');
+                if (tipo === 'chat' || tipo === 'questoes' || tipo === 'flashcards' || tipo === 'mapa_mental') {
+                    let idContainer = (tipo === 'chat' || tipo === 'mapa_mental') ? 'chk-container-chat' : (tipo === 'questoes' ? 'chk-container-simulador' : 'chk-container-flashcards');
                     let chksSelecionados = document.querySelectorAll(`#${idContainer} .chk-fonte-biblioteca:checked`);
                     
                     for(let chk of chksSelecionados) {
@@ -1884,7 +1963,7 @@
                     }
                 }
 
-                let chkWebId = tipo === 'chat' ? 'chk-busca-web' : (tipo === 'questoes' ? 'chk-busca-web-qts' : 'chk-busca-web-fc');
+                let chkWebId = (tipo === 'chat' || tipo === 'mapa_mental') ? 'chk-busca-web' : (tipo === 'questoes' ? 'chk-busca-web-qts' : 'chk-busca-web-fc');
                 let chkWeb = document.getElementById(chkWebId);
                 let usaWeb = (chkWeb && chkWeb.checked);
                 let tagWeb = '';
@@ -1920,14 +1999,26 @@
                 }
                 
                 let spanLoadRestaurar = document.getElementById('load-ia-text') || document.querySelector('#load-ia span');
-                if(spanLoadRestaurar) spanLoadRestaurar.textContent = (tipo === 'flashcards') ? "Construindo flashcards objetivos..." : "Analisando...";
+                if(spanLoadRestaurar) spanLoadRestaurar.textContent = (tipo === 'flashcards') ? "Construindo flashcards objetivos..." : (tipo === 'mapa_mental' ? "Desenhando Mapa Mental..." : "Analisando...");
 
-                instrucaoFinal += `PROMPT DO USUÁRIO: ${p}`;
+                if (tipo === 'mapa_mental') {
+                    instrucaoFinal += `Atue como arquiteto visual de mapas mentais. Gere OBRIGATORIAMENTE um código Mermaid.js válido usando a sintaxe 'mindmap'.
+REGRAS RÍGIDAS:
+1. Comece com a palavra 'mindmap' na primeira linha.
+2. NUNCA use parênteses, colchetes ou chaves soltos nos textos das caixas. Se usar, coloque o texto entre aspas duplas: id("texto").
+3. Retorne APENAS o código Mermaid, sem explicações antes ou depois.
+4. Monte um mapa hierárquico, rico, bem estruturado e focado no assunto pedido.
+
+PROMPT DO USUÁRIO: ${p}`;
+                } else {
+                    instrucaoFinal += `PROMPT DO USUÁRIO: ${p}`;
+                }
+
                 partesDaMensagem.push({ text: instrucaoFinal });
                 
                 let reqBody = { contents: [] };
 
-                if (tipo === 'chat') {
+                if (tipo === 'chat' || tipo === 'mapa_mental') {
                     let msgElements = Array.from(document.querySelectorAll('#box-chat .msg')).filter(el => el.id !== 'load-ia');
                     let recentMsgs = msgElements.slice(-7, -1); 
                     
@@ -1978,7 +2069,25 @@
                 
                 let badgeModelo = `<div style="font-size:0.7rem; color:var(--text-muted); opacity:0.7; margin-bottom:6px; text-align:right;">🛡️ PRUMA IA ${tagWeb}</div>`;
 
-                if(tipo === 'flashcards') {
+                if(tipo === 'mapa_mental') {
+                    let mermaidCode = txtF.replace(/```mermaid/g,'').replace(/```/g,'').trim();
+                    let mapId = 'mermaid-' + Date.now();
+                    try {
+                        const { svg } = await mermaid.render(mapId, mermaidCode);
+                        let finalHtmlMapa = `${badgeModelo}
+                        <div class="mermaid-container" style="background:#fff;">${svg}</div>
+                        <div style="display:flex; gap:8px; margin-top:12px; flex-wrap:wrap;">
+                            <button class="btn-primary" style="width:auto; padding:6px 12px; font-size:0.8rem; background:var(--brand-primary);" data-svg="${encodeURIComponent(svg)}" onclick="expandirMapaMental(this.getAttribute('data-svg'))">🔍 Ampliar / Baixar (SVG)</button>
+                            <button class="btn-primary" style="width:auto; padding:6px 12px; font-size:0.8rem; background:var(--brand-warning); border:none;" data-svg="${encodeURIComponent(svg)}" onclick="abrirModalEnviarCaderno(decodeURIComponent(this.getAttribute('data-svg')), this, 'Mapas Mentais', 'Geral', false, true)">📚 Salvar no Caderno</button>
+                        </div>`;
+                        box.insertAdjacentHTML('beforeend', `<div class="msg msg-a" style="max-width:100%; width:100%;">${finalHtmlMapa}</div>`);
+                        salvarFiltroHistorico('chat', `🧠 Mapa Mental: ${p}`, p.substring(0, 25), finalHtmlMapa);
+                    } catch(err) {
+                        console.error("Erro Mermaid:", err);
+                        box.insertAdjacentHTML('beforeend', `<div class="msg msg-a" style="color:var(--brand-danger);">⚠️ Não foi possível gerar a estrutura do mapa mental. Tente refazer o pedido com menos detalhes.</div>`);
+                    }
+                }
+                else if(tipo === 'flashcards') {
                     let json = JSON.parse(txtF.replace(/```json/g,'').replace(/```/g,'').match(/\[.*\]/s)[0]);
                     let matNome = sanitizeText(document.getElementById('fc-mat').value) || 'Flashcards Diversos';
                     let topNome = sanitizeText(document.getElementById('fc-top').value) || 'Geral';
