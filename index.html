@@ -152,6 +152,16 @@
         .custom-checkbox.checked { background: var(--brand-success); border-color: var(--brand-success); }
         .custom-checkbox.checked::after { content: '✓'; color: white; font-weight: 900; font-size: 14px; }
 
+        /* ESTILOS VISÃO SEMANAL */
+        .dia-semana-card { flex: 1; min-width: 50px; padding: 12px 4px; text-align: center; background: var(--bg-input); border: 1px solid var(--border-color); border-radius: var(--radius-md); cursor: pointer; transition: all 0.2s ease; user-select: none; position: relative; overflow: hidden; }
+        .dia-semana-card:hover { filter: brightness(0.95); transform: translateY(-3px); box-shadow: var(--shadow-sm); }
+        .dia-semana-card.ativo { background: var(--brand-primary); color: white; border-color: var(--brand-primary); box-shadow: 0 6px 16px rgba(0,122,255,0.35); transform: translateY(-2px); }
+        .dia-semana-card.ativo .dia-nome, .dia-semana-card.ativo .dia-num { color: white !important; }
+        .dia-nome { font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; display: block; margin-bottom: 6px; letter-spacing: 0.5px; }
+        .dia-num { font-size: 1.4rem; font-weight: 700; color: var(--text-main); display: block; }
+        .dia-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--brand-warning); position: absolute; bottom: 6px; left: 50%; transform: translateX(-50%); display: none; box-shadow: 0 0 4px rgba(0,0,0,0.2); }
+        .dia-semana-card.tem-missao .dia-dot { display: block; }
+
         @media(max-width: 768px) {
             body { flex-direction: column; }
             .mobile-header { display: flex; }
@@ -318,7 +328,7 @@
 
             <!-- VIEW PLANEJAMENTO -->
             <div id="view-planejamento" style="display:none;">
-                <div class="card" style="border-top: 4px solid var(--brand-primary);">
+                <div class="card" style="border-top: 4px solid var(--brand-primary); margin-bottom: 20px;">
                     <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:12px;">
                         <div>
                             <h2 style="margin-bottom:4px; border:none;">🎯 Dashboard Tático</h2>
@@ -360,16 +370,40 @@
                     </div>
                 </div>
 
-                <div class="card">
-                    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border-color); padding-bottom:12px; margin-bottom:20px; flex-wrap:wrap; gap:12px;">
-                        <h2 style="margin:0; border:none; padding:0;">📅 Missões e Revisões</h2>
-                        <div style="display:flex; gap:8px; flex-wrap:wrap;">
-                            <input type="date" id="filtro-data-missoes" style="margin:0; width:auto; padding:8px 12px; border-radius:20px;" onchange="renderizarMissoes()">
-                            <button class="btn-outline" style="width:auto; padding:8px 12px; font-size:0.85rem;" title="Reorganiza missões passadas pendentes para os próximos dias" onclick="redistribuirAtrasadas()">🔄 Recalcular Rota</button>
+                <!-- NOVO: CALENDÁRIO DA SEMANA -->
+                <div class="card" style="margin-bottom: 20px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:12px;">
+                        <div>
+                            <h2 style="margin:0; border:none; padding:0;">🗓️ Visão Semanal</h2>
+                            <p style="font-size:0.85rem; color:var(--text-muted); margin-top:4px;">Navegue pela semana. Dias com ponto laranja possuem missões pendentes.</p>
                         </div>
+                        <!-- Input escondido, mas sincronizado com a seleção para as missões -->
+                        <input type="date" id="filtro-data-missoes" style="margin:0; width:auto; padding:8px 12px; border-radius:20px; display: none;">
+                        <button class="btn-outline" style="width:auto; padding:8px 12px; font-size:0.85rem;" title="Reorganiza missões passadas pendentes para os próximos dias" onclick="redistribuirAtrasadas()">🔄 Recalcular Rota</button>
                     </div>
+                    <div id="semana-grid" style="display: flex; gap: 8px; overflow-x: auto; padding-bottom: 12px; scrollbar-width: none;">
+                        <!-- Cards renderizados via JS -->
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 20px; flex-wrap: wrap; align-items: flex-start;">
                     
-                    <div id="lista-missoes-div">Carregando missões...</div>
+                    <!-- NOVO: QUADRO DO CICLO BASE / NOTAS -->
+                    <div class="card" style="flex: 1; min-width: 280px; background: rgba(0, 122, 255, 0.03); border: 1px dashed var(--brand-primary); margin-bottom: 20px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                            <h2 style="font-size: 1.1rem; border:none; margin:0; color:var(--brand-primary);">📝 Meu Ciclo Fixo</h2>
+                            <button class="btn-success" style="padding: 6px 12px; font-size: 0.8rem; width:auto; box-shadow:none;" onclick="salvarNotasCiclo(this)">Salvar</button>
+                        </div>
+                        <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0; margin-bottom: 12px; line-height: 1.4;">Anote sua organização padrão (Ex: Seg - Penal, Ter - Const...) para consultar rapidamente sem precisar decidir o que estudar no dia.</p>
+                        <textarea id="notas-ciclo" rows="6" placeholder="Escreva seu ciclo semanal, matérias e prioridades aqui..." style="background: var(--bg-card); border-color: var(--border-color); resize: vertical; line-height: 1.5;"></textarea>
+                    </div>
+
+                    <!-- MISSÕES DIÁRIAS (SRS) -->
+                    <div class="card" style="flex: 1.5; min-width: 300px; margin-bottom: 20px;">
+                        <h2 style="margin:0 0 16px 0; border:none; padding:0;">📚 Missões do Dia Selecionado</h2>
+                        <div id="lista-missoes-div">Carregando missões...</div>
+                    </div>
+
                 </div>
             </div>
 
@@ -789,7 +823,7 @@
         let svgMapaAtual = '';
 
         let userAtual = null, refDb = null, refStore = null, isAdmin = false;
-        let dbData = { sessoes: [], provas: [], materias: [], cadernos: [], flashcards: [], biblioteca: [], iaFiltrosHistorico: [], missoes: [], metas: {horas:4, questoes:60} };
+        let dbData = { sessoes: [], provas: [], materias: [], cadernos: [], flashcards: [], biblioteca: [], iaFiltrosHistorico: [], missoes: [], metas: {horas:4, questoes:60}, notasCiclo: '' };
         let segundosCronometro = 0, cronometroInterval = null, graficoInstance = null;
         let segundosPausa = 0, pausaInterval = null;
         let editandoRegistroId = null;
@@ -830,7 +864,13 @@
                     
                     let sesDataEl = document.getElementById('ses-data');
                     if(sesDataEl && !sesDataEl.value) sesDataEl.value = new Date().toISOString().split('T')[0];
-                    document.getElementById('filtro-data-missoes').value = new Date().toISOString().split('T')[0];
+                    
+                    // Inicializa a data de filtro com a data atual formatada
+                    let hojeDate = new Date();
+                    let hYear = hojeDate.getFullYear();
+                    let hMonth = String(hojeDate.getMonth() + 1).padStart(2, '0');
+                    let hDay = String(hojeDate.getDate()).padStart(2, '0');
+                    document.getElementById('filtro-data-missoes').value = `${hYear}-${hMonth}-${hDay}`;
                 } else {
                     userAtual = null; isAdmin = false; document.getElementById('tela-login').style.display = 'block'; document.getElementById('tela-painel').style.display = 'none';
                 }
@@ -877,7 +917,7 @@
             }
             if(window.innerWidth <= 768) document.getElementById('sidebar-menu').classList.remove('open');
             if(t === 'estatisticas') { renderizarFiltrosEstatisticas(); atualizarEstatisticas(); }
-            if(t === 'planejamento') { renderizarDashboardTatico(); renderizarMissoes(); }
+            if(t === 'planejamento') { renderizarDashboardTatico(); renderizarMissoes(); renderizarVisaoSemanal(); }
         }
 
         function aplicarCorSistema(cor) {
@@ -928,6 +968,11 @@
         function carregarDadosGlobais() {
             refDb.child('perfil/nome').on('value', s => { if(s.val()) document.getElementById('conta-nome').value = s.val(); });
             refDb.child('perfil/metas').on('value', s => { dbData.metas = s.val() || {horas: 4, questoes: 60}; if(document.getElementById('view-planejamento').style.display==='block') renderizarDashboardTatico(); });
+            refDb.child('perfil/notas_ciclo').on('value', s => { 
+                dbData.notasCiclo = s.val() || ''; 
+                let el = document.getElementById('notas-ciclo');
+                if(el && document.activeElement !== el) el.value = dbData.notasCiclo; 
+            });
             refDb.child('sessoes').on('value', s => { 
                 dbData.sessoes = s.val() ? Object.values(s.val()) : []; 
                 renderizarInicio(); 
@@ -936,7 +981,7 @@
             });
             refDb.child('missoes').on('value', s => {
                 let v = s.val(); dbData.missoes = v ? (Array.isArray(v) ? v : Object.values(v)) : [];
-                if(document.getElementById('view-planejamento').style.display === 'block') renderizarMissoes();
+                if(document.getElementById('view-planejamento').style.display === 'block') { renderizarMissoes(); renderizarVisaoSemanal(); }
             });
             refDb.child('provas').on('value', s => { let v = s.val(); dbData.provas = v ? (Array.isArray(v) ? v : Object.values(v)) : []; renderizarProvas(); atualizarSelectsUI(); if(document.getElementById('view-estatisticas').style.display==='block') renderizarFiltrosEstatisticas(); });
             refDb.child('materias').on('value', s => { let v = s.val(); dbData.materias = v ? (Array.isArray(v) ? v : Object.values(v)) : []; renderizarMaterias(); atualizarSelectsUI(); if(document.getElementById('view-estatisticas').style.display==='block') renderizarFiltrosEstatisticas(); });
@@ -1044,6 +1089,66 @@
             if (percQts >= 100) { ringQ.classList.add('ring-fill-success'); } else { ringQ.classList.remove('ring-fill-success'); }
         }
 
+        // LÓGICA DA VISÃO SEMANAL
+        function renderizarVisaoSemanal() {
+            let grid = document.getElementById('semana-grid');
+            if(!grid) return;
+            
+            let dataRefStr = document.getElementById('filtro-data-missoes').value;
+            if(!dataRefStr) return;
+            
+            let [ano, mes, dia] = dataRefStr.split('-');
+            let dataRef = new Date(ano, mes - 1, dia);
+            
+            let diaSemana = dataRef.getDay();
+            let domingo = new Date(dataRef);
+            domingo.setDate(domingo.getDate() - diaSemana);
+            
+            let nomesDias = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+            let html = '';
+            
+            for(let i=0; i<7; i++) {
+                let d = new Date(domingo);
+                d.setDate(domingo.getDate() + i);
+                
+                let y = d.getFullYear();
+                let m = String(d.getMonth() + 1).padStart(2, '0');
+                let day = String(d.getDate()).padStart(2, '0');
+                let dLocalIso = `${y}-${m}-${day}`;
+
+                let isAtivo = dLocalIso === dataRefStr;
+                
+                let temMissao = dbData.missoes && dbData.missoes.some(missao => missao.dataAlvo === dLocalIso && missao.status === 'pendente');
+                
+                html += `<div class="dia-semana-card ${isAtivo ? 'ativo' : ''} ${temMissao ? 'tem-missao' : ''}" onclick="selecionarDiaSemana('${dLocalIso}')">
+                    <span class="dia-nome">${nomesDias[i]}</span>
+                    <span class="dia-num">${d.getDate()}</span>
+                    <div class="dia-dot"></div>
+                </div>`;
+            }
+            grid.innerHTML = html;
+        }
+
+        function selecionarDiaSemana(dataIso) {
+            document.getElementById('filtro-data-missoes').value = dataIso;
+            renderizarVisaoSemanal();
+            renderizarMissoes(); 
+        }
+
+        function salvarNotasCiclo(btn) {
+            let txt = document.getElementById('notas-ciclo').value;
+            dbData.notasCiclo = txt;
+            refDb.child('perfil/notas_ciclo').set(txt);
+            
+            let oldText = btn.textContent;
+            btn.textContent = "✅ Salvo";
+            btn.style.background = "var(--brand-success)";
+            setTimeout(() => { 
+                btn.textContent = oldText; 
+                btn.style.background = "var(--brand-success)"; // Keeps its natural success color class
+            }, 2000);
+        }
+
         // LÓGICA DO MOTOR DE REVISÃO ESPAÇADA (SRS)
         function gerarMissoesSRS(mat, topico, dataBaseObj) {
             if(!Array.isArray(dbData.missoes)) dbData.missoes = [];
@@ -1067,6 +1172,7 @@
                 dbData.missoes.push(missao);
             });
             refDb.child('missoes').set(dbData.missoes);
+            renderizarVisaoSemanal();
         }
 
         function renderizarMissoes() {
@@ -1130,6 +1236,7 @@
                 dbData.missoes[idx].status = statusConcluida ? 'concluida' : 'pendente';
                 refDb.child('missoes').set(dbData.missoes);
                 renderizarMissoes();
+                renderizarVisaoSemanal();
             }
         }
 
@@ -1143,7 +1250,12 @@
         }
 
         function redistribuirAtrasadas() {
-            let hojeISO = new Date().toISOString().split('T')[0];
+            let hojeDate = new Date();
+            let hYear = hojeDate.getFullYear();
+            let hMonth = String(hojeDate.getMonth() + 1).padStart(2, '0');
+            let hDay = String(hojeDate.getDate()).padStart(2, '0');
+            let hojeISO = `${hYear}-${hMonth}-${hDay}`;
+            
             if(!Array.isArray(dbData.missoes)) dbData.missoes = [];
             
             let atrasadas = dbData.missoes.filter(m => m.dataAlvo < hojeISO && m.status === 'pendente');
@@ -1161,9 +1273,12 @@
             let maxPorDia = 3; 
 
             atrasadas.forEach(m => {
-                let novaData = new Date();
+                let novaData = new Date(hojeDate);
                 novaData.setDate(novaData.getDate() + offsetDias);
-                m.dataAlvo = novaData.toISOString().split('T')[0];
+                let nYear = novaData.getFullYear();
+                let nMonth = String(novaData.getMonth() + 1).padStart(2, '0');
+                let nDay = String(novaData.getDate()).padStart(2, '0');
+                m.dataAlvo = `${nYear}-${nMonth}-${nDay}`;
                 
                 distribuidasNesseDia++;
                 if(distribuidasNesseDia >= maxPorDia) {
@@ -1175,6 +1290,7 @@
             refDb.child('missoes').set(dbData.missoes);
             document.getElementById('filtro-data-missoes').value = hojeISO;
             renderizarMissoes();
+            renderizarVisaoSemanal();
             alert(`Rota recalculada com sucesso! As missões atrasadas foram distribuídas.`);
         }
 
