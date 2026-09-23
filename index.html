@@ -1,4 +1,8 @@
+Aqui está o código atualizado com **exatamente** as melhorias que você solicitou. 
 
+Modifiquei os prompts do sistema para forçar o uso de marcações (setas, emojis, bullet points, títulos) e garantir objetividade sem perder profundidade (limitando os flashcards a 5 linhas). Também criei a tela maximizada (Modal) para exibir somente a resposta do flashcard com o botão "Ocultar Resposta" e certifiquei de que o chat, ao ser salvo no caderno de erros, não perca a formatação original do sistema (`class="conteudo-resposta-ia"`).
+
+```html
 <!DOCTYPE html>
 <html lang="pt-BR" data-theme="light">
 <head>
@@ -122,7 +126,7 @@
         .conteudo-resposta-ia table { width: 100%; border-collapse: collapse; margin-bottom: 16px; font-size: 0.85rem; background: var(--bg-card); }
         .conteudo-resposta-ia th, .conteudo-resposta-ia td { border: 1px solid var(--border-color); padding: 10px; text-align: left; }
         .conteudo-resposta-ia th { background: var(--bg-input); font-weight: 700; color: var(--text-main); }
-        .conteudo-resposta-ia strong { color: var(--text-main); }
+        .conteudo-resposta-ia strong { color: var(--text-main); font-weight: 700; }
 
         mark { background-color: rgba(255, 235, 59, 0.6); color: var(--text-main); padding: 0 2px; border-radius: 3px; font-weight: 600; }
         .balao-caderno { background: var(--bg-card); padding: 18px; border-radius: 18px; border-bottom-left-radius: 4px; border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); width: 100%; margin-bottom: 12px; position: relative; }
@@ -759,6 +763,14 @@
             <input type="hidden" id="env-cad-ishtml">
             <input type="hidden" id="env-cad-ismapa">
             <button class="btn-primary" onclick="confirmarEnvioCaderno()">Salvar no Caderno</button>
+        </div>
+    </div>
+
+    <!-- MODAL MAXIMIZAR RESPOSTA FLASHCARD -->
+    <div id="modal-ver-resposta" class="modal">
+        <div class="modal-content" style="max-width:800px; width:90%; text-align:center; display:flex; flex-direction:column; justify-content:center; align-items:center; min-height:40vh;">
+            <div id="modal-ver-resposta-conteudo" style="font-size:1.2rem; margin-bottom:30px; width:100%; max-height:60vh; overflow-y:auto; padding:0 10px;"></div>
+            <button class="btn-primary" style="width:auto; padding:12px 24px; font-size:1rem; box-shadow:var(--shadow-md);" onclick="document.getElementById('modal-ver-resposta').style.display='none'">Ocultar Resposta</button>
         </div>
     </div>
 
@@ -1812,6 +1824,12 @@
             }
         }
 
+        function abrirVisorRespostaFlashcard(btn) {
+            let conteudoHTML = btn.nextElementSibling.innerHTML;
+            document.getElementById('modal-ver-resposta-conteudo').innerHTML = conteudoHTML;
+            document.getElementById('modal-ver-resposta').style.display = 'flex';
+        }
+
         function abrirModalMover(id, matOrigem, topOrigem, matAtual, topAtual, tipoDb) {
             document.getElementById('mov-id').value = id || '';
             document.getElementById('mov-mat-origem').value = matOrigem || '';
@@ -2258,11 +2276,12 @@
             let bancaInstrucao = bancaDetectada ? `\nDiretrizes da banca ${bancaDetectada}: analise o perfil típico de cobrança desta banca.` : "";
             
             const basePersona = `Você é a PRUMA IA, mentora focada em estudos gerais (direito, português, raciocínio lógico, exatas, etc.).
-        DIRETRIZES:
-        1. Seja direto e objetivo. Não use saudações, introduções ou encerramentos.
-        2. USE TABELAS SOMENTE para assuntos complexos ou que envolvam comparar muitos elementos. No restante, use listas com marcadores pontuais.
-        3. Você tem acesso à memória da conversa para entender pronomes e continuidade, MAS NÃO tente comparar ou relacionar a pergunta nova com os assuntos antigos caso o usuário mude de assunto. Trate novos temas com independência.
-        4. Forneça dados essenciais e atualizados que o estudante precisa para a prova.${bancaInstrucao}`;
+        DIRETRIZES DE FORMATAÇÃO E CONTEÚDO (MUITO IMPORTANTE):
+        1. Estruture a resposta de forma altamente visual: use Títulos (##), Subtítulos (###) e listas com marcadores (setas ➔, bullet points •, ou emojis adequados). Destaque em **negrito** os termos essenciais.
+        2. Seja profundo e explicativo, mas objetivo. Respostas curtas ou médias são bem-vindas desde que bem estruturadas. Reserve respostas longas/profundas extremas APENAS se o usuário pedir explicitamente para "APROFUNDAR".
+        3. Não use saudações, introduções vagas ou encerramentos.
+        4. USE TABELAS SOMENTE para assuntos complexos ou que envolvam comparar muitos elementos.
+        5. Trate novos temas de forma independente da memória anterior se houver mudança de assunto. Forneça dados atualizados e essenciais.${bancaInstrucao}`;
             
             return { chat: basePersona, questoes: basePersona, flashcards: basePersona, mapa_mental: basePersona }[tipo] || basePersona;
         }
@@ -2275,7 +2294,7 @@
             let chkWeb = document.getElementById('chk-busca-web');
             if (chkWeb) chkWeb.checked = false;
 
-            executarIA('chat', `Atue como professor. Aprofunde a explicação anterior:\n\n"${textoDoBalao}"`, "🔍 Aprofundar explicação");
+            executarIA('chat', `Atue como professor. APROFUNDAR a explicação anterior:\n\n"${textoDoBalao}"`, "🔍 Aprofundar explicação");
         }
 
         async function buscarNaWeb(query) {
@@ -2320,7 +2339,12 @@
                 let qtd = document.getElementById('fc-num').value || '5';
                 let m = sanitizeText(document.getElementById('fc-mat').value) || 'Geral';
                 let tp = sanitizeText(document.getElementById('fc-top').value) || 'Geral';
-                p = `Gere ${qtd} flashcards TÉCNICOS, porém MUITO OBJETIVOS E DIRETOS para Matéria: "${m}" e Tópico: "${tp}". Níveis: ${niveisSelecionados.join(', ')}. Evite textos enormes, seja cirúrgico (padrão flashcard clássico de revisão rápida). USE MARKDOWN para negritos ou listas curtas na resposta se necessário. Retorne JSON PURO: [{"f":"Pergunta","v":"Resposta","nivel":"Fácil"}].`;
+                p = `Gere ${qtd} flashcards TÉCNICOS e DIRETOS para Matéria: "${m}" e Tópico: "${tp}". Níveis: ${niveisSelecionados.join(', ')}.
+        REGRAS RÍGIDAS PARA FLASHCARDS:
+        1. Seja sucinto, objetivo e focado APENAS no núcleo do tópico.
+        2. MÁXIMO DE 5 LINHAS por resposta.
+        3. Use formatação (negrito, pequenas listas) para facilitar a leitura.
+        Retorne JSON PURO: [{"f":"Pergunta","v":"Resposta","nivel":"Fácil"}].`;
                 box = document.getElementById('box-fc'); box.style.display='block'; box.innerHTML='';
             } else if(tipo === 'mapa_mental') {
                 p = promptEspecifico || document.getElementById('inp-chat').value.trim();
@@ -2522,7 +2546,15 @@ PROMPT DO USUÁRIO: ${p}`;
                         let perguntaParsed = sanitizeText(marked.parse(c.f));
                         let respostaParsed = sanitizeText(marked.parse(c.v));
 
-                        let fcContent = `<div style="background:var(--bg-card); padding:14px; border-radius:8px; border-left:4px solid var(--brand-warning); border:1px solid var(--border-color); width:100%;"><div style="font-weight:700; color:var(--text-main);">❓ Pergunta (${c.nivel || ''}):</div><div style="margin-top:6px; font-weight:normal;" class="conteudo-resposta-ia">${perguntaParsed}</div><button onclick="let resp = this.nextElementSibling; if(resp.style.display==='none'){resp.style.display='block'; this.textContent='Ocultar Resposta';}else{resp.style.display='none'; this.textContent='Ver Resposta';}" class="btn-outline" style="margin-top:12px; width:auto; padding:6px 12px; font-size:0.85rem;">Ver Resposta</button><div style="display:none; margin-top:12px; color:var(--text-main); padding-top:10px; border-top:1px dashed var(--border-color);">💡 Resposta:<div style="margin-top:8px;" class="conteudo-resposta-ia">${respostaParsed}</div></div></div>`;
+                        let fcContent = `<div style="background:var(--bg-card); padding:14px; border-radius:8px; border-left:4px solid var(--brand-warning); border:1px solid var(--border-color); width:100%;">
+                            <div style="font-weight:700; color:var(--text-main);">❓ Pergunta (${c.nivel || ''}):</div>
+                            <div style="margin-top:6px; font-weight:normal;" class="conteudo-resposta-ia">${perguntaParsed}</div>
+                            <button onclick="abrirVisorRespostaFlashcard(this)" class="btn-outline" style="margin-top:12px; width:auto; padding:6px 12px; font-size:0.85rem;">Ver Resposta</button>
+                            <div style="display:none;" class="conteudo-flashcard-escondido">
+                                <div style="color:var(--brand-primary); margin-bottom:16px; font-weight:700; font-size:1.2rem;">💡 Resposta</div>
+                                <div class="conteudo-resposta-ia" style="text-align:left;">${respostaParsed}</div>
+                            </div>
+                        </div>`;
                         let itemHtml = `<div style="margin-bottom:16px;">${fcContent}<div style="margin-top:8px;"><button class="btn-outline" style="width:auto; padding:6px 12px; font-size:0.8rem;" data-payload="${encodeURIComponent(fcContent)}" data-mat="${encodeURIComponent(matNome)}" data-top="${encodeURIComponent(topNome)}" onclick="abrirModalEnviarFlashcard(decodeURIComponent(this.getAttribute('data-payload')), this, decodeURIComponent(this.getAttribute('data-mat')), decodeURIComponent(this.getAttribute('data-top')))">💾 Salvar Flashcard</button></div></div>`;
                         htmlFCResult += itemHtml;
                     });
@@ -2555,7 +2587,7 @@ PROMPT DO USUÁRIO: ${p}`;
                     let parsedMarkdown = marked.parse(txtF); 
                     let lHtml = sanitizeText(parsedMarkdown);
                     
-                    let chatHtmlToSave = `<div style="font-size:0.95rem; line-height:1.5; color:var(--text-main);">${lHtml}</div>`;
+                    let chatHtmlToSave = `<div class="conteudo-resposta-ia">${lHtml}</div>`;
                     let finalChatHtml = `${badgeModelo}<div class="conteudo-resposta-ia">${lHtml}</div><br><div style="display:flex; gap:8px;"><button class="btn-outline" style="width:auto; padding:6px 12px; font-size:0.8rem;" onclick="aprofundarRespostaContextual(this)">🔍 Aprofundar</button><button class="btn-primary" style="width:auto; padding:6px 12px; font-size:0.8rem;" data-payload="${encodeURIComponent(chatHtmlToSave)}" onclick="abrirModalEnviarCaderno(decodeURIComponent(this.getAttribute('data-payload')), this, '', '', true)">📚 Salvar no Caderno</button></div>`;
                     
                     box.insertAdjacentHTML('beforeend', `<div class="msg msg-a" style="max-width:100%; width:100%;">${finalChatHtml}</div>`);
