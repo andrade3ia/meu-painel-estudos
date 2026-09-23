@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR" data-theme="light">
 <head>
@@ -70,7 +69,6 @@
         button.btn-success { background: var(--brand-success); color: white; border: none; padding: 12px 20px; border-radius: var(--radius-sm); font-weight: 600; cursor: pointer; box-shadow: var(--shadow-sm); }
         button.btn-danger { background: var(--brand-danger); color: white; border: none; padding: 10px 16px; border-radius: var(--radius-sm); cursor: pointer; font-size: 0.85rem; font-weight: 600; box-shadow: var(--shadow-sm); }
         
-        /* CÁPSULA PARA BUSCA WEB E MAPAS */
         .toggle-capsule {
             background: var(--bg-input); color: var(--text-muted);
             border: 1px solid var(--border-color); border-radius: 20px;
@@ -130,7 +128,6 @@
         .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: center; z-index: 2000; backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); padding: 20px; }
         .modal-content { background: var(--bg-card); padding: 32px; border-radius: var(--radius-lg); width: 100%; max-width: 520px; max-height: 90vh; overflow-y: auto; box-shadow: var(--shadow-md); position: relative; }
 
-        /* ESTILOS PARA PLANEJAMENTO E GAMIFICAÇÃO */
         .ring-container { width: 110px; height: 110px; position: relative; margin: 0 auto; }
         .ring-svg { transform: rotate(-90deg); width: 100%; height: 100%; }
         .ring-bg { fill: none; stroke: var(--bg-input); stroke-width: 10; }
@@ -152,7 +149,6 @@
         .custom-checkbox.checked { background: var(--brand-success); border-color: var(--brand-success); }
         .custom-checkbox.checked::after { content: '✓'; color: white; font-weight: 900; font-size: 14px; }
 
-        /* ESTILOS VISÃO SEMANAL */
         .dia-semana-card { flex: 1; min-width: 50px; padding: 12px 4px; text-align: center; background: var(--bg-input); border: 1px solid var(--border-color); border-radius: var(--radius-md); cursor: pointer; transition: all 0.2s ease; user-select: none; position: relative; overflow: hidden; }
         .dia-semana-card:hover { filter: brightness(0.95); transform: translateY(-3px); box-shadow: var(--shadow-sm); }
         .dia-semana-card.ativo { background: var(--brand-primary); color: white; border-color: var(--brand-primary); box-shadow: 0 6px 16px rgba(0,122,255,0.35); transform: translateY(-2px); }
@@ -338,7 +334,6 @@
                     </div>
 
                     <div style="display:flex; justify-content:space-around; align-items:center; flex-wrap:wrap; gap:20px; margin-top:16px;">
-                        <!-- Anel 1: Horas -->
                         <div style="text-align:center;">
                             <div class="ring-container">
                                 <svg class="ring-svg" viewBox="0 0 100 100">
@@ -353,7 +348,6 @@
                             <div style="font-size:0.85rem; font-weight:600; color:var(--text-main); margin-top:12px;">Meta: <span id="meta-horas-label">4h</span></div>
                         </div>
                         
-                        <!-- Anel 2: Questões -->
                         <div style="text-align:center;">
                             <div class="ring-container">
                                 <svg class="ring-svg" viewBox="0 0 100 100">
@@ -370,25 +364,19 @@
                     </div>
                 </div>
 
-                <!-- NOVO: CALENDÁRIO DA SEMANA -->
                 <div class="card" style="margin-bottom: 20px;">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:12px;">
                         <div>
                             <h2 style="margin:0; border:none; padding:0;">🗓️ Visão Semanal</h2>
                             <p style="font-size:0.85rem; color:var(--text-muted); margin-top:4px;">Navegue pela semana. Dias com ponto laranja possuem missões pendentes.</p>
                         </div>
-                        <!-- Input escondido, mas sincronizado com a seleção para as missões -->
                         <input type="date" id="filtro-data-missoes" style="margin:0; width:auto; padding:8px 12px; border-radius:20px; display: none;">
                         <button class="btn-outline" style="width:auto; padding:8px 12px; font-size:0.85rem;" title="Reorganiza missões passadas pendentes para os próximos dias" onclick="redistribuirAtrasadas()">🔄 Recalcular Rota</button>
                     </div>
-                    <div id="semana-grid" style="display: flex; gap: 8px; overflow-x: auto; padding-bottom: 12px; scrollbar-width: none;">
-                        <!-- Cards renderizados via JS -->
-                    </div>
+                    <div id="semana-grid" style="display: flex; gap: 8px; overflow-x: auto; padding-bottom: 12px; scrollbar-width: none;"></div>
                 </div>
 
                 <div style="display: flex; gap: 20px; flex-wrap: wrap; align-items: flex-start;">
-                    
-                    <!-- NOVO: QUADRO DO CICLO BASE / NOTAS -->
                     <div class="card" style="flex: 1; min-width: 280px; background: rgba(0, 122, 255, 0.03); border: 1px dashed var(--brand-primary); margin-bottom: 20px;">
                         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
                             <h2 style="font-size: 1.1rem; border:none; margin:0; color:var(--brand-primary);">📝 Meu Ciclo Fixo</h2>
@@ -398,12 +386,10 @@
                         <textarea id="notas-ciclo" rows="6" placeholder="Escreva seu ciclo semanal, matérias e prioridades aqui..." style="background: var(--bg-card); border-color: var(--border-color); resize: vertical; line-height: 1.5;"></textarea>
                     </div>
 
-                    <!-- MISSÕES DIÁRIAS (SRS) -->
                     <div class="card" style="flex: 1.5; min-width: 300px; margin-bottom: 20px;">
                         <h2 style="margin:0 0 16px 0; border:none; padding:0;">📚 Missões do Dia Selecionado</h2>
                         <div id="lista-missoes-div">Carregando missões...</div>
                     </div>
-
                 </div>
             </div>
 
@@ -713,7 +699,6 @@
         </div>
     </div>
 
-    <!-- MODAL METAS DIÁRIAS -->
     <div id="modal-metas" class="modal">
         <div class="modal-content" style="max-width:400px;">
             <button class="modal-close" style="position:absolute; top:16px; right:16px; background:transparent; border:none; font-size:1.5rem; cursor:pointer; color:var(--brand-danger); font-weight:700; z-index:10;" onclick="document.getElementById('modal-metas').style.display='none'">✖</button>
@@ -741,7 +726,6 @@
         </div>
     </div>
 
-    <!-- MODAL DE CADERNO -->
     <div id="modal-enviar-caderno" class="modal">
         <div class="modal-content">
             <button class="modal-close" style="position:absolute; top:16px; right:16px; background:transparent; border:none; font-size:1.5rem; cursor:pointer; color:var(--brand-danger); font-weight:700; z-index:10;" onclick="document.getElementById('modal-enviar-caderno').style.display='none'">✖</button>
@@ -762,7 +746,6 @@
         </div>
     </div>
 
-    <!-- MODAL MAXIMIZAR RESPOSTA FLASHCARD -->
     <div id="modal-ver-resposta" class="modal">
         <div class="modal-content" style="max-width:800px; width:90%; text-align:center; display:flex; flex-direction:column; justify-content:center; align-items:center; min-height:40vh;">
             <div id="modal-ver-resposta-conteudo" style="font-size:1.2rem; margin-bottom:30px; width:100%; max-height:60vh; overflow-y:auto; padding:0 10px;"></div>
@@ -770,7 +753,6 @@
         </div>
     </div>
 
-    <!-- MODAL DO MAPA MENTAL FULLSCREEN -->
     <div id="modal-mapa" class="modal">
         <div class="modal-content" style="max-width: 95vw; height: 95vh; display: flex; flex-direction: column; padding: 20px;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
@@ -786,7 +768,6 @@
         </div>
     </div>
 
-    <!-- MODAL DE FLASHCARDS -->
     <div id="modal-enviar-flashcard" class="modal">
         <div class="modal-content">
             <button class="modal-close" style="position:absolute; top:16px; right:16px; background:transparent; border:none; font-size:1.5rem; cursor:pointer; color:var(--brand-danger); font-weight:700; z-index:10;" onclick="document.getElementById('modal-enviar-flashcard').style.display='none'">✖</button>
@@ -873,7 +854,6 @@
                     let sesDataEl = document.getElementById('ses-data');
                     if(sesDataEl && !sesDataEl.value) sesDataEl.value = new Date().toISOString().split('T')[0];
                     
-                    // Inicializa a data de filtro com a data atual formatada
                     let hojeDate = new Date();
                     let hYear = hojeDate.getFullYear();
                     let hMonth = String(hojeDate.getMonth() + 1).padStart(2, '0');
@@ -1041,7 +1021,6 @@
             refDb.child('ia_filtros_historico').on('value', s => { dbData.iaFiltrosHistorico = s.val() || []; renderizarFiltrosIAHistorico(); });
         }
 
-        // LÓGICA DO DASHBOARD TÁTICO (ANEIS) E METAS
         function abrirModalMetas() {
             document.getElementById('inp-meta-horas').value = dbData.metas.horas || 4;
             document.getElementById('inp-meta-qts').value = dbData.metas.questoes || 60;
@@ -1083,7 +1062,7 @@
             let percHoras = Math.min(100, (horasFeitasNum / objHoras) * 100);
             let percQts = Math.min(100, (tQts / objQts) * 100);
 
-            let circC = 251.2; // 2 * pi * r (r=40)
+            let circC = 251.2;
             let offsetHoras = circC - (percHoras / 100) * circC;
             let offsetQts = circC - (percQts / 100) * circC;
 
@@ -1097,7 +1076,6 @@
             if (percQts >= 100) { ringQ.classList.add('ring-fill-success'); } else { ringQ.classList.remove('ring-fill-success'); }
         }
 
-        // LÓGICA DA VISÃO SEMANAL
         function renderizarVisaoSemanal() {
             let grid = document.getElementById('semana-grid');
             if(!grid) return;
@@ -1125,7 +1103,6 @@
                 let dLocalIso = `${y}-${m}-${day}`;
 
                 let isAtivo = dLocalIso === dataRefStr;
-                
                 let temMissao = dbData.missoes && dbData.missoes.some(missao => missao.dataAlvo === dLocalIso && missao.status === 'pendente');
                 
                 html += `<div class="dia-semana-card ${isAtivo ? 'ativo' : ''} ${temMissao ? 'tem-missao' : ''}" onclick="selecionarDiaSemana('${dLocalIso}')">
@@ -1153,15 +1130,14 @@
             btn.style.background = "var(--brand-success)";
             setTimeout(() => { 
                 btn.textContent = oldText; 
-                btn.style.background = "var(--brand-success)"; // Keeps its natural success color class
+                btn.style.background = "var(--brand-success)";
             }, 2000);
         }
 
-        // LÓGICA DO MOTOR DE REVISÃO ESPAÇADA (SRS)
         function gerarMissoesSRS(mat, topico, dataBaseObj) {
             if(!Array.isArray(dbData.missoes)) dbData.missoes = [];
             let intervalos = [{d: 1, t: '24h'}, {d: 7, t: '7 Dias'}, {d: 30, t: '30 Dias'}];
-            let grupoId = gerarId(); // Agrupa as 3 revisões para calcularmos o ciclo depois
+            let grupoId = gerarId();
             
             intervalos.forEach(inv => {
                 let dAlvo = new Date(dataBaseObj.getTime());
@@ -1204,8 +1180,6 @@
             let htmlList = '';
             missoesDoDia.forEach(m => {
                 let isChecked = m.status === 'concluida';
-                
-                // Calcula progresso do ciclo (quantas do mesmo grupo já foram feitas)
                 let missoesGrupo = dbData.missoes.filter(mg => mg.grupoId === m.grupoId);
                 missoesGrupo.sort((a,b) => a.etapa - b.etapa);
                 
@@ -1492,7 +1466,6 @@
             }
             refDb.child('sessoes/'+reg.id).set(reg);
             
-            // INTEGRAÇÃO SRS: Apenas gerar ciclo se for uma sessão nova
             if(isNovoRegistro) {
                 gerarMissoesSRS(mat, topRaw, dObj);
             }
@@ -2318,6 +2291,29 @@
             return null;
         }
 
+        function parseJSONComSeguranca(textoBruto) {
+            let jsonString = textoBruto;
+            let match = textoBruto.match(/\[\s*\{[\s\S]*\}\s*\]/);
+            if (match) {
+                jsonString = match[0];
+            } else {
+                jsonString = textoBruto.replace(/```json/g, '').replace(/```/g, '').trim();
+            }
+
+            try {
+                return JSON.parse(jsonString);
+            } catch (e1) {
+                try {
+                    let corrigido = jsonString
+                        .replace(/([{,]\s*)([a-zA-Z0-9_]+)(\s*:\s*)/g, '$1"$2"$3')
+                        .replace(/'/g, '"');
+                    return JSON.parse(corrigido);
+                } catch (e2) {
+                    throw new Error("Erro ao interpretar JSON da IA: " + e2.message);
+                }
+            }
+        }
+
         async function executarIA(tipo, promptEspecifico = null, textoExibicao = null) {
             let k = localStorage.getItem('pruma_apikey'); if(!k) return alert("Configure a API Key na aba Minha Conta.");
             let p = "", box = null; let niveisSelecionados = [];
@@ -2327,7 +2323,7 @@
                 if(niveisSelecionados.length === 0) return alert("Selecione um nível.");
                 let qtd = document.getElementById('ia-qts-num').value || '5';
                 let t = document.getElementById('ia-qts-tema').value || 'Geral';
-                p = `Gere ${qtd} questões em JSON PURO sobre: ${t}. Níveis: [${niveisSelecionados.join(', ')}]. Formato estrito JSON array: [{"enunciado": "...", "alternativas": ["A) ..."], "correta": "A", "comentario": "...", "nivel": "Médio"}]. Sem markdown.`;
+                p = `Gere ${qtd} questões em formato JSON puro sobre: ${t}. Níveis: [${niveisSelecionados.join(', ')}]. Formato estrito JSON array de objetos contendo exatamente as chaves "enunciado", "alternativas", "correta", "comentario", "nivel". Sem formatação markdown extra.`;
                 box = document.getElementById('box-qts'); box.style.display='flex'; box.innerHTML='';
             } else if(tipo === 'flashcards') {
                 document.querySelectorAll('.chk-nivel-fc:checked').forEach(el => niveisSelecionados.push(el.value));
@@ -2340,7 +2336,7 @@
         1. Seja sucinto, objetivo e focado APENAS no núcleo do tópico.
         2. MÁXIMO DE 5 LINHAS por resposta.
         3. Use formatação (negrito, pequenas listas) para facilitar a leitura.
-        Retorne JSON PURO: [{"f":"Pergunta","v":"Resposta","nivel":"Fácil"}].`;
+        Retorne JSON puro em array de objetos com as chaves "f", "v", "nivel".`;
                 box = document.getElementById('box-fc'); box.style.display='block'; box.innerHTML='';
             } else if(tipo === 'mapa_mental') {
                 p = promptEspecifico || document.getElementById('inp-chat').value.trim();
@@ -2532,7 +2528,7 @@ PROMPT DO USUÁRIO: ${p}`;
                     }
                 }
                 else if(tipo === 'flashcards') {
-                    let json = JSON.parse(txtF.replace(/```json/g,'').replace(/```/g,'').match(/\[.*\]/s)[0]);
+                    let json = parseJSONComSeguranca(txtF);
                     let matNome = sanitizeText(document.getElementById('fc-mat').value) || 'Flashcards Diversos';
                     let topNome = sanitizeText(document.getElementById('fc-top').value) || 'Geral';
                     
@@ -2558,8 +2554,7 @@ PROMPT DO USUÁRIO: ${p}`;
                     salvarFiltroHistorico('flashcards', {mat: matNome, top: topNome}, `${matNome}`, htmlFCResult);
                 
                 } else if(tipo === 'questoes') {
-                    let jsonClean = txtF.replace(/```json/g,'').replace(/```/g,'').trim();
-                    let qArray = JSON.parse(jsonClean.match(/\[.*\]/s)[0]);
+                    let qArray = parseJSONComSeguranca(txtF);
                     let htmlQ = `<div style="display:flex; flex-direction:column; gap:20px;">`;
                     qArray.forEach(q => {
                         let altHtml = '';
@@ -2608,7 +2603,7 @@ PROMPT DO USUÁRIO: ${p}`;
                 });
                 if(!res.ok) throw new Error("Erro ao processar edital.");
                 const data = await res.json();
-                let json = JSON.parse(data.candidates[0].content.parts[0].text.match(/\[.*\]/s)[0]);
+                let json = parseJSONComSeguranca(data.candidates[0].content.parts[0].text);
                 if(!Array.isArray(dbData.materias)) dbData.materias = Object.values(dbData.materias || {});
                 json.forEach(n => {
                     let idx = dbData.materias.findIndex(x=>x.nome.toLowerCase()===n.disciplina.toLowerCase() && x.provaId===pId);
