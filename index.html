@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR" data-theme="light">
 <head>
@@ -129,6 +130,28 @@
         .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: center; z-index: 2000; backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); padding: 20px; }
         .modal-content { background: var(--bg-card); padding: 32px; border-radius: var(--radius-lg); width: 100%; max-width: 520px; max-height: 90vh; overflow-y: auto; box-shadow: var(--shadow-md); position: relative; }
 
+        /* ESTILOS PARA PLANEJAMENTO E GAMIFICAÇÃO */
+        .ring-container { width: 110px; height: 110px; position: relative; margin: 0 auto; }
+        .ring-svg { transform: rotate(-90deg); width: 100%; height: 100%; }
+        .ring-bg { fill: none; stroke: var(--bg-input); stroke-width: 10; }
+        .ring-fill { fill: none; stroke: var(--brand-primary); stroke-width: 10; stroke-dasharray: 251.2; stroke-dashoffset: 251.2; transition: stroke-dashoffset 1s ease-out; stroke-linecap: round; }
+        .ring-fill-success { stroke: var(--brand-success); }
+        .ring-text { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; font-weight: 700; font-size: 1.2rem; color: var(--text-main); }
+        .ring-subtext { display: block; font-size: 0.65rem; font-weight: 600; color: var(--text-muted); margin-top: 2px; text-transform: uppercase; letter-spacing: 0.5px; }
+
+        .missao-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 16px; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; gap: 12px; box-shadow: var(--shadow-sm); transition: transform 0.2s ease, opacity 0.3s ease; }
+        .missao-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+        .missao-card.concluida { opacity: 0.6; background: var(--bg-input); }
+        .missao-card.concluida .missao-titulo { text-decoration: line-through; color: var(--text-muted); }
+        
+        .ciclo-indicador { display: flex; gap: 4px; align-items: center; }
+        .ciclo-dot { width: 10px; height: 10px; border-radius: 50%; border: 2px solid var(--brand-primary); background: transparent; }
+        .ciclo-dot.fill { background: var(--brand-primary); }
+
+        .custom-checkbox { width: 24px; height: 24px; border: 2px solid var(--border-color); border-radius: 6px; display: flex; justify-content: center; align-items: center; cursor: pointer; transition: all 0.2s ease; background: var(--bg-card); flex-shrink: 0; }
+        .custom-checkbox.checked { background: var(--brand-success); border-color: var(--brand-success); }
+        .custom-checkbox.checked::after { content: '✓'; color: white; font-weight: 900; font-size: 14px; }
+
         @media(max-width: 768px) {
             body { flex-direction: column; }
             .mobile-header { display: flex; }
@@ -157,6 +180,7 @@
         </div>
         
         <button class="nav-btn active" onclick="irTela('inicio', event)">🏠 Início</button>
+        <button class="nav-btn" onclick="irTela('planejamento', event)">🗓️ Planejamento</button>
         <button class="nav-btn" onclick="irTela('provas', event)">🎯 Minhas Provas</button>
         <button class="nav-btn" onclick="irTela('materias', event)">📚 Matérias</button>
         <button class="nav-btn" onclick="irTela('caderno', event)">📓 Caderno de Erros</button>
@@ -289,6 +313,63 @@
                         <input type="text" id="busca-registros-inicio" placeholder="🔍 Filtrar data (ex: 15/09), matéria ou tópico..." oninput="renderizarInicio()" style="width:auto; flex:1; min-width:220px; max-width:320px; margin:0; padding:8px 12px; font-size:0.85rem; border-radius:var(--radius-lg);">
                     </div>
                     <div id="lista-ultimos-registros">Nenhum registro.</div>
+                </div>
+            </div>
+
+            <!-- VIEW PLANEJAMENTO -->
+            <div id="view-planejamento" style="display:none;">
+                <div class="card" style="border-top: 4px solid var(--brand-primary);">
+                    <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:12px;">
+                        <div>
+                            <h2 style="margin-bottom:4px; border:none;">🎯 Dashboard Tático</h2>
+                            <p style="font-size:0.85rem; color:var(--text-muted); margin-top:0;">Suas metas diárias são atualizadas em tempo real com as sessões.</p>
+                        </div>
+                        <button class="btn-outline" style="width:auto; padding:6px 12px; font-size:0.8rem;" onclick="abrirModalMetas()">⚙️ Configurar Metas</button>
+                    </div>
+
+                    <div style="display:flex; justify-content:space-around; align-items:center; flex-wrap:wrap; gap:20px; margin-top:16px;">
+                        <!-- Anel 1: Horas -->
+                        <div style="text-align:center;">
+                            <div class="ring-container">
+                                <svg class="ring-svg" viewBox="0 0 100 100">
+                                    <circle class="ring-bg" cx="50" cy="50" r="40"></circle>
+                                    <circle class="ring-fill" id="ring-horas" cx="50" cy="50" r="40"></circle>
+                                </svg>
+                                <div class="ring-text">
+                                    <span id="text-ring-horas">0h</span>
+                                    <span class="ring-subtext">Estudadas</span>
+                                </div>
+                            </div>
+                            <div style="font-size:0.85rem; font-weight:600; color:var(--text-main); margin-top:12px;">Meta: <span id="meta-horas-label">4h</span></div>
+                        </div>
+                        
+                        <!-- Anel 2: Questões -->
+                        <div style="text-align:center;">
+                            <div class="ring-container">
+                                <svg class="ring-svg" viewBox="0 0 100 100">
+                                    <circle class="ring-bg" cx="50" cy="50" r="40"></circle>
+                                    <circle class="ring-fill" id="ring-qts" cx="50" cy="50" r="40"></circle>
+                                </svg>
+                                <div class="ring-text">
+                                    <span id="text-ring-qts">0</span>
+                                    <span class="ring-subtext">Questões</span>
+                                </div>
+                            </div>
+                            <div style="font-size:0.85rem; font-weight:600; color:var(--text-main); margin-top:12px;">Meta: <span id="meta-qts-label">60</span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border-color); padding-bottom:12px; margin-bottom:20px; flex-wrap:wrap; gap:12px;">
+                        <h2 style="margin:0; border:none; padding:0;">📅 Missões e Revisões</h2>
+                        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                            <input type="date" id="filtro-data-missoes" style="margin:0; width:auto; padding:8px 12px; border-radius:20px;" onchange="renderizarMissoes()">
+                            <button class="btn-outline" style="width:auto; padding:8px 12px; font-size:0.85rem;" title="Reorganiza missões passadas pendentes para os próximos dias" onclick="redistribuirAtrasadas()">🔄 Recalcular Rota</button>
+                        </div>
+                    </div>
+                    
+                    <div id="lista-missoes-div">Carregando missões...</div>
                 </div>
             </div>
 
@@ -598,6 +679,23 @@
         </div>
     </div>
 
+    <!-- MODAL METAS DIÁRIAS -->
+    <div id="modal-metas" class="modal">
+        <div class="modal-content" style="max-width:400px;">
+            <button class="modal-close" style="position:absolute; top:16px; right:16px; background:transparent; border:none; font-size:1.5rem; cursor:pointer; color:var(--brand-danger); font-weight:700; z-index:10;" onclick="document.getElementById('modal-metas').style.display='none'">✖</button>
+            <h2 style="margin-top:0;">⚙️ Configurar Metas Diárias</h2>
+            <div style="margin-bottom:12px;">
+                <label style="font-size:0.75rem; font-weight:700; color:var(--text-muted); display:block; margin-bottom:4px;">META DE HORAS ESTUDADAS</label>
+                <input type="number" id="inp-meta-horas" min="1" max="24" placeholder="Ex: 4">
+            </div>
+            <div style="margin-bottom:16px;">
+                <label style="font-size:0.75rem; font-weight:700; color:var(--text-muted); display:block; margin-bottom:4px;">META DE QUESTÕES RESOLVIDAS</label>
+                <input type="number" id="inp-meta-qts" min="1" max="1000" placeholder="Ex: 60">
+            </div>
+            <button class="btn-primary" onclick="salvarMetas()">Salvar Metas</button>
+        </div>
+    </div>
+
     <div id="modal-juntar" class="modal">
         <div class="modal-content">
             <button class="modal-close" style="position:absolute; top:16px; right:16px; background:transparent; border:none; font-size:1.5rem; cursor:pointer; color:var(--brand-danger); font-weight:700; z-index:10;" onclick="document.getElementById('modal-juntar').style.display='none'">✖</button>
@@ -691,7 +789,7 @@
         let svgMapaAtual = '';
 
         let userAtual = null, refDb = null, refStore = null, isAdmin = false;
-        let dbData = { sessoes: [], provas: [], materias: [], cadernos: [], flashcards: [], biblioteca: [], iaFiltrosHistorico: [] };
+        let dbData = { sessoes: [], provas: [], materias: [], cadernos: [], flashcards: [], biblioteca: [], iaFiltrosHistorico: [], missoes: [], metas: {horas:4, questoes:60} };
         let segundosCronometro = 0, cronometroInterval = null, graficoInstance = null;
         let segundosPausa = 0, pausaInterval = null;
         let editandoRegistroId = null;
@@ -732,6 +830,7 @@
                     
                     let sesDataEl = document.getElementById('ses-data');
                     if(sesDataEl && !sesDataEl.value) sesDataEl.value = new Date().toISOString().split('T')[0];
+                    document.getElementById('filtro-data-missoes').value = new Date().toISOString().split('T')[0];
                 } else {
                     userAtual = null; isAdmin = false; document.getElementById('tela-login').style.display = 'block'; document.getElementById('tela-painel').style.display = 'none';
                 }
@@ -768,7 +867,7 @@
         if(localStorage.getItem('pruma_tema') === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
 
         function irTela(t, e) {
-            ['inicio', 'provas', 'materias', 'caderno', 'flashcards', 'estatisticas', 'pruma', 'conta'].forEach(v => {
+            ['inicio', 'planejamento', 'provas', 'materias', 'caderno', 'flashcards', 'estatisticas', 'pruma', 'conta'].forEach(v => {
                 let el = document.getElementById('view-' + v); if(el) el.style.display = (v === t) ? 'block' : 'none';
             });
             document.querySelectorAll('.nav-btn').forEach(b => { b.classList.remove('active'); b.style.borderColor='transparent'; b.style.background='transparent'; });
@@ -778,6 +877,7 @@
             }
             if(window.innerWidth <= 768) document.getElementById('sidebar-menu').classList.remove('open');
             if(t === 'estatisticas') { renderizarFiltrosEstatisticas(); atualizarEstatisticas(); }
+            if(t === 'planejamento') { renderizarDashboardTatico(); renderizarMissoes(); }
         }
 
         function aplicarCorSistema(cor) {
@@ -792,6 +892,7 @@
             localStorage.setItem('pruma_cor_sys', cor);
             let btnReiciar = document.getElementById('btn-reiniciar-cron');
             if(btnReiciar) btnReiciar.style.borderColor = cor;
+            if(document.getElementById('view-planejamento').style.display === 'block') renderizarDashboardTatico();
         }
         function carregarPaletaSistema() {
             let div = document.getElementById('paleta-cores-sistema'); div.innerHTML = '';
@@ -826,7 +927,17 @@
 
         function carregarDadosGlobais() {
             refDb.child('perfil/nome').on('value', s => { if(s.val()) document.getElementById('conta-nome').value = s.val(); });
-            refDb.child('sessoes').on('value', s => { dbData.sessoes = s.val() ? Object.values(s.val()) : []; renderizarInicio(); if(document.getElementById('view-estatisticas').style.display==='block') { renderizarFiltrosEstatisticas(); atualizarEstatisticas(); } });
+            refDb.child('perfil/metas').on('value', s => { dbData.metas = s.val() || {horas: 4, questoes: 60}; if(document.getElementById('view-planejamento').style.display==='block') renderizarDashboardTatico(); });
+            refDb.child('sessoes').on('value', s => { 
+                dbData.sessoes = s.val() ? Object.values(s.val()) : []; 
+                renderizarInicio(); 
+                if(document.getElementById('view-estatisticas').style.display==='block') { renderizarFiltrosEstatisticas(); atualizarEstatisticas(); } 
+                if(document.getElementById('view-planejamento').style.display==='block') renderizarDashboardTatico();
+            });
+            refDb.child('missoes').on('value', s => {
+                let v = s.val(); dbData.missoes = v ? (Array.isArray(v) ? v : Object.values(v)) : [];
+                if(document.getElementById('view-planejamento').style.display === 'block') renderizarMissoes();
+            });
             refDb.child('provas').on('value', s => { let v = s.val(); dbData.provas = v ? (Array.isArray(v) ? v : Object.values(v)) : []; renderizarProvas(); atualizarSelectsUI(); if(document.getElementById('view-estatisticas').style.display==='block') renderizarFiltrosEstatisticas(); });
             refDb.child('materias').on('value', s => { let v = s.val(); dbData.materias = v ? (Array.isArray(v) ? v : Object.values(v)) : []; renderizarMaterias(); atualizarSelectsUI(); if(document.getElementById('view-estatisticas').style.display==='block') renderizarFiltrosEstatisticas(); });
             
@@ -875,6 +986,196 @@
                 renderizarCheckboxesFontesIA();
             });
             refDb.child('ia_filtros_historico').on('value', s => { dbData.iaFiltrosHistorico = s.val() || []; renderizarFiltrosIAHistorico(); });
+        }
+
+        // LÓGICA DO DASHBOARD TÁTICO (ANEIS) E METAS
+        function abrirModalMetas() {
+            document.getElementById('inp-meta-horas').value = dbData.metas.horas || 4;
+            document.getElementById('inp-meta-qts').value = dbData.metas.questoes || 60;
+            document.getElementById('modal-metas').style.display = 'flex';
+        }
+
+        function salvarMetas() {
+            let h = parseInt(document.getElementById('inp-meta-horas').value);
+            let q = parseInt(document.getElementById('inp-meta-qts').value);
+            if(h && q) {
+                dbData.metas = { horas: h, questoes: q };
+                refDb.child('perfil/metas').set(dbData.metas);
+                document.getElementById('modal-metas').style.display = 'none';
+                renderizarDashboardTatico();
+            }
+        }
+
+        function renderizarDashboardTatico() {
+            let hojeStr = new Date().toLocaleDateString();
+            let tSegundos = 0, tQts = 0;
+            
+            dbData.sessoes.forEach(s => {
+                let sDataStr = s.data || new Date(s.timestamp).toLocaleDateString();
+                if(sDataStr === hojeStr) {
+                    tSegundos += (s.segundos || 0);
+                    tQts += (s.totalQts !== undefined ? s.totalQts : ((s.acertos||0)+(s.erros||0)));
+                }
+            });
+
+            let objHoras = dbData.metas.horas || 4;
+            let objQts = dbData.metas.questoes || 60;
+            let horasFeitasNum = tSegundos / 3600;
+
+            document.getElementById('text-ring-horas').textContent = `${Math.floor(horasFeitasNum)}h ${Math.floor((tSegundos%3600)/60)}m`;
+            document.getElementById('text-ring-qts').textContent = tQts;
+            document.getElementById('meta-horas-label').textContent = `${objHoras}h`;
+            document.getElementById('meta-qts-label').textContent = objQts;
+
+            let percHoras = Math.min(100, (horasFeitasNum / objHoras) * 100);
+            let percQts = Math.min(100, (tQts / objQts) * 100);
+
+            let circC = 251.2; // 2 * pi * r (r=40)
+            let offsetHoras = circC - (percHoras / 100) * circC;
+            let offsetQts = circC - (percQts / 100) * circC;
+
+            let ringH = document.getElementById('ring-horas');
+            let ringQ = document.getElementById('ring-qts');
+            
+            ringH.style.strokeDashoffset = offsetHoras;
+            ringQ.style.strokeDashoffset = offsetQts;
+
+            if (percHoras >= 100) { ringH.classList.add('ring-fill-success'); } else { ringH.classList.remove('ring-fill-success'); }
+            if (percQts >= 100) { ringQ.classList.add('ring-fill-success'); } else { ringQ.classList.remove('ring-fill-success'); }
+        }
+
+        // LÓGICA DO MOTOR DE REVISÃO ESPAÇADA (SRS)
+        function gerarMissoesSRS(mat, topico, dataBaseObj) {
+            if(!Array.isArray(dbData.missoes)) dbData.missoes = [];
+            let intervalos = [{d: 1, t: '24h'}, {d: 7, t: '7 Dias'}, {d: 30, t: '30 Dias'}];
+            let grupoId = gerarId(); // Agrupa as 3 revisões para calcularmos o ciclo depois
+            
+            intervalos.forEach(inv => {
+                let dAlvo = new Date(dataBaseObj.getTime());
+                dAlvo.setDate(dAlvo.getDate() + inv.d);
+                let missao = {
+                    id: gerarId(),
+                    grupoId: grupoId,
+                    materia: mat,
+                    topico: topico,
+                    tipo: `Revisão ${inv.t}`,
+                    etapa: inv.d,
+                    dataAlvo: dAlvo.toISOString().split('T')[0],
+                    status: 'pendente',
+                    timestamp: Date.now()
+                };
+                dbData.missoes.push(missao);
+            });
+            refDb.child('missoes').set(dbData.missoes);
+        }
+
+        function renderizarMissoes() {
+            let divMissoes = document.getElementById('lista-missoes-div');
+            let dataFiltroStr = document.getElementById('filtro-data-missoes').value;
+            if(!dataFiltroStr) return;
+
+            if(!Array.isArray(dbData.missoes)) dbData.missoes = [];
+            
+            let missoesDoDia = dbData.missoes.filter(m => m.dataAlvo === dataFiltroStr);
+            missoesDoDia.sort((a,b) => (a.status === 'concluida' ? 1 : 0) - (b.status === 'concluida' ? 1 : 0));
+
+            if(missoesDoDia.length === 0) {
+                divMissoes.innerHTML = `<div style="text-align:center; padding:30px; color:var(--text-muted);">
+                    <div style="font-size:3rem; margin-bottom:12px;">✅</div>
+                    Nenhuma missão agendada para esta data.<br>Continue estudando a teoria para gerar seu ciclo automático.
+                </div>`;
+                return;
+            }
+
+            let htmlList = '';
+            missoesDoDia.forEach(m => {
+                let isChecked = m.status === 'concluida';
+                
+                // Calcula progresso do ciclo (quantas do mesmo grupo já foram feitas)
+                let missoesGrupo = dbData.missoes.filter(mg => mg.grupoId === m.grupoId);
+                missoesGrupo.sort((a,b) => a.etapa - b.etapa);
+                
+                let htmlCiclos = '';
+                if(missoesGrupo.length === 3) {
+                    missoesGrupo.forEach(mg => {
+                        let fillClass = mg.status === 'concluida' ? 'fill' : '';
+                        htmlCiclos += `<div class="ciclo-dot ${fillClass}" title="${mg.tipo}"></div>`;
+                    });
+                }
+
+                htmlList += `<div class="missao-card ${isChecked ? 'concluida' : ''}">
+                    <div class="custom-checkbox ${isChecked ? 'checked' : ''}" onclick="marcarMissao('${m.id}', ${!isChecked})"></div>
+                    <div style="flex:1; min-width:0; margin-left:8px;" class="missao-titulo">
+                        <div style="display:flex; align-items:center; gap:8px;">
+                            <strong style="font-size:1rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${sanitizeText(m.materia)}</strong>
+                            <span style="font-size:0.7rem; background:rgba(0,122,255,0.1); color:var(--brand-primary); padding:2px 8px; border-radius:12px; font-weight:700;">${m.tipo}</span>
+                        </div>
+                        <div style="font-size:0.85rem; color:var(--text-muted); margin-top:4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                            📄 ${sanitizeText(m.topico || 'Geral')}
+                        </div>
+                    </div>
+                    <div style="display:flex; flex-direction:column; align-items:flex-end; gap:8px;">
+                        <div class="ciclo-indicador" title="Progresso do Ciclo">${htmlCiclos}</div>
+                        <button class="btn-outline" style="padding:6px 14px; font-size:0.8rem; width:auto; border-color:var(--brand-primary); color:var(--brand-primary);" onclick="abrirContextoRevisao('${sanitizeText(m.materia).replace(/'/g,"\\'")}', '${sanitizeText(m.topico||'').replace(/'/g,"\\'")}')">▶ Executar</button>
+                    </div>
+                </div>`;
+            });
+
+            divMissoes.innerHTML = htmlList;
+        }
+
+        function marcarMissao(id, statusConcluida) {
+            let idx = dbData.missoes.findIndex(m => m.id === id);
+            if(idx !== -1) {
+                dbData.missoes[idx].status = statusConcluida ? 'concluida' : 'pendente';
+                refDb.child('missoes').set(dbData.missoes);
+                renderizarMissoes();
+            }
+        }
+
+        function abrirContextoRevisao(materia, topico) {
+            irTela('caderno');
+            let inputBusca = document.getElementById('busca-caderno');
+            if(inputBusca) {
+                inputBusca.value = topico && topico !== 'Geral' ? topico : materia;
+                renderizarCadernos();
+            }
+        }
+
+        function redistribuirAtrasadas() {
+            let hojeISO = new Date().toISOString().split('T')[0];
+            if(!Array.isArray(dbData.missoes)) dbData.missoes = [];
+            
+            let atrasadas = dbData.missoes.filter(m => m.dataAlvo < hojeISO && m.status === 'pendente');
+            
+            if(atrasadas.length === 0) {
+                return alert("Tudo em dia! Nenhuma missão atrasada foi encontrada.");
+            }
+
+            if(!confirm(`Existem ${atrasadas.length} missões acumuladas. Deseja diluí-las pelos próximos dias para não sobrecarregar o cronograma de hoje?`)) return;
+
+            atrasadas.sort((a,b) => new Date(a.dataAlvo) - new Date(b.dataAlvo));
+            
+            let offsetDias = 0;
+            let distribuidasNesseDia = 0;
+            let maxPorDia = 3; 
+
+            atrasadas.forEach(m => {
+                let novaData = new Date();
+                novaData.setDate(novaData.getDate() + offsetDias);
+                m.dataAlvo = novaData.toISOString().split('T')[0];
+                
+                distribuidasNesseDia++;
+                if(distribuidasNesseDia >= maxPorDia) {
+                    offsetDias++;
+                    distribuidasNesseDia = 0;
+                }
+            });
+            
+            refDb.child('missoes').set(dbData.missoes);
+            document.getElementById('filtro-data-missoes').value = hojeISO;
+            renderizarMissoes();
+            alert(`Rota recalculada com sucesso! As missões atrasadas foram distribuídas.`);
         }
 
         function iniciarCronometro() { 
@@ -1035,13 +1336,15 @@
             
             let a = parseInt(document.getElementById('ses-acertos').value)||0, e = parseInt(document.getElementById('ses-erros').value)||0;
             
+            let isNovoRegistro = !editandoRegistroId;
             let regId = editandoRegistroId ? editandoRegistroId : gerarId();
             let existingReg = dbData.sessoes.find(x => x.id === regId);
             let horaAdicao = editandoRegistroId && existingReg ? (existingReg.hora || new Date().toLocaleTimeString().substring(0,5)) : new Date().toLocaleTimeString().substring(0,5);
+            let tipoEstudoVal = document.getElementById('ses-tipo-estudo').value;
 
             let reg = { 
                 id: regId, timestamp: timestamp, data: dataStr, hora: horaAdicao, 
-                materia: mat, topico: topRaw, tipoEstudo: document.getElementById('ses-tipo-estudo').value, 
+                materia: mat, topico: topRaw, tipoEstudo: tipoEstudoVal, 
                 tipoMat: document.getElementById('ses-tipo-mat').value, segundos: segsFinais, 
                 acertos: a, erros: e, totalQts: a+e, obs: sanitizeText(document.getElementById('ses-obs').value) 
             };
@@ -1064,6 +1367,11 @@
                 if(mudouTops) refDb.child('materias').set(dbData.materias);
             }
             refDb.child('sessoes/'+reg.id).set(reg);
+            
+            // INTEGRAÇÃO SRS: Apenas gerar ciclo se for uma sessão nova
+            if(isNovoRegistro) {
+                gerarMissoesSRS(mat, topRaw, dObj);
+            }
             
             cancelarEdicaoRegistro(); reiniciarCronometro();
             ['ses-mat','ses-top','ses-acertos','ses-erros','ses-man-horas','ses-man-mins','ses-man-segs','ses-obs','ses-pdf-ini','ses-pdf-fim','ses-vid-ini','ses-vid-fim'].forEach(id=> { if(document.getElementById(id)) document.getElementById(id).value = ''; });
