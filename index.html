@@ -2314,6 +2314,36 @@
             }
         }
 
+        function responderQuestaoUnica(btn) {
+            let containerAlt = btn.closest('.bloco-alternativas-qst');
+            if(!containerAlt) return;
+            
+            let botoes = containerAlt.querySelectorAll('.alt-btn');
+            botoes.forEach(b => {
+                b.disabled = true;
+                if(b.getAttribute('data-correta') === '1') {
+                    b.style.background = 'var(--brand-success)';
+                    b.style.color = '#FFFFFF';
+                    b.style.borderColor = 'var(--brand-success)';
+                }
+            });
+
+            let isCorretaSelecionada = btn.getAttribute('data-correta') === '1';
+            if(!isCorretaSelecionada) {
+                btn.style.background = 'var(--brand-danger)';
+                btn.style.color = '#FFFFFF';
+                btn.style.borderColor = 'var(--brand-danger)';
+            }
+
+            let questaoCard = containerAlt.closest('.card, div[style*="background"]');
+            if(questaoCard) {
+                let blocoExplicacao = questaoCard.querySelector('.bloco-explicacao-qst');
+                if(blocoExplicacao) {
+                    blocoExplicacao.style.display = 'block';
+                }
+            }
+        }
+
         async function executarIA(tipo, promptEspecifico = null, textoExibicao = null) {
             let k = localStorage.getItem('pruma_apikey'); if(!k) return alert("Configure a API Key na aba Minha Conta.");
             let p = "", box = null; let niveisSelecionados = [];
