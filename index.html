@@ -2563,7 +2563,7 @@ PROMPT DO USUÁRIO: ${p}`;
                     return data.candidates[0].content.parts[0].text;
                 }
 
-                let txtF = await chamarGemini("gemini-3.5-flash-lite");
+                let txtF = await chamarGemini("gemini-3.5-flash");
                 
                 let l = document.getElementById('load-ia'); if(l) l.remove();
                 
@@ -2657,7 +2657,7 @@ PROMPT DO USUÁRIO: ${p}`;
             let pId = document.getElementById('edital-ia-prova').value;
             let tx = btn.textContent; btn.disabled=true; btn.textContent="Processando...";
             try {
-                let res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent?key=${k}`, { 
+                let res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=${k}`, { 
                     method:'POST', headers:{'Content-Type':'application/json'}, 
                     body:JSON.stringify({ contents:[{parts:[{text:`Organize em JSON PURO: [{"disciplina": "Nome", "topicos": ["T1"]}]. Sem markdown. Edital:\n${txt.substring(0,15000)}`}]}] }) 
                 });
