@@ -2419,34 +2419,29 @@
                     let idContainer = (tipo === 'chat' || tipo === 'mapa_mental') ? 'chk-container-chat' : (tipo === 'questoes' ? 'chk-container-simulador' : 'chk-container-flashcards');
                     let chksSelecionados = document.querySelectorAll(`#${idContainer} .chk-fonte-biblioteca:checked`);
                     
-                    for(let chk of chksSelecionados) {
+                  for(let chk of chksSelecionados) {
                         let doc = dbData.biblioteca.find(d => d.fbKey === chk.value);
                         if(doc) {
-                           if(doc.nome.toLowerCase().endsWith('.pdf') || (doc.url && doc.url.includes('.pdf'))) {
+                            if(doc.nome.toLowerCase().endsWith('.pdf') || (doc.url && doc.url.includes('.pdf'))) {
                                 try {
                                     let spanLoad = document.getElementById('load-ia-text') || document.querySelector('#load-ia span');
-                                    if(spanLoad) spanLoad.textContent = "A transferir e processar documento... ⏳";
+                                    if(spanLoad) spanLoad.textContent = "Baixando e processando documento... ⏳";
 
-                                    // 1. Efetua a transferência a partir do Firebase
                                     let resBlob = await fetch(doc.url);
 
-                                    // 2. Se o Firebase bloquear por CORS, tenta utilizar o proxy
                                     if (!resBlob.ok) {
                                         resBlob = await fetch(`https://corsproxy.io/?${encodeURIComponent(doc.url)}`);
                                     }
 
-                                    // 3. Se falhar definitivamente, interrompe para não enviar erros ao Gemini 3.5
                                     if (!resBlob.ok) {
                                         throw new Error("Erro de permissão no Firebase Storage (HTTP " + resBlob.status + ")");
                                     }
 
                                     let blob = await resBlob.blob();
 
-                                    // 4. Envia o ficheiro validado para a File API do Google
                                     let apiKeyGemini = localStorage.getItem('pruma_apikey');
                                     let fileUriGerada = await uploadParaGeminiFileAPI(blob, apiKeyGemini);
                                     
-                                    // 5. Passa o URI para o modelo Gemini 3.5 Flash Lite
                                     partesDaMensagem.push({ 
                                         fileData: { 
                                             mimeType: "application/pdf", 
@@ -2458,9 +2453,11 @@
                                     console.error("Erro ao processar PDF com a File API:", err);
                                     if(doc.texto) textoContexto += `\n--- Fonte [\({doc.nome}] (Extração Parcial) ---\n\){doc.texto}\n`;
                                 }
+                            } else if (doc.texto) {
+                                textoContexto += `\n--- Fonte [\({doc.nome}] ---\n\){doc.texto}\n`;
                             }
+                        }
                     }
-                }
 
                 let chkWebId = (tipo === 'chat' || tipo === 'mapa_mental') ? 'chk-busca-web' : (tipo === 'questoes' ? 'chk-busca-web-qts' : 'chk-busca-web-fc');
                 let chkWeb = document.getElementById(chkWebId);
