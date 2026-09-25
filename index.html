@@ -2419,44 +2419,51 @@
                     let idContainer = (tipo === 'chat' || tipo === 'mapa_mental') ? 'chk-container-chat' : (tipo === 'questoes' ? 'chk-container-simulador' : 'chk-container-flashcards');
                     let chksSelecionados = document.querySelectorAll(`#${idContainer} .chk-fonte-biblioteca:checked`);
                     
-                  for(let chk of chksSelecionados) {
-                        let doc = dbData.biblioteca.find(d => d.fbKey === chk.value);
-                        if(doc) {
-                            if(doc.nome.toLowerCase().endsWith('.pdf') || (doc.url && doc.url.includes('.pdf'))) {
-                                try {
-                                    let spanLoad = document.getElementById('load-ia-text') || document.querySelector('#load-ia span');
-                                    if(spanLoad) spanLoad.textContent = "Baixando e processando documento... ⏳";
+                  // Substitua TODO o seu loop (for) de leitura de fontes por este bloco:
+for (let chk of chksSelecionados) {
+    let doc = dbData.biblioteca.find(d => d.fbKey === chk.value);
+    
+    if (doc) {
+        // 1. Lógica para PDFs (com File API)
+        if (doc.nome.toLowerCase().endsWith('.pdf') || (doc.url && doc.url.includes('.pdf'))) {
+            try {
+                let spanLoad = document.getElementById('load-ia-text') || document.querySelector('#load-ia span');
+                if (spanLoad) spanLoad.textContent = "Baixando e processando documento... ⏳";
 
-                                    let resBlob = await fetch(doc.url);
+                let resBlob = await fetch(doc.url);
+                
+                if (!resBlob.ok) {
+                    resBlob = await fetch(`https://corsproxy.io/?${encodeURIComponent(doc.url)}`);
+                }
+                
+                if (!resBlob.ok) {
+                    throw new Error("Erro de permissão no Firebase Storage (HTTP " + resBlob.status + ")");
+                }
 
-                                    if (!resBlob.ok) {
-                                        resBlob = await fetch(`https://corsproxy.io/?${encodeURIComponent(doc.url)}`);
-                                    }
-
-                                    if (!resBlob.ok) {
-                                        throw new Error("Erro de permissão no Firebase Storage (HTTP " + resBlob.status + ")");
-                                    }
-
-                                    let blob = await resBlob.blob();
-
-                                    let apiKeyGemini = localStorage.getItem('pruma_apikey');
-                                    let fileUriGerada = await uploadParaGeminiFileAPI(blob, apiKeyGemini);
-                                    
-                                    partesDaMensagem.push({ 
-                                        fileData: { 
-                                            mimeType: "application/pdf", 
-                                            fileUri: fileUriGerada 
-                                        } 
-                                    });
-
-                                } catch(err) {
-                                    console.error("Erro ao processar PDF com a File API:", err);
-                                    if(doc.texto) textoContexto += `\n--- Fonte [\({doc.nome}] (Extração Parcial) ---\n\){doc.texto}\n`;
-                                }
-                            } else if (doc.texto) {
-                                textoContexto += `\n--- Fonte [\({doc.nome}] ---\n\){doc.texto}\n`;
-                            }
-                        }
+                let blob = await resBlob.blob();
+                let apiKeyGemini = localStorage.getItem('pruma_apikey');
+                
+                let fileUriGerada = await uploadParaGeminiFileAPI(blob, apiKeyGemini);
+                
+                partesDaMensagem.push({ 
+                    fileData: { 
+                        mimeType: "application/pdf", 
+                        fileUri: fileUriGerada 
+                    } 
+                });
+            } catch (err) {
+                console.error("Erro ao processar PDF:", err);
+                if (doc.texto) {
+                    textoContexto += `\n--- Fonte [\({doc.nome}] (Extração Parcial) ---\n\){doc.texto}\n`;
+                }
+            }
+        } 
+        // 2. Lógica para textos normais (não PDF)
+        else if (doc.texto) {
+            textoContexto += `\n--- Fonte [\({doc.nome}] ---\n\){doc.texto}\n`;
+        }
+    }
+}
 
                 let chkWebId = (tipo === 'chat' || tipo === 'mapa_mental') ? 'chk-busca-web' : (tipo === 'questoes' ? 'chk-busca-web-qts' : 'chk-busca-web-fc');
                 let chkWeb = document.getElementById(chkWebId);
