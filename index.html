@@ -2344,6 +2344,21 @@
             }
         }
 
+        async function uploadParaGeminiFileAPI(blob, apiKey) {
+    const url = `https://generativelanguage.googleapis.com/upload/v1beta/files?key=${apiKey}`;
+    const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/pdf' },
+        body: blob
+    });
+    if (!response.ok) {
+        const errText = await response.text();
+        throw new Error(`Erro na File API: ${errText}`);
+    }
+    const data = await response.json();
+    return data.file.uri; 
+}
+
         async function executarIA(tipo, promptEspecifico = null, textoExibicao = null) {
             let k = localStorage.getItem('pruma_apikey'); if(!k) return alert("Configure a API Key na aba Minha Conta.");
             let p = "", box = null; let niveisSelecionados = [];
@@ -2407,27 +2422,33 @@
                     for(let chk of chksSelecionados) {
                         let doc = dbData.biblioteca.find(d => d.fbKey === chk.value);
                         if(doc) {
-                            if(doc.nome.toLowerCase().endsWith('.pdf') || (doc.url && doc.url.includes('.pdf'))) {
+                           if(doc.nome.toLowerCase().endsWith('.pdf') || (doc.url && doc.url.includes('.pdf'))) {
                                 try {
                                     let spanLoad = document.getElementById('load-ia-text') || document.querySelector('#load-ia span');
-                                    if(spanLoad) spanLoad.textContent = "Lendo PDF anexo... ⏳";
+                                    if(spanLoad) spanLoad.textContent = "Preparando documento de alta capacidade... ⏳";
                                     
                                     let resBlob;
                                     try { resBlob = await fetch(doc.url); } catch(e) { resBlob = await fetch(`https://corsproxy.io/?${encodeURIComponent(doc.url)}`); }
                                     let blob = await resBlob.blob();
-                                    let base64 = await new Promise((resolve, reject) => {
-                                        let reader = new FileReader();
-                                        reader.onload = () => resolve(reader.result.split(',')[1]);
-                                        reader.onerror = reject;
-                                        reader.readAsDataURL(blob);
+
+                                    // Faz o upload temporário (File API) e recupera a URI
+                                    let apiKeyGemini = localStorage.getItem('pruma_apikey');
+                                    let fileUriGerada = await uploadParaGeminiFileAPI(blob, apiKeyGemini);
+                                    
+                                    // Passa a URI leve e mágica para o Gemini, substituindo o Base64 pesado
+                                    partesDaMensagem.push({ 
+                                        fileData: { 
+                                            mimeType: "application/pdf", 
+                                            fileUri: fileUriGerada 
+                                        } 
                                     });
-                                    partesDaMensagem.push({ inlineData: { mimeType: "application/pdf", data: base64 } });
+
                                 } catch(err) {
-                                    console.error("Erro ao converter PDF:", err);
-                                    if(doc.texto) textoContexto += `\n--- Fonte [${doc.nome}] (Extração Parcial) ---\n${doc.texto}\n`;
+                                    console.error("Erro ao usar a File API:", err);
+                                    if(doc.texto) textoContexto += `\n--- Fonte [\({doc.nome}] (Extração Parcial) ---\n\){doc.texto}\n`;
                                 }
                             } else if (doc.texto) {
-                                textoContexto += `\n--- Fonte [${doc.nome}] ---\n${doc.texto}\n`;
+                                textoContexto += `\n--- Fonte [\({doc.nome}] ---\n\){doc.texto}\n`;
                             }
                         }
                     }
