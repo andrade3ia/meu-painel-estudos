@@ -2360,151 +2360,146 @@
 }
 
         async function executarIA(tipo, promptEspecifico = null, textoExibicao = null) {
-            let k = localStorage.getItem('pruma_apikey'); if(!k) return alert("Configure a API Key na aba Minha Conta.");
-            let p = "", box = null; let niveisSelecionados = [];
+    let k = localStorage.getItem('pruma_apikey'); 
+    if(!k) return alert("Configure a API Key na aba Minha Conta.");
+    
+    let p = "", box = null; 
+    let niveisSelecionados = [];
 
-            if(tipo === 'questoes') {
-                document.querySelectorAll('.chk-nivel-q:checked').forEach(el => niveisSelecionados.push(el.value));
-                if(niveisSelecionados.length === 0) return alert("Selecione um nível.");
-                let qtd = document.getElementById('ia-qts-num').value || '5';
-                let t = document.getElementById('ia-qts-tema').value || 'Geral';
-                p = `Gere ${qtd} questões em formato JSON puro sobre: ${t}. Níveis: [${niveisSelecionados.join(', ')}]. Formato estrito JSON array de objetos contendo exatamente as chaves "enunciado", "alternativas", "correta", "comentario", "nivel". Sem formatação markdown extra.`;
-                box = document.getElementById('box-qts'); box.style.display='flex'; box.innerHTML='';
-            } else if(tipo === 'flashcards') {
-                document.querySelectorAll('.chk-nivel-fc:checked').forEach(el => niveisSelecionados.push(el.value));
-                if(niveisSelecionados.length === 0) return alert("Selecione um nível.");
-                let qtd = document.getElementById('fc-num').value || '5';
-                let m = sanitizeText(document.getElementById('fc-mat').value) || 'Geral';
-                let tp = sanitizeText(document.getElementById('fc-top').value) || 'Geral';
-                p = `Gere ${qtd} flashcards TÉCNICOS e DIRETOS para Matéria: "${m}" e Tópico: "${tp}". Níveis: ${niveisSelecionados.join(', ')}.
+    if(tipo === 'questoes') {
+        document.querySelectorAll('.chk-nivel-q:checked').forEach(el => niveisSelecionados.push(el.value));
+        if(niveisSelecionados.length === 0) return alert("Selecione um nível.");
+        let qtd = document.getElementById('ia-qts-num').value || '5';
+        let t = document.getElementById('ia-qts-tema').value || 'Geral';
+        p = `Gere ${qtd} questões em formato JSON puro sobre: ${t}. Níveis: [${niveisSelecionados.join(', ')}]. Formato estrito JSON array de objetos contendo exatamente as chaves "enunciado", "alternativas", "correta", "comentario", "nivel". Sem formatação markdown extra.`;
+        box = document.getElementById('box-qts'); box.style.display='flex'; box.innerHTML='';
+    } else if(tipo === 'flashcards') {
+        document.querySelectorAll('.chk-nivel-fc:checked').forEach(el => niveisSelecionados.push(el.value));
+        if(niveisSelecionados.length === 0) return alert("Selecione um nível.");
+        let qtd = document.getElementById('fc-num').value || '5';
+        let m = sanitizeText(document.getElementById('fc-mat').value) || 'Geral';
+        let tp = sanitizeText(document.getElementById('fc-top').value) || 'Geral';
+        p = `Gere ${qtd} flashcards TÉCNICOS e DIRETOS para Matéria: "${m}" e Tópico: "${tp}". Níveis: ${niveisSelecionados.join(', ')}.
         REGRAS RÍGIDAS PARA FLASHCARDS:
         1. Seja sucinto, objetivo e focado APENAS no núcleo do tópico.
         2. MÁXIMO DE 5 LINHAS por resposta.
         3. Use formatação (negrito, pequenas listas) para facilitar a leitura.
         Retorne JSON puro em array de objetos com as chaves "f", "v", "nivel".`;
-                box = document.getElementById('box-fc'); box.style.display='block'; box.innerHTML='';
-            } else if(tipo === 'mapa_mental') {
-                p = promptEspecifico || document.getElementById('inp-chat').value.trim();
-                if(!p) p = "Crie um mapa mental sobre Direito e seus ramos principais.";
-                box = document.getElementById('box-chat');
-                box.insertAdjacentHTML('beforeend', `<div class="msg msg-u">🧠 Gerar Mapa Mental: ${sanitizeText(p)}</div>`); 
-                document.getElementById('inp-chat').value=''; 
-                box.scrollTop = box.scrollHeight;
-            } else if(tipo === 'chat') {
-                p = promptEspecifico || document.getElementById('inp-chat').value.trim(); if(!p) return;
-                box = document.getElementById('box-chat');
-                
-                let exibicao = textoExibicao || p;
-                box.insertAdjacentHTML('beforeend', `<div class="msg msg-u">${sanitizeText(exibicao)}</div>`); 
-                if(!promptEspecifico) { 
-                    document.getElementById('inp-chat').value=''; 
-                }
-                box.scrollTop = box.scrollHeight;
-            }
-
-            let baseSys = obterPromptDoSistema(tipo, p);
-            
-            try {
-                if(tipo!=='flashcards') { 
-                    box.insertAdjacentHTML('beforeend', `<div class="msg msg-a" id="load-ia"><span id="load-ia-text">Analisando...</span> ⏳</div>`);
-                    box.scrollTop = box.scrollHeight; 
-                } else { 
-                    box.innerHTML = `<div id="load-ia" style="color:var(--brand-primary); font-weight:600;"><span>Construindo flashcards objetivos...</span> ⏳</div>`; 
-                }
-
-                let partesDaMensagem = [];
-                let textoContexto = "";
-                
-                if (tipo === 'chat' || tipo === 'questoes' || tipo === 'flashcards' || tipo === 'mapa_mental') {
-                    let idContainer = (tipo === 'chat' || tipo === 'mapa_mental') ? 'chk-container-chat' : (tipo === 'questoes' ? 'chk-container-simulador' : 'chk-container-flashcards');
-                    let chksSelecionados = document.querySelectorAll(`#${idContainer} .chk-fonte-biblioteca:checked`);
-                    
-                  // Substitua TODO o seu loop (for) de leitura de fontes por este bloco:
-for (let chk of chksSelecionados) {
-    let doc = dbData.biblioteca.find(d => d.fbKey === chk.value);
-    
-    if (doc) {
-        // 1. Lógica para PDFs (com File API)
-        if (doc.nome.toLowerCase().endsWith('.pdf') || (doc.url && doc.url.includes('.pdf'))) {
-            try {
-                let spanLoad = document.getElementById('load-ia-text') || document.querySelector('#load-ia span');
-                if (spanLoad) spanLoad.textContent = "Baixando e processando documento... ⏳";
-
-                let resBlob = await fetch(doc.url);
-                
-                if (!resBlob.ok) {
-                    resBlob = await fetch(`https://corsproxy.io/?${encodeURIComponent(doc.url)}`);
-                }
-                
-                if (!resBlob.ok) {
-                    throw new Error("Erro de permissão no Firebase Storage (HTTP " + resBlob.status + ")");
-                }
-
-                let blob = await resBlob.blob();
-                let apiKeyGemini = localStorage.getItem('pruma_apikey');
-                
-                let fileUriGerada = await uploadParaGeminiFileAPI(blob, apiKeyGemini);
-                
-                partesDaMensagem.push({ 
-                    fileData: { 
-                        mimeType: "application/pdf", 
-                        fileUri: fileUriGerada 
-                    } 
-                });
-            } catch (err) {
-                console.error("Erro ao processar PDF:", err);
-                if (doc.texto) {
-                    textoContexto += `\n--- Fonte [\({doc.nome}] (Extração Parcial) ---\n\){doc.texto}\n`;
-                }
-            }
-        } 
-        // 2. Lógica para textos normais (não PDF)
-        else if (doc.texto) {
-            textoContexto += `\n--- Fonte [\({doc.nome}] ---\n\){doc.texto}\n`;
+        box = document.getElementById('box-fc'); box.style.display='block'; box.innerHTML='';
+    } else if(tipo === 'mapa_mental') {
+        p = promptEspecifico || document.getElementById('inp-chat').value.trim();
+        if(!p) p = "Crie um mapa mental sobre Direito e seus ramos principais.";
+        box = document.getElementById('box-chat');
+        box.insertAdjacentHTML('beforeend', `<div class="msg msg-u">🧠 Gerar Mapa Mental: ${sanitizeText(p)}</div>`); 
+        document.getElementById('inp-chat').value=''; 
+        box.scrollTop = box.scrollHeight;
+    } else if(tipo === 'chat') {
+        p = promptEspecifico || document.getElementById('inp-chat').value.trim(); if(!p) return;
+        box = document.getElementById('box-chat');
+        let exibicao = textoExibicao || p;
+        box.insertAdjacentHTML('beforeend', `<div class="msg msg-u">${sanitizeText(exibicao)}</div>`); 
+        if(!promptEspecifico) { 
+            document.getElementById('inp-chat').value=''; 
         }
+        box.scrollTop = box.scrollHeight;
     }
-}
 
-                let chkWebId = (tipo === 'chat' || tipo === 'mapa_mental') ? 'chk-busca-web' : (tipo === 'questoes' ? 'chk-busca-web-qts' : 'chk-busca-web-fc');
-                let chkWeb = document.getElementById(chkWebId);
-                let usaWeb = (chkWeb && chkWeb.checked);
-                let tagWeb = '';
+    let baseSys = obterPromptDoSistema(tipo, p);
+    
+    try {
+        if(tipo !== 'flashcards') { 
+            box.insertAdjacentHTML('beforeend', `<div class="msg msg-a" id="load-ia"><span id="load-ia-text">Analisando...</span> ⏳</div>`);
+            box.scrollTop = box.scrollHeight; 
+        } else { 
+            box.innerHTML = `<div id="load-ia" style="color:var(--brand-primary); font-weight:600;"><span>Construindo flashcards objetivos...</span> ⏳</div>`; 
+        }
 
-                let instrucaoFinal = `${baseSys}\n\n`;
-                if(textoContexto) instrucaoFinal += `[FONTES DE TEXTO/SITES DA NUVEM]:\n${textoContexto}\n\n`;
-                
-                if(partesDaMensagem.length > 0) {
-                    instrucaoFinal += "[ATENÇÃO: FONTES OBRIGATÓRIAS EM ANEXO]: Responda à dúvida UTILIZANDO DADOS E TRECHOS DOS PDFs ANEXOS. Se o conteúdo não estiver no documento, avise o usuário.\n\n";
-                }
+        let partesDaMensagem = [];
+        let textoContexto = "";
+        
+        if (tipo === 'chat' || tipo === 'questoes' || tipo === 'flashcards' || tipo === 'mapa_mental') {
+            let idContainer = (tipo === 'chat' || tipo === 'mapa_mental') ? 'chk-container-chat' : (tipo === 'questoes' ? 'chk-container-simulador' : 'chk-container-flashcards');
+            let chksSelecionados = document.querySelectorAll(`#${idContainer} .chk-fonte-biblioteca:checked`);
+            
+            for(let chk of chksSelecionados) {
+                let doc = dbData.biblioteca.find(d => d.fbKey === chk.value);
+                if(doc) {
+                    if(doc.nome.toLowerCase().endsWith('.pdf') || (doc.url && doc.url.includes('.pdf'))) {
+                        try {
+                            let spanLoad = document.getElementById('load-ia-text') || document.querySelector('#load-ia span');
+                            if(spanLoad) spanLoad.textContent = "Baixando e processando documento... ⏳";
 
-                if (usaWeb) {
-                    let spanLoad = document.getElementById('load-ia-text') || document.querySelector('#load-ia span');
-                    if(spanLoad) spanLoad.textContent = "Raspando a Web (via Tavily)... ⏳";
-                    
-                    let queryBuscaWeb = p;
-                    if (tipo === 'questoes') {
-                        queryBuscaWeb = document.getElementById('ia-qts-tema').value || 'Atualidades e concursos';
-                    } else if (tipo === 'flashcards') {
-                        let m = document.getElementById('fc-mat').value || '';
-                        let tp = document.getElementById('fc-top').value || '';
-                        queryBuscaWeb = `${m} ${tp}`.trim() || 'Atualidades e concursos';
+                            let resBlob = await fetch(doc.url);
+
+                            if (!resBlob.ok) {
+                                resBlob = await fetch(`https://corsproxy.io/?${encodeURIComponent(doc.url)}`);
+                            }
+
+                            if (!resBlob.ok) {
+                                throw new Error("Erro de permissão no Firebase Storage (HTTP " + resBlob.status + ")");
+                            }
+
+                            let blob = await resBlob.blob();
+                            let apiKeyGemini = localStorage.getItem('pruma_apikey');
+                            let fileUriGerada = await uploadParaGeminiFileAPI(blob, apiKeyGemini);
+                            
+                            partesDaMensagem.push({ 
+                                fileData: { 
+                                    mimeType: "application/pdf", 
+                                    fileUri: fileUriGerada 
+                                } 
+                            });
+                        } catch(err) {
+                            console.error("Erro ao processar PDF com a File API:", err);
+                            if(doc.texto) textoContexto += `\n--- Fonte [${doc.nome}] (Extração Parcial) ---\n${doc.texto}\n`;
+                        }
+                    } else if (doc.texto) {
+                        textoContexto += `\n--- Fonte [${doc.nome}] ---\n${doc.texto}\n`;
                     }
-
-                    let dadosWeb = await buscarNaWeb(queryBuscaWeb);
-                    if(dadosWeb) {
-                        instrucaoFinal += `[RESULTADOS DA BUSCA NA WEB RECENTES]:\n${dadosWeb}\n\nUse essas informações atualizadas para formular sua resposta.\n\n`;
-                        tagWeb = '(🌐 Busca Web via Tavily API)';
-                    } else {
-                        instrucaoFinal += `[AVISO]: A busca na web falhou devido a bloqueios. Responda apenas com o seu conhecimento interno.\n\n`;
-                        tagWeb = '(⚠️ Busca Web Bloqueada)';
-                    }
                 }
-                
-                let spanLoadRestaurar = document.getElementById('load-ia-text') || document.querySelector('#load-ia span');
-                if(spanLoadRestaurar) spanLoadRestaurar.textContent = (tipo === 'flashcards') ? "Construindo flashcards objetivos..." : (tipo === 'mapa_mental' ? "Desenhando Mapa Mental..." : "Analisando...");
+            }
+        }
 
-                if (tipo === 'mapa_mental') {
-                    instrucaoFinal += `Atue como arquiteto visual de mapas mentais. Gere OBRIGATORIAMENTE um código Mermaid.js válido usando a sintaxe 'mindmap'.
+        let chkWebId = (tipo === 'chat' || tipo === 'mapa_mental') ? 'chk-busca-web' : (tipo === 'questoes' ? 'chk-busca-web-qts' : 'chk-busca-web-fc');
+        let chkWeb = document.getElementById(chkWebId);
+        let usaWeb = (chkWeb && chkWeb.checked);
+        let tagWeb = '';
+
+        let instrucaoFinal = `${baseSys}\n\n`;
+        if(textoContexto) instrucaoFinal += `[FONTES DE TEXTO/SITES DA NUVEM]:\n${textoContexto}\n\n`;
+        
+        if(partesDaMensagem.length > 0) {
+            instrucaoFinal += "[ATENÇÃO: FONTES OBRIGATÓRIAS EM ANEXO]: Responda à dúvida UTILIZANDO DADOS E TRECHOS DOS PDFs ANEXOS. Se o conteúdo não estiver no documento, avise o usuário.\n\n";
+        }
+
+        if (usaWeb) {
+            let spanLoad = document.getElementById('load-ia-text') || document.querySelector('#load-ia span');
+            if(spanLoad) spanLoad.textContent = "Raspando a Web (via Tavily)... ⏳";
+            
+            let queryBuscaWeb = p;
+            if (tipo === 'questoes') {
+                queryBuscaWeb = document.getElementById('ia-qts-tema').value || 'Atualidades e concursos';
+            } else if (tipo === 'flashcards') {
+                let m = document.getElementById('fc-mat').value || '';
+                let tp = document.getElementById('fc-top').value || '';
+                queryBuscaWeb = `${m} ${tp}`.trim() || 'Atualidades e concursos';
+            }
+
+            let dadosWeb = await buscarNaWeb(queryBuscaWeb);
+            if(dadosWeb) {
+                instrucaoFinal += `[RESULTADOS DA BUSCA NA WEB RECENTES]:\n${dadosWeb}\n\nUse essas informações atualizadas para formular sua resposta.\n\n`;
+                tagWeb = '(🌐 Busca Web via Tavily API)';
+            } else {
+                instrucaoFinal += `[AVISO]: A busca na web falhou devido a bloqueios. Responda apenas com o seu conhecimento interno.\n\n`;
+                tagWeb = '(⚠️ Busca Web Bloqueada)';
+            }
+        }
+        
+        let spanLoadRestaurar = document.getElementById('load-ia-text') || document.querySelector('#load-ia span');
+        if(spanLoadRestaurar) spanLoadRestaurar.textContent = (tipo === 'flashcards') ? "Construindo flashcards objetivos..." : (tipo === 'mapa_mental' ? "Desenhando Mapa Mental..." : "Analisando...");
+
+        if (tipo === 'mapa_mental') {
+            instrucaoFinal += `Atue como arquiteto visual de mapas mentais. Gere OBRIGATORIAMENTE um código Mermaid.js válido usando a sintaxe 'mindmap'.
 REGRAS RÍGIDAS:
 1. Comece com a palavra 'mindmap' na primeira linha.
 2. NUNCA use parênteses, colchetes ou chaves soltos nos textos das caixas. Se usar, coloque o texto entre aspas duplas: id("texto").
@@ -2512,45 +2507,48 @@ REGRAS RÍGIDAS:
 4. Monte um mapa hierárquico, rico, bem estruturado e focado no assunto pedido.
 
 PROMPT DO USUÁRIO: ${p}`;
-                } else {
-                    instrucaoFinal += `PROMPT DO USUÁRIO: ${p}`;
-                }
+        } else {
+            instrucaoFinal += `PROMPT DO USUÁRIO: ${p}`;
+        }
 
-                partesDaMensagem.push({ text: instrucaoFinal });
+        partesDaMensagem.push({ text: instrucaoFinal });
+        
+        let reqBody = { contents: [] };
+
+        if (tipo === 'chat' || tipo === 'mapa_mental') {
+            let msgElements = Array.from(document.querySelectorAll('#box-chat .msg')).filter(el => el.id !== 'load-ia');
+            let recentMsgs = msgElements.slice(-7, -1); 
+            
+            let historyContents = [];
+            for (let el of recentMsgs) {
+                let role = el.classList.contains('msg-u') ? "user" : "model";
+                if (el.innerText.includes("Pruma IA ativada, como posso te ajudar?")) continue;
                 
-                let reqBody = { contents: [] };
-
-                if (tipo === 'chat' || tipo === 'mapa_mental') {
-                    let msgElements = Array.from(document.querySelectorAll('#box-chat .msg')).filter(el => el.id !== 'load-ia');
-                    let recentMsgs = msgElements.slice(-7, -1); 
-                    
-                    let historyContents = [];
-                    for (let el of recentMsgs) {
-                        let role = el.classList.contains('msg-u') ? "user" : "model";
-                        if (el.innerText.includes("Pruma IA ativada, como posso te ajudar?")) continue;
-                        
-                        let text = el.innerText.replace(/🛡️ PRUMA IA.*/g, "").replace(/🔍 Aprofundar.*/g, "").replace(/📚 Salvar no Caderno/g, "").trim();
-                        if (text) {
-                            if (historyContents.length > 0 && historyContents[historyContents.length - 1].role === role) {
-                                historyContents[historyContents.length - 1].parts[0].text += `\n\n${text}`;
-                            } else {
-                                historyContents.push({ role: role, parts: [{ text: text }] });
-                            }
-                        }
+                let text = el.innerText.replace(/🛡️ PRUMA IA.*/g, "").replace(/🔍 Aprofundar.*/g, "").replace(/📚 Salvar no Caderno/g, "").trim();
+                if (text) {
+                    if (historyContents.length > 0 && historyContents[historyContents.length - 1].role === role) {
+                        historyContents[historyContents.length - 1].parts[0].text += `\n\n${text}`;
+                    } else {
+                        historyContents.push({ role: role, parts: [{ text: text }] });
                     }
-                    
-                    while(historyContents.length > 0 && historyContents[0].role !== 'user') {
-                        historyContents.shift();
-                    }
-                    
-                    if (historyContents.length > 0 && historyContents[historyContents.length - 1].role === 'user') {
-                        historyContents.pop();
-                    }
-                    
-                    reqBody.contents = [...historyContents, { role: "user", parts: partesDaMensagem }];
-                } else {
-                    reqBody.contents = [{ role: "user", parts: partesDaMensagem }];
                 }
+            }
+            
+            while(historyContents.length > 0 && historyContents[0].role !== 'user') {
+                historyContents.shift();
+            }
+            
+            if (historyContents.length > 0 && historyContents[historyContents.length - 1].role === 'user') {
+                historyContents.pop();
+            }
+            
+            reqBody.contents = [...historyContents, { role: "user", parts: partesDaMensagem }];
+        } else {
+            reqBody.contents = [{ role: "user", parts: partesDaMensagem }];
+        }
+
+        // --- ATENÇÃO: ABAIXO DESTE PONTO SEGUE O CÓDIGO DA REQUISIÇÃO (fetch) AO GEMINI. ---
+        // Certifique-se de que não apaga o final da função original a partir do fetch.
 
                 async function chamarGemini(modelo) {
                     let res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelo}:generateContent?key=${k}`, { 
