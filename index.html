@@ -2425,17 +2425,28 @@
                            if(doc.nome.toLowerCase().endsWith('.pdf') || (doc.url && doc.url.includes('.pdf'))) {
                                 try {
                                     let spanLoad = document.getElementById('load-ia-text') || document.querySelector('#load-ia span');
-                                    if(spanLoad) spanLoad.textContent = "Preparando documento de alta capacidade... ⏳";
-                                    
-                                    let resBlob;
-                                    try { resBlob = await fetch(doc.url); } catch(e) { resBlob = await fetch(`https://corsproxy.io/?${encodeURIComponent(doc.url)}`); }
+                                    if(spanLoad) spanLoad.textContent = "A transferir e processar documento... ⏳";
+
+                                    // 1. Efetua a transferência a partir do Firebase
+                                    let resBlob = await fetch(doc.url);
+
+                                    // 2. Se o Firebase bloquear por CORS, tenta utilizar o proxy
+                                    if (!resBlob.ok) {
+                                        resBlob = await fetch(`https://corsproxy.io/?${encodeURIComponent(doc.url)}`);
+                                    }
+
+                                    // 3. Se falhar definitivamente, interrompe para não enviar erros ao Gemini 3.5
+                                    if (!resBlob.ok) {
+                                        throw new Error("Erro de permissão no Firebase Storage (HTTP " + resBlob.status + ")");
+                                    }
+
                                     let blob = await resBlob.blob();
 
-                                    // Faz o upload temporário (File API) e recupera a URI
+                                    // 4. Envia o ficheiro validado para a File API do Google
                                     let apiKeyGemini = localStorage.getItem('pruma_apikey');
                                     let fileUriGerada = await uploadParaGeminiFileAPI(blob, apiKeyGemini);
                                     
-                                    // Passa a URI leve e mágica para o Gemini, substituindo o Base64 pesado
+                                    // 5. Passa o URI para o modelo Gemini 3.5 Flash Lite
                                     partesDaMensagem.push({ 
                                         fileData: { 
                                             mimeType: "application/pdf", 
@@ -2444,13 +2455,10 @@
                                     });
 
                                 } catch(err) {
-                                    console.error("Erro ao usar a File API:", err);
+                                    console.error("Erro ao processar PDF com a File API:", err);
                                     if(doc.texto) textoContexto += `\n--- Fonte [\({doc.nome}] (Extração Parcial) ---\n\){doc.texto}\n`;
                                 }
-                            } else if (doc.texto) {
-                                textoContexto += `\n--- Fonte [\({doc.nome}] ---\n\){doc.texto}\n`;
                             }
-                        }
                     }
                 }
 
