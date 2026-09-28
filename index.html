@@ -678,7 +678,7 @@
         </div>
     </main>
 
-    <div id="modal-apikey" class="modal">
+   <div id="modal-apikey" class="modal">
         <div class="modal-content" style="max-width:560px;">
             <button class="modal-close" style="position:absolute; top:16px; right:16px; background:transparent; border:none; font-size:1.5rem; cursor:pointer; color:var(--brand-danger); font-weight:700; z-index:10;" onclick="document.getElementById('modal-apikey').style.display='none'">✖</button>
             <div style="display:flex; align-items:flex-start; gap:16px; margin-bottom:20px;">
@@ -691,25 +691,29 @@
                     3️⃣ Copie e cole aqui embaixo!
                 </div>
             </div>
+            
             <div style="margin-bottom:16px; text-align:center;">
                 <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color:var(--brand-primary); font-weight:700; text-decoration:none; font-size:1rem;">🌐 Clique aqui para abrir o Google AI Studio e pegar sua API Key</a>
             </div>
-            <input type="password" id="input-api-key" placeholder="Cole sua API Key aqui...">
-            <div class="form-group" style="margin-top: 15px; margin-bottom: 15px;">
-    <label for="seletor-modelo">🧠 Modelo de Inteligência Artificial:</label>
-    <select id="seletor-modelo" onchange="localStorage.setItem('pruma_modelo', this.value)" style="width: 100%; padding: 8px; border-radius: 5px; border: 1px solid #ccc; background-color: #2b2b2b; color: white;">
-        <option value="gemini-3.5-flash-lite">Gemini 3.5 Flash-Lite (Rápido - Para o dia a dia)</option>
-        <option value="gemini-3.5-flash">Gemini 3.5 Flash Normal (Forte - Para PDFs longos)</option>
-    </select>
-</div>
+            
+            <input type="password" id="input-api-key" placeholder="Cole sua API Key aqui..." style="margin-bottom: 15px;">
+            
+            <!-- SELETOR DE MODELO -->
+            <div class="form-group" style="margin-bottom: 20px; text-align: left;">
+                <label for="seletor-modelo" style="font-size:0.85rem; font-weight:700; color:var(--text-muted); display:block; margin-bottom:6px;">🧠 Modelo de Inteligência Artificial:</label>
+                <select id="seletor-modelo" onchange="localStorage.setItem('pruma_modelo', this.value)" style="width: 100%; padding: 10px; border-radius: 5px; border: 1px solid var(--border-color); background-color: var(--bg-input); color: var(--text-main); font-size: 0.9rem;">
+                    <option value="gemini-3.5-flash-lite">Gemini 3.5 Flash-Lite (Rápido - Dia a dia e Simulados)</option>
+                    <option value="gemini-3.5-flash">Gemini 3.5 Flash Normal (Forte - PDFs grandes e profundos)</option>
+                </select>
+            </div>
+            <script>
+                if(localStorage.getItem('pruma_modelo')) {
+                    document.getElementById('seletor-modelo').value = localStorage.getItem('pruma_modelo');
+                }
+            </script>
+            <!-- FIM DO SELETOR -->
 
-<script>
-    // Quando a página carrega, ele puxa a opção que o usuário tinha escolhido antes
-    if(localStorage.getItem('pruma_modelo')) {
-        document.getElementById('seletor-modelo').value = localStorage.getItem('pruma_modelo');
-    }
-</script>
-            <button class="btn-primary" onclick="salvarApiKey()">Salvar Chave</button>
+            <button class="btn-primary" onclick="salvarApiKey()" style="width: 100%;">Salvar Configurações</button>
         </div>
     </div>
 
