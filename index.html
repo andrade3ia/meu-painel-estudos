@@ -695,6 +695,20 @@
                 <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color:var(--brand-primary); font-weight:700; text-decoration:none; font-size:1rem;">🌐 Clique aqui para abrir o Google AI Studio e pegar sua API Key</a>
             </div>
             <input type="password" id="input-api-key" placeholder="Cole sua API Key aqui...">
+            <div class="form-group" style="margin-top: 15px; margin-bottom: 15px;">
+    <label for="seletor-modelo">🧠 Modelo de Inteligência Artificial:</label>
+    <select id="seletor-modelo" onchange="localStorage.setItem('pruma_modelo', this.value)" style="width: 100%; padding: 8px; border-radius: 5px; border: 1px solid #ccc; background-color: #2b2b2b; color: white;">
+        <option value="gemini-3.5-flash-lite">Gemini 3.5 Flash-Lite (Rápido - Para o dia a dia)</option>
+        <option value="gemini-3.5-flash">Gemini 3.5 Flash Normal (Forte - Para PDFs longos)</option>
+    </select>
+</div>
+
+<script>
+    // Quando a página carrega, ele puxa a opção que o usuário tinha escolhido antes
+    if(localStorage.getItem('pruma_modelo')) {
+        document.getElementById('seletor-modelo').value = localStorage.getItem('pruma_modelo');
+    }
+</script>
             <button class="btn-primary" onclick="salvarApiKey()">Salvar Chave</button>
         </div>
     </div>
@@ -2563,7 +2577,8 @@ PROMPT DO USUÁRIO: ${p}`;
                     return data.candidates[0].content.parts[0].text;
                 }
 
-                let txtF = await chamarGemini("gemini-3.5-flash");
+                let modeloEscolhido = localStorage.getItem('pruma_modelo') || 'gemini-3.5-flash-lite';
+                let txtF = await chamarGemini(modeloEscolhido);
                 
                 let l = document.getElementById('load-ia'); if(l) l.remove();
                 
