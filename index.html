@@ -158,6 +158,37 @@
         .dia-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--brand-warning); position: absolute; bottom: 6px; left: 50%; transform: translateX(-50%); display: none; box-shadow: 0 0 4px rgba(0,0,0,0.2); }
         .dia-semana-card.tem-missao .dia-dot { display: block; }
 
+        /* MENTOR FLUTUANTE CSS */
+        .mentor-flutuante-btn {
+            position: fixed; bottom: 24px; right: 24px; width: 60px; height: 60px;
+            border-radius: 50%; background: var(--brand-primary); color: white;
+            font-size: 28px; display: flex; justify-content: center; align-items: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3); cursor: pointer; z-index: 9999;
+            border: none; transition: transform 0.2s;
+        }
+        .mentor-flutuante-btn:hover { transform: scale(1.1); }
+        
+        .mentor-flutuante-box {
+            position: fixed; bottom: 95px; right: 24px; width: 350px; max-width: 90vw;
+            height: 500px; max-height: 70vh; background: var(--bg-card);
+            border: 1px solid var(--border-color); border-radius: var(--radius-md);
+            box-shadow: var(--shadow-md); z-index: 9999; display: none;
+            flex-direction: column; overflow: hidden;
+        }
+        .mentor-header {
+            background: var(--brand-primary); color: white; padding: 12px 16px;
+            font-weight: 700; display: flex; justify-content: space-between; align-items: center;
+        }
+        .mentor-body {
+            flex: 1; padding: 16px; overflow-y: auto; display: flex;
+            flex-direction: column; gap: 12px; background: var(--bg-body);
+        }
+        .mentor-footer {
+            padding: 12px; background: var(--bg-card); border-top: 1px solid var(--border-color);
+            display: flex; gap: 8px; align-items: center;
+        }
+        .mentor-footer input { margin: 0; flex: 1; font-size: 0.9rem; padding: 10px; }
+
         @media(max-width: 768px) {
             body { flex-direction: column; }
             .mobile-header { display: flex; }
@@ -825,6 +856,22 @@
         </div>
     </div>
 
+    <!-- MENTOR FLUTUANTE -->
+    <button class="mentor-flutuante-btn" onclick="toggleMentor()" title="Falar com Mentor PRUMA">👨‍🏫</button>
+    <div class="mentor-flutuante-box" id="mentor-box">
+        <div class="mentor-header">
+            <span>🧠 Mentor Especialista</span>
+            <button style="background:none; border:none; color:white; font-size:1.2rem; cursor:pointer;" onclick="toggleMentor()">✖</button>
+        </div>
+        <div class="mentor-body" id="mentor-chat-body">
+            <div class="msg msg-a">Olá! Sou seu Mentor PRUMA. Especialista em concursos, leis e técnicas de estudo. Como posso guiar sua aprovação hoje?</div>
+        </div>
+        <div class="mentor-footer">
+            <input type="text" id="mentor-input" placeholder="Pergunte ao mentor..." onkeydown="if(event.key==='Enter') enviarMsgMentor()">
+            <button class="btn-primary" style="width:auto; padding:8px 16px;" onclick="enviarMsgMentor()">Enviar</button>
+        </div>
+    </div>
+
     <script>
         mermaid.initialize({ startOnLoad: false, theme: 'default', mindmap: { padding: 20 } });
         let svgMapaAtual = '';
@@ -882,6 +929,75 @@
                 }
             });
         });
+
+        // ======================= LOGICA MENTOR FLUTUANTE =======================
+        function toggleMentor() {
+            let b = document.getElementById('mentor-box');
+            b.style.display = (b.style.display === 'flex') ? 'none' : 'flex';
+        }
+
+        async function enviarMsgMentor() {
+            let inp = document.getElementById('mentor-input');
+            let txt = inp.value.trim();
+            if(!txt) return;
+
+            let body = document.getElementById('mentor-chat-body');
+            body.insertAdjacentHTML('beforeend', `<div class="msg msg-u">${sanitizeText(txt)}</div>`);
+            inp.value = '';
+            body.scrollTop = body.scrollHeight;
+
+            let k = localStorage.getItem('pruma_apikey');
+            if(!k) {
+                body.insertAdjacentHTML('beforeend', `<div class="msg msg-a" style="color:var(--brand-danger);">⚠️ Configure sua API Key na aba Minha Conta para falar com o Mentor.</div>`);
+                return;
+            }
+
+            body.insertAdjacentHTML('beforeend', `<div class="msg msg-a" id="load-mentor">Refletindo... ⏳</div>`);
+            body.scrollTop = body.scrollHeight;
+
+            let msgs = Array.from(body.querySelectorAll('.msg')).filter(el => el.id !== 'load-mentor');
+            let history = [];
+            let instrucao = `Você é o Mentor PRUMA, um especialista de alto nível em concursos públicos brasileiros, direito, técnicas de estudo, planejamento estratégico e ciclo de revisões. Você flutua no painel do aluno para tirar qualquer dúvida que ele tenha durante a sessão de estudos. Seja altamente assertivo, empático, direto, e utilize formatação em Markdown sempre que precisar listar dicas, criar mini-tabelas ou enfatizar termos importantes.`;
+
+            msgs.forEach(el => {
+                let text = el.innerText.replace(/Ol\u00e1! Sou seu Mentor PRUMA.*/g, "").trim();
+                if(!text) return;
+                let role = el.classList.contains('msg-u') ? "user" : "model";
+                if(history.length > 0 && history[history.length-1].role === role) {
+                    history[history.length-1].parts[0].text += `\n\n${text}`;
+                } else {
+                    history.push({role: role, parts: [{text: text}]});
+                }
+            });
+
+            if(history.length > 0 && history[history.length-1].role === 'user') {
+                 history[history.length-1].parts[0].text = `[Instruções do Sistema: ${instrucao}]\n\nPergunta do Aluno: ${history[history.length-1].parts[0].text}`;
+            }
+
+            try {
+                let modeloEscolhido = localStorage.getItem('pruma_modelo') || 'gemini-3.5-flash-lite';
+                let res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modeloEscolhido}:generateContent?key=${k}`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ contents: history })
+                });
+
+                if(!res.ok) throw new Error(await res.text());
+                let data = await res.json();
+                let txtF = data.candidates[0].content.parts[0].text;
+
+                let l = document.getElementById('load-mentor'); if(l) l.remove();
+                
+                let parsedHTML = sanitizeText(marked.parse(txtF));
+                body.insertAdjacentHTML('beforeend', `<div class="msg msg-a" style="max-width:100%;"><div class="conteudo-resposta-ia">${parsedHTML}</div></div>`);
+                body.scrollTop = body.scrollHeight;
+
+            } catch(e) {
+                let l = document.getElementById('load-mentor'); if(l) l.remove();
+                body.insertAdjacentHTML('beforeend', `<div class="msg msg-a" style="color:var(--brand-danger);">⚠️ Erro: ${e.message}</div>`);
+            }
+        }
+        // ========================================================================
 
         function toggleWebCapsule(btn) {
             btn.classList.toggle('active');
@@ -1576,7 +1692,7 @@
                                     <span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; flex:1; max-width:140px;" title="${sanitizeText(s.topico||'Geral')}">${s.topico||'Geral'}</span><span style="flex-shrink:0;">| ⏱️ ${timeStr} | 🎯 ${accStr}</span>
                                 </span>
                             </div>
-                            <div class="acoes-reg"><button style="background:transparent;border:none;cursor:pointer;font-size:1rem;" title="Editar" onclick="editarRegistro('${s.id}')">✏️</button><button class="btn-x-vermelho" onclick="if(confirm('Excluir?')) refDb.child('sessoes/${s.id}').remove()">✖</button></div>
+                            <div class="acoes-reg"><button style="background:transparent;border:none;cursor:pointer;font-size:1rem;" title="Editar" onclick="editarRegistro('${s.id}')">✏️️</button><button class="btn-x-vermelho" onclick="if(confirm('Excluir?')) refDb.child('sessoes/${s.id}').remove()">✖</button></div>
                         </div>
                         ${obsHtml}
                     </div>`;
@@ -2363,161 +2479,161 @@
         }
 
         async function uploadParaGeminiFileAPI(blob, apiKey) {
-    const url = `https://generativelanguage.googleapis.com/upload/v1beta/files?key=${apiKey}`;
-    const response = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/pdf' },
-        body: blob
-    });
-    if (!response.ok) {
-        const errText = await response.text();
-        throw new Error(`Erro na File API: ${errText}`);
-    }
-    const data = await response.json();
-    return data.file.uri; 
-}
+            const url = `https://generativelanguage.googleapis.com/upload/v1beta/files?key=${apiKey}`;
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/pdf' },
+                body: blob
+            });
+            if (!response.ok) {
+                const errText = await response.text();
+                throw new Error(`Erro na File API: ${errText}`);
+            }
+            const data = await response.json();
+            return data.file.uri; 
+        }
 
         async function executarIA(tipo, promptEspecifico = null, textoExibicao = null) {
-    let k = localStorage.getItem('pruma_apikey'); 
-    if(!k) return alert("Configure a API Key na aba Minha Conta.");
-    
-    let p = "", box = null; 
-    let niveisSelecionados = [];
-
-    if(tipo === 'questoes') {
-        document.querySelectorAll('.chk-nivel-q:checked').forEach(el => niveisSelecionados.push(el.value));
-        if(niveisSelecionados.length === 0) return alert("Selecione um nível.");
-        let qtd = document.getElementById('ia-qts-num').value || '5';
-        let t = document.getElementById('ia-qts-tema').value || 'Geral';
-        p = `Gere ${qtd} questões em formato JSON puro sobre: ${t}. Níveis: [${niveisSelecionados.join(', ')}]. Formato estrito JSON array de objetos contendo exatamente as chaves "enunciado", "alternativas", "correta", "comentario", "nivel". Sem formatação markdown extra.`;
-        box = document.getElementById('box-qts'); box.style.display='flex'; box.innerHTML='';
-    } else if(tipo === 'flashcards') {
-        document.querySelectorAll('.chk-nivel-fc:checked').forEach(el => niveisSelecionados.push(el.value));
-        if(niveisSelecionados.length === 0) return alert("Selecione um nível.");
-        let qtd = document.getElementById('fc-num').value || '5';
-        let m = sanitizeText(document.getElementById('fc-mat').value) || 'Geral';
-        let tp = sanitizeText(document.getElementById('fc-top').value) || 'Geral';
-        p = `Gere ${qtd} flashcards TÉCNICOS e DIRETOS para Matéria: "${m}" e Tópico: "${tp}". Níveis: ${niveisSelecionados.join(', ')}.
-        REGRAS RÍGIDAS PARA FLASHCARDS:
-        1. Seja sucinto, objetivo e focado APENAS no núcleo do tópico.
-        2. MÁXIMO DE 5 LINHAS por resposta.
-        3. Use formatação (negrito, pequenas listas) para facilitar a leitura.
-        Retorne JSON puro em array de objetos com as chaves "f", "v", "nivel".`;
-        box = document.getElementById('box-fc'); box.style.display='block'; box.innerHTML='';
-    } else if(tipo === 'mapa_mental') {
-        p = promptEspecifico || document.getElementById('inp-chat').value.trim();
-        if(!p) p = "Crie um mapa mental sobre Direito e seus ramos principais.";
-        box = document.getElementById('box-chat');
-        box.insertAdjacentHTML('beforeend', `<div class="msg msg-u">🧠 Gerar Mapa Mental: ${sanitizeText(p)}</div>`); 
-        document.getElementById('inp-chat').value=''; 
-        box.scrollTop = box.scrollHeight;
-    } else if(tipo === 'chat') {
-        p = promptEspecifico || document.getElementById('inp-chat').value.trim(); if(!p) return;
-        box = document.getElementById('box-chat');
-        let exibicao = textoExibicao || p;
-        box.insertAdjacentHTML('beforeend', `<div class="msg msg-u">${sanitizeText(exibicao)}</div>`); 
-        if(!promptEspecifico) { 
-            document.getElementById('inp-chat').value=''; 
-        }
-        box.scrollTop = box.scrollHeight;
-    }
-
-    let baseSys = obterPromptDoSistema(tipo, p);
-    
-    try {
-        if(tipo !== 'flashcards') { 
-            box.insertAdjacentHTML('beforeend', `<div class="msg msg-a" id="load-ia"><span id="load-ia-text">Analisando...</span> ⏳</div>`);
-            box.scrollTop = box.scrollHeight; 
-        } else { 
-            box.innerHTML = `<div id="load-ia" style="color:var(--brand-primary); font-weight:600;"><span>Construindo flashcards objetivos...</span> ⏳</div>`; 
-        }
-
-        let partesDaMensagem = [];
-        let textoContexto = "";
-        
-        if (tipo === 'chat' || tipo === 'questoes' || tipo === 'flashcards' || tipo === 'mapa_mental') {
-            let idContainer = (tipo === 'chat' || tipo === 'mapa_mental') ? 'chk-container-chat' : (tipo === 'questoes' ? 'chk-container-simulador' : 'chk-container-flashcards');
-            let chksSelecionados = document.querySelectorAll(`#${idContainer} .chk-fonte-biblioteca:checked`);
+            let k = localStorage.getItem('pruma_apikey'); 
+            if(!k) return alert("Configure a API Key na aba Minha Conta.");
             
-            for(let chk of chksSelecionados) {
-                let doc = dbData.biblioteca.find(d => d.fbKey === chk.value);
-                if(doc) {
-                    if(doc.nome.toLowerCase().endsWith('.pdf') || (doc.url && doc.url.includes('.pdf'))) {
-                        try {
-                            let spanLoad = document.getElementById('load-ia-text') || document.querySelector('#load-ia span');
-                            if(spanLoad) spanLoad.textContent = "Baixando e processando documento... ⏳";
+            let p = "", box = null; 
+            let niveisSelecionados = [];
 
-                            let resBlob = await fetch(doc.url);
+            if(tipo === 'questoes') {
+                document.querySelectorAll('.chk-nivel-q:checked').forEach(el => niveisSelecionados.push(el.value));
+                if(niveisSelecionados.length === 0) return alert("Selecione um nível.");
+                let qtd = document.getElementById('ia-qts-num').value || '5';
+                let t = document.getElementById('ia-qts-tema').value || 'Geral';
+                p = `Gere ${qtd} questões em formato JSON puro sobre: ${t}. Níveis: [${niveisSelecionados.join(', ')}]. Formato estrito JSON array de objetos contendo exatamente as chaves "enunciado", "alternativas", "correta", "comentario", "nivel". Sem formatação markdown extra.`;
+                box = document.getElementById('box-qts'); box.style.display='flex'; box.innerHTML='';
+            } else if(tipo === 'flashcards') {
+                document.querySelectorAll('.chk-nivel-fc:checked').forEach(el => niveisSelecionados.push(el.value));
+                if(niveisSelecionados.length === 0) return alert("Selecione um nível.");
+                let qtd = document.getElementById('fc-num').value || '5';
+                let m = sanitizeText(document.getElementById('fc-mat').value) || 'Geral';
+                let tp = sanitizeText(document.getElementById('fc-top').value) || 'Geral';
+                p = `Gere ${qtd} flashcards TÉCNICOS e DIRETOS para Matéria: "${m}" e Tópico: "${tp}". Níveis: ${niveisSelecionados.join(', ')}.
+                REGRAS RÍGIDAS PARA FLASHCARDS:
+                1. Seja sucinto, objetivo e focado APENAS no núcleo do tópico.
+                2. MÁXIMO DE 5 LINHAS por resposta.
+                3. Use formatação (negrito, pequenas listas) para facilitar a leitura.
+                Retorne JSON puro em array de objetos com as chaves "f", "v", "nivel".`;
+                box = document.getElementById('box-fc'); box.style.display='block'; box.innerHTML='';
+            } else if(tipo === 'mapa_mental') {
+                p = promptEspecifico || document.getElementById('inp-chat').value.trim();
+                if(!p) p = "Crie um mapa mental sobre Direito e seus ramos principais.";
+                box = document.getElementById('box-chat');
+                box.insertAdjacentHTML('beforeend', `<div class="msg msg-u">🧠 Gerar Mapa Mental: ${sanitizeText(p)}</div>`); 
+                document.getElementById('inp-chat').value=''; 
+                box.scrollTop = box.scrollHeight;
+            } else if(tipo === 'chat') {
+                p = promptEspecifico || document.getElementById('inp-chat').value.trim(); if(!p) return;
+                box = document.getElementById('box-chat');
+                let exibicao = textoExibicao || p;
+                box.insertAdjacentHTML('beforeend', `<div class="msg msg-u">${sanitizeText(exibicao)}</div>`); 
+                if(!promptEspecifico) { 
+                    document.getElementById('inp-chat').value=''; 
+                }
+                box.scrollTop = box.scrollHeight;
+            }
 
-                            if (!resBlob.ok) {
-                                resBlob = await fetch(`https://corsproxy.io/?${encodeURIComponent(doc.url)}`);
+            let baseSys = obterPromptDoSistema(tipo, p);
+            
+            try {
+                if(tipo !== 'flashcards') { 
+                    box.insertAdjacentHTML('beforeend', `<div class="msg msg-a" id="load-ia"><span id="load-ia-text">Analisando...</span> ⏳</div>`);
+                    box.scrollTop = box.scrollHeight; 
+                } else { 
+                    box.innerHTML = `<div id="load-ia" style="color:var(--brand-primary); font-weight:600;"><span>Construindo flashcards objetivos...</span> ⏳</div>`; 
+                }
+
+                let partesDaMensagem = [];
+                let textoContexto = "";
+                
+                if (tipo === 'chat' || tipo === 'questoes' || tipo === 'flashcards' || tipo === 'mapa_mental') {
+                    let idContainer = (tipo === 'chat' || tipo === 'mapa_mental') ? 'chk-container-chat' : (tipo === 'questoes' ? 'chk-container-simulador' : 'chk-container-flashcards');
+                    let chksSelecionados = document.querySelectorAll(`#${idContainer} .chk-fonte-biblioteca:checked`);
+                    
+                    for(let chk of chksSelecionados) {
+                        let doc = dbData.biblioteca.find(d => d.fbKey === chk.value);
+                        if(doc) {
+                            if(doc.nome.toLowerCase().endsWith('.pdf') || (doc.url && doc.url.includes('.pdf'))) {
+                                try {
+                                    let spanLoad = document.getElementById('load-ia-text') || document.querySelector('#load-ia span');
+                                    if(spanLoad) spanLoad.textContent = "Baixando e processando documento... ⏳";
+
+                                    let resBlob = await fetch(doc.url);
+
+                                    if (!resBlob.ok) {
+                                        resBlob = await fetch(`https://corsproxy.io/?${encodeURIComponent(doc.url)}`);
+                                    }
+
+                                    if (!resBlob.ok) {
+                                        throw new Error("Erro de permissão no Firebase Storage (HTTP " + resBlob.status + ")");
+                                    }
+
+                                    let blob = await resBlob.blob();
+                                    let apiKeyGemini = localStorage.getItem('pruma_apikey');
+                                    let fileUriGerada = await uploadParaGeminiFileAPI(blob, apiKeyGemini);
+                                    
+                                    partesDaMensagem.push({ 
+                                        fileData: { 
+                                            mimeType: "application/pdf", 
+                                            fileUri: fileUriGerada 
+                                        } 
+                                    });
+                                } catch(err) {
+                                    console.error("Erro ao processar PDF com a File API:", err);
+                                    if(doc.texto) textoContexto += `\n--- Fonte [${doc.nome}] (Extração Parcial) ---\n${doc.texto}\n`;
+                                }
+                            } else if (doc.texto) {
+                                textoContexto += `\n--- Fonte [${doc.nome}] ---\n${doc.texto}\n`;
                             }
-
-                            if (!resBlob.ok) {
-                                throw new Error("Erro de permissão no Firebase Storage (HTTP " + resBlob.status + ")");
-                            }
-
-                            let blob = await resBlob.blob();
-                            let apiKeyGemini = localStorage.getItem('pruma_apikey');
-                            let fileUriGerada = await uploadParaGeminiFileAPI(blob, apiKeyGemini);
-                            
-                            partesDaMensagem.push({ 
-                                fileData: { 
-                                    mimeType: "application/pdf", 
-                                    fileUri: fileUriGerada 
-                                } 
-                            });
-                        } catch(err) {
-                            console.error("Erro ao processar PDF com a File API:", err);
-                            if(doc.texto) textoContexto += `\n--- Fonte [${doc.nome}] (Extração Parcial) ---\n${doc.texto}\n`;
                         }
-                    } else if (doc.texto) {
-                        textoContexto += `\n--- Fonte [${doc.nome}] ---\n${doc.texto}\n`;
                     }
                 }
-            }
-        }
 
-        let chkWebId = (tipo === 'chat' || tipo === 'mapa_mental') ? 'chk-busca-web' : (tipo === 'questoes' ? 'chk-busca-web-qts' : 'chk-busca-web-fc');
-        let chkWeb = document.getElementById(chkWebId);
-        let usaWeb = (chkWeb && chkWeb.checked);
-        let tagWeb = '';
+                let chkWebId = (tipo === 'chat' || tipo === 'mapa_mental') ? 'chk-busca-web' : (tipo === 'questoes' ? 'chk-busca-web-qts' : 'chk-busca-web-fc');
+                let chkWeb = document.getElementById(chkWebId);
+                let usaWeb = (chkWeb && chkWeb.checked);
+                let tagWeb = '';
 
-        let instrucaoFinal = `${baseSys}\n\n`;
-        if(textoContexto) instrucaoFinal += `[FONTES DE TEXTO/SITES DA NUVEM]:\n${textoContexto}\n\n`;
-        
-        if(partesDaMensagem.length > 0) {
-            instrucaoFinal += "[ATENÇÃO: FONTES OBRIGATÓRIAS EM ANEXO]: Responda à dúvida UTILIZANDO DADOS E TRECHOS DOS PDFs ANEXOS. Se o conteúdo não estiver no documento, avise o usuário.\n\n";
-        }
+                let instrucaoFinal = `${baseSys}\n\n`;
+                if(textoContexto) instrucaoFinal += `[FONTES DE TEXTO/SITES DA NUVEM]:\n${textoContexto}\n\n`;
+                
+                if(partesDaMensagem.length > 0) {
+                    instrucaoFinal += "[ATENÇÃO: FONTES OBRIGATÓRIAS EM ANEXO]: Responda à dúvida UTILIZANDO DADOS E TRECHOS DOS PDFs ANEXOS. Se o conteúdo não estiver no documento, avise o usuário.\n\n";
+                }
 
-        if (usaWeb) {
-            let spanLoad = document.getElementById('load-ia-text') || document.querySelector('#load-ia span');
-            if(spanLoad) spanLoad.textContent = "Raspando a Web (via Tavily)... ⏳";
-            
-            let queryBuscaWeb = p;
-            if (tipo === 'questoes') {
-                queryBuscaWeb = document.getElementById('ia-qts-tema').value || 'Atualidades e concursos';
-            } else if (tipo === 'flashcards') {
-                let m = document.getElementById('fc-mat').value || '';
-                let tp = document.getElementById('fc-top').value || '';
-                queryBuscaWeb = `${m} ${tp}`.trim() || 'Atualidades e concursos';
-            }
+                if (usaWeb) {
+                    let spanLoad = document.getElementById('load-ia-text') || document.querySelector('#load-ia span');
+                    if(spanLoad) spanLoad.textContent = "Raspando a Web (via Tavily)... ⏳";
+                    
+                    let queryBuscaWeb = p;
+                    if (tipo === 'questoes') {
+                        queryBuscaWeb = document.getElementById('ia-qts-tema').value || 'Atualidades e concursos';
+                    } else if (tipo === 'flashcards') {
+                        let m = document.getElementById('fc-mat').value || '';
+                        let tp = document.getElementById('fc-top').value || '';
+                        queryBuscaWeb = `${m} ${tp}`.trim() || 'Atualidades e concursos';
+                    }
 
-            let dadosWeb = await buscarNaWeb(queryBuscaWeb);
-            if(dadosWeb) {
-                instrucaoFinal += `[RESULTADOS DA BUSCA NA WEB RECENTES]:\n${dadosWeb}\n\nUse essas informações atualizadas para formular sua resposta.\n\n`;
-                tagWeb = '(🌐 Busca Web via Tavily API)';
-            } else {
-                instrucaoFinal += `[AVISO]: A busca na web falhou devido a bloqueios. Responda apenas com o seu conhecimento interno.\n\n`;
-                tagWeb = '(⚠️ Busca Web Bloqueada)';
-            }
-        }
-        
-        let spanLoadRestaurar = document.getElementById('load-ia-text') || document.querySelector('#load-ia span');
-        if(spanLoadRestaurar) spanLoadRestaurar.textContent = (tipo === 'flashcards') ? "Construindo flashcards objetivos..." : (tipo === 'mapa_mental' ? "Desenhando Mapa Mental..." : "Analisando...");
+                    let dadosWeb = await buscarNaWeb(queryBuscaWeb);
+                    if(dadosWeb) {
+                        instrucaoFinal += `[RESULTADOS DA BUSCA NA WEB RECENTES]:\n${dadosWeb}\n\nUse essas informações atualizadas para formular sua resposta.\n\n`;
+                        tagWeb = '(🌐 Busca Web via Tavily API)';
+                    } else {
+                        instrucaoFinal += `[AVISO]: A busca na web falhou devido a bloqueios. Responda apenas com o seu conhecimento interno.\n\n`;
+                        tagWeb = '(⚠️ Busca Web Bloqueada)';
+                    }
+                }
+                
+                let spanLoadRestaurar = document.getElementById('load-ia-text') || document.querySelector('#load-ia span');
+                if(spanLoadRestaurar) spanLoadRestaurar.textContent = (tipo === 'flashcards') ? "Construindo flashcards objetivos..." : (tipo === 'mapa_mental' ? "Desenhando Mapa Mental..." : "Analisando...");
 
-        if (tipo === 'mapa_mental') {
-            instrucaoFinal += `Atue como arquiteto visual de mapas mentais. Gere OBRIGATORIAMENTE um código Mermaid.js válido usando a sintaxe 'mindmap'.
+                if (tipo === 'mapa_mental') {
+                    instrucaoFinal += `Atue como arquiteto visual de mapas mentais. Gere OBRIGATORIAMENTE um código Mermaid.js válido usando a sintaxe 'mindmap'.
 REGRAS RÍGIDAS:
 1. Comece com a palavra 'mindmap' na primeira linha.
 2. NUNCA use parênteses, colchetes ou chaves soltos nos textos das caixas. Se usar, coloque o texto entre aspas duplas: id("texto").
@@ -2525,48 +2641,45 @@ REGRAS RÍGIDAS:
 4. Monte um mapa hierárquico, rico, bem estruturado e focado no assunto pedido.
 
 PROMPT DO USUÁRIO: ${p}`;
-        } else {
-            instrucaoFinal += `PROMPT DO USUÁRIO: ${p}`;
-        }
-
-        partesDaMensagem.push({ text: instrucaoFinal });
-        
-        let reqBody = { contents: [] };
-
-        if (tipo === 'chat' || tipo === 'mapa_mental') {
-            let msgElements = Array.from(document.querySelectorAll('#box-chat .msg')).filter(el => el.id !== 'load-ia');
-            let recentMsgs = msgElements.slice(-7, -1); 
-            
-            let historyContents = [];
-            for (let el of recentMsgs) {
-                let role = el.classList.contains('msg-u') ? "user" : "model";
-                if (el.innerText.includes("Pruma IA ativada, como posso te ajudar?")) continue;
-                
-                let text = el.innerText.replace(/🛡️ PRUMA IA.*/g, "").replace(/🔍 Aprofundar.*/g, "").replace(/📚 Salvar no Caderno/g, "").trim();
-                if (text) {
-                    if (historyContents.length > 0 && historyContents[historyContents.length - 1].role === role) {
-                        historyContents[historyContents.length - 1].parts[0].text += `\n\n${text}`;
-                    } else {
-                        historyContents.push({ role: role, parts: [{ text: text }] });
-                    }
+                } else {
+                    instrucaoFinal += `PROMPT DO USUÁRIO: ${p}`;
                 }
-            }
-            
-            while(historyContents.length > 0 && historyContents[0].role !== 'user') {
-                historyContents.shift();
-            }
-            
-            if (historyContents.length > 0 && historyContents[historyContents.length - 1].role === 'user') {
-                historyContents.pop();
-            }
-            
-            reqBody.contents = [...historyContents, { role: "user", parts: partesDaMensagem }];
-        } else {
-            reqBody.contents = [{ role: "user", parts: partesDaMensagem }];
-        }
 
-        // --- ATENÇÃO: ABAIXO DESTE PONTO SEGUE O CÓDIGO DA REQUISIÇÃO (fetch) AO GEMINI. ---
-        // Certifique-se de que não apaga o final da função original a partir do fetch.
+                partesDaMensagem.push({ text: instrucaoFinal });
+                
+                let reqBody = { contents: [] };
+
+                if (tipo === 'chat' || tipo === 'mapa_mental') {
+                    let msgElements = Array.from(document.querySelectorAll('#box-chat .msg')).filter(el => el.id !== 'load-ia');
+                    let recentMsgs = msgElements.slice(-7, -1); 
+                    
+                    let historyContents = [];
+                    for (let el of recentMsgs) {
+                        let role = el.classList.contains('msg-u') ? "user" : "model";
+                        if (el.innerText.includes("Pruma IA ativada, como posso te ajudar?")) continue;
+                        
+                        let text = el.innerText.replace(/🛡️️ PRUMA IA.*/g, "").replace(/🔍 Aprofundar.*/g, "").replace(/📚 Salvar no Caderno/g, "").trim();
+                        if (text) {
+                            if (historyContents.length > 0 && historyContents[historyContents.length - 1].role === role) {
+                                historyContents[historyContents.length - 1].parts[0].text += `\n\n${text}`;
+                            } else {
+                                historyContents.push({ role: role, parts: [{ text: text }] });
+                            }
+                        }
+                    }
+                    
+                    while(historyContents.length > 0 && historyContents[0].role !== 'user') {
+                        historyContents.shift();
+                    }
+                    
+                    if (historyContents.length > 0 && historyContents[historyContents.length - 1].role === 'user') {
+                        historyContents.pop();
+                    }
+                    
+                    reqBody.contents = [...historyContents, { role: "user", parts: partesDaMensagem }];
+                } else {
+                    reqBody.contents = [{ role: "user", parts: partesDaMensagem }];
+                }
 
                 async function chamarGemini(modelo) {
                     let res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelo}:generateContent?key=${k}`, { 
