@@ -806,7 +806,6 @@
             <button class="btn-primary" style="width:auto; padding:8px 16px;" onclick="enviarMsgMentor()">Enviar</button>
         </div>
     </div>
-
     <script>
         mermaid.initialize({ startOnLoad: false, theme: 'default', mindmap: { padding: 20 } });
         let svgMapaAtual = '';
@@ -884,7 +883,7 @@
             let history = [];
             let instrucao = `Você é o Mentor PRUMA, um especialista de alto nível em concursos públicos brasileiros, direito, técnicas de estudo, planejamento estratégico e ciclo de revisões. Você flutua no painel do aluno para tirar qualquer dúvida que ele tenha durante a sessão de estudos. Seja altamente assertivo, empático, direto, e utilize formatação em Markdown sempre que precisar listar dicas, criar mini-tabelas ou enfatizar termos importantes.`;
             msgs.forEach(el => {
-                let text = el.innerText.replace(/Ol\u00e1! Sou seu Mentor PRUMA.*/g, "").trim();
+                let text = el.innerText.replace(/Olá\! Sou seu Mentor PRUMA\./g, "").trim();
                 if(!text) return;
                 let role = el.classList.contains('msg-u') ? "user" : "model";
                 if(history.length > 0 && history[history.length-1].role === role) {
@@ -1135,7 +1134,7 @@
                 let isAtivo = dLocalIso === dataRefStr;
                 let temMissao = dbData.missoes && dbData.missoes.some(missao => missao.dataAlvo === dLocalIso && missao.status === 'pendente');
                 
-                html += `<div class="dia-semana-card ${isAtivo ? 'ativo' : ''} ${temMissao?'tem-missao':''}"onclick="selecionarDiaSemana('${dLocalIso}')">
+                html += `<div class="dia-semana-card ${isAtivo ? 'ativo' : ''} ${temMissao?'tem-missao':''}" onclick="selecionarDiaSemana('${dLocalIso}')">
                     <span class="dia-nome">${nomesDias[i]}</span>
                     <span class="dia-num">${d.getDate()}</span>
                     <div class="dia-dot"></div>
@@ -1210,11 +1209,11 @@
                 if(missoesGrupo.length === 3) {
                     missoesGrupo.forEach(mg => {
                         let fillClass = mg.status === 'concluida' ? 'fill' : '';
-                        htmlCiclos += `<div class="ciclo-dot ${fillClass}"title="${mg.tipo}"></div>`;
+                        htmlCiclos += `<div class="ciclo-dot ${fillClass}" title="${mg.tipo}"></div>`;
                     });
                 }
                 htmlList += `<div class="missao-card ${isChecked ? 'concluida' : ''}">
-                    <div class="custom-checkbox ${isChecked?'checked':''}"onclick="marcarMissao('${m.id}', ${!isChecked})"></div>
+                    <div class="custom-checkbox ${isChecked?'checked':''}" onclick="marcarMissao('${m.id}', ${!isChecked})"></div>
                     <div style="flex:1; min-width:0; margin-left:8px;" class="missao-titulo">
                         <div style="display:flex; align-items:center; gap:8px;">
                             <strong style="font-size:1rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${sanitizeText(m.materia)}</strong>
@@ -1546,7 +1545,7 @@
                                     <span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; flex:1; max-width:140px;" title="${sanitizeText(s.topico||'Geral')}">${s.topico||'Geral'}</span><span style="flex-shrink:0;">| ⏱️ ${timeStr} | 🎯 ${accStr}</span>
                                 </span>
                             </div>
-                            <div class="acoes-reg"><button style="background:transparent;border:none;cursor:pointer;font-size:1rem;" title="Editar" onclick="editarRegistro('${s.id}')">✏</button><button class="btn-x-vermelho"onclick="if(confirm('Excluir?'))refDb.child('sessoes/${s.id}').remove()">✖</button></div>
+                            <div class="acoes-reg"><button style="background:transparent;border:none;cursor:pointer;font-size:1rem;" title="Editar" onclick="editarRegistro('${s.id}')">✏</button><button class="btn-x-vermelho" onclick="if(confirm('Excluir?'))refDb.child('sessoes/${s.id}').remove()">✖</button></div>
                         </div>
                         ${obsHtml}
                     </div>`;
@@ -1580,7 +1579,7 @@
                 if(p.data) { let dias = Math.ceil((new Date(p.data) - new Date()) / (1000*60*60*24)); diasText = `Faltam ${dias} dias`; corD = (dias < 30) ? 'var(--brand-danger)' : 'var(--brand-primary)'; }
                 htmlFinal += `<div class="stat-card" style="position:relative;" title="${sanitizeText(p.nome)}">
                     <strong style="font-size: 1.5rem; color: var(--text-main); display: block; margin: 4px 0 8px 0; word-break: break-word;">${sanitizeText(p.nome)}</strong>
-                    <span style="font-size: 1.1rem; font-weight: 700; color: ${corD};display:block;margin-bottom:6px;">${diasText}</span>
+                    <span style="font-size: 1.1rem; font-weight: 700; color: ${corD}; display:block; margin-bottom:6px;">${diasText}</span>
                     <span style="font-weight: normal; font-size: 0.8rem; color: var(--text-muted);">📅 ${p.data || 'data indefinida'}</span>
                     <button class="btn-x-vermelho" style="position:absolute; top:8px; right:8px;" onclick="excluirProva('${p.id}')">✖</button>
                 </div>`;
@@ -1588,7 +1587,7 @@
             div.innerHTML = htmlFinal;
         }
         
-        document.getElementById('mat-paleta').innerHTML = paleta17.map(c => `<div style="width:28px; height:28px; border-radius:50%; background:${c};border:1px solid #CCC;cursor:pointer;"onclick="corAtualMateria='${c}'; document.querySelectorAll('#mat-paleta div').forEach(el=>el.style.border='1px solid #CCC'); this.style.border='2px solid var(--text-main)';"></div>`).join('');
+        document.getElementById('mat-paleta').innerHTML = paleta17.map(c => `<div style="width:28px; height:28px; border-radius:50%; background:${c}; border:1px solid #CCC; cursor:pointer;" onclick="corAtualMateria='${c}'; document.querySelectorAll('#mat-paleta div').forEach(el=>el.style.border='1px solid #CCC'); this.style.border='2px solid var(--text-main)';"></div>`).join('');
         
         function salvarMateria() {
             let n = sanitizeText(document.getElementById('mat-nome').value), t = sanitizeText(document.getElementById('mat-topico').value), pId = document.getElementById('mat-prova').value; if(!n) return;
@@ -1625,13 +1624,13 @@
                 let isGeral = p === 'geral'; let nomeP = isGeral ? 'Matérias Gerais' : (dbData.provas.find(x=>x.id===p)?.nome || 'Matérias Gerais');
                 let conteudoMat = grupos[p].map(m => {
                     if(!Array.isArray(m.topicos)) m.topicos = Object.values(m.topicos || {});
-                    let htmlT = m.topicos.map((t, i) => `<div style="padding:8px 0; border-bottom:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center; gap:8px;" title="${sanitizeText(t)}"><span style="overflow:hidden;text-overflow:ellipsis;min-width:0;flex:1;"title="${sanitizeText(t)}">📄 ${t}</span><div style="display:flex;align-items:center;gap:6px;flex-shrink:0;"><button style="background:transparent;border:none;cursor:pointer;font-size:1rem;"title="Editar Tópico"onclick="editarTopico('${m.id}', ${i})">✏️</button><button style="background:transparent;border:none;cursor:pointer;font-size:1rem;"title="Juntar Tópicos"onclick="abrirModalJuntar('${m.id}', '${sanitizeText(t).replace(/'/g,"\\'")}')">🔗</button> <button class="btn-x-vermelho" onclick="excluirTopicoMateria('${m.id}', ${i})">✖</button></div></div>`).join('');
-                    let vazioOpcao = `<div style="color:var(--text-muted);font-size:0.85rem; padding:6px 0; display:flex; justify-content:space-between; align-items:center;"><span>Sem tópicos.</span> <button class="btn-danger" style="padding:4px 8px; font-size:0.75rem;" onclick="if(confirm('Excluir?')){ dbData.materias=dbData.materias.filter(x=>x.id!='${m.id}'); refDb.child('materias').set(dbData.materias); }">Excluir Matéria</button></div>`;
-                    return `<div class="pasta-header" data-folder-id="${m.id}" style="border-left:5px solid ${m.cor};"onclick="this.nextElementSibling.classList.toggle('aberta')"title="${sanitizeText(m.nome)}"><span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1; min-width:0;" title="${sanitizeText(m.nome)}">📁 ${m.nome}(${m.topicos.length})</span><div style="display:flex; gap:8px; align-items:center;"><button style="background:transparent;border:none;cursor:pointer;font-size:1.1rem;" title="Mover para Prova" onclick="event.stopPropagation(); moverMateriaParaProva('${m.id}')">🔄</button><button class="btn-x-vermelho" style="flex-shrink:0;" onclick="event.stopPropagation(); if(confirm('Apagar matéria inteira?')) { dbData.materias=dbData.materias.filter(x=>x.id!=='${m.id}'); refDb.child('materias').set(dbData.materias); }">✖</button></div></div><div class="pasta-body">${htmlT || vazioOpcao}</div>`;
+                    let htmlT = m.topicos.map((t, i) => `<div style="padding:8px 0; border-bottom:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center; gap:8px;" title="${sanitizeText(t)}"><span style="overflow:hidden;text-overflow:ellipsis;min-width:0;flex:1;" title="${sanitizeText(t)}">📄 ${t}</span><div style="display:flex;align-items:center;gap:6px;flex-shrink:0;"><button style="background:transparent;border:none;cursor:pointer;font-size:1rem;" title="Editar Tópico" onclick="editarTopico('${m.id}', ${i})">✏️</button><button style="background:transparent;border:none;cursor:pointer;font-size:1rem;" title="Juntar Tópicos" onclick="abrirModalJuntar('${m.id}', '${sanitizeText(t).replace(/'/g,"\\'")}')">🔗</button> <button class="btn-x-vermelho" onclick="excluirTopicoMateria('${m.id}', ${i})">✖</button></div></div>`).join('');
+                    let vazioOpcao = `<div style="color:var(--text-muted);font-size:0.85rem; padding:6px 0; display:flex; justify-content:space-between; align-items:center;"><span>Sem tópicos.</span> <button class="btn-danger" style="padding:4px 8px; font-size:0.75rem;" onclick="if(confirm('Excluir?')){ dbData.materias=dbData.materias.filter(x=>x.id!=='${m.id}'); refDb.child('materias').set(dbData.materias); }">Excluir Matéria</button></div>`;
+                    return `<div class="pasta-header" data-folder-id="${m.id}" style="border-left:5px solid ${m.cor};" onclick="this.nextElementSibling.classList.toggle('aberta')" title="${sanitizeText(m.nome)}"><span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1; min-width:0;" title="${sanitizeText(m.nome)}">📁 ${m.nome} (${m.topicos.length})</span><div style="display:flex; gap:8px; align-items:center;"><button style="background:transparent;border:none;cursor:pointer;font-size:1.1rem;" title="Mover para Prova" onclick="event.stopPropagation(); moverMateriaParaProva('${m.id}')">🔄</button><button class="btn-x-vermelho" style="flex-shrink:0;" onclick="event.stopPropagation(); if(confirm('Apagar matéria inteira?')) { dbData.materias=dbData.materias.filter(x=>x.id!=='${m.id}'); refDb.child('materias').set(dbData.materias); }">✖</button></div></div><div class="pasta-body">${htmlT || vazioOpcao}</div>`;
                 }).join('');
                 if(!isGeral) {
                     let isBlockOpen = stateBlocos.includes(p);
-                    htmlFinal += `<div class="bloco-prova" data-prova-id="${p}"><div class="bloco-prova-titulo"style="cursor:pointer;user-select:none;margin-bottom:0;justify-content:space-between;"onclick="let el=this.nextElementSibling;el.style.display=(el.style.display==='none'||!el.style.display)?'block':'none';"title="${sanitizeText(nomeP)}"><span>🎯 ${nomeP}</span><span style="font-size:0.85rem;font-weight:normal;color:var(--text-muted);">▼ Expandir/Minimizar</span></div><div class="bloco-prova-content"style="display:${isBlockOpen?'block':'none'}; margin-top:16px;">${conteudoMat}</div></div>`;
+                    htmlFinal += `<div class="bloco-prova" data-prova-id="${p}"><div class="bloco-prova-titulo" style="cursor:pointer;user-select:none;margin-bottom:0;justify-content:space-between;" onclick="let el=this.nextElementSibling;el.style.display=(el.style.display==='none'||!el.style.display)?'block':'none';" title="${sanitizeText(nomeP)}"><span>🎯 ${nomeP}</span><span style="font-size:0.85rem;font-weight:normal;color:var(--text-muted);">▼ Expandir/Minimizar</span></div><div class="bloco-prova-content" style="display:${isBlockOpen?'block':'none'}; margin-top:16px;">${conteudoMat}</div></div>`;
                 } else { htmlFinal += `<h3 style="color:var(--text-muted); margin-top:20px; font-size:1.1rem;" title="${sanitizeText(nomeP)}">${nomeP}</h3>${conteudoMat}`; }
             }
             div.innerHTML = htmlFinal;
@@ -1918,7 +1917,7 @@
                         } else {
                             let safeText = isH ? renderHtmlSafely(textoCompleto) : sanitizeText(textoCompleto);
                             if(termo && termo.trim() !== '') {
-                                let regex = new RegExp(`(?![^<]*>)(${termo})`, 'gi');
+                                let regex = new RegExp(`(?![^<]*>(${termo})`, 'gi');
                                 safeText = safeText.replace(regex, '<mark>$1</mark>');
                             }
                             let isLongo = textoCompleto.length > 300;
@@ -1943,8 +1942,8 @@
                         </div>`; 
                     }); 
                     
-                    htmlM += `<div class="pasta-header sub-caderno-header ${termo?'aberta':''}"data-subcaderno-folder="${subFolderKey}" onclick="this.nextElementSibling.classList.toggle('aberta')" style="background:var(--bg-body); border-left:3px solid var(--brand-warning); margin-bottom:4px; padding:10px 14px; border-radius:var(--radius-sm);">
-                        <span style="font-weight:600; color:var(--text-main); font-size:0.9rem; flex:1; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">📂 ${sanitizeText(t)}(${agr[m][t].length})</span>
+                    htmlM += `<div class="pasta-header sub-caderno-header ${termo?'aberta':''}" data-subcaderno-folder="${subFolderKey}" onclick="this.nextElementSibling.classList.toggle('aberta')" style="background:var(--bg-body); border-left:3px solid var(--brand-warning); margin-bottom:4px; padding:10px 14px; border-radius:var(--radius-sm);">
+                        <span style="font-weight:600; color:var(--text-main); font-size:0.9rem; flex:1; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">📂 ${sanitizeText(t)} (${agr[m][t].length})</span>
                         <div style="display:flex; align-items:center; gap:4px; flex-shrink:0;">
                             <button style="background:transparent;border:none;cursor:pointer;font-size:1rem;padding:0 4px;" title="Renomear Sub-caderno" onclick="event.stopPropagation(); renomearCadernoOuSub('${dbStringName}','${sanitizeText(m).replace(/'/g,"\\'")}', '${sanitizeText(t).replace(/'/g,"\\'")}')">✏️</button>
                             <button class="btn-x-vermelho" style="font-size:1rem; padding:0 4px;" title="Excluir Sub-caderno" onclick="event.stopPropagation(); excluirCadernoOuSub('${dbStringName}','${sanitizeText(m).replace(/'/g,"\\'")}', '${sanitizeText(t).replace(/'/g,"\\'")}')">✖</button>
@@ -1961,7 +1960,7 @@
                         <button style="background:transparent;border:none;cursor:pointer;font-size:1.1rem;padding:0 4px;" title="Renomear Caderno" onclick="event.stopPropagation(); renomearCadernoOuSub('${dbStringName}','${sanitizeText(m).replace(/'/g,"\\'")}', null)">✏️</button>
                         <button class="btn-x-vermelho" style="font-size:1.1rem; padding:0 4px;" title="Excluir Caderno" onclick="event.stopPropagation(); excluirCadernoOuSub('${dbStringName}','${sanitizeText(m).replace(/'/g,"\\'")}', null)">✖</button>
                     </div>
-                </div><div class="pasta-body ${termo?'aberta':''}"style="padding-top:8px;">${htmlM}</div>`;
+                </div><div class="pasta-body ${termo?'aberta':''}" style="padding-top:8px;">${htmlM}</div>`;
             }
             div.innerHTML = finalDivHtml;
             
@@ -2038,7 +2037,7 @@
                 refDb.child('biblioteca').push({ id: gerarId(), nome: f.name, tipo: 'ARQUIVO', url: url, texto: txt.substring(0,20000), materia: m, data: new Date().toLocaleDateString(), refPath: refF.fullPath }); 
                 document.getElementById('bib-file').value = ''; 
                 btn.textContent = "✅ Salvo!"; 
-                setTimeout(()=> {btn.textContent=tx; btn.disabled=false;}, 2000); 
+                setTimeout(()=>{btn.textContent=tx; btn.disabled=false;}, 2000); 
             } catch(e) { alert("Erro: "+e.message); btn.textContent=tx; btn.disabled=false; }
         }
         async function salvarLink() { 
@@ -2100,7 +2099,7 @@
                 dbData.biblioteca.forEach(b => {
                     let lbl = document.createElement('label');
                     lbl.style.cssText = "display:inline-flex; align-items:center; gap:6px; font-size:0.85rem; cursor:pointer; font-weight:600; padding:8px 14px; border-radius:20px; border:1px solid var(--border-color); background:var(--bg-input); color:var(--text-main); transition:all 0.2s; user-select:none; max-width: 100%; flex-shrink: 0;";
-                    lbl.innerHTML = `<input type="checkbox" class="chk-fonte-biblioteca" value="${b.fbKey}"style="display:none;"><span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${b.tipo==='LINK'?'🌐':'📄'} ${sanitizeText(b.nome)}</span>`;
+                    lbl.innerHTML = `<input type="checkbox" class="chk-fonte-biblioteca" value="${b.fbKey}" style="display:none;"><span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${b.tipo==='LINK'?'🌐':'📄'} ${sanitizeText(b.nome)}</span>`;
                     
                     let chk = lbl.querySelector('input');
                     chk.onchange = (e) => {
@@ -2172,7 +2171,7 @@
         function carregarRespostaSalvaHistorico(item) {
             if(item.tipo === 'chat') {
                 let box = document.getElementById('box-chat');
-                box.innerHTML = `<div class="msg msg-u">${sanitizeText(item.params)}</div><div class="msg msg-a" style="max-width:100%; width:100%;">${item.respostaHtml}</div>`;
+                box.innerHTML = `<div class="msg msg-u">${sanitizeText(item.params)}</div><div class="msg msg-a" style="max-width:100%;width:100%;">${item.respostaHtml}</div>`;
                 box.scrollTop = box.scrollHeight;
             } else if(item.tipo === 'questoes') {
                 document.getElementById('ia-qts-tema').value = item.params.tema || '';
@@ -2236,7 +2235,7 @@
         }
         function parseJSONComSeguranca(textoBruto) {
             let jsonString = textoBruto;
-            let match = textoBruto.match(/\[\s*\{[\s\S]*\}\s*\]/);
+            let match = textoBruto.match(/\[\s*\{\[\s\S]*\}\s*\]/);
             if (match) {
                 jsonString = match[0];
             } else {
@@ -2307,7 +2306,7 @@
                 if(niveisSelecionados.length === 0) return alert("Selecione um nível.");
                 let qtd = document.getElementById('ia-qts-num').value || '5';
                 let t = document.getElementById('ia-qts-tema').value || 'Geral';
-                p = `Gere ${qtd} questões em formato JSON puro sobre: ${t}. Níveis: [${niveisSelecionados.join(', ')}]. Formato estrito JSON array de objetos contendo exatamente as chaves "enunciado", "alternativas", "correta", "comentario", "nivel". Sem formatação markdown extra.`;
+                p = `Gere ${qtd} questões em formato JSON puro sobre: ${t}. Níveis:[${niveisSelecionados.join(', ')}]. Formato estrito JSON array de objetos contendo exatamente as chaves "enunciado", "alternativas", "correta", "comentario", "nivel". Sem formatação markdown extra.`;
                 box = document.getElementById('box-qts'); box.style.display='flex'; box.innerHTML='';
             } else if(tipo === 'flashcards') {
                 document.querySelectorAll('.chk-nivel-fc:checked').forEach(el => niveisSelecionados.push(el.value));
@@ -2315,7 +2314,7 @@
                 let qtd = document.getElementById('fc-num').value || '5';
                 let m = sanitizeText(document.getElementById('fc-mat').value) || 'Geral';
                 let tp = sanitizeText(document.getElementById('fc-top').value) || 'Geral';
-                p = `Gere ${qtd} flashcards TÉCNICOS e DIRETOS para Matéria: "${m}" e Tópico: "${tp}". Níveis: ${niveisSelecionados.join(', ')}.
+                p = `Gere ${qtd} flashcards TÉCNICOS e DIRETOS para Matéria:"${m}" e Tópico: "${tp}". Níveis: ${niveisSelecionados.join(', ')}.
                 REGRAS RÍGIDAS PARA FLASHCARDS:
                 1. Seja sucinto, objetivo e focado APENAS no núcleo do tópico.
                 2. MÁXIMO DE 5 LINHAS por resposta.
@@ -2523,7 +2522,7 @@ PROMPT DO USUÁRIO: ${p}`;
                                 <div class="conteudo-resposta-ia" style="text-align:left;">${respostaParsed}</div>
                             </div>
                         </div>`;
-                        let itemHtml = `<div style="margin-bottom:16px;">${fcContent}<div style="margin-top:8px;"><button class="btn-outline" style="width:auto; padding:6px 12px; font-size:0.8rem;" data-payload="${encodeURIComponent(fcContent)}" data-mat="${encodeURIComponent(matNome)}" data-top="${encodeURIComponent(topNome)}" onclick="abrirModalEnviarFlashcard(decodeURIComponent(this.getAttribute('data-payload')), this, decodeURIComponent(this.getAttribute('data-mat')), decodeURIComponent(this.getAttribute('data-top')))">💾 Salvar Flashcard</button></div></div>`;
+                        let itemHtml = `<div style="margin-bottom:16px;">${fcContent}<div style="margin-top:8px;"><button class="btn-outline" style="width:auto;padding:6px 12px;font-size:0.8rem;" data-payload="${encodeURIComponent(fcContent)}" data-mat="${encodeURIComponent(matNome)}" data-top="${encodeURIComponent(topNome)}" onclick="abrirModalEnviarFlashcard(decodeURIComponent(this.getAttribute('data-payload')), this, decodeURIComponent(this.getAttribute('data-mat')), decodeURIComponent(this.getAttribute('data-top')))">💾 Salvar Flashcard</button></div></div>`;
                         htmlFCResult += itemHtml;
                     });
                     box.innerHTML = htmlFCResult;
@@ -2538,11 +2537,11 @@ PROMPT DO USUÁRIO: ${p}`;
                             q.alternativas.forEach(alt => {
                                 let letra = alt.charAt(0).toUpperCase();
                                 let isCorreta = (letra === (q.correta || '').toUpperCase());
-                                altHtml += `<button class="btn-outline alt-btn" data-correta="${isCorreta?'1':'0'}" onclick="responderQuestaoUnica(this)" style="text-align:left; padding:10px 14px; margin:4px 0; border-radius:8px; font-size:0.9rem; width:100%;">${sanitizeText(alt)}</button>`;
+                                altHtml += `<button class="btn-outline alt-btn" data-correta="${isCorreta?'1':'0'}" onclick="responderQuestaoUnica(this)" style="text-align:left;padding:10px 14px;margin:4px 0;border-radius:8px;font-size:0.9rem;width:100%;">${sanitizeText(alt)}</button>`;
                             });
                         }
                         let cadQstHtml = `<div style="background:var(--bg-card); padding:16px; border-radius:var(--radius-sm); border:1px solid var(--border-color); width:100%;"><div style="font-weight:700; margin-bottom:10px;">🎯 Questão (${sanitizeText(q.nivel||'')})</div><div style="margin-bottom:12px;">${sanitizeText(q.enunciado)}</div><div style="display:flex; flex-direction:column; gap:4px; margin-bottom:12px;" class="bloco-alternativas-qst">${altHtml}</div><div class="bloco-explicacao-qst" style="display:none; margin-top:8px;"><div style="font-size:0.85rem; color:var(--text-muted); padding-top:8px; border-top:1px solid var(--border-color);">💡 Comentário: ${sanitizeText(q.comentario || '')}</div></div></div>`;
-                        let itemHtmlQst = `<div style="margin-bottom:16px;">${cadQstHtml}<div style="margin-top:8px;"><button class="btn-primary" style="width:auto; padding:6px 14px; font-size:0.8rem;" data-payload="${encodeURIComponent(cadQstHtml)}" data-mat="${encodeURIComponent(document.getElementById('ia-qts-tema').value || 'Questões')}" onclick="abrirModalEnviarCaderno(decodeURIComponent(this.getAttribute('data-payload')), this, decodeURIComponent(this.getAttribute('data-mat')), '', true)">📚 Enviar para Caderno de Erros</button></div></div>`;
+                        let itemHtmlQst = `<div style="margin-bottom:16px;">${cadQstHtml}<div style="margin-top:8px;"><button class="btn-primary" style="width:auto;padding:6px 14px;font-size:0.8rem;" data-payload="${encodeURIComponent(cadQstHtml)}" data-mat="${encodeURIComponent(document.getElementById('ia-qts-tema').value || 'Questões')}" onclick="abrirModalEnviarCaderno(decodeURIComponent(this.getAttribute('data-payload')), this, decodeURIComponent(this.getAttribute('data-mat')), '', true)">📚 Enviar para Caderno de Erros</button></div></div>`;
                         htmlQ += itemHtmlQst;
                     });
                     htmlQ += `</div>`;
@@ -2574,7 +2573,7 @@ PROMPT DO USUÁRIO: ${p}`;
             try {
                 let res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=${k}`, { 
                     method:'POST', headers:{'Content-Type':'application/json'}, 
-                    body:JSON.stringify({ contents:[{parts:[{text:`Organize em JSON PURO: [{"disciplina": "Nome", "topicos": ["T1"]}]. Sem markdown. Edital:\n${txt.substring(0,15000)}`}]}] }) 
+                    body:JSON.stringify({ contents:[{parts:[{text:`Organize em JSON PURO: [{"disciplina": "Nome", "topicos": ["T1"]}]}. Sem markdown. Edital:\n${txt.substring(0,15000)}`}]}] }) 
                 });
                 if(!res.ok) throw new Error("Erro ao processar edital.");
                 const data = await res.json();
