@@ -2591,7 +2591,6 @@ PROMPT DO USUÁRIO: ${p}`;
                 refDb.child('materias').set(dbData.materias);
                 document.getElementById('edital-texto').value=''; alert("Edital mapeado!");
             } catch(e) { alert(e.message); } finally { btn.textContent=tx; btn.disabled=false; }
-            <script>
     // ==========================================================================
     // 🧠 MOTOR DE AGENTE AUTÓNOMO PRUMA (4 PILARES)
     // ==========================================================================
@@ -2742,7 +2741,7 @@ Pergunta do Aluno: "${perguntaUsuario}"`;
         let parsedHTML = sanitizeText(marked.parse(respostaAgente));
         body.insertAdjacentHTML('beforeend', `<div class="msg msg-a" style="max-width:100%;"><div class="conteudo-resposta-ia">🤖 <b>[Agente Autónomo Ativo]</b><br><br>${parsedHTML}</div></div>`);
         body.scrollTop = body.scrollHeight;
-        }
+        };
 </script>
 </body>
 </html>
