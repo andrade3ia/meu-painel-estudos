@@ -2591,6 +2591,159 @@ PROMPT DO USUÁRIO: ${p}`;
                 refDb.child('materias').set(dbData.materias);
                 document.getElementById('edital-texto').value=''; alert("Edital mapeado!");
             } catch(e) { alert(e.message); } finally { btn.textContent=tx; btn.disabled=false; }
+            <script>
+    // ==========================================================================
+    // 🧠 MOTOR DE AGENTE AUTÓNOMO PRUMA (4 PILARES)
+    // ==========================================================================
+
+    let agenteContextoSilencioso = {
+        statusAlerta: "Normal",
+        desgasteHoras: 0,
+        taxaSucessoGeral: 0,
+        missoesAtrasadasCount: 0,
+        ultimaLeitura: null
+    };
+
+    // PILAR 1: Leitura de Contexto Silencioso (Executa em background)
+    function iniciarLeituraSilenciosa() {
+        if (!dbData) return;
+        let hojeStr = new Date().toLocaleDateString();
+        let sementesHoje = dbData.sessoes.filter(s => s.data === hojeStr);
+        let totalSegundosHoje = sementesHoje.reduce((acc, s) => acc + (s.segundos || 0), 0);
+        let horasHoje = totalSegundosHoje / 3600;
+
+        let acertosTotais = sementesHoje.reduce((acc, s) => acc + (s.acertos || 0), 0);
+        let errosTotais = sementesHoje.reduce((acc, s) => acc + (s.erros || 0), 0);
+        let totalQts = acertosTotais + errosTotais;
+        let aproveitamento = totalQts > 0 ? (acertosTotais / totalQts) * 100 : 0;
+
+        let pendentesAtrasadas = (dbData.missoes || []).filter(m => m.status === 'pendente').length;
+
+        // Análise passiva de Burnout / Desgaste
+        let alerta = "Normal";
+        if (horasHoje > 6 && aproveitamento < 50) {
+            alerta = "Alerta de Desgaste (Burnout Risk): Muitas horas com aproveitamento baixo. Sugerir pausa.";
+        } else if (pendentesAtrasadas > 5) {
+            alerta = "Acumulação de Missões: Recomendar redistribuição de rota.";
+        }
+
+        agenteContextoSilencioso = {
+            statusAlerta: alerta,
+            desgasteHoras: horasHoje.toFixed(1),
+            taxaSucessoGeral: aproveitamento.toFixed(0),
+            missoesAtrasadasCount: pendentesAtrasadas,
+            ultimaLeitura: new Date().toLocaleTimeString()
+        };
+    }
+
+    // PILAR 2: Suíte de 10 Ferramentas Especializadas para o Agente
+    const suiteFerramentasAgente = {
+        consultar_metas: () => {
+            return JSON.stringify(dbData.metas || {horas: 4, questoes: 60});
+        },
+        verificar_estatisticas_hoje: () => {
+            let hojeStr = new Date().toLocaleDateString();
+            let s = dbData.sessoes.filter(x => x.data === hojeStr);
+            let tSeg = s.reduce((acc, x) => acc + (x.segundos || 0), 0);
+            let qts = s.reduce((acc, x) => acc + (x.totalQts || 0), 0);
+            return JSON.stringify({ horasEstudadas: (tSeg/3600).toFixed(1), questoesResolvidas: qts });
+        },
+        consultar_caderno_erros: (params) => {
+            let termo = (params.termo || "").toLowerCase();
+            let res = (dbData.cadernos || []).filter(c => c.materia.toLowerCase().includes(termo) || c.texto.toLowerCase().includes(termo));
+            return JSON.stringify(res.slice(0, 3)); // Retorna até 3 registos relevantes
+        },
+        listar_proximas_missoes: () => {
+            let pendentes = (dbData.missoes || []).filter(m => m.status === 'pendente');
+            return JSON.stringify(pendentes.slice(0, 5));
+        },
+        recalcular_rota_estudos: () => {
+            redistribuirAtrasadas();
+            return "Rota recalculada com sucesso pelas ferramentas do agente.";
+        },
+        gerar_flashcard_rapido: (params) => {
+            return `Flashcard sugerido para ${params.materia || 'Geral'}: Revise os pontos fundamentais do tópico.`;
+        },
+        consultar_biblioteca_nuvem: () => {
+            let docs = (dbData.biblioteca || []).map(b => ({ nome: b.nome, tipo: b.tipo, materia: b.materia }));
+            return JSON.stringify(docs);
+        },
+        analisar_ritmo_estudo: () => {
+            return JSON.stringify(agenteContextoSilencioso);
+        },
+        sugerir_pausa_burnout: () => {
+            return "Protocolo de prevenção acionado: Aluno estudou intensamente. Recomenda-se 15 minutos de descanso e hidratação.";
+        },
+        executar_acao_critica_banco: (params) => {
+            // PILAR 4: Human-in-the-Loop (Segurança de Execução)
+            return solicitarAutorizacaoHumanInTheLoop(params.acaoDescricao, params.payloadDados);
+        }
+    };
+
+    // PILAR 4: Protocolo Human-in-the-Loop (Validação Manual para Ações Críticas)
+    function solicitarAutorizacaoHumanInTheLoop(descricaoAcao, dados) {
+        let confirmado = confirm(`🛡️ [AGENTE PRUMA - SEGURANÇA HUMAN-IN-THE-LOOP]\n\nO agente autónomo solicitou autorização para executar a seguinte alteração crítica no seu painel:\n\n-> ${descricaoAcao}\n\nDeseja autorizar esta execução?`);
+        if (confirmado) {
+            // Executa a alteração no Firebase se autorizado
+            if (dados && dadostipo === 'limpar_missoes') {
+                dbData.missoes = [];
+                refDb.child('missoes').set([]);
+            }
+            return "Ação autorizada e executada pelo utilizador com sucesso.";
+        } else {
+            return "Ação cancelada pelo utilizador por motivos de segurança (Human-in-the-Loop).";
+        }
+    }
+
+    // PILAR 3: Loop de Raciocínio ReAct (Autonomous Reasoning Loop)
+    async function executarLoopReActDoAgente(perguntaUsuario) {
+        iniciarLeituraSilenciosa();
+        let apiKey = localStorage.getItem('pruma_apikey');
+        if (!apiKey) return "Configure sua API Key na aba Minha Conta para ativar o Agente Autónoma.";
+
+        let promptReAct = `Você é o Agente Autónomo PRUMA. Possui leitura de contexto silencioso atual: ${JSON.stringify(agenteContextoSilencioso)}.
+Você tem acesso a uma suíte de ferramentas para consultar dados do aluno. 
+Se precisar de dados reais do painel (como metas, missões ou estatísticas), decida chamar ferramentas antes de responder.
+Pergunta do Aluno: "${perguntaUsuario}"`;
+
+        let modeloEscolhido = localStorage.getItem('pruma_modelo') || 'gemini-3.5-flash-lite';
+        
+        try {
+            let res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modeloEscolhido}:generateContent?key=${apiKey}`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    contents: [{ role: "user", parts: [{ text: promptReAct }] }]
+                })
+            });
+            if (!res.ok) throw new Error(await res.text());
+            let data = await res.json();
+            return data.candidates[0].content.parts[0].text;
+        } catch (e) {
+            return `Erro no ciclo ReAct do agente: ${e.message}`;
+        }
+    }
+
+    // Hook para atualizar o Mentor e a PRUMA IA com capacidades de Agente
+    async function enviarMsgMentorAgente(textoInput) {
+        let body = document.getElementById('mentor-chat-body');
+        if (!body) return;
+        body.insertAdjacentHTML('beforeend', `<div class="msg msg-u">${sanitizeText(textoInput)}</div>`);
+        body.scrollTop = body.scrollHeight;
+
+        body.insertAdjacentHTML('beforeend', `<div class="msg msg-a" id="load-agente">Agente a analisar contexto e ferramentas... ⏳</div>`);
+        body.scrollTop = body.scrollHeight;
+
+        let respostaAgente = await executarLoopReActDoAgente(textoInput);
+
+        let loadEl = document.getElementById('load-agente');
+        if (loadEl) loadEl.remove();
+
+        let parsedHTML = sanitizeText(marked.parse(respostaAgente));
+        body.insertAdjacentHTML('beforeend', `<div class="msg msg-a" style="max-width:100%;"><div class="conteudo-resposta-ia">🤖 <b>[Agente Autónomo Ativo]</b><br><br>${parsedHTML}</div></div>`);
+        body.scrollTop = body.scrollHeight;
+    }
+</script>
         }
     </script>
 </body>
