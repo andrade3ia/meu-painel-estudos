@@ -2593,16 +2593,12 @@ PROMPT DO USUÁRIO: ${p}`;
             } catch(e) { alert(e.message); } finally { btn.textContent=tx; btn.disabled=false; }
         }
 
-                // ==========================================================================
-        // 🧠 MOTOR DE AGENTE AUTÓNOMO PRUMA (4 PILARES)
+               // ==========================================================================
+        // 🧠 MOTOR DE AGENTE AUTÓNOMO PRUMA (4 PILARES) - INTERATIVO E VALIDADO
         // ==========================================================================
 
         let agenteContextoSilencioso = {
-            statusAlerta: "Normal",
-            desgasteHoras: 0,
-            taxaSucessoGeral: 0,
-            missoesAtrasadasCount: 0,
-            ultimaLeitura: null
+            statusAlerta: "Normal", desgasteHoras: 0, taxaSucessoGeral: 0, missoesAtrasadasCount: 0, ultimaLeitura: null
         };
 
         // PILAR 1: Leitura de Contexto Silencioso
@@ -2612,59 +2608,41 @@ PROMPT DO USUÁRIO: ${p}`;
             let sementesHoje = dbData.sessoes.filter(s => s.data === hojeStr);
             let totalSegundosHoje = sementesHoje.reduce((acc, s) => acc + (s.segundos || 0), 0);
             let horasHoje = totalSegundosHoje / 3600;
-
             let acertosTotais = sementesHoje.reduce((acc, s) => acc + (s.acertos || 0), 0);
             let errosTotais = sementesHoje.reduce((acc, s) => acc + (s.erros || 0), 0);
             let totalQts = acertosTotais + errosTotais;
             let aproveitamento = totalQts > 0 ? (acertosTotais / totalQts) * 100 : 0;
-
             let pendentesAtrasadas = (dbData.missoes || []).filter(m => m.status === 'pendente').length;
 
             let alerta = "Normal";
-            if (horasHoje > 6 && aproveitamento < 50) {
-                alerta = "Alerta de Desgaste (Burnout Risk): Muitas horas com aproveitamento baixo. Sugerir pausa.";
-            } else if (pendentesAtrasadas > 5) {
-                alerta = "Acumulação de Missões: Recomendar redistribuição de rota.";
-            }
+            if (horasHoje > 6 && aproveitamento < 50) alerta = "Alerta de Desgaste (Burnout Risk).";
+            else if (pendentesAtrasadas > 5) alerta = "Acumulação de Missões: Recomendar redistribuição.";
 
             agenteContextoSilencioso = {
-                statusAlerta: alerta,
-                desgasteHoras: horasHoje.toFixed(1),
-                taxaSucessoGeral: aproveitamento.toFixed(0),
-                missoesAtrasadasCount: pendentesAtrasadas,
+                statusAlerta: alerta, desgasteHoras: horasHoje.toFixed(1),
+                taxaSucessoGeral: aproveitamento.toFixed(0), missoesAtrasadasCount: pendentesAtrasadas,
                 ultimaLeitura: new Date().toLocaleTimeString()
             };
         }
 
-        // PILAR 2: Suíte de Ferramentas Especializadas para o Agente (ATUALIZADA)
+        // PILAR 2: Suíte de Ferramentas
         const suiteFerramentasAgente = {
             consultar_metas: () => JSON.stringify(dbData.metas || {horas: 4, questoes: 60}),
-            
             analisar_desempenho_historico: (params) => {
                 let dias = Math.min(parseInt(params.dias) || 30, 365);
                 let limiteTempo = Date.now() - (dias * 86400000);
-                
                 let sessoesFiltradas = dbData.sessoes.filter(s => s.timestamp >= limiteTempo);
-                if(sessoesFiltradas.length === 0) return `Nenhum dado encontrado nos últimos ${dias} dias.`;
+                if(sessoesFiltradas.length === 0) return `Nenhum dado encontrado.`;
 
-                let totalSegundos = 0, totalAcertos = 0, totalErros = 0;
-                let materiasStats = {};
-
+                let totalSegundos = 0, totalAcertos = 0, totalErros = 0; let materiasStats = {};
                 sessoesFiltradas.forEach(s => {
-                    totalSegundos += (s.segundos || 0);
-                    totalAcertos += (s.acertos || 0);
-                    totalErros += (s.erros || 0);
-                    
+                    totalSegundos += (s.segundos || 0); totalAcertos += (s.acertos || 0); totalErros += (s.erros || 0);
                     let mat = s.materia || 'Geral';
                     if(!materiasStats[mat]) materiasStats[mat] = { acertos: 0, erros: 0, tempo: 0 };
-                    materiasStats[mat].acertos += (s.acertos || 0);
-                    materiasStats[mat].erros += (s.erros || 0);
-                    materiasStats[mat].tempo += (s.segundos || 0);
+                    materiasStats[mat].acertos += (s.acertos || 0); materiasStats[mat].erros += (s.erros || 0);
                 });
-
                 return JSON.stringify({
-                    periodo_dias: dias,
-                    horas_totais: (totalSegundos / 3600).toFixed(1),
+                    periodo_dias: dias, horas_totais: (totalSegundos / 3600).toFixed(1),
                     precisao_global: totalAcertos + totalErros > 0 ? ((totalAcertos / (totalAcertos + totalErros)) * 100).toFixed(1) + '%' : '0%',
                     top_materias: materiasStats 
                 });
@@ -2674,68 +2652,134 @@ PROMPT DO USUÁRIO: ${p}`;
             analisar_ritmo_estudo: () => JSON.stringify(agenteContextoSilencioso)
         };
 
-            // PILAR 3: Loop de Raciocínio ReAct (Tutor Universal com Busca Web Automática e Oculta)
-    async function executarLoopReActDoAgente(perguntaUsuario) {
-        iniciarLeituraSilenciosa();
-        let apiKey = localStorage.getItem('pruma_apikey');
-        if (!apiKey) return "Configure a sua chave de API na aba Minha Conta.";
+        // PILAR 3: Loop de Raciocínio ReAct (Cérebro Adaptado para UI Dinâmica)
+        async function executarLoopReActDoAgente(perguntaUsuario) {
+            iniciarLeituraSilenciosa();
+            let apiKey = localStorage.getItem('pruma_apikey');
+            if (!apiKey) return "Configure a sua chave de API na aba Minha Conta.";
 
-        // Executa a busca web de forma automática e silenciosa
-        let dadosWeb = "";
-        try {
-            if (typeof buscarNaWeb === 'function') {
-                let resWeb = await buscarNaWeb(perguntaUsuario);
-                if (resWeb) {
-                    dadosWeb = `\n[INFORMAÇÕES RECENTES DA WEB]:\n${resWeb}\nUse estes dados atualizados para fundamentar a sua resposta, se aplicável.\n`;
+            let dadosWeb = "";
+            try {
+                if (typeof buscarNaWeb === 'function') {
+                    let resWeb = await buscarNaWeb(perguntaUsuario);
+                    if (resWeb) dadosWeb = `\n[INFO WEB RECENTE]:\n${resWeb}\nUse-as se aplicável.\n`;
                 }
-            }
-        } catch (e) {
-            console.warn("Busca web automática ignorada:", e);
-        }
+            } catch (e) { console.warn("Busca ignorada."); }
 
-        let promptReAct = `Você é a PRUMA IA, um Tutor Educacional Avançado, focado estritamente em estudantes de concursos públicos, e Especialista em Análise de Dados.
-        
-IDENTIDADE E CONHECIMENTO: Você tem Doutorado (PhD) nas seguintes áreas: Linguística, Inteligência Artificial, TI e Dados, Informática, Direito (Constitucional, Administrativo, Penal, Processo Penal, Civil, Processo Civil, Tributário, Financeiro), AFO, Contabilidade (Geral, Avançada, Custos, Pública), Português, Matemática Financeira, Estatística, Raciocínio Lógico (RLM), Matemática, Redação (Oficial e Geral), Controle Externo, Auditoria Pública, Leis Penais Extravagantes, Legislações Estaduais e Administração (Pública e Geral). Você responde a outras matérias com excelência, mas as citadas são a sua especialidade.
+            let promptReAct = `Você é a PRUMA IA, Tutor Educacional de Alta Performance (PhD Múltiplo) especializado em concursos.
 
-DIRETRIZES DE ATUAÇÃO (OBRIGATÓRIO):
-1. FOCO NO CONCURSEIRO: A imensa maioria dos alunos estuda para concursos públicos. A sua linguagem deve ser estratégica, objetiva e de facilíssimo entendimento. Use termos que caem em prova.
-2. DIMENSIONAMENTO INTELIGENTE (COMPLEXIDADE): O tamanho da sua resposta deve variar estritamente conforme a complexidade do tema. Tenha excelente capacidade analítica: seja cirúrgico e muito breve em dúvidas simples, e mais detalhado (mas sempre estruturado em tópicos) em temas densos. Zero enrolação.
-3. CÁLCULOS E MATEMÁTICA: Explique o raciocínio matemático ou lógico destrinchado, passo a passo, variando a densidade de acordo com a dificuldade do problema.
-4. ADAPTABILIDADE: Se o aluno pedir o básico, simplifique. Se pedir estatísticas, aja como analista de dados e cruze as informações de forma clara.
-5. GERAÇÃO DE QUESTÕES E FLASHCARDS: Forneça-os na própria resposta de forma direta e estruturada. O sistema do painel já colocará os botões de salvar abaixo.
-6. APROFUNDAMENTO: Se o utilizador iniciar a frase com "[APROFUNDAR]", refaça a explicação anterior trazendo mais precisão técnica, minúcias acadêmicas e jurisprudências/súmulas relevantes (se aplicável).
+==================================================
+REGRAS ESTRUTURAIS DE INTERATIVIDADE (CRÍTICO - CUMPRA RIGOROSAMENTE)
+==================================================
+NUNCA gere questões ou flashcards soltos no texto. O nosso sistema requer tags estritas para gerar botões interativos na tela.
+SE O ALUNO PEDIR QUESTÕES (E SÓ SE PEDIR), crie-as OBRIGATORIAMENTE nesta sintaxe exata:
+[QUESTAO]
+[ENUNCIADO] Escreva o texto e a pergunta aqui.
+[A] Alternativa A
+[B] Alternativa B
+[C] Alternativa C
+[D] Alternativa D
+[E] Alternativa E
+[GABARITO] Letra correta (ex: A)
+[COMENTARIO] Explicação detalhada da pegadinha e base legal.
+[FIM_QUESTAO]
 
-Contexto de Desempenho Hoje: ${JSON.stringify(agenteContextoSilencioso)}
+SE O ALUNO PEDIR FLASHCARDS (E SÓ SE PEDIR), crie-os OBRIGATORIAMENTE nesta sintaxe exata:
+[FLASHCARD]
+[FRENTE] Pergunta ou termo.
+[VERSO] Definição ou resposta curta.
+[FIM_FLASHCARD]
+
+==================================================
+REGRAS DE CONTEÚDO E ENSINO
+==================================================
+1. ZERO ENROLAÇÃO. NÃO USE SAUDAÇÕES. Inicie a resposta diretamente.
+2. Dimensione o tamanho da resposta à complexidade. Curto para dúvidas simples, tabelas markdown para temas densos.
+3. Matemática: mostre cálculo passo a passo. Análise de Dados: leia os dados enviados, dê tendências e aja como analista focado em resultados.
+4. Direitos/Leis: Nunca invente números de artigos ou súmulas.
+
+ENCERRAMENTO FIXO: Termine TODAS as respostas APENAS com a frase exata: "Caso precise de uma resposta mais aprofundada, clique em Aprofundar."
+
+Contexto: ${JSON.stringify(agenteContextoSilencioso)}
 ${dadosWeb}
-Pergunta do Aluno: "${perguntaUsuario}"`;
+Pergunta: "${perguntaUsuario}"`;
 
-        try {
-            let res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent?key=${apiKey}`, {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({
-                    contents: [{ role: "user", parts: [{ text: promptReAct }] }]
-                })
-            });
-            if (!res.ok) throw new Error(await res.text());
-            let data = await res.json();
-            return data.candidates[0].content.parts[0].text;
-        } catch (e) {
-            return `Erro no ciclo ReAct: ${e.message}`;
+            try {
+                let res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent?key=${apiKey}`, {
+                    method: 'POST', headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ contents: [{ role: "user", parts: [{ text: promptReAct }] }] })
+                });
+                if (!res.ok) throw new Error(await res.text());
+                let data = await res.json();
+                return data.candidates[0].content.parts[0].text;
+            } catch (e) { return `Erro no ciclo: ${e.message}`; }
         }
-    }
 
+        // ==========================================================================
+        // PILAR 4: FUNÇÕES DE INTERATIVIDADE UI (Renderização Dinâmica)
+        // ==========================================================================
+        
+        // 4.1 Validação Verde/Vermelho das Questões
+        window.validarQMentor = function(btn, escolhida, gabarito, comentarioCoded) {
+            let container = btn.closest('.pruma-q-inline');
+            let botoes = container.querySelectorAll('.m-opt');
+            botoes.forEach(b => {
+                b.disabled = true;
+                let textoLetra = b.innerText.trim().charAt(0); // Apanha o A, B, C...
+                if(textoLetra === gabarito) {
+                    b.style.background = "#28a745"; b.style.color = "#fff"; b.style.borderColor = "#28a745";
+                } else if(b === btn && escolhida !== gabarito) {
+                    b.style.background = "#dc3545"; b.style.color = "#fff"; b.style.borderColor = "#dc3545";
+                }
+            });
+            let feedback = container.querySelector('.q-feedback');
+            feedback.style.display = "block";
+            feedback.innerHTML = `<strong>✅ Gabarito: ${gabarito}</strong><hr style="margin:8px 0; border-color:rgba(0,0,0,0.1);"><div style="font-size:0.9rem;">${decodeURIComponent(comentarioCoded)}</div>`;
+            feedback.style.background = escolhida === gabarito ? "rgba(40, 167, 69, 0.1)" : "rgba(220, 53, 69, 0.1)";
+            feedback.style.borderLeft = `4px solid ${escolhida === gabarito ? "#28a745" : "#dc3545"}`;
+        };
 
-        // Função Auxiliar para o botão "Aprofundar" no Mentor
+        // 4.2 Tela Cheia do Flashcard
+        window.abrirFlashcardTelaCheiaMentor = function(fCoded, vCoded) {
+            let f = decodeURIComponent(fCoded);
+            let v = decodeURIComponent(vCoded);
+            let modal = document.createElement('div');
+            modal.style.cssText = 'position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.95); z-index:99999; display:flex; flex-direction:column; alignItems:center; justify-content:center; padding:20px;';
+            
+            let card = document.createElement('div');
+            card.style.cssText = 'background:var(--bg-card, #fff); color:var(--text-color, #333); padding:40px 30px; border-radius:16px; width:90%; max-width:500px; text-align:center; box-shadow:0 10px 40px rgba(0,0,0,0.5); cursor:pointer; min-height:250px; display:flex; flex-direction:column; justify-content:center; position:relative;';
+            
+            let content = document.createElement('div');
+            content.dataset.lado = 'frente';
+            content.innerHTML = `<span style="position:absolute; top:15px; left:20px; font-weight:bold; color:var(--brand-primary); font-size:0.85rem;">FRENTE</span><p style="font-size:1.3rem; font-weight:500; margin-top:10px;">${f}</p><p style="margin-top:30px; font-size:0.8rem; opacity:0.6;">(Toque em qualquer lugar para virar)</p>`;
+            
+            card.onclick = function() {
+                if(content.dataset.lado === 'frente') {
+                    content.dataset.lado = 'verso';
+                    content.innerHTML = `<span style="position:absolute; top:15px; left:20px; font-weight:bold; color:var(--brand-warning); font-size:0.85rem;">VERSO</span><p style="font-size:1.2rem; margin-top:10px;">${v}</p><p style="margin-top:30px; font-size:0.8rem; opacity:0.6;">(Toque para voltar)</p>`;
+                } else {
+                    content.dataset.lado = 'frente';
+                    content.innerHTML = `<span style="position:absolute; top:15px; left:20px; font-weight:bold; color:var(--brand-primary); font-size:0.85rem;">FRENTE</span><p style="font-size:1.3rem; font-weight:500; margin-top:10px;">${f}</p><p style="margin-top:30px; font-size:0.8rem; opacity:0.6;">(Toque em qualquer lugar para virar)</p>`;
+                }
+            };
+            
+            let closeBtn = document.createElement('button');
+            closeBtn.innerText = "✖ Fechar Flashcard";
+            closeBtn.className = "btn-outline";
+            closeBtn.style.marginTop = '30px'; closeBtn.style.borderColor = 'rgba(255,255,255,0.3)'; closeBtn.style.color = '#fff';
+            closeBtn.onclick = () => modal.remove();
+            
+            card.appendChild(content); modal.appendChild(card); modal.appendChild(closeBtn); document.body.appendChild(modal);
+        };
+
         window.aprofundarMentorTutor = function(btn) {
             let msgElement = btn.closest('.msg').querySelector('.conteudo-resposta-ia');
             let textoAnterior = msgElement ? msgElement.innerText : "";
-            let input = document.getElementById('mentor-input');
-            input.value = `[APROFUNDAR] Refaça a explicação anterior trazendo mais precisão técnica, detalhes e passo a passo:\n\n"${textoAnterior.substring(0, 150)}..."`;
+            document.getElementById('mentor-input').value = `[APROFUNDAR] Refaça com mais precisão e detalhes:\n\n"${textoAnterior.substring(0, 150)}..."`;
             window.enviarMsgMentor();
         };
 
-        // PILAR 4: Hook de Integração do Mentor (Atualizado com Botões de Ação)
+        // 4.3 O Renderizador Principal (Hook do Chat)
         window.enviarMsgMentor = async function() {
             let inp = document.getElementById('mentor-input');
             let textoInput = inp.value.trim();
@@ -2747,38 +2791,88 @@ Pergunta do Aluno: "${perguntaUsuario}"`;
             
             body.insertAdjacentHTML('beforeend', `<div class="msg msg-u">${sanitizeText(textoInput)}</div>`);
             body.scrollTop = body.scrollHeight;
-
-            body.insertAdjacentHTML('beforeend', `<div class="msg msg-a" id="load-agente">O Tutor está a analisar o pedido... ⏳</div>`);
+            body.insertAdjacentHTML('beforeend', `<div class="msg msg-a" id="load-agente">O Tutor está a analisar... ⏳</div>`);
             body.scrollTop = body.scrollHeight;
 
             let respostaAgente = await executarLoopReActDoAgente(textoInput);
+            let loadEl = document.getElementById('load-agente'); if (loadEl) loadEl.remove();
 
-            let loadEl = document.getElementById('load-agente');
-            if (loadEl) loadEl.remove();
-
-            let parsedHTML = sanitizeText(marked.parse(respostaAgente));
+            // Intercetador de Componentes (Parser de Tags)
+            let fragments = {}; let counter = 0;
             
-            let htmlToSave = `<div class="conteudo-resposta-ia">${parsedHTML}</div>`;
-            let encodedPayload = encodeURIComponent(htmlToSave);
+            // 1. Construtor Visual de Questões
+            let textoPreProcessado = respostaAgente.replace(/\[QUESTAO\]([\s\S]*?)\[FIM_QUESTAO\]/g, function(match, inner) {
+                let enunciado = inner.match(/\[ENUNCIADO\]([\s\S]*?)(?=\[[A-E]\])/)?.[1]?.trim() || "";
+                let opts = [];
+                ['A','B','C','D','E'].forEach(letra => {
+                    let regex = new RegExp(`\\[${letra}\\]([\\s\\S]*?)(?=\\[[B-E]\\]|\\[GABARITO\\])`);
+                    let m = inner.match(regex);
+                    if (m) opts.push({letra: letra, texto: m[1].trim()});
+                });
+                let gabarito = inner.match(/\[GABARITO\]\s*([A-E])/)?.[1]?.trim() || "";
+                let comentario = inner.match(/\[COMENTARIO\]([\s\S]*)$/)?.[1]?.trim() || "";
+
+                // Salva a estrutura markdown perfeita para o caderno
+                let markdownCru = `${enunciado}\n\n${opts.map(o=> o.letra + ") " + o.texto).join('\n')}\n\nGabarito: ${gabarito}\nComentário: ${comentario}`;
+                let encodedRaw = encodeURIComponent(markdownCru);
+                
+                let htmlOpts = opts.map(o => `<button class="btn-outline m-opt" style="text-align:left; padding:10px; border-radius:8px; margin-bottom:6px; width:100%; font-size:0.9rem; transition:0.3s;" onclick="validarQMentor(this, '${o.letra}', '${gabarito}', '${encodeURIComponent(marked.parse(comentario))}')"><b>${o.letra})</b> ${o.texto}</button>`).join('');
+
+                let id = `__PRUMA_Q_${counter++}__`;
+                fragments[id] = `
+                    <div class="pruma-q-inline" style="background:var(--bg-color); border:1px solid var(--border-color); padding:15px; border-radius:12px; margin:15px 0;">
+                        <div style="margin-bottom:15px; font-weight:500;">${marked.parse(enunciado)}</div>
+                        <div style="display:flex; flex-direction:column;">${htmlOpts}</div>
+                        <div class="q-feedback" style="display:none; margin-top:10px; padding:12px; border-radius:8px;"></div>
+                        <div style="margin-top:15px; text-align:right;">
+                            <button class="btn-primary" style="font-size:0.8rem; padding:6px 12px;" onclick="abrirModalEnviarCaderno(decodeURIComponent('${encodedRaw}'), this, 'Tutor IA', 'Questão', true)">📚 Salvar ao Caderno</button>
+                        </div>
+                    </div>`;
+                return id;
+            });
+
+            // 2. Construtor Visual de Flashcards
+            textoPreProcessado = textoPreProcessado.replace(/\[FLASHCARD\]([\s\S]*?)\[FIM_FLASHCARD\]/g, function(match, inner) {
+                let frente = inner.match(/\[FRENTE\]([\s\S]*?)(?=\[VERSO\])/)?.[1]?.trim() || "";
+                let verso = inner.match(/\[VERSO\]([\s\S]*)$/)?.[1]?.trim() || "";
+                
+                // Salva a estrutura markdown perfeita para o aba Flashcard
+                let markdownCru = `${frente}\n\nVERSO:\n${verso}`;
+                let encodedF = encodeURIComponent(frente); let encodedV = encodeURIComponent(verso);
+
+                let id = `__PRUMA_F_${counter++}__`;
+                fragments[id] = `
+                    <div class="pruma-flashcard-inline" style="background:var(--bg-color); border:1px dashed var(--brand-warning); padding:12px 15px; border-radius:12px; margin:15px 0; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+                        <div style="font-weight:600; font-size:0.9rem; flex:1; min-width:150px;">🗂️ Flashcard IA<br><span style="font-size:0.75rem; font-weight:400; opacity:0.8;">${frente.substring(0, 30)}...</span></div>
+                        <div style="display:flex; gap:8px;">
+                            <button class="btn-outline" style="font-size:0.8rem; padding:6px 10px;" onclick="abrirFlashcardTelaCheiaMentor('${encodedF}', '${encodedV}')">🔄 Treinar</button>
+                            <button class="btn-primary" style="font-size:0.8rem; padding:6px 10px; background:var(--brand-warning); border:none; color:#000;" onclick="abrirModalEnviarFlashcard(decodeURIComponent('${encodeURIComponent(markdownCru)}'), this, 'Flashcards IA', 'Geral')">⚡ Salvar</button>
+                        </div>
+                    </div>`;
+                return id;
+            });
+
+            // Transforma o texto restante em HTML (Markdown padrão)
+            let htmlFinal = sanitizeText(marked.parse(textoPreProcessado));
+            
+            // Re-injeta os componentes interativos no HTML final
+            for (let id in fragments) {
+                htmlFinal = htmlFinal.replace(id, fragments[id]);
+            }
+
+            let textoPuroParaCaderno = encodeURIComponent(respostaAgente);
 
             let botoesAcaoHtml = `
-                <div style="display:flex; gap:8px; margin-top:12px; flex-wrap:wrap; border-top:1px solid var(--border-color); padding-top:10px;">
-                    <button class="btn-outline" style="width:auto; padding:6px 12px; font-size:0.75rem; font-weight:600;" onclick="window.aprofundarMentorTutor(this)">
-                        🔍 Aprofundar
-                    </button>
-                    <button class="btn-primary" style="width:auto; padding:6px 12px; font-size:0.75rem;" data-payload="${encodedPayload}" onclick="abrirModalEnviarCaderno(decodeURIComponent(this.getAttribute('data-payload')), this, 'PRUMA IA', 'Interação Rápida', true)">
-                        📚 Salvar Caderno
-                    </button>
-                    <button class="btn-primary" style="width:auto; padding:6px 12px; font-size:0.75rem; background:var(--brand-warning); border:none;" data-payload="${encodedPayload}" onclick="abrirModalEnviarFlashcard(decodeURIComponent(this.getAttribute('data-payload')), this, 'Flashcards IA', 'Geral')">
-                        ⚡ Salvar Flashcard
-                    </button>
+                <div style="display:flex; gap:8px; margin-top:15px; flex-wrap:wrap; border-top:1px solid var(--border-color); padding-top:12px;">
+                    <button class="btn-outline" style="font-size:0.75rem; font-weight:600;" onclick="window.aprofundarMentorTutor(this)">🔍 Aprofundar</button>
+                    <button class="btn-primary" style="font-size:0.75rem;" data-payload="${textoPuroParaCaderno}" onclick="abrirModalEnviarCaderno(decodeURIComponent(this.getAttribute('data-payload')), this, 'Tutor IA', 'Interação Geral', true)">📚 Salvar Chat Inteiro</button>
                 </div>
             `;
 
             body.insertAdjacentHTML('beforeend', `
-                <div class="msg msg-a" style="max-width:100%;">
-                    <div class="conteudo-resposta-ia" style="font-size:0.95rem; line-height:1.5;">
-                        ${parsedHTML}
+                <div class="msg msg-a" style="max-width:100%; width:100%;">
+                    <div class="conteudo-resposta-ia" style="font-size:0.95rem; line-height:1.6;">
+                        ${htmlFinal}
                     </div>
                     ${botoesAcaoHtml}
                 </div>
