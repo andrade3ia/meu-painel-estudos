@@ -2593,7 +2593,7 @@ PROMPT DO USUÁRIO: ${p}`;
             } catch(e) { alert(e.message); } finally { btn.textContent=tx; btn.disabled=false; }
         }
 
-        // ==========================================================================
+                // ==========================================================================
         // 🧠 MOTOR DE AGENTE AUTÓNOMO PRUMA (4 PILARES)
         // ==========================================================================
 
@@ -2636,41 +2636,67 @@ PROMPT DO USUÁRIO: ${p}`;
             };
         }
 
-        // PILAR 2: Suíte de Ferramentas Especializadas
+        // PILAR 2: Suíte de Ferramentas Especializadas para o Agente (ATUALIZADA)
         const suiteFerramentasAgente = {
             consultar_metas: () => JSON.stringify(dbData.metas || {horas: 4, questoes: 60}),
-            verificar_estatisticas_hoje: () => {
-                let hojeStr = new Date().toLocaleDateString();
-                let s = dbData.sessoes.filter(x => x.data === hojeStr);
-                let tSeg = s.reduce((acc, x) => acc + (x.segundos || 0), 0);
-                let qts = s.reduce((acc, x) => acc + (x.totalQts || 0), 0);
-                return JSON.stringify({ horasEstudadas: (tSeg/3600).toFixed(1), questoesResolvidas: qts });
+            
+            analisar_desempenho_historico: (params) => {
+                let dias = Math.min(parseInt(params.dias) || 30, 365);
+                let limiteTempo = Date.now() - (dias * 86400000);
+                
+                let sessoesFiltradas = dbData.sessoes.filter(s => s.timestamp >= limiteTempo);
+                if(sessoesFiltradas.length === 0) return `Nenhum dado encontrado nos últimos ${dias} dias.`;
+
+                let totalSegundos = 0, totalAcertos = 0, totalErros = 0;
+                let materiasStats = {};
+
+                sessoesFiltradas.forEach(s => {
+                    totalSegundos += (s.segundos || 0);
+                    totalAcertos += (s.acertos || 0);
+                    totalErros += (s.erros || 0);
+                    
+                    let mat = s.materia || 'Geral';
+                    if(!materiasStats[mat]) materiasStats[mat] = { acertos: 0, erros: 0, tempo: 0 };
+                    materiasStats[mat].acertos += (s.acertos || 0);
+                    materiasStats[mat].erros += (s.erros || 0);
+                    materiasStats[mat].tempo += (s.segundos || 0);
+                });
+
+                return JSON.stringify({
+                    periodo_dias: dias,
+                    horas_totais: (totalSegundos / 3600).toFixed(1),
+                    precisao_global: totalAcertos + totalErros > 0 ? ((totalAcertos / (totalAcertos + totalErros)) * 100).toFixed(1) + '%' : '0%',
+                    top_materias: materiasStats 
+                });
             },
-            listar_proximas_missoes: () => {
-                let pendentes = (dbData.missoes || []).filter(m => m.status === 'pendente');
-                return JSON.stringify(pendentes.slice(0, 5));
-            },
-            recalcular_rota_estudos: () => {
-                redistribuirAtrasadas();
-                return "Rota recalculada com sucesso pelas ferramentas do agente.";
-            },
+            listar_proximas_missoes: () => JSON.stringify((dbData.missoes || []).filter(m => m.status === 'pendente').slice(0, 5)),
+            recalcular_rota_estudos: () => { redistribuirAtrasadas(); return "Rota recalculada."; },
             analisar_ritmo_estudo: () => JSON.stringify(agenteContextoSilencioso)
         };
 
-        // PILAR 3: Loop de Raciocínio ReAct (Autonomous Reasoning Loop)
+        // PILAR 3: Loop de Raciocínio ReAct (O Cérebro do Tutor Universal - Foco Concursos)
         async function executarLoopReActDoAgente(perguntaUsuario) {
             iniciarLeituraSilenciosa();
             let apiKey = localStorage.getItem('pruma_apikey');
-            if (!apiKey) return "Configure sua API Key na aba Minha Conta para ativar o Agente Autónomo.";
+            if (!apiKey) return "Configure sua API Key na aba Minha Conta.";
 
-            let promptReAct = `Você é o Agente Autónomo PRUMA. Possui leitura de contexto silencioso atual do aluno: ${JSON.stringify(agenteContextoSilencioso)}.
-    Você tem acesso a dados vitais do painel. Ajude o aluno de forma cirúrgica e analise o contexto dele antes de responder.
-    Pergunta do Aluno: "${perguntaUsuario}"`;
-
-            let modeloEscolhido = localStorage.getItem('pruma_modelo') || 'gemini-3.5-flash-lite';
+            let promptReAct = `Você é a PRUMA IA, um Tutor Educacional Avançado, focado estritamente em estudantes de concursos públicos, e Especialista em Análise de Dados.
             
+IDENTIDADE E CONHECIMENTO: Você tem Doutorado (PhD) nas seguintes áreas: Linguística, Inteligência Artificial, TI e Dados, Informática, Direito (Constitucional, Administrativo, Penal, Processo Penal, Civil, Processo Civil, Tributário, Financeiro), AFO, Contabilidade (Geral, Avançada, Custos, Pública), Português, Matemática Financeira, Estatística, Raciocínio Lógico (RLM), Matemática, Redação (Oficial e Geral), Controle Externo, Auditoria Pública, Leis Penais Extravagantes, Legislações Estaduais e Administração (Pública e Geral). Você responde a outras matérias com excelência, mas as citadas são a sua especialidade.
+
+DIRETRIZES DE ATUAÇÃO (OBRIGATÓRIO):
+1. FOCO NO CONCURSEIRO: A imensa maioria dos alunos estuda para concursos públicos. Sua linguagem deve ser estratégica, objetiva e de facilíssimo entendimento. Use termos que caem em prova.
+2. DIMENSIONAMENTO INTELIGENTE (COMPLEXIDADE): O tamanho da sua resposta deve variar estritamente conforme a complexidade do tema. Tenha excelente capacidade analítica: seja cirúrgico e muito breve em dúvidas simples, e mais detalhado (mas sempre estruturado em tópicos) em temas densos. Zero enrolação.
+3. CÁLCULOS E MATEMÁTICA: Explique o raciocínio matemático ou lógico destrinchado, passo a passo, variando a densidade de acordo com a dificuldade do problema.
+4. ADAPTABILIDADE: Se o aluno pedir o básico, simplifique. Se pedir estatísticas, aja como analista de dados e cruze as informações de forma clara.
+5. GERAÇÃO DE QUESTÕES E FLASHCARDS: Forneça-os na própria resposta de forma direta e estruturada. O sistema do painel já colocará os botões de salvar abaixo.
+6. APROFUNDAMENTO: Se o usuário iniciar a frase com "[APROFUNDAR]", refaça a explicação anterior trazendo mais precisão técnica, minúcias acadêmicas e jurisprudências/súmulas relevantes (se aplicável).
+
+Contexto de Desempenho Hoje: ${JSON.stringify(agenteContextoSilencioso)}.
+Pergunta do Aluno: "${perguntaUsuario}"`;
+
             try {
-                let res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modeloEscolhido}:generateContent?key=${apiKey}`, {
+                let res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=${apiKey}`, {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({
@@ -2681,11 +2707,20 @@ PROMPT DO USUÁRIO: ${p}`;
                 let data = await res.json();
                 return data.candidates[0].content.parts[0].text;
             } catch (e) {
-                return `Erro no ciclo ReAct do agente: ${e.message}`;
+                return `Erro no ciclo ReAct: ${e.message}`;
             }
         }
 
-        // PILAR 4: Hook de Integração (Sobrescreve a função original do Mentor)
+        // Função Auxiliar para o botão "Aprofundar" no Mentor
+        window.aprofundarMentorTutor = function(btn) {
+            let msgElement = btn.closest('.msg').querySelector('.conteudo-resposta-ia');
+            let textoAnterior = msgElement ? msgElement.innerText : "";
+            let input = document.getElementById('mentor-input');
+            input.value = `[APROFUNDAR] Refaça a explicação anterior trazendo mais precisão técnica, detalhes e passo a passo:\n\n"${textoAnterior.substring(0, 150)}..."`;
+            window.enviarMsgMentor();
+        };
+
+        // PILAR 4: Hook de Integração do Mentor (Atualizado com Botões de Ação)
         window.enviarMsgMentor = async function() {
             let inp = document.getElementById('mentor-input');
             let textoInput = inp.value.trim();
@@ -2694,10 +2729,11 @@ PROMPT DO USUÁRIO: ${p}`;
 
             let body = document.getElementById('mentor-chat-body');
             if (!body) return;
+            
             body.insertAdjacentHTML('beforeend', `<div class="msg msg-u">${sanitizeText(textoInput)}</div>`);
             body.scrollTop = body.scrollHeight;
 
-            body.insertAdjacentHTML('beforeend', `<div class="msg msg-a" id="load-agente">O Agente está a ler o seu painel em segundo plano... ⏳</div>`);
+            body.insertAdjacentHTML('beforeend', `<div class="msg msg-a" id="load-agente">O Tutor está a analisar o pedido... ⏳</div>`);
             body.scrollTop = body.scrollHeight;
 
             let respostaAgente = await executarLoopReActDoAgente(textoInput);
@@ -2706,7 +2742,32 @@ PROMPT DO USUÁRIO: ${p}`;
             if (loadEl) loadEl.remove();
 
             let parsedHTML = sanitizeText(marked.parse(respostaAgente));
-            body.insertAdjacentHTML('beforeend', `<div class="msg msg-a" style="max-width:100%;"><div class="conteudo-resposta-ia">🤖 <b>[Agente PRUMA]</b><br><br>${parsedHTML}</div></div>`);
+            
+            let htmlToSave = `<div class="conteudo-resposta-ia">${parsedHTML}</div>`;
+            let encodedPayload = encodeURIComponent(htmlToSave);
+
+            let botoesAcaoHtml = `
+                <div style="display:flex; gap:8px; margin-top:12px; flex-wrap:wrap; border-top:1px solid var(--border-color); padding-top:10px;">
+                    <button class="btn-outline" style="width:auto; padding:6px 12px; font-size:0.75rem; font-weight:600;" onclick="window.aprofundarMentorTutor(this)">
+                        🔍 Aprofundar
+                    </button>
+                    <button class="btn-primary" style="width:auto; padding:6px 12px; font-size:0.75rem;" data-payload="${encodedPayload}" onclick="abrirModalEnviarCaderno(decodeURIComponent(this.getAttribute('data-payload')), this, 'PRUMA IA', 'Interação Rápida', true)">
+                        📚 Salvar Caderno
+                    </button>
+                    <button class="btn-primary" style="width:auto; padding:6px 12px; font-size:0.75rem; background:var(--brand-warning); border:none;" data-payload="${encodedPayload}" onclick="abrirModalEnviarFlashcard(decodeURIComponent(this.getAttribute('data-payload')), this, 'Flashcards IA', 'Geral')">
+                        ⚡ Salvar Flashcard
+                    </button>
+                </div>
+            `;
+
+            body.insertAdjacentHTML('beforeend', `
+                <div class="msg msg-a" style="max-width:100%;">
+                    <div class="conteudo-resposta-ia" style="font-size:0.95rem; line-height:1.5;">
+                        ${parsedHTML}
+                    </div>
+                    ${botoesAcaoHtml}
+                </div>
+            `);
             body.scrollTop = body.scrollHeight;
         };
     </script>
