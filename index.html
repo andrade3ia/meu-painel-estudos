@@ -2652,7 +2652,8 @@ PROMPT DO USUÁRIO: ${p}`;
             analisar_ritmo_estudo: () => JSON.stringify(agenteContextoSilencioso)
         };
 
-                // PILAR 3: Loop de Raciocínio ReAct (Com Trava Anti-LaTeX para Matemática)
+
+        // PILAR 3: Loop de Raciocínio ReAct (Com Matemática Humana / Estilo Calculadora)
         async function executarLoopReActDoAgente(perguntaUsuario) {
             iniciarLeituraSilenciosa();
             let apiKey = localStorage.getItem('pruma_apikey');
@@ -2678,10 +2679,11 @@ PROMPT DO USUÁRIO: ${p}`;
 ==================================================
 REGRAS ESTRUTURAIS DE INTERATIVIDADE E FORMATAÇÃO (CRÍTICO)
 ==================================================
-1. CÁLCULOS E MATEMÁTICA (PROIBIDO LATEX): O nosso sistema NÃO renderiza LaTeX. É ESTRITAMENTE PROIBIDO usar cifrões ($ ou $$), barras invertidas (\\cdot, \\frac, \\times) ou código TeX.
-   - Use APENAS texto simples e operadores normais (+, -, *, /).
-   - Exemplo de como OBRIGATORIAMENTE DEVE escrever: M = C * (1 + i)^t
-   - Exemplo do que é PROIBIDO: $$M = C \\cdot (1 + i)^t$$ ou $C$.
+1. CÁLCULOS E MATEMÁTICA (LINGUAGEM HUMANA): O nosso sistema NÃO renderiza LaTeX e os alunos odeiam formato de código. É ESTRITAMENTE PROIBIDO usar cifrões ($), código TeX, asteriscos (*) para multiplicação ou acentos circunflexos (^) para expoentes.
+   - Multiplicação: Use a letra "x" ou a palavra "vezes" (Ex: C x i).
+   - Divisão: Use o símbolo "÷" ou a palavra "dividido por" ou a barra "/" de forma limpa.
+   - Expoentes: Use a expressão "elevado a" (Ex: (1 + i) elevado a t).
+   - Exemplo de como OBRIGATORIAMENTE DEVE escrever a fórmula: M = C x (1 + i) elevado a t.
 2. ZERO ENROLAÇÃO E SEM SAUDAÇÕES. Inicie a resposta diretamente no conteúdo.
 3. Dimensione o tamanho da resposta à complexidade. Curto para dúvidas simples, tabelas markdown para temas densos. Análise de Dados: dê tendências e aja como analista focado em resultados.
 4. Direitos/Leis: Nunca invente números de artigos ou súmulas.
