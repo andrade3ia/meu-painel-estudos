@@ -2674,42 +2674,57 @@ PROMPT DO USUÁRIO: ${p}`;
             analisar_ritmo_estudo: () => JSON.stringify(agenteContextoSilencioso)
         };
 
-        // PILAR 3: Loop de Raciocínio ReAct (O Cérebro do Tutor Universal - Foco Concursos)
-        async function executarLoopReActDoAgente(perguntaUsuario) {
-            iniciarLeituraSilenciosa();
-            let apiKey = localStorage.getItem('pruma_apikey');
-            if (!apiKey) return "Configure sua API Key na aba Minha Conta.";
+            // PILAR 3: Loop de Raciocínio ReAct (Tutor Universal com Busca Web Automática e Oculta)
+    async function executarLoopReActDoAgente(perguntaUsuario) {
+        iniciarLeituraSilenciosa();
+        let apiKey = localStorage.getItem('pruma_apikey');
+        if (!apiKey) return "Configure a sua chave de API na aba Minha Conta.";
 
-            let promptReAct = `Você é a PRUMA IA, um Tutor Educacional Avançado, focado estritamente em estudantes de concursos públicos, e Especialista em Análise de Dados.
-            
+        // Executa a busca web de forma automática e silenciosa
+        let dadosWeb = "";
+        try {
+            if (typeof buscarNaWeb === 'function') {
+                let resWeb = await buscarNaWeb(perguntaUsuario);
+                if (resWeb) {
+                    dadosWeb = `\n[INFORMAÇÕES RECENTES DA WEB]:\n${resWeb}\nUse estes dados atualizados para fundamentar a sua resposta, se aplicável.\n`;
+                }
+            }
+        } catch (e) {
+            console.warn("Busca web automática ignorada:", e);
+        }
+
+        let promptReAct = `Você é a PRUMA IA, um Tutor Educacional Avançado, focado estritamente em estudantes de concursos públicos, e Especialista em Análise de Dados.
+        
 IDENTIDADE E CONHECIMENTO: Você tem Doutorado (PhD) nas seguintes áreas: Linguística, Inteligência Artificial, TI e Dados, Informática, Direito (Constitucional, Administrativo, Penal, Processo Penal, Civil, Processo Civil, Tributário, Financeiro), AFO, Contabilidade (Geral, Avançada, Custos, Pública), Português, Matemática Financeira, Estatística, Raciocínio Lógico (RLM), Matemática, Redação (Oficial e Geral), Controle Externo, Auditoria Pública, Leis Penais Extravagantes, Legislações Estaduais e Administração (Pública e Geral). Você responde a outras matérias com excelência, mas as citadas são a sua especialidade.
 
 DIRETRIZES DE ATUAÇÃO (OBRIGATÓRIO):
-1. FOCO NO CONCURSEIRO: A imensa maioria dos alunos estuda para concursos públicos. Sua linguagem deve ser estratégica, objetiva e de facilíssimo entendimento. Use termos que caem em prova.
+1. FOCO NO CONCURSEIRO: A imensa maioria dos alunos estuda para concursos públicos. A sua linguagem deve ser estratégica, objetiva e de facilíssimo entendimento. Use termos que caem em prova.
 2. DIMENSIONAMENTO INTELIGENTE (COMPLEXIDADE): O tamanho da sua resposta deve variar estritamente conforme a complexidade do tema. Tenha excelente capacidade analítica: seja cirúrgico e muito breve em dúvidas simples, e mais detalhado (mas sempre estruturado em tópicos) em temas densos. Zero enrolação.
 3. CÁLCULOS E MATEMÁTICA: Explique o raciocínio matemático ou lógico destrinchado, passo a passo, variando a densidade de acordo com a dificuldade do problema.
 4. ADAPTABILIDADE: Se o aluno pedir o básico, simplifique. Se pedir estatísticas, aja como analista de dados e cruze as informações de forma clara.
 5. GERAÇÃO DE QUESTÕES E FLASHCARDS: Forneça-os na própria resposta de forma direta e estruturada. O sistema do painel já colocará os botões de salvar abaixo.
-6. APROFUNDAMENTO: Se o usuário iniciar a frase com "[APROFUNDAR]", refaça a explicação anterior trazendo mais precisão técnica, minúcias acadêmicas e jurisprudências/súmulas relevantes (se aplicável).
+6. APROFUNDAMENTO: Se o utilizador iniciar a frase com "[APROFUNDAR]", refaça a explicação anterior trazendo mais precisão técnica, minúcias acadêmicas e jurisprudências/súmulas relevantes (se aplicável).
 
-Contexto de Desempenho Hoje: ${JSON.stringify(agenteContextoSilencioso)}.
+Contexto de Desempenho Hoje: ${JSON.stringify(agenteContextoSilencioso)}
+${dadosWeb}
 Pergunta do Aluno: "${perguntaUsuario}"`;
 
-            try {
-                let res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=${apiKey}`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({
-                        contents: [{ role: "user", parts: [{ text: promptReAct }] }]
-                    })
-                });
-                if (!res.ok) throw new Error(await res.text());
-                let data = await res.json();
-                return data.candidates[0].content.parts[0].text;
-            } catch (e) {
-                return `Erro no ciclo ReAct: ${e.message}`;
-            }
+        try {
+            let res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent?key=${apiKey}`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    contents: [{ role: "user", parts: [{ text: promptReAct }] }]
+                })
+            });
+            if (!res.ok) throw new Error(await res.text());
+            let data = await res.json();
+            return data.candidates[0].content.parts[0].text;
+        } catch (e) {
+            return `Erro no ciclo ReAct: ${e.message}`;
         }
+    }
+
 
         // Função Auxiliar para o botão "Aprofundar" no Mentor
         window.aprofundarMentorTutor = function(btn) {
