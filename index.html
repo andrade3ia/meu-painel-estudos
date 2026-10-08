@@ -2393,6 +2393,78 @@
                 let partesDaMensagem = [];
                 let textoContexto = "";
                 
+        async function executarIA(tipo, promptEspecifico = null, textoExibicao = null) {
+            let k = localStorage.getItem('pruma_apikey'); 
+            if(!k) return alert("Configure a API Key na aba Minha Conta.");
+            
+            let p = "", box = null; 
+            let niveisSelecionados = [];
+
+            if(tipo === 'questoes') {
+                document.querySelectorAll('.chk-nivel-q:checked').forEach(el => niveisSelecionados.push(el.value));
+                if(niveisSelecionados.length === 0) return alert("Selecione um nível.");
+                let qtd = document.getElementById('ia-qts-num').value || '5';
+                let t = document.getElementById('ia-qts-tema').value || 'Geral';
+                p = `Gere ${qtd} questões em formato JSON puro sobre: ${t}. Níveis: [${niveisSelecionados.join(', ')}]. Formato estrito JSON array de objetos contendo exatamente as chaves "enunciado", "alternativas", "correta", "comentario", "nivel". Sem formatação markdown extra.`;
+                box = document.getElementById('box-qts'); box.style.display='flex'; box.innerHTML='';
+            } else if(tipo === 'flashcards') {
+                document.querySelectorAll('.chk-nivel-fc:checked').forEach(el => niveisSelecionados.push(el.value));
+                if(niveisSelecionados.length === 0) return alert("Selecione um nível.");
+                let qtd = document.getElementById('fc-num').value || '5';
+                let m = sanitizeText(document.getElementById('fc-mat').value) || 'Geral';
+                let tp = sanitizeText(document.getElementById('fc-top').value) || 'Geral';
+                p = `Gere ${qtd} flashcards TÉCNICOS e DIRETOS para Matéria: "${m}" e Tópico: "${tp}". Níveis: ${niveisSelecionados.join(', ')}.
+                REGRAS RÍGIDAS PARA FLASHCARDS:
+                1. Seja sucinto, objetivo e focado APENAS no núcleo do tópico.
+                2. MÁXIMO DE 5 LINHAS por resposta.
+                3. Use formatação (negrito, pequenas listas) para facilitar a leitura.
+                Retorne JSON puro em array de objetos com as chaves "f", "v", "nivel".`;
+                box = document.getElementById('box-fc'); box.style.display='block'; box.innerHTML='';
+            } else if(tipo === 'mapa_mental') {
+                p = promptEspecifico || document.getElementById('inp-chat').value.trim();
+                if(!p) p = "Crie um mapa mental sobre Direito e seus ramos principais.";
+                box = document.getElementById('box-chat');
+                box.insertAdjacentHTML('beforeend', `<div class="msg msg-u">🧠 Gerar Mapa Mental: ${sanitizeText(p)}</div>`); 
+                document.getElementById('inp-chat').value=''; 
+                box.scrollTop = box.scrollHeight;
+            } else if(tipo === 'chat') {
+                p = promptEspecifico || document.getElementById('inp-chat').value.trim(); if(!p) return;
+                box = document.getElementById('box-chat');
+                let exibicao = textoExibicao || p;
+                box.insertAdjacentHTML('beforeend', `<div class="msg msg-u">${sanitizeText(exibicao)}</div>`); 
+                if(!promptEspecifico) { 
+                    document.getElementById('inp-chat').value=''; 
+                }
+                box.scrollTop = box.scrollHeight;
+            }
+            let baseSys = obterPromptDoSistema(tipo, p);
+            
+            // Função movida para fora do try/catch para corrigir falhas de escopo e evitar o erro "Unexpected token catch"
+            async function chamarGemini(modelo, corpoRequisicao) {
+                // Estrutura do fetch e interpolação de strings corrigidos
+                let res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelo}:generateContent?key=${k}`, { 
+                    method: 'POST', 
+                    headers: { 'Content-Type': 'application/json' }, 
+                    body: JSON.stringify(corpoRequisicao) 
+                });
+                if(!res.ok) {
+                    let errStr = await res.text();
+                    throw new Error(`Erro API (${res.status}): ${errStr}`);
+                }
+                const data = await res.json(); 
+                return data.candidates[0].content.parts[0].text;
+            }
+
+            try {
+                if(tipo !== 'flashcards') { 
+                    box.insertAdjacentHTML('beforeend', `<div class="msg msg-a" id="load-ia"><span id="load-ia-text">Analisando...</span> ⏳</div>`);
+                    box.scrollTop = box.scrollHeight; 
+                } else { 
+                    box.innerHTML = `<div id="load-ia" style="color:var(--brand-primary); font-weight:600;"><span>Construindo flashcards objetivos...</span> ⏳</div>`; 
+                }
+                let partesDaMensagem = [];
+                let textoContexto = "";
+                
                 if (tipo === 'chat' || tipo === 'questoes' || tipo === 'flashcards' || tipo === 'mapa_mental') {
                     let idContainer = (tipo === 'chat' || tipo === 'mapa_mental') ? 'chk-container-chat' : (tipo === 'questoes' ? 'chk-container-simulador' : 'chk-container-flashcards');
                     let chksSelecionados = document.querySelectorAll(`#${idContainer} .chk-fonte-biblioteca:checked`);
@@ -2401,38 +2473,36 @@
                         let doc = dbData.biblioteca.find(d => d.fbKey === chk.value);
                         if(doc) {
                             if(doc.nome.toLowerCase().endsWith('.pdf') || (doc.url && doc.url.includes('.pdf'))) {
-                                // SE JÁ FOI INDEXADO ANTES, USA A VELOCIDADE DA LUZ (Zero Download)
-                                if (doc.geminiUri) {
-                                    partesDaMensagem.push({ 
-                                        fileData: { mimeType: "application/pdf", fileUri: doc.geminiUri } 
-                                    });
-                                } else {
-                                    // Fallback para PDFs antigos que você subiu antes desta atualização
-                                    try {
-                                        let spanLoad = document.getElementById('load-ia-text') || document.querySelector('#load-ia span');
-                                        if(spanLoad) spanLoad.textContent = "Indexando PDF antigo... ⏳";
-                                        let resBlob = await fetch(doc.url);
-                                        if (!resBlob.ok) resBlob = await fetch(`https://corsproxy.io/?${encodeURIComponent(doc.url)}`);
-                                        if (!resBlob.ok) throw new Error("Erro de permissão");
-                                        let blob = await resBlob.blob();
-                                        let apiKeyGemini = localStorage.getItem('pruma_apikey');
-                                        let fileUriGerada = await uploadParaGeminiFileAPI(blob, apiKeyGemini);
-                                        
-                                        // Salva para não ter de baixar de novo amanhã
-                                        refDb.child(`biblioteca/${doc.fbKey}`).update({ geminiUri: fileUriGerada });
-                                        
-                                        partesDaMensagem.push({ fileData: { mimeType: "application/pdf", fileUri: fileUriGerada } });
-                                    } catch(err) {
-                                        console.error("Erro ao processar PDF antigo:", err);
-                                        if(doc.texto) textoContexto += `\n--- Fonte [${doc.nome}] ---\n${doc.texto}\n`;
+                                try {
+                                    let spanLoad = document.getElementById('load-ia-text') || document.querySelector('#load-ia span');
+                                    if(spanLoad) spanLoad.textContent = "Baixando e processando documento... ⏳";
+                                    let resBlob = await fetch(doc.url);
+                                    if (!resBlob.ok) {
+                                        resBlob = await fetch(`https://corsproxy.io/?${encodeURIComponent(doc.url)}`);
                                     }
+                                    if (!resBlob.ok) {
+                                        throw new Error("Erro de permissão no Firebase Storage (HTTP " + resBlob.status + ")");
+                                    }
+                                    let blob = await resBlob.blob();
+                                    let apiKeyGemini = localStorage.getItem('pruma_apikey');
+                                    let fileUriGerada = await uploadParaGeminiFileAPI(blob, apiKeyGemini);
+                                    
+                                    partesDaMensagem.push({ 
+                                        fileData: { 
+                                            mimeType: "application/pdf", 
+                                            fileUri: fileUriGerada 
+                                        } 
+                                    });
+                                } catch(err) {
+                                    console.error("Erro ao processar PDF com a File API:", err);
+                                    if(doc.texto) textoContexto += `\n--- Fonte [${doc.nome}] (Extração Parcial) ---\n${doc.texto}\n`;
                                 }
                             } else if (doc.texto) {
                                 textoContexto += `\n--- Fonte [${doc.nome}] ---\n${doc.texto}\n`;
                             }
                         }
                     }
-                
+                }
                 let chkWebId = (tipo === 'chat' || tipo === 'mapa_mental') ? 'chk-busca-web' : (tipo === 'questoes' ? 'chk-busca-web-qts' : 'chk-busca-web-fc');
                 let chkWeb = document.getElementById(chkWebId);
                 let usaWeb = (chkWeb && chkWeb.checked);
@@ -2443,7 +2513,6 @@
                 if(partesDaMensagem.length > 0) {
                     instrucaoFinal += "[ATENÇÃO: FONTES OBRIGATÓRIAS EM ANEXO]: Responda à dúvida UTILIZANDO DADOS E TRECHOS DOS PDFs ANEXOS. Se o conteúdo não estiver no documento, avise o usuário.\n\n";
                 }
-                
                 if (usaWeb) {
                     let spanLoad = document.getElementById('load-ia-text') || document.querySelector('#load-ia span');
                     if(spanLoad) spanLoad.textContent = "Raspando a Web (via Tavily)... ⏳";
@@ -2468,7 +2537,6 @@
                 
                 let spanLoadRestaurar = document.getElementById('load-ia-text') || document.querySelector('#load-ia span');
                 if(spanLoadRestaurar) spanLoadRestaurar.textContent = (tipo === 'flashcards') ? "Construindo flashcards objetivos..." : (tipo === 'mapa_mental' ? "Desenhando Mapa Mental..." : "Analisando...");
-                
                 if (tipo === 'mapa_mental') {
                     instrucaoFinal += `Atue como arquiteto visual de mapas mentais. Gere OBRIGATORIAMENTE um código Mermaid.js válido usando a sintaxe 'mindmap'.
 REGRAS RÍGIDAS:
@@ -2505,15 +2573,106 @@ PROMPT DO USUÁRIO: ${p}`;
                     while(historyContents.length > 0 && historyContents[0].role !== 'user') {
                         historyContents.shift();
                     }
+                    
                     if (historyContents.length > 0 && historyContents[historyContents.length - 1].role === 'user') {
                         historyContents.pop();
                     }
+                    
                     reqBody.contents = [...historyContents, { role: "user", parts: partesDaMensagem }];
                 } else {
                     reqBody.contents = [{ role: "user", parts: partesDaMensagem }];
                 }
                 
-                async function chamarGemini(modelo) {
+                let modeloEscolhido = localStorage.getItem('pruma_modelo') || 'gemini-3.5-flash-lite';
+                
+                // Chamada agora faz uso da função externa corrigida
+                let txtF = await chamarGemini(modeloEscolhido, reqBody);
+                
+                let l = document.getElementById('load-ia'); if(l) l.remove();
+                
+                let badgeModelo = `<div style="font-size:0.7rem; color:var(--text-muted); opacity:0.7; margin-bottom:6px; text-align:right;">🛡️ PRUMA IA ${tagWeb}</div>`;
+                if(tipo === 'mapa_mental') {
+                    let mermaidCode = txtF.replace(/```mermaid/g,'').replace(/```/g,'').trim();
+                    let mapId = 'mermaid-' + Date.now();
+                    try {
+                        const { svg } = await mermaid.render(mapId, mermaidCode);
+                        let finalHtmlMapa = `${badgeModelo}
+                        <div class="mermaid-container" style="background:#fff;">${svg}</div>
+                        <div style="display:flex; gap:8px; margin-top:12px; flex-wrap:wrap;">
+                            <button class="btn-primary" style="width:auto; padding:6px 12px; font-size:0.8rem; background:var(--brand-primary);" data-svg="${encodeURIComponent(svg)}" onclick="expandirMapaMental(this.getAttribute('data-svg'))">🔍 Ampliar / Baixar (SVG)</button>
+                            <button class="btn-primary" style="width:auto; padding:6px 12px; font-size:0.8rem; background:var(--brand-warning); border:none;" data-svg="${encodeURIComponent(svg)}" onclick="abrirModalEnviarCaderno(decodeURIComponent(this.getAttribute('data-svg')), this, 'Mapas Mentais', 'Geral', false, true)">📚 Salvar no Caderno</button>
+                        </div>`;
+                        box.insertAdjacentHTML('beforeend', `<div class="msg msg-a" style="max-width:100%; width:100%;">${finalHtmlMapa}</div>`);
+                        salvarFiltroHistorico('chat', `🧠 Mapa Mental: ${p}`, p.substring(0, 25), finalHtmlMapa);
+                    } catch(err) {
+                        console.error("Erro Mermaid:", err);
+                        box.insertAdjacentHTML('beforeend', `<div class="msg msg-a" style="color:var(--brand-danger);">⚠️ Não foi possível gerar a estrutura do mapa mental. Tente refazer o pedido com menos detalhes.</div>`);
+                    }
+                }
+                else if(tipo === 'flashcards') {
+                    let json = parseJSONComSeguranca(txtF);
+                    let matNome = sanitizeText(document.getElementById('fc-mat').value) || 'Flashcards Diversos';
+                    let topNome = sanitizeText(document.getElementById('fc-top').value) || 'Geral';
+                    
+                    let htmlFCResult = badgeModelo;
+                    
+                    json.forEach(c => {
+                        let perguntaParsed = sanitizeText(marked.parse(c.f));
+                        let respostaParsed = sanitizeText(marked.parse(c.v));
+                        let fcContent = `<div style="background:var(--bg-card); padding:14px; border-radius:8px; border-left:4px solid var(--brand-warning); border:1px solid var(--border-color); width:100%;">
+                            <div style="font-weight:700; color:var(--text-main);">❓ Pergunta (${c.nivel || ''}):</div>
+                            <div style="margin-top:6px; font-weight:normal;" class="conteudo-resposta-ia">${perguntaParsed}</div>
+                            <button onclick="abrirVisorRespostaFlashcard(this)" class="btn-outline" style="margin-top:12px; width:auto; padding:6px 12px; font-size:0.85rem;">Ver Resposta</button>
+                            <div style="display:none;" class="conteudo-flashcard-escondido">
+                                <div style="color:var(--brand-primary); margin-bottom:16px; font-weight:700; font-size:1.2rem;">💡 Resposta</div>
+                                <div class="conteudo-resposta-ia" style="text-align:left;">${respostaParsed}</div>
+                            </div>
+                        </div>`;
+                        let itemHtml = `<div style="margin-bottom:16px;">${fcContent}<div style="margin-top:8px;"><button class="btn-outline" style="width:auto; padding:6px 12px; font-size:0.8rem;" data-payload="${encodeURIComponent(fcContent)}" data-mat="${encodeURIComponent(matNome)}" data-top="${encodeURIComponent(topNome)}" onclick="abrirModalEnviarFlashcard(decodeURIComponent(this.getAttribute('data-payload')), this, decodeURIComponent(this.getAttribute('data-mat')), decodeURIComponent(this.getAttribute('data-top')))">💾 Salvar Flashcard</button></div></div>`;
+                        htmlFCResult += itemHtml;
+                    });
+                    box.innerHTML = htmlFCResult;
+                    salvarFiltroHistorico('flashcards', {mat: matNome, top: topNome}, `${matNome}`, htmlFCResult);
+                
+                } else if(tipo === 'questoes') {
+                    let qArray = parseJSONComSeguranca(txtF);
+                    let htmlQ = `<div style="display:flex; flex-direction:column; gap:20px;">`;
+                    qArray.forEach(q => {
+                        let altHtml = '';
+                        if(Array.isArray(q.alternativas)) {
+                            q.alternativas.forEach(alt => {
+                                let letra = alt.charAt(0).toUpperCase();
+                                let isCorreta = (letra === (q.correta || '').toUpperCase());
+                                altHtml += `<button class="btn-outline alt-btn" data-correta="${isCorreta?'1':'0'}" onclick="responderQuestaoUnica(this)" style="text-align:left; padding:10px 14px; margin:4px 0; border-radius:8px; font-size:0.9rem; width:100%;">${sanitizeText(alt)}</button>`;
+                            });
+                        }
+                        let cadQstHtml = `<div style="background:var(--bg-card); padding:16px; border-radius:var(--radius-sm); border:1px solid var(--border-color); width:100%;"><div style="font-weight:700; margin-bottom:10px;">🎯 Questão (${sanitizeText(q.nivel||'')})</div><div style="margin-bottom:12px;">${sanitizeText(q.enunciado)}</div><div style="display:flex; flex-direction:column; gap:4px; margin-bottom:12px;" class="bloco-alternativas-qst">${altHtml}</div><div class="bloco-explicacao-qst" style="display:none; margin-top:8px;"><div style="font-size:0.85rem; color:var(--text-muted); padding-top:8px; border-top:1px solid var(--border-color);">💡 Comentário: ${sanitizeText(q.comentario || '')}</div></div></div>`;
+                        let itemHtmlQst = `<div style="margin-bottom:16px;">${cadQstHtml}<div style="margin-top:8px;"><button class="btn-primary" style="width:auto; padding:6px 14px; font-size:0.8rem;" data-payload="${encodeURIComponent(cadQstHtml)}" data-mat="${encodeURIComponent(document.getElementById('ia-qts-tema').value || 'Questões')}" onclick="abrirModalEnviarCaderno(decodeURIComponent(this.getAttribute('data-payload')), this, decodeURIComponent(this.getAttribute('data-mat')), '', true)">📚 Enviar para Caderno de Erros</button></div></div>`;
+                        htmlQ += itemHtmlQst;
+                    });
+                    htmlQ += `</div>`;
+                    let finalQstHtml = `${badgeModelo}${htmlQ}`;
+                    box.insertAdjacentHTML('beforeend', `<div class="msg msg-a" style="max-width:100%; width:100%;">${finalQstHtml}</div>`);
+                    salvarFiltroHistorico('questoes', {tema: document.getElementById('ia-qts-tema').value}, 'Questões', finalQstHtml);
+                
+                } else {
+                    let parsedMarkdown = marked.parse(txtF); 
+                    let lHtml = sanitizeText(parsedMarkdown);
+                    
+                    let chatHtmlToSave = `<div class="conteudo-resposta-ia">${lHtml}</div>`;
+                    let finalChatHtml = `${badgeModelo}<div class="conteudo-resposta-ia">${lHtml}</div><br><div style="display:flex; gap:8px;"><button class="btn-outline" style="width:auto; padding:6px 12px; font-size:0.8rem;" onclick="aprofundarRespostaContextual(this)">🔍 Aprofundar</button><button class="btn-primary" style="width:auto; padding:6px 12px; font-size:0.8rem;" data-payload="${encodeURIComponent(chatHtmlToSave)}" onclick="abrirModalEnviarCaderno(decodeURIComponent(this.getAttribute('data-payload')), this, '', '', true)">📚 Salvar no Caderno</button></div>`;
+                    
+                    box.insertAdjacentHTML('beforeend', `<div class="msg msg-a" style="max-width:100%; width:100%;">${finalChatHtml}</div>`);
+                    salvarFiltroHistorico('chat', p, p.substring(0, 25), finalChatHtml);
+                }
+                box.scrollTop = box.scrollHeight;
+            } catch(e) {
+                let l = document.getElementById('load-ia'); if(l) l.remove();
+                if(box) box.insertAdjacentHTML('beforeend', `<div class="msg msg-a" style="color:var(--brand-danger);">⚠️ Erro: ${e.message}</div>`);
+            }
+        }
+
+                  async function chamarGemini(modelo) {
                     let res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelo}:generateContent?key=${k}`, { 
                         method:'POST', headers:{'Content-Type':'application/json'}, 
                         body: JSON.stringify(reqBody) 
