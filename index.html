@@ -1466,9 +1466,15 @@
                 gerarMissoesSRS(mat, topRaw, dObj);
             }
             
+            // CORREÇÃO: Força o calendário a voltar para o mês atual assim que você salva
+            calMesOff = 0;
+            
             cancelarEdicaoRegistro(); reiniciarCronometro();
             ['ses-mat','ses-top','ses-acertos','ses-erros','ses-man-horas','ses-man-mins','ses-man-segs','ses-obs','ses-pdf-ini','ses-pdf-fim','ses-vid-ini','ses-vid-fim'].forEach(id=> { if(document.getElementById(id)) document.getElementById(id).value = ''; });
-            document.getElementById('ses-data').value = new Date().toISOString().split('T')[0];
+            
+            // CORREÇÃO: Previne que sessões registadas de madrugada transitem para o dia seguinte
+            let dLocal = new Date();
+            document.getElementById('ses-data').value = dLocal.getFullYear() + '-' + String(dLocal.getMonth() + 1).padStart(2, '0') + '-' + String(dLocal.getDate()).padStart(2, '0');
         }
         function editarRegistro(id) {
             let s = dbData.sessoes.find(x => x.id === id); if(!s) return;
@@ -1492,10 +1498,13 @@
             
             document.getElementById('form-titulo-sessao').textContent = "✏️ Editando Sessão"; document.getElementById('btn-salvar-sessao').textContent = "💾 Atualizar Sessão"; document.getElementById('btn-cancelar-edicao').style.display = 'block'; window.scrollTo({ top: 0, behavior: 'smooth' });
         }
-        function cancelarEdicaoRegistro() {
+       function cancelarEdicaoRegistro() {
             editandoRegistroId = null; document.getElementById('form-titulo-sessao').textContent = "Registrar Sessão"; document.getElementById('btn-salvar-sessao').textContent = "💾 Salvar Sessão"; document.getElementById('btn-cancelar-edicao').style.display = 'none';
             ['ses-mat','ses-top','ses-acertos','ses-erros','ses-man-horas','ses-man-mins','ses-man-segs','ses-obs','ses-pdf-ini','ses-pdf-fim','ses-vid-ini','ses-vid-fim'].forEach(id=> { if(document.getElementById(id)) { document.getElementById(id).value = ''; document.getElementById(id).title = ''; } });
-            document.getElementById('ses-data').value = new Date().toISOString().split('T')[0];
+            
+            // CORREÇÃO: Usa a data local exata do seu fuso horário
+            let d = new Date();
+            document.getElementById('ses-data').value = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
         }
         function renderizarInicio() {
             let divReg = document.getElementById('lista-ultimos-registros');
