@@ -256,10 +256,11 @@
                             <div id="cronometro-visor" style="font-size: 3rem; color: var(--brand-primary); font-weight: 700; font-variant-numeric: tabular-nums; margin: 8px 0 0 0; letter-spacing:-1px; word-break:break-all;">00:00:00</div>
                             <div id="visor-pausa-container" style="display:none; font-size:0.85rem; font-weight:600; color:var(--text-muted); margin-bottom:8px;">⏸️ Pausado: <span id="visor-pausa" style="font-variant-numeric:tabular-nums;">00:00:00</span></div>
                             
-                            <div style="display:flex; justify-content:center; gap:8px; flex-wrap:wrap; margin-top:12px;">
-                                <button class="btn-success" onclick="iniciarCronometro()" style="flex:1; min-width:80px; padding:10px;">▶ Iniciar</button>
-                                <button class="btn-outline" style="flex:1; min-width:80px; padding:10px;" onclick="pausarCronometro()">⏸ Pausar</button>
-                                <button id="btn-reiniciar-cron" class="btn-outline" style="flex:1; min-width:80px; padding:10px; color:var(--brand-danger); border-color:var(--brand-primary); display:none;" onclick="reiniciarCronometro()">🔄 Zerar</button>
+                            <div style="display:flex; justify-content:center; gap:8px; flex-wrap:wrap; margin-top:12px;" id="container-botoes-cron">
+                                <button id="btn-iniciar-cron" class="btn-success" onclick="iniciarCronometro()" style="flex:1; min-width:80px; padding:10px;">▶ Iniciar</button>
+                                <button id="btn-pausar-cron" class="btn-outline" onclick="pausarCronometro()" style="flex:1; min-width:80px; padding:10px; display:none;">⏸ Pausar</button>
+                                <button id="btn-reiniciar-cron" class="btn-outline" style="flex:1; min-width:80px; padding:10px; color:var(--brand-danger); border-color:var(--brand-danger); display:none;" onclick="reiniciarCronometro()">🔄 Zerar</button>
+                                <button id="btn-salvar-cron" class="btn-primary" style="flex:1; min-width:80px; padding:10px; display:none;" onclick="enviarTempoParaRegistro()">💾 Salvar</button>
                             </div>
                         </div>
                         <div style="background:var(--bg-input); padding:16px; border-radius:var(--radius-md); width:100%;">
@@ -1292,138 +1293,83 @@
         function iniciarCronometro() { 
             if(pausaInterval) { clearInterval(pausaInterval); pausaInterval = null; }
             document.getElementById('visor-pausa-container').style.display = 'none';
-            let btnR = document.getElementById('btn-reiniciar-cron');
-            if(btnR) btnR.style.display = 'none';
+            
+            // Controle Lógico de Botões
+            document.getElementById('btn-iniciar-cron').style.display = 'none';
+            document.getElementById('btn-pausar-cron').style.display = 'inline-block';
+            let btnR = document.getElementById('btn-reiniciar-cron'); if(btnR) btnR.style.display = 'none';
+            let btnS = document.getElementById('btn-salvar-cron'); if(btnS) btnS.style.display = 'none';
+
             if(!cronometroInterval) { cronometroInterval = setInterval(() => { segundosCronometro++; atualizarVisorCronometro(); }, 1000); } 
         }
+
         function pausarCronometro() { 
             if(cronometroInterval) { clearInterval(cronometroInterval); cronometroInterval = null; }
             document.getElementById('visor-pausa-container').style.display = 'block';
+            
+            // Controle Lógico de Botões: Muda para Retomar, Zerar e Salvar
+            let btnI = document.getElementById('btn-iniciar-cron');
+            btnI.innerHTML = '▶ Retomar';
+            btnI.style.display = 'inline-block';
+            document.getElementById('btn-pausar-cron').style.display = 'none';
+            
             let btnR = document.getElementById('btn-reiniciar-cron');
-            if(btnR) { btnR.style.display = 'inline-block'; btnR.style.borderColor = getComputedStyle(document.documentElement).getPropertyValue('--brand-primary').trim(); }
+            if(btnR) { btnR.style.display = 'inline-block'; btnR.style.borderColor = 'var(--brand-danger)'; }
+            let btnS = document.getElementById('btn-salvar-cron');
+            if(btnS) btnS.style.display = 'inline-block';
+
             if(!pausaInterval) { pausaInterval = setInterval(() => { segundosPausa++; atualizarVisorPausa(); }, 1000); }
         }
+
         function reiniciarCronometro() {
             if(cronometroInterval) clearInterval(cronometroInterval); cronometroInterval = null;
             if(pausaInterval) clearInterval(pausaInterval); pausaInterval = null;
             segundosCronometro = 0; segundosPausa = 0;
             atualizarVisorCronometro(); atualizarVisorPausa();
             document.getElementById('visor-pausa-container').style.display = 'none';
-            let btnR = document.getElementById('btn-reiniciar-cron');
-            if(btnR) btnR.style.display = 'none';
-        }
-        function atualizarVisorCronometro() {
-            let h = Math.floor(segundosCronometro/3600).toString().padStart(2,'0'), m = Math.floor((segundosCronometro%3600)/60).toString().padStart(2,'0'), s = (segundosCronometro%60).toString().padStart(2,'0');
-            document.getElementById('cronometro-visor').textContent = `${h}:${m}:${s}`;
-        }
-        function atualizarVisorPausa() {
-            let h = Math.floor(segundosPausa/3600).toString().padStart(2,'0'), m = Math.floor((segundosPausa%3600)/60).toString().padStart(2,'0'), s = (segundosPausa%60).toString().padStart(2,'0');
-            document.getElementById('visor-pausa').textContent = `${h}:${m}:${s}`;
-        }
-        function toggleCamposDetalhes() {
-            let mat = document.getElementById('ses-tipo-mat').value;
-            document.getElementById('campos-pdf').style.display = mat.includes('PDF') ? 'flex' : 'none';
-            document.getElementById('campos-video').style.display = mat==='Vídeo Aula' ? 'flex' : 'none';
-        }
-        function atualizarTopicosSessao(matNome) {
-            let dl = document.getElementById('dl-ses-top'); if(!dl) return; 
-            let htmlOpts = '';
-            if(!Array.isArray(dbData.materias)) dbData.materias = Object.values(dbData.materias || {});
-            dbData.materias.filter(m => m.nome.toLowerCase() === matNome.toLowerCase()).forEach(m => {
-                if(Array.isArray(m.topicos)) m.topicos.forEach(t => htmlOpts += `<option value="${t}">`);
-            });
-            dl.innerHTML = htmlOpts;
-        }
-        function atualizarTopicosCaderno(matNome, idDatalist, tipoDb) {
-            let dl = document.getElementById(idDatalist); if(!dl) return; 
-            let arrayDb = tipoDb === 'flashcards' ? dbData.flashcards : dbData.cadernos;
-            if(!Array.isArray(arrayDb)) arrayDb = Object.values(arrayDb || {});
-            let tops = new Set();
-            arrayDb.forEach(c => { if(c.materia === matNome && c.topico) tops.add(c.topico); });
             
-            let htmlOpts = '';
-            [...tops].forEach(t => htmlOpts += `<option value="${t}">`);
-            dl.innerHTML = htmlOpts;
+            // Reinicia a interface
+            let btnI = document.getElementById('btn-iniciar-cron');
+            btnI.innerHTML = '▶ Iniciar';
+            btnI.style.display = 'inline-block';
+            document.getElementById('btn-pausar-cron').style.display = 'none';
+            
+            let btnR = document.getElementById('btn-reiniciar-cron'); if(btnR) btnR.style.display = 'none';
+            let btnS = document.getElementById('btn-salvar-cron'); if(btnS) btnS.style.display = 'none';
         }
-        function atualizarResumoGeral() {
-            let per = document.getElementById('resumo-geral-periodo').value;
-            document.getElementById('resumo-geral-custom-dates').style.display = per==='custom' ? 'flex' : 'none';
-            let dtI = document.getElementById('rg-dt-ini').value, dtF = document.getElementById('rg-dt-fim').value;
-            let agora = Date.now(), tQts = 0, tA = 0, tE = 0, tSeg = 0;
+
+        function enviarTempoParaRegistro() {
+            // Extrai as horas, minutos e segundos exatos do cronómetro
+            let h = Math.floor(segundosCronometro / 3600);
+            let m = Math.floor((segundosCronometro % 3600) / 60);
+            let s = segundosCronometro % 60;
             
-            dbData.sessoes.filter(s => {
-                if(per === 'tudo') return true;
-                if(per === 'hoje') return s.data === new Date().toLocaleDateString();
-                if(per === 'custom') return (!dtI || !dtF) ? true : (s.timestamp >= new Date(dtI).getTime() && s.timestamp <= new Date(dtF).getTime()+86399999);
-                return (agora - s.timestamp) <= (parseInt(per)*86400000);
-            }).forEach(s => {
-                let ac = s.acertos || 0, er = s.erros || 0;
-                tA += ac; tE += er; tQts += (s.totalQts !== undefined ? s.totalQts : (ac + er)); tSeg += (s.segundos || 0);
-            });
-            let hh = Math.floor(tSeg / 3600).toString().padStart(2,'0'), mm = Math.floor((tSeg % 3600) / 60).toString().padStart(2,'0'), ss = (tSeg % 60).toString().padStart(2,'0');
-            let elRgTempo = document.getElementById('rg-tempo'); if(elRgTempo) elRgTempo.textContent = `${hh}:${mm}:${ss}`;
-            document.getElementById('rg-qts').textContent = tQts; document.getElementById('rg-acertos').textContent = tA;
-            document.getElementById('rg-erros').textContent = tE; document.getElementById('rg-perc').textContent = (tA + tE) > 0 ? Math.round((tA / (tA + tE)) * 100) + '%' : '0%';
+            // Preenche automaticamente o formulário de baixo
+            document.getElementById('ses-man-horas').value = h;
+            document.getElementById('ses-man-mins').value = m;
+            document.getElementById('ses-man-segs').value = s;
+            
+            // Efeito visual para mostrar que foi copiado e desce a página até ao formulário
+            let form = document.getElementById('form-titulo-sessao').parentElement;
+            form.style.transition = 'box-shadow 0.4s';
+            form.style.boxShadow = '0 0 20px var(--brand-primary)';
+            setTimeout(() => { form.style.boxShadow = 'none'; }, 1200);
+            document.getElementById('form-titulo-sessao').scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
-        function alterarMesCalendario(delta) {
-            let pSessao = dbData.sessoes.length > 0 ? dbData.sessoes.reduce((min, s) => Math.min(min, s.timestamp), Date.now()) : Date.now();
-            let dataMinima = new Date(pSessao); dataMinima.setDate(1); dataMinima.setHours(0,0,0,0);
-            let agora = new Date();
-            let mesAtualIndex = agora.getFullYear() * 12 + agora.getMonth();
-            let minIndex = dataMinima.getFullYear() * 12 + dataMinima.getMonth();
-            let targetDate = new Date(agora.getFullYear(), agora.getMonth() + calMesOff + delta, 1);
-            let targetIndex = targetDate.getFullYear() * 12 + targetDate.getMonth();
-            
-            if (targetIndex < minIndex || targetIndex > mesAtualIndex) return;
-            calMesOff += delta;
-            renderizarCalendarioMes();
-        }
-        function renderizarCalendarioMes() {
-            let grid = document.getElementById('calendario-grid'); if(!grid) return; 
-            let agora = new Date();
-            let targetDate = new Date(agora.getFullYear(), agora.getMonth() + calMesOff, 1);
-            let ano = targetDate.getFullYear(), mes = targetDate.getMonth();
-            
-            let pSessao = dbData.sessoes.length > 0 ? dbData.sessoes.reduce((min, s) => Math.min(min, s.timestamp), Date.now()) : Date.now();
-            let dataMinima = new Date(pSessao);
-            let minIndex = dataMinima.getFullYear() * 12 + dataMinima.getMonth();
-            let atualIndex = agora.getFullYear() * 12 + agora.getMonth();
-            let targetIndex = ano * 12 + mes;
-            
-            let btnPrev = document.getElementById('cal-btn-prev');
-            let btnNext = document.getElementById('cal-btn-next');
-            if(btnPrev) btnPrev.style.visibility = (targetIndex > minIndex) ? 'visible' : 'hidden';
-            if(btnNext) btnNext.style.visibility = (targetIndex < atualIndex) ? 'visible' : 'hidden';
-            
-            const nomesMeses = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
-            document.getElementById('calendario-titulo').textContent = `${nomesMeses[mes]} ${ano}`;
-            let gridHtml = '';
-            ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'].forEach(d => { gridHtml += `<div style="font-weight:700; color:var(--text-muted); font-size:0.75rem; padding-bottom:4px;">${d}</div>`; });
-            let primeiroDiaDoMes = new Date(ano, mes, 1).getDay();
-            let ultimoDiaDoMes = new Date(ano, mes + 1, 0).getDate();
-            for(let i=0; i<primeiroDiaDoMes; i++) gridHtml += `<div></div>`;
-            for(let dia=1; dia<=ultimoDiaDoMes; dia++) {
-                let dObj = new Date(ano, mes, dia);
-                let isPassadoOuHoje = dObj <= new Date(agora.getFullYear(), agora.getMonth(), agora.getDate());
-                let temEstudo = dbData.sessoes.some(s => { let sDate = new Date(s.timestamp); return sDate.getFullYear() === ano && sDate.getMonth() === mes && sDate.getDate() === dia; });
-                let icone = '', corFundo = 'var(--bg-card)';
-                if(isPassadoOuHoje) {
-                    if(temEstudo) { icone = '✅'; corFundo = 'rgba(52, 199, 89, 0.12)'; } 
-                    else { icone = '❌'; corFundo = 'rgba(255, 59, 48, 0.12)'; }
-                }
-                gridHtml += `<div style="background:${corFundo};border:1px solid var(--border-color);border-radius:8px;padding:6px 2px;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:42px;"><span style="font-size:0.8rem;font-weight:600;color:var(--text-main);">${dia}</span><span style="font-size:0.85rem; margin-top:2px;">${icone}</span></div>`;
-            }
-            grid.innerHTML = gridHtml;
-        }
+
         function salvarRegistro() {
             let mat = sanitizeText(document.getElementById('ses-mat').value), topRaw = sanitizeText(document.getElementById('ses-top').value);
             if(!mat) return alert("Preencha a matéria.");
             
             let topsArray = topRaw.split(',').map(x => x.trim()).filter(Boolean);
             
+            // FIX: Bloco blindado para Fuso Horário Local (Ignora UTC)
             let sesDataVal = document.getElementById('ses-data').value;
+            // Se o utilizador estuda à 1h da manhã do dia 8, a data guardada será estritamente dia 8.
             let dObj = sesDataVal ? new Date(sesDataVal + 'T00:00:00') : new Date();
-            let timestamp = dObj.getTime(), dataStr = dObj.toLocaleDateString();
+            let timestamp = dObj.getTime();
+            let dataStr = dObj.toLocaleDateString('pt-BR'); // Força formato PT-BR local DD/MM/AAAA
+            
             let hMan = parseInt(document.getElementById('ses-man-horas').value) || 0;
             let mMan = parseInt(document.getElementById('ses-man-mins').value) || 0;
             let sMan = parseInt(document.getElementById('ses-man-segs').value) || 0;
@@ -1444,9 +1390,11 @@
                 tipoMat: document.getElementById('ses-tipo-mat').value, segundos: segsFinais, 
                 acertos: a, erros: e, totalQts: a+e, obs: sanitizeText(document.getElementById('ses-obs').value) 
             };
+            
             if(reg.tipoMat.includes('PDF')) reg.paginas = Math.max(0, (parseInt(document.getElementById('ses-pdf-fim').value)||0) - (parseInt(document.getElementById('ses-pdf-ini').value)||0) + 1);
             if(reg.tipoMat === 'Vídeo Aula') reg.videos = Math.max(0, (parseInt(document.getElementById('ses-vid-fim').value)||0) - (parseInt(document.getElementById('ses-vid-ini').value)||0) + 1);
             if(!Array.isArray(dbData.materias)) dbData.materias = Object.values(dbData.materias || {});
+            
             let idxM = dbData.materias.findIndex(m => m.nome.toLowerCase() === mat.toLowerCase());
             if(idxM === -1) { 
                 dbData.materias.push({id: gerarId(), nome: mat, cor: corAtualMateria, topicos: topsArray}); refDb.child('materias').set(dbData.materias); 
@@ -1460,21 +1408,31 @@
                 });
                 if(mudouTops) refDb.child('materias').set(dbData.materias);
             }
+            
+            // Injeta instantaneamente na UI antes do Firebase responder para atualização imediata
+            let localIdx = dbData.sessoes.findIndex(x => x.id === regId);
+            if(localIdx !== -1) dbData.sessoes[localIdx] = reg;
+            else dbData.sessoes.push(reg);
+            
             refDb.child('sessoes/'+reg.id).set(reg);
             
             if(isNovoRegistro) {
                 gerarMissoesSRS(mat, topRaw, dObj);
             }
             
-            // CORREÇÃO: Força o calendário a voltar para o mês atual assim que você salva
-            calMesOff = 0;
+            calMesOff = 0; // FIX: Força o calendário a regressar ao mês e dia atuais
             
             cancelarEdicaoRegistro(); reiniciarCronometro();
             ['ses-mat','ses-top','ses-acertos','ses-erros','ses-man-horas','ses-man-mins','ses-man-segs','ses-obs','ses-pdf-ini','ses-pdf-fim','ses-vid-ini','ses-vid-fim'].forEach(id=> { if(document.getElementById(id)) document.getElementById(id).value = ''; });
             
-            // CORREÇÃO: Previne que sessões registadas de madrugada transitem para o dia seguinte
-            let dLocal = new Date();
-            document.getElementById('ses-data').value = dLocal.getFullYear() + '-' + String(dLocal.getMonth() + 1).padStart(2, '0') + '-' + String(dLocal.getDate()).padStart(2, '0');
+            // FIX: Volta a preencher a caixa de data com o dia atual exato após submeter
+            let today = new Date();
+            let yyyy = today.getFullYear();
+            let mm = String(today.getMonth() + 1).padStart(2, '0');
+            let dd = String(today.getDate()).padStart(2, '0');
+            document.getElementById('ses-data').value = `${yyyy}-${mm}-${dd}`;
+            
+            renderizarInicio(); // Força o desenho da bolinha verde no calendário instantaneamente
         }
         function editarRegistro(id) {
             let s = dbData.sessoes.find(x => x.id === id); if(!s) return;
@@ -2035,19 +1993,70 @@
             graficoInstance = new Chart(document.getElementById('graficoEst').getContext('2d'), { type: tipo, data: { labels: keys, datasets: [{ label: 'Tempo', data: vals, backgroundColor: cores, borderWidth: 0, borderRadius: tipo==='bar'?6:0 }] }, options: { responsive: true, maintainAspectRatio: false, color: txtCor, plugins: { legend: { labels: { color: txtCor } }, tooltip: { callbacks: { label: function(c) { let t = c.raw || 0; return ` ${c.label || ''}: ${Math.floor(t / 3600)}h ${Math.floor((t % 3600) / 60)}m ${t % 60}s`; } } } }, scales: tipo==='bar' ? { x:{ticks:{color:txtCor}}, y:{ticks:{color:txtCor}} } : {} } });
         }
         async function uploadArquivo() {
-            let f = document.getElementById('bib-file').files[0]; if(!f) return alert("Selecione."); if(f.size > 100 * 1024 * 1024) return alert("Arquivo máx 100MB."); let btn = event.currentTarget; let tx = btn.textContent; btn.disabled = true; btn.textContent = "Enviando...";
+            let f = document.getElementById('bib-file').files[0]; 
+            if(!f) return alert("Selecione um arquivo."); 
+            if(f.size > 100 * 1024 * 1024) return alert("Arquivo muito grande. O máximo é 100MB."); 
+            
+            let btn = event.currentTarget; 
+            let tx = btn.textContent; 
+            btn.disabled = true; 
+            btn.textContent = "Preparando...";
+            
             try { 
-                let refF = refStore.child('biblioteca/'+gerarId()+'_'+f.name); 
-                await refF.put(f); 
+                let refF = refStore.child('biblioteca/' + gerarId() + '_' + f.name); 
+                
+                // 1. Envia para o Firebase com indicador de progresso
+                let uploadTask = refF.put(f);
+                uploadTask.on('state_changed', 
+                    (snapshot) => {
+                        let progress = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
+                        btn.textContent = `Nuvem: ${progress}%`;
+                    }, 
+                    (error) => { throw error; }
+                );
+
+                await uploadTask; 
                 let url = await refF.getDownloadURL(); 
+                
                 let txt = ""; 
-                if(!f.type.includes('pdf')) { txt = await f.text(); } 
-                let m = sanitizeText(document.getElementById('bib-mat-arq').value||'Geral'); 
-                refDb.child('biblioteca').push({ id: gerarId(), nome: f.name, tipo: 'ARQUIVO', url: url, texto: txt.substring(0,20000), materia: m, data: new Date().toLocaleDateString(), refPath: refF.fullPath }); 
+                let geminiUri = "";
+                let apiKey = localStorage.getItem('pruma_apikey');
+
+                // 2. Se for PDF, indexa imediatamente no Gemini (Cérebro da IA)
+                if(f.type.includes('pdf')) {
+                    if(apiKey) {
+                        btn.textContent = "Indexando na IA... ⏳";
+                        geminiUri = await uploadParaGeminiFileAPI(f, apiKey);
+                    } else {
+                        alert("Aviso: Você está sem API Key. O PDF foi salvo, mas não indexado para o Chat.");
+                    }
+                } else {
+                    txt = await f.text(); 
+                }
+                
+                let m = sanitizeText(document.getElementById('bib-mat-arq').value || 'Geral'); 
+                
+                // 3. Salva tudo no banco de dados, incluindo a chave secreta do Gemini
+                refDb.child('biblioteca').push({ 
+                    id: gerarId(), 
+                    nome: f.name, 
+                    tipo: 'ARQUIVO', 
+                    url: url, 
+                    texto: txt.substring(0, 20000), 
+                    materia: m, 
+                    data: new Date().toLocaleDateString(), 
+                    refPath: refF.fullPath,
+                    geminiUri: geminiUri // <- O SEGREDO DA VELOCIDADE
+                }); 
+                
                 document.getElementById('bib-file').value = ''; 
-                btn.textContent = "✅ Salvo!"; 
-                setTimeout(()=>{btn.textContent=tx; btn.disabled=false;}, 2000); 
-            } catch(e) { alert("Erro: "+e.message); btn.textContent=tx; btn.disabled=false; }
+                btn.textContent = "✅ Salvo e Indexado!"; 
+                setTimeout(() => { btn.textContent = tx; btn.disabled = false; }, 3000); 
+            } catch(e) { 
+                alert("Erro: " + e.message); 
+                btn.textContent = tx; 
+                btn.disabled = false; 
+            }
         }
         async function salvarLink() { 
             let url = document.getElementById('bib-link').value.trim(); if(!url) return; 
@@ -2392,36 +2401,37 @@
                         let doc = dbData.biblioteca.find(d => d.fbKey === chk.value);
                         if(doc) {
                             if(doc.nome.toLowerCase().endsWith('.pdf') || (doc.url && doc.url.includes('.pdf'))) {
-                                try {
-                                    let spanLoad = document.getElementById('load-ia-text') || document.querySelector('#load-ia span');
-                                    if(spanLoad) spanLoad.textContent = "Baixando e processando documento... ⏳";
-                                    let resBlob = await fetch(doc.url);
-                                    if (!resBlob.ok) {
-                                        resBlob = await fetch(`https://corsproxy.io/?${encodeURIComponent(doc.url)}`);
-                                    }
-                                    if (!resBlob.ok) {
-                                        throw new Error("Erro de permissão no Firebase Storage (HTTP " + resBlob.status + ")");
-                                    }
-                                    let blob = await resBlob.blob();
-                                    let apiKeyGemini = localStorage.getItem('pruma_apikey');
-                                    let fileUriGerada = await uploadParaGeminiFileAPI(blob, apiKeyGemini);
-                                    
+                                // SE JÁ FOI INDEXADO ANTES, USA A VELOCIDADE DA LUZ (Zero Download)
+                                if (doc.geminiUri) {
                                     partesDaMensagem.push({ 
-                                        fileData: { 
-                                            mimeType: "application/pdf", 
-                                            fileUri: fileUriGerada 
-                                        } 
+                                        fileData: { mimeType: "application/pdf", fileUri: doc.geminiUri } 
                                     });
-                                } catch(err) {
-                                    console.error("Erro ao processar PDF com a File API:", err);
-                                    if(doc.texto) textoContexto += `\n--- Fonte [${doc.nome}] (Extração Parcial) ---\n${doc.texto}\n`;
+                                } else {
+                                    // Fallback para PDFs antigos que você subiu antes desta atualização
+                                    try {
+                                        let spanLoad = document.getElementById('load-ia-text') || document.querySelector('#load-ia span');
+                                        if(spanLoad) spanLoad.textContent = "Indexando PDF antigo... ⏳";
+                                        let resBlob = await fetch(doc.url);
+                                        if (!resBlob.ok) resBlob = await fetch(`https://corsproxy.io/?${encodeURIComponent(doc.url)}`);
+                                        if (!resBlob.ok) throw new Error("Erro de permissão");
+                                        let blob = await resBlob.blob();
+                                        let apiKeyGemini = localStorage.getItem('pruma_apikey');
+                                        let fileUriGerada = await uploadParaGeminiFileAPI(blob, apiKeyGemini);
+                                        
+                                        // Salva para não ter de baixar de novo amanhã
+                                        refDb.child(`biblioteca/${doc.fbKey}`).update({ geminiUri: fileUriGerada });
+                                        
+                                        partesDaMensagem.push({ fileData: { mimeType: "application/pdf", fileUri: fileUriGerada } });
+                                    } catch(err) {
+                                        console.error("Erro ao processar PDF antigo:", err);
+                                        if(doc.texto) textoContexto += `\n--- Fonte [${doc.nome}] ---\n${doc.texto}\n`;
+                                    }
                                 }
                             } else if (doc.texto) {
                                 textoContexto += `\n--- Fonte [${doc.nome}] ---\n${doc.texto}\n`;
                             }
                         }
                     }
-                }
                 
                 let chkWebId = (tipo === 'chat' || tipo === 'mapa_mental') ? 'chk-busca-web' : (tipo === 'questoes' ? 'chk-busca-web-qts' : 'chk-busca-web-fc');
                 let chkWeb = document.getElementById(chkWebId);
