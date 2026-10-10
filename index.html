@@ -12,9 +12,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" crossorigin="anonymous" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js" crossorigin="anonymous" defer></script>
     
-    <!-- Biblioteca para Mapas Mentais -->
-    <script src="https://cdn.jsdelivr.net/npm/mermaid@10.6.1/dist/mermaid.min.js" crossorigin="anonymous"></script>
-    
     <link href="https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -559,7 +556,6 @@
                                 <div style="display:flex; flex-direction:column; gap:8px;">
                                     <label style="display:flex; align-items:center; gap:6px; font-size:0.8rem; font-weight:600; cursor:pointer;" title="Faz uma busca usando a API Tavily."><input type="checkbox" id="chk-busca-web"> 🌐 Buscar Web</label>
                                     <div style="display:flex; gap:8px;">
-                                        <button class="btn-outline" onclick="executarIA('mapa_mental')" style="width:auto; padding:10px 14px; border-color:var(--brand-warning); color:var(--brand-warning); font-weight:600;">🧠 Mapa Mental</button>
                                         <button class="btn-primary" onclick="executarIA('chat')" style="width:120px;">Enviar</button>
                                     </div>
                                 </div>
@@ -741,12 +737,6 @@
             <button class="btn-primary" style="width:auto; padding:12px 24px; font-size:1rem; box-shadow:var(--shadow-md);" onclick="document.getElementById('modal-ver-resposta').style.display='none'">Ocultar Resposta</button>
         </div>
     </div>
-    <div id="modal-mapa" class="modal">
-        <div class="modal-content" style="max-width: 95vw; height: 95vh; display: flex; flex-direction: column; padding: 20px;">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
-                <h2 style="margin:0; font-size:1.4rem;">🧠 Super Mapa Mental</h2>
-                <button style="background:transparent; border:none; font-size:2rem; cursor:pointer; color:var(--brand-danger);" onclick="document.getElementById('modal-mapa').style.display='none'">✖</button>
-            </div>
             
             <div id="mapa-fullscreen-container" style="flex:1; overflow:auto; background:#fff; border:1px solid var(--border-color); border-radius:8px; padding:20px; display:flex; justify-content:center; align-items:center;"></div>
             
@@ -808,8 +798,7 @@
         </div>
     </div>
     <script>
-        mermaid.initialize({ startOnLoad: false, theme: 'default', mindmap: { padding: 20 } });
-        let svgMapaAtual = '';
+      
         let userAtual = null, refDb = null, refStore = null, isAdmin = false;
         let dbData = { sessoes: [], provas: [], materias: [], cadernos: [], flashcards: [], biblioteca: [], iaFiltrosHistorico: [], missoes: [], metas: {horas:4, questoes:60}, notasCiclo: '' };
         let segundosCronometro = 0, cronometroInterval = null, graficoInstance = null;
@@ -936,17 +925,7 @@ function atualizarVisorPausa() {
             btn.classList.toggle('active');
             btn.innerHTML = btn.classList.contains('active') ? '🌐 Busca Web: Ativada' : '🌐 Busca Web: Desativada';
         }
-        function expandirMapaMental(encodedSvg) {
-            svgMapaAtual = decodeURIComponent(encodedSvg);
-            document.getElementById('mapa-fullscreen-container').innerHTML = svgMapaAtual;
-            document.getElementById('modal-mapa').style.display = 'flex';
-        }
-        function baixarMapaSVG() {
-            if(!svgMapaAtual) return;
-            let blob = new Blob([svgMapaAtual], {type: "image/svg+xml;charset=utf-8"});
-            let a = document.createElement('a'); a.href = URL.createObjectURL(blob); 
-            a.download = 'Mapa_Mental_PRUMA.svg'; document.body.appendChild(a); a.click(); document.body.removeChild(a);
-        }
+        
         function sanitizeText(str) { return typeof str === 'string' ? DOMPurify.sanitize(str) : ''; }
         function renderHtmlSafely(html) { return DOMPurify.sanitize(html, { ADD_ATTR: ['onclick', 'data-correta', 'style', 'class', 'data-svg'] }); }
         function gerarId() { return Date.now().toString(36) + Math.random().toString(36).substr(2); }
