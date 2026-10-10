@@ -867,9 +867,76 @@ function atualizarVisorPausa() {
 }
 
 function renderizarCalendarioMes() {
-    // Função de segurança para evitar que a interface trave caso a lógica do calendário também tenha sido apagada.
+    let titulo = document.getElementById('calendario-titulo');
     let grid = document.getElementById('calendario-grid');
-    if(grid) grid.innerHTML = '<div style="grid-column: span 7; color: var(--text-muted); padding: 10px;">Calendário carregado.</div>';
+    if(!titulo || !grid) return;
+
+    let hoje = new Date();
+    // Aplica o avanço ou recuo dos meses
+    let dataRef = new Date(hoje.getFullYear(), hoje.getMonth() + calMesOff, 1);
+    let mes = dataRef.getMonth();
+    let ano = dataRef.getFullYear();
+
+    // Atualiza o título do mês
+    const nomesMeses = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+    titulo.textContent = nomesMeses[mes] + ' ' + ano;
+
+    // Cabeçalho dos dias da semana (Dom a Sáb)
+    const diasSemana = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+    let html = '';
+    diasSemana.forEach(d => {
+        html += `<div style="font-size:0.65rem; font-weight:800; color:var(--text-muted); padding-bottom:6px; text-transform:uppercase;">${d}</div>`;
+    });
+
+    let primeiroDia = new Date(ano, mes, 1).getDay();
+    let diasNoMes = new Date(ano, mes + 1, 0).getDate();
+
+    // Espaços vazios antes do dia 1
+    for(let i = 0; i < primeiroDia; i++) {
+        html += `<div></div>`;
+    }
+
+    // Procura na base de dados os dias em que há sessões de estudo
+    let diasEstudados = new Set();
+    if(dbData && dbData.sessoes) {
+        dbData.sessoes.forEach(s => {
+            let dStr = s.data || (s.timestamp ? new Date(s.timestamp).toLocaleDateString('pt-BR') : '');
+            if(dStr) diasEstudados.add(dStr);
+        });
+    }
+
+    // Renderiza cada dia do mês
+    for(let dia = 1; dia <= diasNoMes; dia++) {
+        let dataAtualIteracao = new Date(ano, mes, dia);
+        // Força a formatação idêntica à forma como os registos são guardados (DD/MM/AAAA)
+        let dataFormatada = dataAtualIteracao.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+        
+        let isHoje = (dia === hoje.getDate() && mes === hoje.getMonth() && ano === hoje.getFullYear());
+        let temEstudo = diasEstudados.has(dataFormatada);
+
+        let bg = 'transparent';
+        let color = 'var(--text-main)';
+        let border = '1px solid transparent';
+        let cursor = 'default';
+        
+        // Se estudou neste dia, pinta a célula
+        if (temEstudo) {
+            bg = 'var(--brand-primary)';
+            color = '#fff';
+            cursor = 'pointer';
+        } else if (isHoje) {
+            // Destaca o dia de hoje com uma borda se ainda não estudou
+            border = '1px solid var(--brand-primary)';
+            color = 'var(--brand-primary)';
+        }
+
+        html += `<div style="padding:6px 0; border-radius:8px; background:${bg}; color:${color}; font-weight:700; border:${border}; display:flex; flex-direction:column; align-items:center; justify-content:center; cursor:${cursor}; transition:transform 0.2s;" title="${temEstudo ? 'Você estudou neste dia!' : ''}">
+                    ${dia}
+                    ${temEstudo ? `<div style="width:4px; height:4px; border-radius:50%; background:var(--brand-warning); margin-top:2px;"></div>` : ''}
+                 </div>`;
+    }
+
+    grid.innerHTML = html;
 }
 
 function alterarMesCalendario(direcao) {
