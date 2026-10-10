@@ -997,8 +997,8 @@ function renderizarCalendarioMes() {
                     ${icone ? `<span style="font-size:0.55rem; margin-top:3px; z-index:2; line-height:1;">${icone}</span>` : ''}
                  </div>`;
     }
-
-    grid.innerHTML = html;
+        
+ grid.innerHTML = html;
     
     // Lógica das Travas (Bloqueia ir para o passado antes de criar a conta, e bloqueia ir para o futuro)
     let btnPrev = document.getElementById('cal-btn-prev');
