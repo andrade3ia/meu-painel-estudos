@@ -11,6 +11,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js" crossorigin="anonymous" defer></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" crossorigin="anonymous" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js" crossorigin="anonymous" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js" crossorigin="anonymous" defer></script>
     
     <link href="https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -557,6 +558,7 @@
                                     <label style="display:flex; align-items:center; gap:6px; font-size:0.8rem; font-weight:600; cursor:pointer;" title="Faz uma busca usando a API Tavily."><input type="checkbox" id="chk-busca-web"> 🌐 Buscar Web</label>
                                     <div style="display:flex; gap:8px;">
                                         <button class="btn-primary" onclick="executarIA('chat')" style="width:120px;">Enviar</button>
+                                        <button class="btn-outline" onclick="limparHistoricoChat()" style="width:120px;">Nova conversa</button>
                                     </div>
                                 </div>
                             </div>
@@ -786,6 +788,7 @@
             <div class="msg msg-a">Olá! Sou seu Mentor PRUMA. Especialista em concursos, leis e técnicas de estudo. Como posso guiar sua aprovação hoje?</div>
         </div>
         <div class="mentor-footer">
+            <label style="font-size:0.7rem; display:flex; align-items:center; gap:4px; flex-shrink:0;" title="Buscar na web"><input type="checkbox" id="chk-busca-web-mentor" style="width:auto; margin:0;">🌐</label>
             <input type="text" id="mentor-input" placeholder="Pergunte ao mentor..." onkeydown="if(event.key==='Enter') enviarMsgMentor()">
             <button class="btn-primary" style="width:auto; padding:8px 16px;" onclick="enviarMsgMentor()">Enviar</button>
         </div>
@@ -848,7 +851,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let h = Math.floor(totalSegundos / 3600);
     let m = Math.floor((totalSegundos % 3600) / 60);
     let s = totalSegundos % 60;
-    return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+    return `${String(h).padStart(2,'0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
 }
 function atualizarVisorCronometro() {
     let visor = document.getElementById('cronometro-visor');
@@ -991,7 +994,7 @@ function renderizarCalendarioMes() {
     if (btnPrev) btnPrev.style.visibility = (mesAbsolutoAtual > mesAbsolutoCriacao) ? 'visible' : 'hidden';
     if (btnNext) btnNext.style.visibility = (mesAbsolutoAtual < mesAbsolutoHoje) ? 'visible' : 'hidden';
 }
-        
+
 function alterarMesCalendario(direcao) {
     calMesOff += direcao;
     renderizarCalendarioMes();
@@ -1261,7 +1264,7 @@ function alterarMesCalendario(direcao) {
                 let isAtivo = dLocalIso === dataRefStr;
                 let temMissao = dbData.missoes && dbData.missoes.some(missao => missao.dataAlvo === dLocalIso && missao.status === 'pendente');
                 
-                html += `<div class="dia-semana-card ${isAtivo ? 'ativo' : ''} ${temMissao?'tem-missao':''}" onclick="selecionarDiaSemana('${dLocalIso}')">
+                html += `<div class="dia-semana-card ${isAtivo ? 'ativo' : ''} ${temMissao ? 'tem-missao' : ''}" onclick="selecionarDiaSemana('${dLocalIso}')">
                     <span class="dia-nome">${nomesDias[i]}</span>
                     <span class="dia-num">${d.getDate()}</span>
                     <div class="dia-dot"></div>
@@ -1340,7 +1343,7 @@ function alterarMesCalendario(direcao) {
                     });
                 }
                 htmlList += `<div class="missao-card ${isChecked ? 'concluida' : ''}">
-                    <div class="custom-checkbox ${isChecked?'checked':''}" onclick="marcarMissao('${m.id}', ${!isChecked})"></div>
+                    <div class="custom-checkbox ${isChecked ? 'checked' : ''}" onclick="marcarMissao('${m.id}', ${!isChecked})"></div>
                     <div style="flex:1; min-width:0; margin-left:8px;" class="missao-titulo">
                         <div style="display:flex; align-items:center; gap:8px;">
                             <strong style="font-size:1rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${sanitizeText(m.materia)}</strong>
@@ -1619,7 +1622,7 @@ function alterarMesCalendario(direcao) {
                 sessoesDoDia.forEach(s => {
                     if(count >= limiteExibicao) return; count++;
                     let ht = Math.floor(s.segundos/3600), mt = Math.floor((s.segundos%3600)/60), st = s.segundos%60; let timeStr = `${ht}h ${mt}m ${st}s`;
-                    let perc = s.totalQts > 0 ? Math.round((s.acertos/s.totalQts)*100)+'%' : '0%'; let accStr = `${perc}(${s.acertos||0}/${s.totalQts||0})`;
+                    let perc = s.totalQts > 0 ? Math.round((s.acertos/s.totalQts)*100)+'%' : '0%'; let accStr = `${perc} (${s.acertos||0}/${s.totalQts||0})`;
                     let tooltipText = `${s.materia} - ${s.topico||'Geral'} | Lançado às: ${s.hora||'--:--'} | ⏱️ ${timeStr} | 🎯 ${accStr}`;
                     let obsHtml = '';
                     if (s.obs) {
@@ -1633,12 +1636,12 @@ function alterarMesCalendario(direcao) {
                     sessoesHtml += `<div class="registro-curto" title="${sanitizeText(tooltipText)}">
                         <div class="registro-curto-header">
                             <div class="info">
-                                <strong title="${sanitizeText(s.materia)}">${s.tipoMat.includes('PDF')?'📖':s.tipoMat==='Vídeo Aula'?'🎥':'📝'} ${s.materia} <span style="font-size:0.75rem; color:var(--text-muted); font-weight:normal;">(às ${s.hora||'--:--'})</span></strong>
+                                <strong title="${sanitizeText(s.materia)}">${s.tipoMat.includes('PDF')?'📖':s.tipoMat==='Vídeo Aula'?'🎥':'📝'} ${sanitizeText(s.materia)} <span style="font-size:0.75rem; color:var(--text-muted); font-weight:normal;">(às ${s.hora||'--:--'})</span></strong>
                                 <span style="display:flex; align-items:center; gap:6px; font-size:0.8rem; color:var(--text-muted); min-width:0; max-width:100%;">
-                                    <span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; flex:1; max-width:140px;" title="${sanitizeText(s.topico||'Geral')}">${s.topico||'Geral'}</span><span style="flex-shrink:0;">| ⏱️ ${timeStr} | 🎯 ${accStr}</span>
+                                    <span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; flex:1; max-width:140px;" title="${sanitizeText(s.topico||'Geral')}">${sanitizeText(s.topico||'Geral')}</span><span style="flex-shrink:0;">| ⏱️ ${timeStr} | 🎯 ${accStr}</span>
                                 </span>
                             </div>
-                            <div class="acoes-reg"><button style="background:transparent;border:none;cursor:pointer;font-size:1rem;" title="Editar" onclick="editarRegistro('${s.id}')">✏</button><button class="btn-x-vermelho" onclick="if(confirm('Excluir?'))refDb.child('sessoes/${s.id}').remove()">✖</button></div>
+                            <div class="acoes-reg"><button style="background:transparent;border:none;cursor:pointer;font-size:1rem;" title="Editar" onclick="editarRegistro('${s.id}')">✏</button><button class="btn-x-vermelho" onclick="if(confirm('Excluir?')) refDb.child('sessoes/${s.id}').remove()">✖</button></div>
                         </div>
                         ${obsHtml}
                     </div>`;
@@ -1717,17 +1720,17 @@ function alterarMesCalendario(direcao) {
                 let isGeral = p === 'geral'; let nomeP = isGeral ? 'Matérias Gerais' : (dbData.provas.find(x=>x.id===p)?.nome || 'Matérias Gerais');
                 let conteudoMat = grupos[p].map(m => {
                     if(!Array.isArray(m.topicos)) m.topicos = Object.values(m.topicos || {});
-                    let htmlT = m.topicos.map((t, i) => `<div style="padding:8px 0; border-bottom:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center; gap:8px;" title="${sanitizeText(t)}"><span style="overflow:hidden;text-overflow:ellipsis;min-width:0;flex:1;" title="${sanitizeText(t)}">📄 ${t}</span><div style="display:flex;align-items:center;gap:6px;flex-shrink:0;"><button style="background:transparent;border:none;cursor:pointer;font-size:1rem;" title="Editar Tópico" onclick="editarTopico('${m.id}', ${i})">✏️</button><button style="background:transparent;border:none;cursor:pointer;font-size:1rem;" title="Juntar Tópicos" onclick="abrirModalJuntar('${m.id}', '${sanitizeText(t).replace(/'/g,"\\'")}')">🔗</button> <button class="btn-x-vermelho" onclick="excluirTopicoMateria('${m.id}', ${i})">✖</button></div></div>`).join('');
+                    let htmlT = m.topicos.map((t, i) => `<div style="padding:8px 0; border-bottom:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center; gap:8px;" title="${sanitizeText(t)}"><span style="overflow:hidden;text-overflow:ellipsis;min-width:0;flex:1;" title="${sanitizeText(t)}">📄 ${sanitizeText(t)}</span><div style="display:flex;align-items:center;gap:6px;flex-shrink:0;"><button style="background:transparent;border:none;cursor:pointer;font-size:1rem;" title="Editar Tópico" onclick="editarTopico('${m.id}', ${i})">✏️</button><button style="background:transparent;border:none;cursor:pointer;font-size:1rem;" title="Juntar Tópicos" onclick="abrirModalJuntar('${m.id}', '${sanitizeText(t).replace(/'/g,"\\'")}')">🔗</button> <button class="btn-x-vermelho" onclick="excluirTopicoMateria('${m.id}', ${i})">✖</button></div></div>`).join('');
                     let vazioOpcao = `<div style="color:var(--text-muted);font-size:0.85rem; padding:6px 0; display:flex; justify-content:space-between; align-items:center;"><span>Sem tópicos.</span> <button class="btn-danger" style="padding:4px 8px; font-size:0.75rem;" onclick="if(confirm('Excluir?')){ dbData.materias=dbData.materias.filter(x=>x.id!=='${m.id}'); refDb.child('materias').set(dbData.materias); }">Excluir Matéria</button></div>`;
-                    return `<div class="pasta-header" data-folder-id="${m.id}" style="border-left:5px solid ${m.cor};" onclick="this.nextElementSibling.classList.toggle('aberta')" title="${sanitizeText(m.nome)}"><span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1; min-width:0;" title="${sanitizeText(m.nome)}">📁 ${m.nome} (${m.topicos.length})</span><div style="display:flex; gap:8px; align-items:center;"><button style="background:transparent;border:none;cursor:pointer;font-size:1.1rem;" title="Mover para Prova" onclick="event.stopPropagation(); moverMateriaParaProva('${m.id}')">🔄</button><button class="btn-x-vermelho" style="flex-shrink:0;" onclick="event.stopPropagation(); if(confirm('Apagar matéria inteira?')) { dbData.materias=dbData.materias.filter(x=>x.id!=='${m.id}'); refDb.child('materias').set(dbData.materias); }">✖</button></div></div><div class="pasta-body">${htmlT || vazioOpcao}</div>`;
+                    return `<div class="pasta-header" data-folder-id="${m.id}" style="border-left:5px solid ${m.cor};" onclick="this.nextElementSibling.classList.toggle('aberta')" title="${sanitizeText(m.nome)}"><span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1; min-width:0;" title="${sanitizeText(m.nome)}">📁 ${sanitizeText(m.nome)} (${m.topicos.length})</span><div style="display:flex; gap:8px; align-items:center;"><button style="background:transparent;border:none;cursor:pointer;font-size:1.1rem;" title="Mover para Prova" onclick="event.stopPropagation(); moverMateriaParaProva('${m.id}')">🔄</button><button class="btn-x-vermelho" style="flex-shrink:0;" onclick="event.stopPropagation(); if(confirm('Apagar matéria inteira?')) { dbData.materias=dbData.materias.filter(x=>x.id!=='${m.id}'); refDb.child('materias').set(dbData.materias); }">✖</button></div></div><div class="pasta-body">${htmlT || vazioOpcao}</div>`;
                 }).join('');
                 if(!isGeral) {
                     let isBlockOpen = stateBlocos.includes(p);
-                    htmlFinal += `<div class="bloco-prova" data-prova-id="${p}"><div class="bloco-prova-titulo" style="cursor:pointer;user-select:none;margin-bottom:0;justify-content:space-between;" onclick="let el=this.nextElementSibling;el.style.display=(el.style.display==='none'||!el.style.display)?'block':'none';" title="${sanitizeText(nomeP)}"><span>🎯 ${nomeP}</span><span style="font-size:0.85rem;font-weight:normal;color:var(--text-muted);">▼ Expandir/Minimizar</span></div><div class="bloco-prova-content" style="display:${isBlockOpen?'block':'none'}; margin-top:16px;">${conteudoMat}</div></div>`;
-                } else { htmlFinal += `<h3 style="color:var(--text-muted); margin-top:20px; font-size:1.1rem;" title="${sanitizeText(nomeP)}">${nomeP}</h3>${conteudoMat}`; }
+                    htmlFinal += `<div class="bloco-prova" data-prova-id="${p}"><div class="bloco-prova-titulo" style="cursor:pointer;user-select:none;margin-bottom:0;justify-content:space-between;" onclick="let el=this.nextElementSibling; el.style.display=(el.style.display==='none'||!el.style.display)?'block':'none';" title="${sanitizeText(nomeP)}"><span>🎯 ${sanitizeText(nomeP)}</span><span style="font-size:0.85rem;font-weight:normal;color:var(--text-muted);">▼ Expandir/Minimizar</span></div><div class="bloco-prova-content" style="display:${isBlockOpen?'block':'none'}; margin-top:16px;">${conteudoMat}</div></div>`;
+                } else { htmlFinal += `<h3 style="color:var(--text-muted); margin-top:20px; font-size:1.1rem;" title="${sanitizeText(nomeP)}">${sanitizeText(nomeP)}</h3>${conteudoMat}`; }
             }
             div.innerHTML = htmlFinal;
-            statePastas.forEach(id => { let hdr = document.querySelector(`.pasta-header[data-caderno-folder="${id}"]`)||document.querySelector(`.pasta-header[data-folder-id="${id}"]`); if(hdr && hdr.nextElementSibling) hdr.nextElementSibling.classList.add('aberta'); });
+            statePastas.forEach(id => { let hdr = document.querySelector(`.pasta-header[data-folder-id="${id}"]`); if(hdr && hdr.nextElementSibling) hdr.nextElementSibling.classList.add('aberta'); });
         }
         function editarTopico(mId, index) {
             if(!Array.isArray(dbData.materias)) dbData.materias = Object.values(dbData.materias || {}); let mat = dbData.materias.find(m => m.id === mId); if(!mat) return;
@@ -1774,7 +1777,7 @@ function alterarMesCalendario(direcao) {
                 if(s) { 
                     let htmlOpts = '<option value="">Vincular a uma Prova? (Opcional)</option>'; 
                     if(!Array.isArray(dbData.provas)) dbData.provas = Object.values(dbData.provas || {}); 
-                    dbData.provas.forEach(p => htmlOpts += `<option value="${p.id}">${p.nome}</option>`); 
+                    dbData.provas.forEach(p => htmlOpts += `<option value="${p.id}">${p.nome}</option>`);
                     s.innerHTML = htmlOpts;
                 } 
             });
@@ -2010,7 +2013,7 @@ function alterarMesCalendario(direcao) {
                         } else {
                             let safeText = isH ? renderHtmlSafely(textoCompleto) : sanitizeText(textoCompleto);
                             if(termo && termo.trim() !== '') {
-                                let regex = new RegExp(`(?![^<]*>(${termo})`, 'gi');
+                                let regex = new RegExp('(?![^<]*>)(' + termo.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'gi');
                                 safeText = safeText.replace(regex, '<mark>$1</mark>');
                             }
                             let isLongo = textoCompleto.length > 300;
@@ -2029,13 +2032,13 @@ function alterarMesCalendario(direcao) {
                                 </div>
                                 <div style="display:flex; align-items:center; gap:8px; flex-shrink:0;">
                                     <button style="background:transparent;border:none;cursor:pointer;font-size:1.1rem;padding:0;" title="Mover" onclick="abrirModalMover('${i.id}',null,null,'${sanitizeText(i.materia).replace(/'/g,"\\'")}', '${sanitizeText(i.topico).replace(/'/g,"\\'")}', '${dbStringName}')">🔄</button>
-                                    <button class="btn-x-vermelho" style="padding:0;font-size:1.1rem;" title="Excluir" onclick="if(confirm('Excluir?')){ dbData.${dbStringName}=dbData.${dbStringName}.filter(x=>x.id!=='${i.id}');refDb.child('${dbStringName}').set(dbData.${dbStringName}); }">✖</button>
+                                    <button class="btn-x-vermelho" style="padding:0;font-size:1.1rem;" title="Excluir" onclick="if(confirm('Excluir?')){ dbData.${dbStringName}=dbData.${dbStringName}.filter(x=>x.id!=='${i.id}'); refDb.child('${dbStringName}').set(dbData.${dbStringName}); }">✖</button>
                                 </div>
                             </div>
-                        </div>`; 
-                    }); 
-                    
-                    htmlM += `<div class="pasta-header sub-caderno-header ${termo?'aberta':''}" data-subcaderno-folder="${subFolderKey}" onclick="this.nextElementSibling.classList.toggle('aberta')" style="background:var(--bg-body); border-left:3px solid var(--brand-warning); margin-bottom:4px; padding:10px 14px; border-radius:var(--radius-sm);">
+                        </div>`;
+                    });
+
+                    htmlM += `<div class="pasta-header sub-caderno-header ${termo ? 'aberta' : ''}" data-subcaderno-folder="${subFolderKey}" onclick="this.nextElementSibling.classList.toggle('aberta')" style="background:var(--bg-body); border-left:3px solid var(--brand-warning); margin-bottom:4px; padding:10px 14px; border-radius:var(--radius-sm);">
                         <span style="font-weight:600; color:var(--text-main); font-size:0.9rem; flex:1; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">📂 ${sanitizeText(t)} (${agr[m][t].length})</span>
                         <div style="display:flex; align-items:center; gap:4px; flex-shrink:0;">
                             <button style="background:transparent;border:none;cursor:pointer;font-size:1rem;padding:0 4px;" title="Renomear Sub-caderno" onclick="event.stopPropagation(); renomearCadernoOuSub('${dbStringName}','${sanitizeText(m).replace(/'/g,"\\'")}', '${sanitizeText(t).replace(/'/g,"\\'")}')">✏️</button>
@@ -2046,16 +2049,16 @@ function alterarMesCalendario(direcao) {
                         ${htmlT}
                     </div>`;
                 }
-                
+
                 finalDivHtml += `<div class="pasta-header" data-caderno-folder="${folderKey}" onclick="this.nextElementSibling.classList.toggle('aberta')">
                     <span style="font-weight:700; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1; min-width:0;" title="${sanitizeText(m)}">${dbStringName==='flashcards'?'⚡':'📓'} ${sanitizeText(m)}</span>
                     <div style="display:flex; align-items:center; gap:4px; flex-shrink:0;">
                         <button style="background:transparent;border:none;cursor:pointer;font-size:1.1rem;padding:0 4px;" title="Renomear Caderno" onclick="event.stopPropagation(); renomearCadernoOuSub('${dbStringName}','${sanitizeText(m).replace(/'/g,"\\'")}', null)">✏️</button>
                         <button class="btn-x-vermelho" style="font-size:1.1rem; padding:0 4px;" title="Excluir Caderno" onclick="event.stopPropagation(); excluirCadernoOuSub('${dbStringName}','${sanitizeText(m).replace(/'/g,"\\'")}', null)">✖</button>
                     </div>
-                </div><div class="pasta-body ${termo?'aberta':''}" style="padding-top:8px;">${htmlM}</div>`;
+                </div><div class="pasta-body ${termo ? 'aberta' : ''}" style="padding-top:8px;">${htmlM}</div>`;
             }
-            div.innerHTML = finalDivHtml;
+div.innerHTML = finalDivHtml;
             
             if(!termo) {
                 stateCadernos.forEach(id => { let hdr = document.querySelector(`#${divId} .pasta-header[data-caderno-folder="${id}"]`); if(hdr && hdr.nextElementSibling) hdr.nextElementSibling.classList.add('aberta'); });
@@ -2226,7 +2229,7 @@ function alterarMesCalendario(direcao) {
             let div = document.getElementById('lista-biblioteca'); 
             let htmlFinal = '';
             dbData.biblioteca.forEach(b => { 
-                htmlFinal += `<div class="registro-curto" title="${sanitizeText(b.nome)}"><div class="info"><strong title="${sanitizeText(b.nome)}">${b.tipo==='LINK'?'🌐':'📄'} ${b.nome}</strong><span>${b.materia} | ${b.data}</span></div><button class="btn-x-vermelho" onclick="if(confirm('Excluir?')) { refDb.child('biblioteca/${b.fbKey}').remove(); if('${b.refPath||''}') try{ storage.ref('${b.refPath}').delete(); }catch(e){} }">✖</button></div>`; 
+                htmlFinal += `<div class="registro-curto" title="${sanitizeText(b.nome)}"><div class="info"><strong title="${sanitizeText(b.nome)}">${b.tipo==='LINK'?'🌐':'📄'} ${sanitizeText(b.nome)}</strong><span>${sanitizeText(b.materia||'')} | ${b.data}</span></div><button class="btn-x-vermelho" onclick="if(confirm('Excluir?')) { refDb.child('biblioteca/${b.fbKey}').remove(); if('${b.refPath||''}') try{ storage.ref('${b.refPath||''}').delete(); }catch(e){} }">✖</button></div>`;
             }); 
             div.innerHTML = htmlFinal;
         }
@@ -2276,7 +2279,7 @@ function alterarMesCalendario(direcao) {
             subIaAtual = sub;
             ['chat', 'simulador', 'edital', 'nuvem'].forEach(s => { let el = document.getElementById('subia-'+s); if(el) el.style.display = (s===sub)?'block':'none'; }); 
             document.querySelectorAll('#view-pruma .btn-outline').forEach(b => { b.style.background='transparent'; b.style.color='var(--text-main)'; }); 
-            if(btn) { btn.style.background='var(--brand-primary);'; btn.style.color='white'; } 
+            if(btn) { btn.style.background='var(--brand-primary)'; btn.style.color='white'; }
             renderizarFiltrosIAHistorico();
         }
         function renderizarFiltrosIAHistorico() {
@@ -2315,7 +2318,7 @@ function alterarMesCalendario(direcao) {
         function carregarRespostaSalvaHistorico(item) {
             if(item.tipo === 'chat') {
                 let box = document.getElementById('box-chat');
-                box.innerHTML = `<div class="msg msg-u">${sanitizeText(item.params)}</div><div class="msg msg-a" style="max-width:100%;width:100%;">${item.respostaHtml}</div>`;
+                box.innerHTML = `<div class="msg msg-u">${sanitizeText(typeof item.params === 'string' ? item.params : '')}</div><div class="msg msg-a" style="max-width:100%;width:100%;">${item.respostaHtml}</div>`;
                 box.scrollTop = box.scrollHeight;
             } else if(item.tipo === 'questoes') {
                 document.getElementById('ia-qts-tema').value = item.params.tema || '';
@@ -2386,7 +2389,7 @@ function alterarMesCalendario(direcao) {
         }
         function parseJSONComSeguranca(textoBruto) {
             let jsonString = textoBruto;
-            let match = textoBruto.match(/\[\s*\{\[\s\S]*\}\s*\]/);
+            let match = textoBruto.match(/\[\s*\{[\s\S]*\}\s*\]/);
             if (match) {
                 jsonString = match[0];
             } else {
@@ -2447,6 +2450,7 @@ function alterarMesCalendario(direcao) {
             return data.file.uri; 
         }
       async function executarIA(tipo, promptEspecifico = null, textoExibicao = null) {
+    if (tipo === 'chat') return executarChat(promptEspecifico, textoExibicao);
     let k = localStorage.getItem('pruma_apikey'); 
     if(!k) return alert("Configure a API Key na aba Minha Conta.");
     
@@ -2564,7 +2568,7 @@ function alterarMesCalendario(direcao) {
             let json = parseJSONComSeguranca(txtF);
             let htmlFC = badgeModelo;
             json.forEach(c => {
-                let cardHtml = `<div style="padding:10px; border:1px solid var(--border-color);"><b>❓ Pergunta:</b> ${c.f}<br><button onclick="abrirVisorRespostaFlashcard(this)" class="btn-outline">Ver Resposta</button><div style="display:none;">${c.v}</div></div>`;
+                let cardHtml = `<div style="padding:10px; border:1px solid var(--border-color); border-radius:12px;"><b>❓ Pergunta:</b> ${sanitizeText(c.f)}<br><button onclick="abrirVisorRespostaFlashcard(this)" class="btn-outline" style="margin-top:8px;">Ver Resposta</button><div style="display:none;">${sanitizeText(c.v)}</div></div>`;
                 htmlFC += `<div style="margin-bottom:10px;">${cardHtml}</div>`;
             });
             box.innerHTML = htmlFC;
@@ -2574,13 +2578,13 @@ function alterarMesCalendario(direcao) {
             qArray.forEach(q => {
                 let altHtml = q.alternativas.map(alt => {
                     let isCorreta = alt.trim().toUpperCase().charAt(0) === (q.correta || '').trim().toUpperCase().charAt(0);
-                    return `<button class="btn-outline alt-btn" data-correta="${isCorreta?'1':'0'}" onclick="responderQuestaoUnica(this)">${alt}</button>`;
+                    return `<button class="btn-outline alt-btn" data-correta="${isCorreta?'1':'0'}" onclick="responderQuestaoUnica(this)" style="text-align:left; margin-bottom:6px;">${sanitizeText(alt)}</button>`;
                 }).join('');
-                htmlQ += `<div style="border:1px solid var(--border-color); padding:10px;"><b>Questão:</b> ${q.enunciado}<div>${altHtml}</div></div>`;
+                htmlQ += `<div class="card" style="margin:0; padding:14px;"><b>Questão:</b> ${sanitizeText(q.enunciado)}<div class="bloco-alternativas-qst" style="margin-top:10px;">${altHtml}</div><div class="bloco-explicacao-qst" style="display:none; margin-top:10px; padding:10px; border-radius:8px; background:var(--bg-input);"><b>Gabarito: ${sanitizeText(String(q.correta||''))}</b><br>${sanitizeText(q.comentario||'')}</div></div>`;
             });
             box.insertAdjacentHTML('beforeend', `<div class="msg msg-a" style="width:100%;">${htmlQ}</div>`);
         } else {
-            let finalChat = `${badgeModelo}<div>${marked.parse(txtF)}</div>`;
+            let finalChat = `${badgeModelo}<div class="conteudo-resposta-ia">${sanitizeText(marked.parse(txtF))}</div>`;
             box.insertAdjacentHTML('beforeend', `<div class="msg msg-a" style="width:100%;">${finalChat}</div>`);
         }
         box.scrollTop = box.scrollHeight;
@@ -2781,7 +2785,7 @@ Pergunta: "${perguntaUsuario}"`;
             let f = decodeURIComponent(fCoded);
             let v = decodeURIComponent(vCoded);
             let modal = document.createElement('div');
-            modal.style.cssText = 'position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.95); z-index:99999; display:flex; flex-direction:column; alignItems:center; justify-content:center; padding:20px;';
+            modal.style.cssText = 'position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.95); z-index:99999; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:20px;';
             
             let card = document.createElement('div');
             card.style.cssText = 'background:var(--bg-card, #fff); color:var(--text-color, #333); padding:40px 30px; border-radius:16px; width:90%; max-width:500px; text-align:center; box-shadow:0 10px 40px rgba(0,0,0,0.5); cursor:pointer; min-height:250px; display:flex; flex-direction:column; justify-content:center; position:relative;';
@@ -2816,7 +2820,7 @@ Pergunta: "${perguntaUsuario}"`;
             window.enviarMsgMentor();
         };
 
-        // 4.3 O Renderizador Principal (Hook do Chat)
+                // 4.3 O Renderizador Principal (Hook do Chat)
         window.enviarMsgMentor = async function() {
             let inp = document.getElementById('mentor-input');
             let textoInput = inp.value.trim();
@@ -2825,65 +2829,69 @@ Pergunta: "${perguntaUsuario}"`;
 
             let body = document.getElementById('mentor-chat-body');
             if (!body) return;
-            
+
             body.insertAdjacentHTML('beforeend', `<div class="msg msg-u">${sanitizeText(textoInput)}</div>`);
             body.scrollTop = body.scrollHeight;
-            body.insertAdjacentHTML('beforeend', `<div class="msg msg-a" id="load-agente">O Tutor está a analisar... ⏳</div>`);
+            body.insertAdjacentHTML('beforeend', `<div class="msg msg-a" id="load-agente">O Tutor está analisando... ⏳</div>`);
             body.scrollTop = body.scrollHeight;
 
             let respostaAgente = await executarLoopReActDoAgente(textoInput);
             let loadEl = document.getElementById('load-agente'); if (loadEl) loadEl.remove();
 
-            // Intercetador de Componentes (Parser de Tags)
+            // Interceptador de componentes (parser de tags)
             let fragments = {}; let counter = 0;
-            
-            // 1. Construtor Visual de Questões
+
+            // 1. Construtor visual de questões
             let textoPreProcessado = respostaAgente.replace(/\[QUESTAO\]([\s\S]*?)\[FIM_QUESTAO\]/g, function(match, inner) {
-                let enunciado = inner.match(/\[ENUNCIADO\]([\s\S]*?)(?=\[[A-E]\])/)?.[1]?.trim() || "";
+                let enunciado = (inner.match(/\[ENUNCIADO\]([\s\S]*?)(?=\[A\])/) || [])[1];
+                enunciado = enunciado ? enunciado.trim() : "";
                 let opts = [];
                 ['A','B','C','D','E'].forEach(letra => {
-                    let regex = new RegExp(`\\[${letra}\\]([\\s\\S]*?)(?=\\[[B-E]\\]|\\[GABARITO\\])`);
+                    let regex = new RegExp('\\[' + letra + '\\]([\\s\\S]*?)(?=\\[[B-E]\\]|\\[GABARITO\\])');
                     let m = inner.match(regex);
                     if (m) opts.push({letra: letra, texto: m[1].trim()});
                 });
-                let gabarito = inner.match(/\[GABARITO\]\s*([A-E])/)?.[1]?.trim() || "";
-                let comentario = inner.match(/\[COMENTARIO\]([\s\S]*)$/)?.[1]?.trim() || "";
+                let gMatch = inner.match(/\[GABARITO\]\s*([A-E])/);
+                let gabarito = gMatch ? gMatch[1].trim() : "";
+                let cMatch = inner.match(/\[COMENTARIO\]([\s\S]*)$/);
+                let comentario = cMatch ? cMatch[1].trim() : "";
 
-                // Salva a estrutura markdown perfeita para o caderno
-                let markdownCru = `${enunciado}\n\n${opts.map(o=> o.letra + ") " + o.texto).join('\n')}\n\nGabarito: ${gabarito}\nComentário: ${comentario}`;
+                // Estrutura em texto para salvar no caderno
+                let markdownCru = `${enunciado}\n\n${opts.map(o => o.letra + ") " + o.texto).join('\n')}\n\nGabarito: ${gabarito}\nComentário: ${comentario}`;
                 let encodedRaw = encodeURIComponent(markdownCru);
-                
+
                 let htmlOpts = opts.map(o => `<button class="btn-outline m-opt" style="text-align:left; padding:10px; border-radius:8px; margin-bottom:6px; width:100%; font-size:0.9rem; transition:0.3s;" onclick="validarQMentor(this, '${o.letra}', '${gabarito}', '${encodeURIComponent(marked.parse(comentario))}')"><b>${o.letra})</b> ${o.texto}</button>`).join('');
 
                 let id = `__PRUMA_Q_${counter++}__`;
                 fragments[id] = `
-                    <div class="pruma-q-inline" style="background:var(--bg-color); border:1px solid var(--border-color); padding:15px; border-radius:12px; margin:15px 0;">
+                    <div class="pruma-q-inline" style="background:var(--bg-body); border:1px solid var(--border-color); padding:15px; border-radius:12px; margin:15px 0;">
                         <div style="margin-bottom:15px; font-weight:500;">${marked.parse(enunciado)}</div>
                         <div style="display:flex; flex-direction:column;">${htmlOpts}</div>
                         <div class="q-feedback" style="display:none; margin-top:10px; padding:12px; border-radius:8px;"></div>
                         <div style="margin-top:15px; text-align:right;">
-                            <button class="btn-primary" style="font-size:0.8rem; padding:6px 12px;" onclick="abrirModalEnviarCaderno(decodeURIComponent('${encodedRaw}'), this, 'Tutor IA', 'Questão', true)">📚 Salvar ao Caderno</button>
+                            <button class="btn-primary" style="font-size:0.8rem; padding:6px 12px; width:auto;" onclick="abrirModalEnviarCaderno(decodeURIComponent('${encodedRaw}'), this, 'Tutor IA', 'Questão', false)">📚 Salvar no Caderno</button>
                         </div>
                     </div>`;
                 return id;
             });
 
-            // 2. Construtor Visual de Flashcards
+            // 2. Construtor visual de flashcards
             textoPreProcessado = textoPreProcessado.replace(/\[FLASHCARD\]([\s\S]*?)\[FIM_FLASHCARD\]/g, function(match, inner) {
-                let frente = inner.match(/\[FRENTE\]([\s\S]*?)(?=\[VERSO\])/)?.[1]?.trim() || "";
-                let verso = inner.match(/\[VERSO\]([\s\S]*)$/)?.[1]?.trim() || "";
-                
-                // Salva a estrutura markdown perfeita para o aba Flashcard
+                let fMatch = inner.match(/\[FRENTE\]([\s\S]*?)(?=\[VERSO\])/);
+                let frente = fMatch ? fMatch[1].trim() : "";
+                let vMatch = inner.match(/\[VERSO\]([\s\S]*)$/);
+                let verso = vMatch ? vMatch[1].trim() : "";
+
                 let markdownCru = `${frente}\n\nVERSO:\n${verso}`;
                 let encodedF = encodeURIComponent(frente); let encodedV = encodeURIComponent(verso);
 
                 let id = `__PRUMA_F_${counter++}__`;
                 fragments[id] = `
-                    <div class="pruma-flashcard-inline" style="background:var(--bg-color); border:1px dashed var(--brand-warning); padding:12px 15px; border-radius:12px; margin:15px 0; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
-                        <div style="font-weight:600; font-size:0.9rem; flex:1; min-width:150px;">🗂️ Flashcard IA<br><span style="font-size:0.75rem; font-weight:400; opacity:0.8;">${frente.substring(0, 30)}...</span></div>
+                    <div class="pruma-flashcard-inline" style="background:var(--bg-body); border:1px dashed var(--brand-warning); padding:12px 15px; border-radius:12px; margin:15px 0; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+                        <div style="font-weight:600; font-size:0.9rem; flex:1; min-width:150px;">🗂️ Flashcard IA<br><span style="font-size:0.75rem; font-weight:400; opacity:0.8;">${sanitizeText(frente.substring(0, 30))}...</span></div>
                         <div style="display:flex; gap:8px;">
-                            <button class="btn-outline" style="font-size:0.8rem; padding:6px 10px;" onclick="abrirFlashcardTelaCheiaMentor('${encodedF}', '${encodedV}')">🔄 Treinar</button>
-                            <button class="btn-primary" style="font-size:0.8rem; padding:6px 10px; background:var(--brand-warning); border:none; color:#000;" onclick="abrirModalEnviarFlashcard(decodeURIComponent('${encodeURIComponent(markdownCru)}'), this, 'Flashcards IA', 'Geral')">⚡ Salvar</button>
+                            <button class="btn-outline" style="font-size:0.8rem; padding:6px 10px; width:auto;" onclick="abrirFlashcardTelaCheiaMentor('${encodedF}', '${encodedV}')">🔄 Treinar</button>
+                            <button class="btn-primary" style="font-size:0.8rem; padding:6px 10px; width:auto; background:var(--brand-warning); border:none; color:#000;" onclick="abrirModalEnviarFlashcard(decodeURIComponent('${encodeURIComponent(markdownCru)}'), this, 'Flashcards IA', 'Geral')">⚡ Salvar</button>
                         </div>
                     </div>`;
                 return id;
@@ -2891,8 +2899,8 @@ Pergunta: "${perguntaUsuario}"`;
 
             // Transforma o texto restante em HTML (Markdown padrão)
             let htmlFinal = sanitizeText(marked.parse(textoPreProcessado));
-            
-            // Re-injeta os componentes interativos no HTML final
+
+            // Reinjeta os componentes interativos no HTML final
             for (let id in fragments) {
                 htmlFinal = htmlFinal.replace(id, fragments[id]);
             }
@@ -2901,8 +2909,8 @@ Pergunta: "${perguntaUsuario}"`;
 
             let botoesAcaoHtml = `
                 <div style="display:flex; gap:8px; margin-top:15px; flex-wrap:wrap; border-top:1px solid var(--border-color); padding-top:12px;">
-                    <button class="btn-outline" style="font-size:0.75rem; font-weight:600;" onclick="window.aprofundarMentorTutor(this)">🔍 Aprofundar</button>
-                    <button class="btn-primary" style="font-size:0.75rem;" data-payload="${textoPuroParaCaderno}" onclick="abrirModalEnviarCaderno(decodeURIComponent(this.getAttribute('data-payload')), this, 'Tutor IA', 'Interação Geral', true)">📚 Salvar Chat Inteiro</button>
+                    <button class="btn-outline" style="font-size:0.75rem; font-weight:600; width:auto; padding:6px 12px;" onclick="window.aprofundarMentorTutor(this)">🔍 Aprofundar</button>
+                    <button class="btn-primary" style="font-size:0.75rem; width:auto; padding:6px 12px;" data-payload="${textoPuroParaCaderno}" onclick="abrirModalEnviarCaderno(decodeURIComponent(this.getAttribute('data-payload')), this, 'Tutor IA', 'Interação Geral', false)">📚 Salvar no Caderno</button>
                 </div>
             `;
 
@@ -2916,6 +2924,308 @@ Pergunta: "${perguntaUsuario}"`;
             `);
             body.scrollTop = body.scrollHeight;
         };
+
+// ============ MELHORIAS DA PRUMA IA ============
+// =====================================================================
+// PRUMA IA - MELHORIAS DO CHAT E DO MENTOR
+// Cole este bloco no FINAL do <script> do index.html (antes de (fim do script)).
+// As funções com o mesmo nome das antigas passam a valer no lugar delas.
+// Depois, quando tudo estiver funcionando, apague as versões antigas.
+// ATENÇÃO: código não executado/testado por mim. Teste no navegador.
+// =====================================================================
+
+// ---------------------------------------------------------------------
+// 1) CHAMADA PADRÃO AO GEMINI (systemInstruction + generationConfig)
+// ---------------------------------------------------------------------
+async function chamarGemini({ system, contents, temperatura = 0.3, json = false, modelo = null }) {
+    const k = localStorage.getItem('pruma_apikey');
+    const m = modelo || localStorage.getItem('pruma_modelo') || 'gemini-3.5-flash-lite';
+
+    const body = {
+        contents: contents,
+        generationConfig: { temperature: temperatura }
+    };
+    if (system) body.systemInstruction = { parts: [{ text: system }] };
+    if (json) body.generationConfig.responseMimeType = 'application/json';
+
+    const res = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/${m}:generateContent`,
+        {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'x-goog-api-key': k },
+            body: JSON.stringify(body)
+        }
+    );
+    if (!res.ok) throw new Error(await res.text());
+
+    const data = await res.json();
+    const parts = data && data.candidates && data.candidates[0] && data.candidates[0].content
+        ? data.candidates[0].content.parts : null;
+    if (!parts) throw new Error('Resposta vazia ou bloqueada pela API.');
+    return parts.map(p => p.text || '').join('');
+}
+
+// ---------------------------------------------------------------------
+// 2) HISTÓRICO DE CONVERSA (chat e Mentor)
+// ---------------------------------------------------------------------
+let historicoChat = [];     // [{ role: 'user'|'model', parts: [{ text }] }]
+let historicoMentor = [];
+const MAX_TROCAS_HISTORICO = 8; // guarda as últimas 8 trocas (16 mensagens)
+
+function registrarTroca(historico, textoUsuario, textoModelo) {
+    historico.push({ role: 'user', parts: [{ text: textoUsuario }] });
+    historico.push({ role: 'model', parts: [{ text: textoModelo }] });
+    while (historico.length > MAX_TROCAS_HISTORICO * 2) historico.splice(0, 2);
+}
+
+function limparHistoricoChat() {
+    historicoChat = [];
+    const box = document.getElementById('box-chat');
+    if (box) box.innerHTML = '<div class="msg msg-a">🛡️ Nova conversa iniciada. Como posso te ajudar?</div>';
+}
+
+// ---------------------------------------------------------------------
+// 3) FONTES (PDFs e textos da Nuvem PRUMA) COM CACHE DA FILE API
+// ---------------------------------------------------------------------
+const cacheArquivosGemini = {}; // fbKey -> { uri, ts }  (vale só durante a sessão)
+const VALIDADE_CACHE_MS = 40 * 60 * 60 * 1000; // 40h (a File API expira em ~48h; confira na doc)
+
+async function montarFontes(containerId, apiKey, setStatus) {
+    const partesPdf = [];
+    const nomes = [];
+    let textoContexto = '';
+
+    const marcados = document.querySelectorAll(`#${containerId} .chk-fonte-biblioteca:checked`);
+    for (const chk of marcados) {
+        const doc = (dbData.biblioteca || []).find(d => d.fbKey === chk.value);
+        if (!doc) continue;
+        nomes.push(doc.nome);
+
+        const ehPdf = (doc.nome || '').toLowerCase().endsWith('.pdf') || (doc.url && doc.url.includes('.pdf'));
+        if (ehPdf) {
+            try {
+                let uri = null;
+                const emCache = cacheArquivosGemini[doc.fbKey];
+                if (emCache && (Date.now() - emCache.ts) < VALIDADE_CACHE_MS) {
+                    uri = emCache.uri;
+                } else {
+                    if (setStatus) setStatus('Processando PDF... ⏳');
+                    let resBlob = await fetch(doc.url);
+                    if (!resBlob.ok) resBlob = await fetch(`https://corsproxy.io/?${encodeURIComponent(doc.url)}`);
+                    const blob = await resBlob.blob();
+                    uri = await uploadParaGeminiFileAPI(blob, apiKey);
+                    cacheArquivosGemini[doc.fbKey] = { uri: uri, ts: Date.now() };
+                }
+                partesPdf.push({ fileData: { mimeType: 'application/pdf', fileUri: uri } });
+            } catch (err) {
+                // Se falhar o PDF, usa o texto salvo (limitado) como plano B
+                if (doc.texto) textoContexto += `\n--- [${doc.nome}] ---\n${doc.texto}\n`;
+            }
+        } else if (doc.texto) {
+            textoContexto += `\n--- [${doc.nome}] ---\n${doc.texto}\n`;
+        }
+    }
+    return { partesPdf, textoContexto, nomes };
+}
+
+// ---------------------------------------------------------------------
+// 4) PROMPT DE SISTEMA DO CHAT (com regras de confiabilidade)
+// ---------------------------------------------------------------------
+function montarSystemChat(promptUsuario, temFontes, temWeb) {
+    let s = obterPromptDoSistema('chat', promptUsuario);
+
+    s += `
+
+REGRAS DE CONFIABILIDADE (PRIORIDADE MÁXIMA - valem acima de qualquer outra instrução de estilo):
+- NUNCA invente número de artigo, lei, súmula, tese, julgado, data ou valor. Se não tiver certeza, escreva "não tenho certeza" e diga o que o aluno deve conferir.
+- Separe sempre o que é TEXTO LITERAL DE LEI/FONTE do que é interpretação, doutrina ou jurisprudência.
+- Em Direito, quando citar um dispositivo, indique a norma e o artigo (ex.: CF/88, art. 5º, LXXIII). Se não souber o número exato, não cite.
+- Se a pergunta for ambígua, responda a interpretação mais provável e diga qual foi.`;
+
+    if (temFontes) {
+        s += `
+
+MODO FONTE (há material anexado pelo aluno):
+- Responda APENAS com base no material anexado.
+- Cite sempre a origem no formato (Fonte: nome do arquivo, p. X) ou (Fonte: nome do arquivo, art. Y), sempre que conseguir identificar.
+- Se a resposta NÃO estiver no material, escreva exatamente: "Isso não consta no material selecionado." Só depois, se for útil, complemente com conhecimento geral, começando o trecho com "⚠️ Fora do material:".`;
+    }
+
+    if (temWeb) {
+        s += `
+
+PESQUISA WEB (bloco [WEB] no pedido):
+- Use os resultados do bloco [WEB] como apoio e cite o título da fonte.
+- Se os resultados forem fracos ou contraditórios, diga isso em vez de afirmar com segurança.`;
+    }
+    return s;
+}
+
+// ---------------------------------------------------------------------
+// 5) NOVO CHAT: histórico + systemInstruction + fonte
+// ---------------------------------------------------------------------
+async function executarChat(promptEspecifico = null, textoExibicao = null) {
+    const k = localStorage.getItem('pruma_apikey');
+    if (!k) return alert('Configure a API Key (menu lateral > API Key).');
+
+    const inp = document.getElementById('inp-chat');
+    const p = (promptEspecifico || inp.value).trim();
+    if (!p) return;
+
+    const box = document.getElementById('box-chat');
+    box.insertAdjacentHTML('beforeend', `<div class="msg msg-u">${sanitizeText(textoExibicao || p)}</div>`);
+    if (!promptEspecifico) inp.value = '';
+    box.insertAdjacentHTML('beforeend', `<div class="msg msg-a" id="load-ia"><span id="load-ia-text">Analisando...</span> ⏳</div>`);
+    box.scrollTop = box.scrollHeight;
+
+    const setStatus = (t) => { const el = document.getElementById('load-ia-text'); if (el) el.textContent = t; };
+
+    try {
+        // Fontes selecionadas
+        const { partesPdf, textoContexto, nomes } = await montarFontes('chk-container-chat', k, setStatus);
+        const temFontes = partesPdf.length > 0 || !!textoContexto;
+
+        // Busca web (opcional)
+        let dadosWeb = '';
+        let tagWeb = '';
+        const chkWeb = document.getElementById('chk-busca-web');
+        if (chkWeb && chkWeb.checked) {
+            setStatus('Pesquisando na web... 🌍');
+            const r = await buscarNaWeb(p);
+            if (r) { dadosWeb = r; tagWeb = '(🌐 Busca Web)'; }
+        }
+
+        // Mensagem do turno atual
+        let textoTurno = '';
+        if (textoContexto) textoTurno += `[FONTES EM TEXTO]\n${textoContexto}\n\n`;
+        if (dadosWeb) textoTurno += `[WEB]\n${dadosWeb}\n\n`;
+        textoTurno += `PERGUNTA DO ALUNO:\n${p}`;
+
+        const contents = [
+            ...historicoChat,
+            { role: 'user', parts: [...partesPdf, { text: textoTurno }] }
+        ];
+
+        setStatus('Pensando...');
+        const system = montarSystemChat(p, temFontes, !!dadosWeb);
+        const resposta = await chamarGemini({ system, contents, temperatura: 0.3 });
+
+        // Guarda no histórico só a pergunta e a resposta (sem reenviar PDFs/fontes nas trocas antigas)
+        registrarTroca(historicoChat, p, resposta);
+
+        const l = document.getElementById('load-ia'); if (l) l.remove();
+
+        const badge = `<div style="font-size:0.7rem; color:var(--text-muted); text-align:right;">🛡️ PRUMA IA ${tagWeb}${nomes.length ? ' · 📚 ' + sanitizeText(nomes.join(', ')) : ''}</div>`;
+        const html = sanitizeText(marked.parse(resposta));
+        box.insertAdjacentHTML('beforeend', `
+            <div class="msg msg-a" style="max-width:100%; width:100%;">
+                <div class="conteudo-resposta-ia">${badge}${html}</div>
+                <div style="margin-top:10px;">
+                    <button class="btn-outline" style="width:auto; padding:6px 12px; font-size:0.8rem;" onclick="aprofundarRespostaContextual(this)">🔍 Aprofundar</button>
+                </div>
+            </div>`);
+        box.scrollTop = box.scrollHeight;
+    } catch (e) {
+        const l = document.getElementById('load-ia'); if (l) l.remove();
+        box.insertAdjacentHTML('beforeend', `<div class="msg msg-a" style="color:var(--brand-danger);">⚠️ Erro: ${sanitizeText(e.message)}</div>`);
+    }
+}
+
+// ---------------------------------------------------------------------
+// 6) MENTOR: histórico + systemInstruction
+// (a função enviarMsgMentor que já existe continua chamando esta)
+// ---------------------------------------------------------------------
+const PROMPT_MENTOR_REGRAS = `Você é a PRUMA IA, tutor de alta performance especializado em concursos públicos brasileiros.
+
+REGRAS DE FORMATAÇÃO E CONTEÚDO (CRÍTICO)
+1. MATEMÁTICA EM LINGUAGEM HUMANA: o sistema NÃO renderiza LaTeX. É PROIBIDO usar cifrão ($), código TeX, asterisco (*) para multiplicar ou acento circunflexo (^) para expoente.
+   - Multiplicação: use "x" ou "vezes". Divisão: use "÷", "/" ou "dividido por". Expoente: use "elevado a".
+   - Exemplo obrigatório de escrita: M = C x (1 + i) elevado a t.
+2. Sem saudações e sem enrolação. Comece direto no conteúdo.
+3. Dimensione a resposta à complexidade: curta para dúvida simples, tabela em markdown para tema denso. Em análise de dados, aja como analista focado em resultado.
+4. Direito: NUNCA invente número de artigo, lei, súmula ou julgado. Se não tiver certeza, diga "não tenho certeza" e indique o que conferir.
+
+REGRAS PARA QUESTÕES E FLASHCARDS (SÓ SE O ALUNO PEDIR)
+NUNCA escreva questões ou flashcards soltos no texto. O sistema exige estas tags para gerar os botões interativos.
+
+SE O ALUNO PEDIR QUESTÕES, use EXATAMENTE esta sintaxe:
+[QUESTAO]
+[ENUNCIADO] Texto e pergunta aqui.
+[A] Alternativa A
+[B] Alternativa B
+[C] Alternativa C
+[D] Alternativa D
+[E] Alternativa E
+[GABARITO] Letra correta (ex: A)
+[COMENTARIO] Explicação detalhada e base legal.
+[FIM_QUESTAO]
+
+SE O ALUNO PEDIR FLASHCARDS, use EXATAMENTE esta sintaxe:
+[FLASHCARD]
+[FRENTE] Pergunta ou termo.
+[VERSO] Definição ou resposta curta.
+[FIM_FLASHCARD]
+
+ENCERRAMENTO FIXO: termine TODAS as respostas apenas com a frase exata: "Caso precise de uma resposta mais aprofundada, clique em Aprofundar."`;
+
+async function executarLoopReActDoAgente(perguntaUsuario) {
+    iniciarLeituraSilenciosa();
+    const k = localStorage.getItem('pruma_apikey');
+    if (!k) return 'Configure a sua chave de API (menu lateral > API Key).';
+
+    // Busca web (só funciona se existir um checkbox com id="chk-busca-web-mentor")
+    let dadosWeb = '';
+    try {
+        const chkWeb = document.getElementById('chk-busca-web-mentor');
+        if (chkWeb && chkWeb.checked && typeof buscarNaWeb === 'function') {
+            const loadEl = document.getElementById('load-agente');
+            if (loadEl) loadEl.textContent = 'Pesquisando dados atualizados na web... 🌍';
+            const r = await buscarNaWeb(perguntaUsuario);
+            if (r) dadosWeb = `\n\n[INFO WEB RECENTE]\n${r}\nUse se for aplicável e cite a fonte.`;
+        }
+    } catch (e) { console.warn('Busca web do Mentor ignorada:', e); }
+
+    const system = PROMPT_MENTOR_REGRAS +
+        `\n\nCONTEXTO DO ALUNO (use só se for relevante para a pergunta): ${JSON.stringify(agenteContextoSilencioso)}`;
+
+    const contents = [
+        ...historicoMentor,
+        { role: 'user', parts: [{ text: perguntaUsuario + dadosWeb }] }
+    ];
+
+    try {
+        const resposta = await chamarGemini({ system, contents, temperatura: 0.4 });
+        registrarTroca(historicoMentor, perguntaUsuario, resposta);
+        return resposta;
+    } catch (e) {
+        return `Erro no ciclo: ${e.message}`;
+    }
+}
+
+// ---------------------------------------------------------------------
+// 7) LIGAÇÕES NECESSÁRIAS (faça manualmente, 2 passos)
+// ---------------------------------------------------------------------
+// (a) No INÍCIO da função executarIA(tipo, promptEspecifico, textoExibicao) existente,
+//     logo depois da linha "async function executarIA(...) {", adicione:
+//
+//         if (tipo === 'chat') return executarChat(promptEspecifico, textoExibicao);
+//
+// (b) Botão "Nova conversa" ao lado do botão "Enviar" do chat (no HTML):
+//
+//         <button class="btn-outline" onclick="limparHistoricoChat()" style="width:120px;">Nova conversa</button>
+//
+// (c) Opcional: busca web no Mentor. No .mentor-footer, antes do <input>, adicione:
+//
+//         <label style="font-size:0.7rem; display:flex; align-items:center; gap:4px;">
+//             <input type="checkbox" id="chk-busca-web-mentor" style="width:auto; margin:0;">🌐
+//         </label>
+
+
+// Mermaid (mapas mentais)
+window.addEventListener('load', function () {
+    if (window.mermaid) { try { mermaid.initialize({ startOnLoad: false, securityLevel: 'strict' }); } catch (e) { console.warn(e); } }
+});
+
     </script>
 </body>
 </html>
