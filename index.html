@@ -818,6 +818,10 @@ function atualizarVisorPausa() {
     if (visor) visor.textContent = formatarTempo(segundosPausa);
 }
 
+        let editandoRegistroId = null;
+        let calMesOff = 0;
+        let subIaAtual = 'chat';
+
         function atualizarResumoGeral() {
     let per = document.getElementById('resumo-geral-periodo').value;
     let dtI = document.getElementById('rg-dt-ini').value;
@@ -879,9 +883,6 @@ function alterarMesCalendario(direcao) {
     calMesOff += direcao;
     renderizarCalendarioMes();
 }
-        let editandoRegistroId = null;
-        let calMesOff = 0;
-        let subIaAtual = 'chat';
         
         const paleta17 = ['#007AFF','#34C759','#FF3B30','#FF9500','#5856D6','#AF52DE','#5AC8FA','#FF2D55','#E5C07B','#98C379','#E06C75','#C678DD','#56B6C2','#D19A66','#61AFEF', '#000000', '#FFFFFF'];
         let corAtualMateria = paleta17[0];
