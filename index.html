@@ -791,6 +791,58 @@
         </div>
     </div>
     <script>
+        
+        let userAtual = null, refDb = null, refStore = null, isAdmin = false;
+let dbData = { sessoes: [], provas: [], materias: [], cadernos: [], flashcards: [], biblioteca: [], iaFiltrosHistorico: [], missoes: [], metas: {horas:4, questoes:60}, notasCiclo: '' };
+let segundosCronometro = 0, cronometroInterval = null, graficoInstance = null;
+let segundosPausa = 0, pausaInterval = null;
+let editandoRegistroId = null;
+let calMesOff = 0;
+let subIaAtual = 'chat';
+
+const paleta17 = ['#007AFF','#34C759','#FF3B30','#FF9500','#5856D6','#AF52DE','#5AC8FA','#FF2D55','#E5C07B','#98C379','#E06C75','#C678DD','#56B6C2','#D19A66','#61AFEF', '#000000', '#FFFFFF'];
+let corAtualMateria = paleta17[0];
+let db, storage;
+
+document.addEventListener("DOMContentLoaded", () => {
+    const firebaseConfig = {
+        apiKey: "AIzaSyCIPK3YBKulMbjJzm_UahdtQrNjgqLmYho",
+        authDomain: "plataforma-de-estudos-98ec8.firebaseapp.com",
+        databaseURL: "https://plataforma-de-estudos-98ec8-default-rtdb.firebaseio.com",
+        projectId: "plataforma-de-estudos-98ec8",
+        storageBucket: "plataforma-de-estudos-98ec8.firebasestorage.app",
+        messagingSenderId: "237117351737",
+        appId: "1:237117351737:web:32a01ded955abc3d302ae8"
+    };
+    firebase.initializeApp(firebaseConfig);
+    db = firebase.database(); 
+    storage = firebase.storage();
+    firebase.auth().onAuthStateChanged(async user => {
+        if(user) {
+            userAtual = user; refDb = db.ref('usuarios/' + user.uid); refStore = storage.ref('usuarios/' + user.uid);
+            document.getElementById('tela-login').style.display = 'none'; document.getElementById('tela-painel').style.display = 'block';
+            document.getElementById('conta-email').textContent = user.email;
+            
+            try {
+                let adminSnap = await db.ref('admins/' + user.uid).once('value');
+                isAdmin = adminSnap.val() === true;
+            } catch(e) { isAdmin = false; }
+            
+            carregarPaletaSistema(); carregarApiKey(); carregarDadosGlobais(); irTela('inicio');
+            
+            let sesDataEl = document.getElementById('ses-data');
+            if(sesDataEl && !sesDataEl.value) sesDataEl.value = new Date().toISOString().split('T')[0];
+            
+            let hojeDate = new Date();
+            let hYear = hojeDate.getFullYear();
+            let hMonth = String(hojeDate.getMonth() + 1).padStart(2, '0');
+            let hDay = String(hojeDate.getDate()).padStart(2, '0');
+            document.getElementById('filtro-data-missoes').value = `${hYear}-${hMonth}-${hDay}`;
+        } else {
+            userAtual = null; isAdmin = false; document.getElementById('tela-login').style.display = 'block'; document.getElementById('tela-painel').style.display = 'none';
+        }
+    });
+});
       
         let userAtual = null, refDb = null, refStore = null, isAdmin = false;
         let dbData = { sessoes: [], provas: [], materias: [], cadernos: [], flashcards: [], biblioteca: [], iaFiltrosHistorico: [], missoes: [], metas: {horas:4, questoes:60}, notasCiclo: '' };
