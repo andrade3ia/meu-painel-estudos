@@ -814,6 +814,21 @@
         let dbData = { sessoes: [], provas: [], materias: [], cadernos: [], flashcards: [], biblioteca: [], iaFiltrosHistorico: [], missoes: [], metas: {horas:4, questoes:60}, notasCiclo: '' };
         let segundosCronometro = 0, cronometroInterval = null, graficoInstance = null;
         let segundosPausa = 0, pausaInterval = null;
+        function formatarTempo(totalSegundos) {
+    let h = Math.floor(totalSegundos / 3600);
+    let m = Math.floor((totalSegundos % 3600) / 60);
+    let s = totalSegundos % 60;
+    return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+}
+function atualizarVisorCronometro() {
+    let visor = document.getElementById('cronometro-visor');
+    if (visor) visor.textContent = formatarTempo(segundosCronometro);
+}
+function atualizarVisorPausa() {
+    let visor = document.getElementById('visor-pausa');
+    if (visor) visor.textContent = formatarTempo(segundosPausa);
+}
+
         let editandoRegistroId = null;
         let calMesOff = 0;
         let subIaAtual = 'chat';
