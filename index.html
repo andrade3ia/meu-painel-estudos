@@ -975,17 +975,17 @@ function renderizarCalendarioMes() {
             if (isFuturo) border = '1px dashed var(--border-color)'; // Dá um visual de "aguardando"
         } else {
             // O julgamento: O dia já passou ou é hoje
-            if (temEstudo) {
-                bg = 'rgba(52, 199, 89, 0.15)'; // Verde clarinho
-                color = 'var(--brand-success)'; // Verde forte
-                icone = '✅';
-                border = '1px solid var(--brand-success)';
-            } else {
-                bg = 'rgba(255, 59, 48, 0.1)'; // Vermelho clarinho
-                color = 'var(--brand-danger)'; // Vermelho forte
-                icone = '❌';
-                border = '1px solid var(--brand-danger)';
-            }
+           if (temEstudo) {
+            bg = 'var(--brand-success)'; // Verde sólido preenchido
+            color = '#FFFFFF'; // Texto branco para dar contraste
+            icone = '✅';
+            border = 'none'; // Remove o contorno
+        } else {
+            bg = 'var(--brand-danger)'; // Vermelho sólido preenchido
+            color = '#FFFFFF'; // Texto branco para dar contraste
+            icone = '❌';
+            border = 'none'; // Remove o contorno
+        }
         }
 
         html += `<div style="padding:4px 0; border-radius:8px; background:${bg}; color:${color}; border:${border}; font-weight:700; display:flex; flex-direction:column; align-items:center; justify-content:center; position:relative; min-height:40px; transition:transform 0.2s;">
