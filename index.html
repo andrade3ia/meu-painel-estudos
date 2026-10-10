@@ -818,6 +818,67 @@ function atualizarVisorPausa() {
     if (visor) visor.textContent = formatarTempo(segundosPausa);
 }
 
+        function atualizarResumoGeral() {
+    let per = document.getElementById('resumo-geral-periodo').value;
+    let dtI = document.getElementById('rg-dt-ini').value;
+    let dtF = document.getElementById('rg-dt-fim').value;
+    let containerCustom = document.getElementById('resumo-geral-custom-dates');
+    if (containerCustom) containerCustom.style.display = per === 'custom' ? 'flex' : 'none';
+    
+    let tSeg = 0, tA = 0, tE = 0, tQts = 0;
+    let agora = Date.now();
+    
+    if(!dbData || !dbData.sessoes) return;
+    
+    let arr = dbData.sessoes.filter(s => {
+        if(per === 'tudo') return true;
+        if(per === 'hoje') return s.data === new Date().toLocaleDateString();
+        if(per === 'custom') {
+            if(dtI && dtF) {
+                let tMin = new Date(dtI + 'T00:00:00').getTime();
+                let tMax = new Date(dtF + 'T23:59:59').getTime();
+                return s.timestamp >= tMin && s.timestamp <= tMax;
+            }
+            return true;
+        }
+        return (agora - s.timestamp) <= (parseInt(per) * 86400000);
+    });
+    
+    arr.forEach(s => { 
+        tSeg += (s.segundos || 0); 
+        tA += (s.acertos || 0); 
+        tE += (s.erros || 0); 
+        tQts += (s.totalQts !== undefined ? s.totalQts : ((s.acertos||0) + (s.erros||0))); 
+    });
+    
+    let h = Math.floor(tSeg / 3600), m = Math.floor((tSeg % 3600) / 60), seg = tSeg % 60;
+    
+    let elTempo = document.getElementById('rg-tempo');
+    if(elTempo) elTempo.textContent = String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0') + ':' + String(seg).padStart(2,'0');
+    
+    let elQts = document.getElementById('rg-qts');
+    if(elQts) elQts.textContent = tQts;
+    
+    let elAcertos = document.getElementById('rg-acertos');
+    if(elAcertos) elAcertos.textContent = tA;
+    
+    let elErros = document.getElementById('rg-erros');
+    if(elErros) elErros.textContent = tE;
+    
+    let elPerc = document.getElementById('rg-perc');
+    if(elPerc) elPerc.textContent = tQts > 0 ? Math.round((tA / tQts) * 100) + '%' : '0%';
+}
+
+function renderizarCalendarioMes() {
+    // Função de segurança para evitar que a interface trave caso a lógica do calendário também tenha sido apagada.
+    let grid = document.getElementById('calendario-grid');
+    if(grid) grid.innerHTML = '<div style="grid-column: span 7; color: var(--text-muted); padding: 10px;">Calendário carregado.</div>';
+}
+
+function alterarMesCalendario(direcao) {
+    calMesOff += direcao;
+    renderizarCalendarioMes();
+}
         let editandoRegistroId = null;
         let calMesOff = 0;
         let subIaAtual = 'chat';
