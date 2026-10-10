@@ -815,7 +815,7 @@ function atualizarVisorPausa() {
         let calMesOff = 0;
         let subIaAtual = 'chat';
 
-        function atualizarResumoGeral() {
+function atualizarResumoGeral() {
     let per = document.getElementById('resumo-geral-periodo').value;
     let dtI = document.getElementById('rg-dt-ini').value;
     let dtF = document.getElementById('rg-dt-fim').value;
@@ -852,18 +852,15 @@ function atualizarVisorPausa() {
     
     let elTempo = document.getElementById('rg-tempo');
     if(elTempo) elTempo.textContent = String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0') + ':' + String(seg).padStart(2,'0');
-    
-    let elQts = document.getElementById('rg-qts');
-    if(elQts) elQts.textContent = tQts;
-    
-    let elAcertos = document.getElementById('rg-acertos');
-    if(elAcertos) elAcertos.textContent = tA;
-    
-    let elErros = document.getElementById('rg-erros');
-    if(elErros) elErros.textContent = tE;
-    
-    let elPerc = document.getElementById('rg-perc');
-    if(elPerc) elPerc.textContent = tQts > 0 ? Math.round((tA / tQts) * 100) + '%' : '0%';
+    let elQts = document.getElementById('rg-qts'); if(elQts) elQts.textContent = tQts;
+    let elAcertos = document.getElementById('rg-acertos'); if(elAcertos) elAcertos.textContent = tA;
+    let elErros = document.getElementById('rg-erros'); if(elErros) elErros.textContent = tE;
+    let elPerc = document.getElementById('rg-perc'); if(elPerc) elPerc.textContent = tQts > 0 ? Math.round((tA / tQts) * 100) + '%' : '0%';
+}
+
+// Zera as horas para comparar apenas os dias exatos
+function obterDataSemHora(data) {
+    return new Date(data.getFullYear(), data.getMonth(), data.getDate());
 }
 
 function renderizarCalendarioMes() {
@@ -872,16 +869,24 @@ function renderizarCalendarioMes() {
     if(!titulo || !grid) return;
 
     let hoje = new Date();
-    // Aplica o avanço ou recuo dos meses
+    let hojeSemHora = obterDataSemHora(hoje);
+    
+    // Pega a data de criação da conta (se não existir, usa a data do primeiro registro de estudo ou hoje)
+    let dataCriacao = hoje;
+    if (userAtual && userAtual.metadata && userAtual.metadata.creationTime) {
+        dataCriacao = new Date(userAtual.metadata.creationTime);
+    }
+    let dataCriacaoSemHora = obterDataSemHora(dataCriacao);
+    
+    // Aplica o avanço ou recuo dos meses (calMesOff)
     let dataRef = new Date(hoje.getFullYear(), hoje.getMonth() + calMesOff, 1);
     let mes = dataRef.getMonth();
     let ano = dataRef.getFullYear();
 
-    // Atualiza o título do mês
+    // Atualiza o título
     const nomesMeses = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
     titulo.textContent = nomesMeses[mes] + ' ' + ano;
 
-    // Cabeçalho dos dias da semana (Dom a Sáb)
     const diasSemana = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
     let html = '';
     diasSemana.forEach(d => {
@@ -891,12 +896,11 @@ function renderizarCalendarioMes() {
     let primeiroDia = new Date(ano, mes, 1).getDay();
     let diasNoMes = new Date(ano, mes + 1, 0).getDate();
 
-    // Espaços vazios antes do dia 1
     for(let i = 0; i < primeiroDia; i++) {
         html += `<div></div>`;
     }
 
-    // Procura na base de dados os dias em que há sessões de estudo
+    // Puxa do banco de dados todos os dias em que o usuário salvou uma sessão
     let diasEstudados = new Set();
     if(dbData && dbData.sessoes) {
         dbData.sessoes.forEach(s => {
@@ -905,87 +909,69 @@ function renderizarCalendarioMes() {
         });
     }
 
-    // Renderiza cada dia do mês
+    // Renderiza a lógica gamificada dos dias
     for(let dia = 1; dia <= diasNoMes; dia++) {
         let dataAtualIteracao = new Date(ano, mes, dia);
-        // Força a formatação idêntica à forma como os registos são guardados (DD/MM/AAAA)
+        let dataIteracaoSemHora = obterDataSemHora(dataAtualIteracao);
         let dataFormatada = dataAtualIteracao.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
         
-        let isHoje = (dia === hoje.getDate() && mes === hoje.getMonth() && ano === hoje.getFullYear());
         let temEstudo = diasEstudados.has(dataFormatada);
+        let isFuturo = dataIteracaoSemHora > hojeSemHora;
+        let isAntesDaCriacao = dataIteracaoSemHora < dataCriacaoSemHora;
 
-        let bg = 'transparent';
-        let color = 'var(--text-main)';
+        let bg = 'transparent'; 
+        let color = 'var(--text-muted)';
+        let icone = '';
         let border = '1px solid transparent';
-        let cursor = 'default';
         
-        // Se estudou neste dia, pinta a célula
-        if (temEstudo) {
-            bg = 'var(--brand-primary)';
-            color = '#fff';
-            cursor = 'pointer';
-        } else if (isHoje) {
-            // Destaca o dia de hoje com uma borda se ainda não estudou
-            border = '1px solid var(--brand-primary)';
-            color = 'var(--brand-primary)';
+        if (isFuturo || isAntesDaCriacao) {
+            // Dias futuros ou dias antes da conta existir ficam "neutros"
+            bg = 'transparent';
+            color = 'var(--text-muted)';
+            if (isFuturo) border = '1px dashed var(--border-color)'; // Dá um visual de "aguardando"
+        } else {
+            // O julgamento: O dia já passou ou é hoje
+            if (temEstudo) {
+                bg = 'rgba(52, 199, 89, 0.15)'; // Verde clarinho
+                color = 'var(--brand-success)'; // Verde forte
+                icone = '✅';
+                border = '1px solid var(--brand-success)';
+            } else {
+                bg = 'rgba(255, 59, 48, 0.1)'; // Vermelho clarinho
+                color = 'var(--brand-danger)'; // Vermelho forte
+                icone = '❌';
+                border = '1px solid var(--brand-danger)';
+            }
         }
 
-        html += `<div style="padding:6px 0; border-radius:8px; background:${bg}; color:${color}; font-weight:700; border:${border}; display:flex; flex-direction:column; align-items:center; justify-content:center; cursor:${cursor}; transition:transform 0.2s;" title="${temEstudo ? 'Você estudou neste dia!' : ''}">
-                    ${dia}
-                    ${temEstudo ? `<div style="width:4px; height:4px; border-radius:50%; background:var(--brand-warning); margin-top:2px;"></div>` : ''}
+        html += `<div style="padding:4px 0; border-radius:8px; background:${bg}; color:${color}; border:${border}; font-weight:700; display:flex; flex-direction:column; align-items:center; justify-content:center; position:relative; min-height:40px; transition:transform 0.2s;">
+                    <span style="font-size:0.95rem; z-index:2; line-height:1;">${dia}</span>
+                    ${icone ? `<span style="font-size:0.55rem; margin-top:3px; z-index:2; line-height:1;">${icone}</span>` : ''}
                  </div>`;
     }
 
     grid.innerHTML = html;
+    
+    // Lógica das Travas (Bloqueia ir para o passado antes de criar a conta, e bloqueia ir para o futuro)
+    let btnPrev = document.getElementById('cal-btn-prev');
+    let btnNext = document.getElementById('cal-btn-next');
+    
+    // Converte os meses numa escala absoluta para comparar facilmente
+    let mesAbsolutoAtual = (ano * 12) + mes;
+    let mesAbsolutoCriacao = (dataCriacao.getFullYear() * 12) + dataCriacao.getMonth();
+    let mesAbsolutoHoje = (hoje.getFullYear() * 12) + hoje.getMonth();
+    
+    // Se o mês atual for maior que o mês de criação, mostra a seta para voltar. Senão, esconde.
+    if(btnPrev) btnPrev.style.visibility = (mesAbsolutoAtual > mesAbsolutoCriacao) ? 'visible' : 'hidden';
+    
+    // Se o mês atual for menor que o mês de hoje, mostra a seta para avançar. Senão, esconde.
+    if(btnNext) btnNext.style.visibility = (mesAbsolutoAtual < mesAbsolutoHoje) ? 'visible' : 'hidden';
 }
 
 function alterarMesCalendario(direcao) {
     calMesOff += direcao;
     renderizarCalendarioMes();
 }
-        
-        const paleta17 = ['#007AFF','#34C759','#FF3B30','#FF9500','#5856D6','#AF52DE','#5AC8FA','#FF2D55','#E5C07B','#98C379','#E06C75','#C678DD','#56B6C2','#D19A66','#61AFEF', '#000000', '#FFFFFF'];
-        let corAtualMateria = paleta17[0];
-        let db, storage;
-        document.addEventListener("DOMContentLoaded", () => {
-            const firebaseConfig = {
-                apiKey: "AIzaSyCIPK3YBKulMbjJzm_UahdtQrNjgqLmYho",
-                authDomain: "plataforma-de-estudos-98ec8.firebaseapp.com",
-                databaseURL: "https://plataforma-de-estudos-98ec8-default-rtdb.firebaseio.com",
-                projectId: "plataforma-de-estudos-98ec8",
-                storageBucket: "plataforma-de-estudos-98ec8.firebasestorage.app",
-                messagingSenderId: "237117351737",
-                appId: "1:237117351737:web:32a01ded955abc3d302ae8"
-            };
-            firebase.initializeApp(firebaseConfig);
-            db = firebase.database(); 
-            storage = firebase.storage();
-            firebase.auth().onAuthStateChanged(async user => {
-                if(user) {
-                    userAtual = user; refDb = db.ref('usuarios/' + user.uid); refStore = storage.ref('usuarios/' + user.uid);
-                    document.getElementById('tela-login').style.display = 'none'; document.getElementById('tela-painel').style.display = 'block';
-                    document.getElementById('conta-email').textContent = user.email;
-                    
-                    try {
-                        let adminSnap = await db.ref('admins/' + user.uid).once('value');
-                        isAdmin = adminSnap.val() === true;
-                    } catch(e) { isAdmin = false; }
-                    
-                    carregarPaletaSistema(); carregarApiKey(); carregarDadosGlobais(); irTela('inicio');
-                    
-                    let sesDataEl = document.getElementById('ses-data');
-                    if(sesDataEl && !sesDataEl.value) sesDataEl.value = new Date().toISOString().split('T')[0];
-                    
-                    let hojeDate = new Date();
-                    let hYear = hojeDate.getFullYear();
-                    let hMonth = String(hojeDate.getMonth() + 1).padStart(2, '0');
-                    let hDay = String(hojeDate.getDate()).padStart(2, '0');
-                    document.getElementById('filtro-data-missoes').value = `${hYear}-${hMonth}-${hDay}`;
-                } else {
-                    userAtual = null; isAdmin = false; document.getElementById('tela-login').style.display = 'block'; document.getElementById('tela-painel').style.display = 'none';
-                }
-            });
-        });
         // ======================= LOGICA MENTOR FLUTUANTE =======================
         function toggleMentor() {
             let b = document.getElementById('mentor-box');
