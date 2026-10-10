@@ -2482,7 +2482,6 @@ function atualizarVisorPausa() {
             // Função movida para fora do try/catch para corrigir falhas de escopo e evitar o erro "Unexpected token catch"
             async function chamarGemini(modelo, corpoRequisicao) {
                 // Estrutura do fetch e interpolação de strings corrigidos
-                let res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelo}:generateContent?key=${k}`, { 
                     method: 'POST', 
                     headers: { 'Content-Type': 'application/json' }, 
                     body: JSON.stringify(corpoRequisicao) 
