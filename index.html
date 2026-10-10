@@ -2320,125 +2320,150 @@
             const data = await response.json();
             return data.file.uri; 
         }
-       async function executarIA(tipo, promptEspecifico = null, textoExibicao = null) {
-            let k = localStorage.getItem('pruma_apikey'); 
-            if(!k) return alert("Configure a API Key na aba Minha Conta.");
-            
-            let p = "", box = null; 
-            let niveisSelecionados = [];
-            
-            if(tipo === 'questoes') {
-                document.querySelectorAll('.chk-nivel-q:checked').forEach(el => niveisSelecionados.push(el.value));
-                if(niveisSelecionados.length === 0) return alert("Selecione um nível.");
-                
-                let qtd = document.getElementById('ia-qts-num').value || '5';
-                let t = document.getElementById('ia-qts-tema').value || 'Geral';
-                let tipoQ = document.getElementById('ia-tipo-q').value; // AGORA O SISTEMA LÊ A SUA ESCOLHA
+      async function executarIA(tipo, promptEspecifico = null, textoExibicao = null) {
+    let k = localStorage.getItem('pruma_apikey'); 
+    if(!k) return alert("Configure a API Key na aba Minha Conta.");
+    
+    let p = "", box = null; 
+    let niveisSelecionados = [];
+    
+    if(tipo === 'questoes') {
+        document.querySelectorAll('.chk-nivel-q:checked').forEach(el => niveisSelecionados.push(el.value));
+        if(niveisSelecionados.length === 0) return alert("Selecione um nível.");
+        let qtd = document.getElementById('ia-qts-num').value || '5';
+        let t = document.getElementById('ia-qts-tema').value || 'Geral';
+        let tipoQ = document.getElementById('ia-tipo-q').value;
 
-                // Diretrizes rígidas dependendo do que você escolheu no menu
-                let instrucaoTipo = "";
-                if (tipoQ === 'multipla') {
-                    instrucaoTipo = 'Gere APENAS Múltipla Escolha (5 alternativas: A, B, C, D, E). A chave "alternativas" deve iniciar com as letras. A chave "correta" deve ter APENAS a letra correta.';
-                } else if (tipoQ === 'ce') {
-                    instrucaoTipo = 'Gere APENAS Certo ou Errado (Estilo Cebraspe). A chave "alternativas" DEVE ter exatamente 2 itens: ["Certo", "Errado"]. A chave "correta" deve ser EXATAMENTE a palavra "Certo" ou "Errado".';
-                } else {
-                    instrucaoTipo = 'Gere uma mistura (Múltipla Escolha e Certo/Errado). Para as de Certo/Errado, use as alternativas ["Certo", "Errado"].';
-                }
+        let comic = "";
+        if (tipoQ === 'multipla') {
+            comic = 'Gere APENAS Múltipla Escolha (5 alternativas: A, B, C, D, E). A chave "alternativas" deve iniciar com as letras. A chave "correta" deve ter APENAS a letra correta.';
+        } else if (tipoQ === 'ce') {
+            comic = 'Gere APENAS Certo ou Errado (Estilo Cebraspe). A chave "alternativas" DEVE ter exatamente 2 itens: ["Certo", "Errado"]. A chave "correta" deve ser EXATAMENTE a palavra "Certo" ou "Errado".';
+        } else {
+            comic = 'Gere uma mistura (Múltipla Escolha e Certo/Errado).';
+        }
+        p = `Gere ${qtd} questões em formato JSON puro sobre: ${t}. Níveis: [${niveisSelecionados.join(', ')}]. \n${comic}\nFormato estrito JSON array de objetos contendo exatamente as chaves "enunciado", "alternativas" (array de strings), "correta" (string exata), "comentario" e "nivel". Sem formatação markdown, apenas o JSON.`;
+        box = document.getElementById('box-qts'); box.style.display='block'; box.innerHTML='';
+    } else if(tipo === 'flashcards') {
+        document.querySelectorAll('.chk-nivel-fc:checked').forEach(el => niveisSelecionados.push(el.value));
+        if(niveisSelecionados.length === 0) return alert("Selecione um nível.");
+        let qtd = document.getElementById('fc-num').value || '5';
+        let m = sanitizeText(document.getElementById('fc-mat').value) || 'Geral';
+        let tp = sanitizeText(document.getElementById('fc-top').value) || 'Geral';
+        p = `Gere ${qtd} flashcards para Matéria: "${m}" e Tópico: "${tp}". Níveis: ${niveisSelecionados.join(', ')}. JSON puro com chaves "f" (pergunta), "v" (resposta) e "nivel".`;
+        box = document.getElementById('box-fc'); box.style.display='block'; box.innerHTML='';
+    } else if(tipo === 'mapa_mental') {
+        p = promptEspecifico || document.getElementById('inp-chat').value.trim();
+        box = document.getElementById('box-chat');
+        box.insertAdjacentHTML('beforeend', `<div class="msg msg-u">🧠 Mapa Mental: ${sanitizeText(p)}</div>`);
+        document.getElementById('inp-chat').value=''; box.scrollTop = box.scrollHeight;
+    } else if(tipo === 'chat') {
+        p = promptEspecifico || document.getElementById('inp-chat').value.trim(); if(!p) return;
+        box = document.getElementById('box-chat');
+        box.insertAdjacentHTML('beforeend', `<div class="msg msg-u">${sanitizeText(textoExibicao || p)}</div>`);
+        if(!promptEspecifico) document.getElementById('inp-chat').value=''; box.scrollTop = box.scrollHeight;
+    }
 
-                p = `Gere ${qtd} questões em formato JSON puro sobre: ${t}. Níveis: [${niveisSelecionados.join(', ')}]. \n${instrucaoTipo}\nFormato estrito JSON array de objetos contendo exatamente as chaves: "enunciado", "alternativas" (array de strings), "correta" (string exata da resposta), "comentario" e "nivel". Sem formatação markdown extra, apenas o JSON.`;
-                box = document.getElementById('box-qts'); box.style.display='block'; box.innerHTML='';
-                
-            } else if(tipo === 'flashcards') {
-                document.querySelectorAll('.chk-nivel-fc:checked').forEach(el => niveisSelecionados.push(el.value));
-                if(niveisSelecionados.length === 0) return alert("Selecione um nível.");
-                let qtd = document.getElementById('fc-num').value || '5';
-                let m = sanitizeText(document.getElementById('fc-mat').value) || 'Geral';
-                let tp = sanitizeText(document.getElementById('fc-top').value) || 'Geral';
-                p = `Gere ${qtd} flashcards TÉCNICOS e DIRETOS para Matéria: "${m}" e Tópico: "${tp}". Níveis: ${niveisSelecionados.join(', ')}.
-                REGRAS RÍGIDAS PARA FLASHCARDS:
-                1. Seja sucinto, objetivo e focado APENAS no núcleo do tópico.
-                2. MÁXIMO DE 5 LINHAS por resposta.
-                3. Use formatação (negrito, pequenas listas) para facilitar a leitura.
-                Retorne JSON puro em array de objetos com as chaves "f", "v", "nivel".`;
-                box = document.getElementById('box-fc'); box.style.display='block'; box.innerHTML='';
-                
-            } else if(tipo === 'mapa_mental') {
-                p = promptEspecifico || document.getElementById('inp-chat').value.trim();
-                if(!p) p = "Crie um mapa mental sobre Direito e seus ramos principais.";
-                box = document.getElementById('box-chat');
-                box.insertAdjacentHTML('beforeend', `<div class="msg msg-u">🧠 Gerar Mapa Mental: ${sanitizeText(p)}</div>`); 
-                document.getElementById('inp-chat').value=''; 
-                box.scrollTop = box.scrollHeight;
-                
-            } else if(tipo === 'chat') {
-                p = promptEspecifico || document.getElementById('inp-chat').value.trim(); if(!p) return;
-                box = document.getElementById('box-chat');
-                let exibicao = textoExibicao || p;
-                box.insertAdjacentHTML('beforeend', `<div class="msg msg-u">${sanitizeText(exibicao)}</div>`); 
-                if(!promptEspecifico) { 
-                    document.getElementById('inp-chat').value=''; 
+    try {
+        if(tipo !== 'flashcards') {
+            box.insertAdjacentHTML('beforeend', `<div class="msg msg-a" id="load-ia"><span id="load-ia-text">Analisando...</span> ⏳</div>`);
+            box.scrollTop = box.scrollHeight;
+        } else {
+            box.innerHTML = `<div id="load-ia" style="color:var(--brand-primary); font-weight:600;"><span>Construindo flashcards...</span> ⏳</div>`;
+        }
+        let partesDaMensagem = [];
+        let textoContexto = "";
+        
+        let idContainer = (tipo === 'chat' || tipo === 'mapa_mental') ? 'chk-container-chat' : (tipo === 'questoes' ? 'chk-container-simulador' : 'chk-container-flashcards');
+        let chksSelecionados = document.querySelectorAll(`#${idContainer} .chk-fonte-biblioteca:checked`);
+        for(let chk of chksSelecionados) {
+            let doc = dbData.biblioteca.find(d => d.fbKey === chk.value);
+            if(doc) {
+                if(doc.nome.toLowerCase().endsWith('.pdf') || (doc.url && doc.url.includes('.pdf'))) {
+                    try {
+                        let spanLoad = document.getElementById('load-ia-text') || document.querySelector('#load-ia span');
+                        if(spanLoad) spanLoad.textContent = "Processando PDF... ⏳";
+                        let resBlob = await fetch(doc.url);
+                        if (!resBlob.ok) resBlob = await fetch(`https://corsproxy.io/?${encodeURIComponent(doc.url)}`);
+                        let blob = await resBlob.blob();
+                        let fileUriGerada = await uploadParaGeminiFileAPI(blob, k);
+                        partesDaMensagem.push({ fileData: { mimeType: "application/pdf", fileUri: fileUriGerada } });
+                    } catch(err) {
+                        if(doc.texto) textoContexto += `\n--- [${doc.nome}] ---\n${doc.texto}\n`;
+                    }
+                } else if (doc.texto) {
+                    textoContexto += `\n--- [${doc.nome}] ---\n${doc.texto}\n`;
                 }
-                box.scrollTop = box.scrollHeight;
             }
-            
-            let baseSys = obterPromptDoSistema(tipo, p);
-            
-            try {
-                if(tipo !== 'flashcards') { 
-                    box.insertAdjacentHTML('beforeend', `<div class="msg msg-a" id="load-ia"><span id="load-ia-text">Analisando...</span> ⏳</div>`);
-                    box.scrollTop = box.scrollHeight; 
-                } else { 
-                    box.innerHTML = `<div id="load-ia" style="color:var(--brand-primary); font-weight:600;"><span>Construindo flashcards objetivos...</span> ⏳</div>`; 
-                }
-                let partesDaMensagem = [];
-                let textoContexto = "";
-                
-        async function executarIA(tipo, promptEspecifico = null, textoExibicao = null) {
-            let k = localStorage.getItem('pruma_apikey'); 
-            if(!k) return alert("Configure a API Key na aba Minha Conta.");
-            
-            let p = "", box = null; 
-            let niveisSelecionados = [];
+        }
 
-            if(tipo === 'questoes') {
-                document.querySelectorAll('.chk-nivel-q:checked').forEach(el => niveisSelecionados.push(el.value));
-                if(niveisSelecionados.length === 0) return alert("Selecione um nível.");
-                let qtd = document.getElementById('ia-qts-num').value || '5';
-                let t = document.getElementById('ia-qts-tema').value || 'Geral';
-                p = `Gere ${qtd} questões em formato JSON puro sobre: ${t}. Níveis: [${niveisSelecionados.join(', ')}]. Formato estrito JSON array de objetos contendo exatamente as chaves "enunciado", "alternativas", "correta", "comentario", "nivel". Sem formatação markdown extra.`;
-                box = document.getElementById('box-qts'); box.style.display='flex'; box.innerHTML='';
-            } else if(tipo === 'flashcards') {
-                document.querySelectorAll('.chk-nivel-fc:checked').forEach(el => niveisSelecionados.push(el.value));
-                if(niveisSelecionados.length === 0) return alert("Selecione um nível.");
-                let qtd = document.getElementById('fc-num').value || '5';
-                let m = sanitizeText(document.getElementById('fc-mat').value) || 'Geral';
-                let tp = sanitizeText(document.getElementById('fc-top').value) || 'Geral';
-                p = `Gere ${qtd} flashcards TÉCNICOS e DIRETOS para Matéria: "${m}" e Tópico: "${tp}". Níveis: ${niveisSelecionados.join(', ')}.
-                REGRAS RÍGIDAS PARA FLASHCARDS:
-                1. Seja sucinto, objetivo e focado APENAS no núcleo do tópico.
-                2. MÁXIMO DE 5 LINHAS por resposta.
-                3. Use formatação (negrito, pequenas listas) para facilitar a leitura.
-                Retorne JSON puro em array de objetos com as chaves "f", "v", "nivel".`;
-                box = document.getElementById('box-fc'); box.style.display='block'; box.innerHTML='';
-            } else if(tipo === 'mapa_mental') {
-                p = promptEspecifico || document.getElementById('inp-chat').value.trim();
-                if(!p) p = "Crie um mapa mental sobre Direito e seus ramos principais.";
-                box = document.getElementById('box-chat');
-                box.insertAdjacentHTML('beforeend', `<div class="msg msg-u">🧠 Gerar Mapa Mental: ${sanitizeText(p)}</div>`); 
-                document.getElementById('inp-chat').value=''; 
-                box.scrollTop = box.scrollHeight;
-            } else if(tipo === 'chat') {
-                p = promptEspecifico || document.getElementById('inp-chat').value.trim(); if(!p) return;
-                box = document.getElementById('box-chat');
-                let exibicao = textoExibicao || p;
-                box.insertAdjacentHTML('beforeend', `<div class="msg msg-u">${sanitizeText(exibicao)}</div>`); 
-                if(!promptEspecifico) { 
-                    document.getElementById('inp-chat').value=''; 
-                }
-                box.scrollTop = box.scrollHeight;
+        let chkWeb = document.getElementById(tipo === 'chat' || tipo === 'mapa_mental' ? 'chk-busca-web' : (tipo === 'questoes' ? 'chk-busca-web-qts' : 'chk-busca-web-fc'));
+        let tagWeb = '';
+        let instrucaoFinal = `${obterPromptDoSistema(tipo, p)}\n\n`;
+        if(textoContexto) instrucaoFinal += `[FONTES]:\n${textoContexto}\n\n`;
+        
+        if (chkWeb && chkWeb.checked) {
+            let dadosWeb = await buscarNaWeb(tipo === 'questoes' ? document.getElementById('ia-qts-tema').value : p);
+            if(dadosWeb) {
+                instrucaoFinal += `[WEB]:\n${dadosWeb}\n\n`;
+                tagWeb = '(🌐 Busca Web)';
             }
-            let baseSys = obterPromptDoSistema(tipo, p);
-            
+        }
+        
+        if(tipo === 'mapa_mental') {
+            instrucaoFinal += `Gere obrigatoriamente código Mermaid.js mindmap com aspas se usar caracteres especiais.`;
+        } else {
+            instrucaoFinal += `PROMPT: ${p}`;
+        }
+        partesDaMensagem.push({ text: instrucaoFinal });
+
+        let modeloEscolhido = localStorage.getItem('pruma_modelo') || 'gemini-3.5-flash-lite';
+        let res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modeloEscolhido}:generateContent?key=${k}`, {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ contents: [{ role: "user", parts: partesDaMensagem }] })
+        });
+        if(!res.ok) throw new Error(await res.text());
+        let data = await res.json();
+        let txtF = data.candidates[0].content.parts[0].text;
+        
+        let l = document.getElementById('load-ia'); if(l) l.remove();
+        let badgeModelo = `<div style="font-size:0.7rem; color:var(--text-muted); text-align:right;">🛡️ PRUMA IA ${tagWeb}</div>`;
+        
+        if(tipo === 'mapa_mental') {
+            let mermaidCode = txtF.replace(/```mermaid/g,'').replace(/```/g,'').trim();
+            const { svg } = await mermaid.render('mermaid-' + Date.now(), mermaidCode);
+            let mapHtml = `${badgeModelo}<div class="mermaid-container">${svg}</div><button class="btn-primary" data-svg="${encodeURIComponent(svg)}" onclick="expandirMapaMental(this.getAttribute('data-svg'))">🔍 Ampliar</button>`;
+            box.insertAdjacentHTML('beforeend', `<div class="msg msg-a" style="width:100%;">${mapHtml}</div>`);
+        } else if(tipo === 'flashcards') {
+            let json = parseJSONComSeguranca(txtF);
+            let htmlFC = badgeModelo;
+            json.forEach(c => {
+                let cardHtml = `<div style="padding:10px; border:1px solid var(--border-color);"><b>❓ Pergunta:</b> ${c.f}<br><button onclick="abrirVisorRespostaFlashcard(this)" class="btn-outline">Ver Resposta</button><div style="display:none;">${c.v}</div></div>`;
+                htmlFC += `<div style="margin-bottom:10px;">${cardHtml}</div>`;
+            });
+            box.innerHTML = htmlFC;
+        } else if(tipo === 'questoes') {
+            let qArray = parseJSONComSeguranca(txtF);
+            let htmlQ = badgeModelo + `<div style="display:flex; flex-direction:column; gap:10px;">`;
+            qArray.forEach(q => {
+                let altHtml = q.alternativas.map(alt => {
+                    let isCorreta = alt.trim().toUpperCase().charAt(0) === (q.correta || '').trim().toUpperCase().charAt(0);
+                    return `<button class="btn-outline alt-btn" data-correta="${isCorreta?'1':'0'}" onclick="responderQuestaoUnica(this)">${alt}</button>`;
+                }).join('');
+                htmlQ += `<div style="border:1px solid var(--border-color); padding:10px;"><b>Questão:</b> ${q.enunciado}<div>${altHtml}</div></div>`;
+            });
+            box.insertAdjacentHTML('beforeend', `<div class="msg msg-a" style="width:100%;">${htmlQ}</div>`);
+        } else {
+            let finalChat = `${badgeModelo}<div>${marked.parse(txtF)}</div>`;
+            box.insertAdjacentHTML('beforeend', `<div class="msg msg-a" style="width:100%;">${finalChat}</div>`);
+        }
+        box.scrollTop = box.scrollHeight;
+    } catch(e) {
+        let l = document.getElementById('load-ia'); if(l) l.remove();
+        box.insertAdjacentHTML('beforeend', `<div class="msg msg-a" style="color:var(--brand-danger);">⚠️ Erro: ${e.message}</div>`);
+    }
+}
+ 
             // Função movida para fora do try/catch para corrigir falhas de escopo e evitar o erro "Unexpected token catch"
             async function chamarGemini(modelo, corpoRequisicao) {
                 // Estrutura do fetch e interpolação de strings corrigidos
