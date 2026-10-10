@@ -910,28 +910,25 @@ function obterDataSemHora(data) {
 function renderizarCalendarioMes() {
     let titulo = document.getElementById('calendario-titulo');
     let grid = document.getElementById('calendario-grid');
-    if(!titulo || !grid) return;
+    if (!titulo || !grid) return;
 
     let hoje = new Date();
     let hojeSemHora = obterDataSemHora(hoje);
-    
-    // Pega a data de criação da conta (se não existir, usa a data do primeiro registro de estudo ou hoje)
+
     let dataCriacao = hoje;
     if (userAtual && userAtual.metadata && userAtual.metadata.creationTime) {
         dataCriacao = new Date(userAtual.metadata.creationTime);
     }
     let dataCriacaoSemHora = obterDataSemHora(dataCriacao);
-    
-    // Aplica o avanço ou recuo dos meses (calMesOff)
+
     let dataRef = new Date(hoje.getFullYear(), hoje.getMonth() + calMesOff, 1);
     let mes = dataRef.getMonth();
     let ano = dataRef.getFullYear();
 
-    // Atualiza o título
-    const nomesMeses = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+    const nomesMeses = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
     titulo.textContent = nomesMeses[mes] + ' ' + ano;
 
-    const diasSemana = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+    const diasSemana = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
     let html = '';
     diasSemana.forEach(d => {
         html += `<div style="font-size:0.65rem; font-weight:800; color:var(--text-muted); padding-bottom:6px; text-transform:uppercase;">${d}</div>`;
@@ -939,83 +936,62 @@ function renderizarCalendarioMes() {
 
     let primeiroDia = new Date(ano, mes, 1).getDay();
     let diasNoMes = new Date(ano, mes + 1, 0).getDate();
+    for (let i = 0; i < primeiroDia; i++) html += `<div></div>`;
 
-    for(let i = 0; i < primeiroDia; i++) {
-        html += `<div></div>`;
-    }
-
-    // Puxa do banco de dados todos os dias em que o usuário salvou uma sessão
     let diasEstudados = new Set();
-    if(dbData && dbData.sessoes) {
+    if (dbData && dbData.sessoes) {
         dbData.sessoes.forEach(s => {
             let dStr = s.data || (s.timestamp ? new Date(s.timestamp).toLocaleDateString('pt-BR') : '');
-            if(dStr) diasEstudados.add(dStr);
+            if (dStr) diasEstudados.add(dStr);
         });
     }
 
-    // Renderiza a lógica gamificada dos dias
-    for(let dia = 1; dia <= diasNoMes; dia++) {
-        let dataAtualIteracao = new Date(ano, mes, dia);
-        let dataIteracaoSemHora = obterDataSemHora(dataAtualIteracao);
-        let dataFormatada = dataAtualIteracao.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
-        
-        let temEstudo = diasEstudados.has(dataFormatada);
-        let isFuturo = dataIteracaoSemHora > hojeSemHora;
-        let isAntesDaCriacao = dataIteracaoSemHora < dataCriacaoSemHora;
+    for (let dia = 1; dia <= diasNoMes; dia++) {
+        let dataIter = new Date(ano, mes, dia);
+        let dataIterSemHora = obterDataSemHora(dataIter);
+        let dataFormatada = dataIter.toLocaleDateString('pt-BR');
 
-        let bg = 'transparent'; 
+        let temEstudo = diasEstudados.has(dataFormatada);
+        let isFuturo = dataIterSemHora > hojeSemHora;
+        let isAntesDaCriacao = dataIterSemHora < dataCriacaoSemHora;
+
+        let bg = 'transparent';
         let color = 'var(--text-muted)';
         let icone = '';
         let border = '1px solid transparent';
-        
-        if (isFuturo || isAntesDaCriacao) {
-            // Dias futuros ou dias antes da conta existir ficam "neutros"
-            bg = 'transparent';
-            color = 'var(--text-muted)';
-            if (isFuturo) border = '1px dashed var(--border-color)'; // Dá um visual de "aguardando"
-        } else {
-            // O julgamento: O dia já passou ou é hoje
-         if (temEstudo) {
-            bg = 'rgba(52, 199, 89, 0.15)'; // Fundo verde clarinho
-            color = 'var(--brand-success)'; // Cor do número (verde)
-            icone = '✅';
-            border = 'none'; // Sem contorno
-        } else {
-            bg = 'rgba(255, 59, 48, 0.15)'; // Fundo vermelho clarinho
-            color = 'var(--brand-danger)'; // Cor do número (vermelho)
-            icone = '❌';
-            border = 'none'; // Sem contorno
-        }
-        
-        html += `<div style="padding:4px 0; border-radius:8px; background:${bg}; color:${color}; border:${border}; font-weight:700; display:flex; flex-direction:column; align-items:center; justify-content:center; position:relative; min-height:50px; transition:transform 0.2s;">
-                    <span style="font-size:0.85rem; z-index:2; line-height:1; margin-bottom: 2px;">${dia}</span>
-                    ${icone ? `<span style="font-size:1.3rem; z-index:2; line-height:1;">${icone}</span>` : ''}
-                 </div>`;
 
-        html += `<div style="padding:4px 0; border-radius:8px; background:${bg}; color:${color}; border:${border}; font-weight:700; display:flex; flex-direction:column; align-items:center; justify-content:center; position:relative; min-height:40px; transition:transform 0.2s;">
-                    <span style="font-size:0.95rem; z-index:2; line-height:1;">${dia}</span>
-                    ${icone ? `<span style="font-size:0.55rem; margin-top:3px; z-index:2; line-height:1;">${icone}</span>` : ''}
+        if (isFuturo || isAntesDaCriacao) {
+            if (isFuturo) border = '1px dashed var(--border-color)';
+        } else if (temEstudo) {
+            bg = 'rgba(52, 199, 89, 0.15)';
+            color = 'var(--brand-success)';
+            icone = '✅';
+            border = 'none';
+        } else {
+            bg = 'rgba(255, 59, 48, 0.15)';
+            color = 'var(--brand-danger)';
+            icone = '❌';
+            border = 'none';
+        }
+
+        html += `<div style="padding:4px 0; border-radius:8px; background:${bg}; color:${color}; border:${border}; font-weight:700; display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:50px;">
+                    <span style="font-size:0.85rem; line-height:1; margin-bottom:2px;">${dia}</span>
+                    ${icone ? `<span style="font-size:1.3rem; line-height:1;">${icone}</span>` : ''}
                  </div>`;
     }
-        
- grid.innerHTML = html;
-    
-    // Lógica das Travas (Bloqueia ir para o passado antes de criar a conta, e bloqueia ir para o futuro)
+
+    grid.innerHTML = html;
+
     let btnPrev = document.getElementById('cal-btn-prev');
     let btnNext = document.getElementById('cal-btn-next');
-    
-    // Converte os meses numa escala absoluta para comparar facilmente
     let mesAbsolutoAtual = (ano * 12) + mes;
     let mesAbsolutoCriacao = (dataCriacao.getFullYear() * 12) + dataCriacao.getMonth();
     let mesAbsolutoHoje = (hoje.getFullYear() * 12) + hoje.getMonth();
-    
-    // Se o mês atual for maior que o mês de criação, mostra a seta para voltar. Senão, esconde.
-    if(btnPrev) btnPrev.style.visibility = (mesAbsolutoAtual > mesAbsolutoCriacao) ? 'visible' : 'hidden';
-    
-    // Se o mês atual for menor que o mês de hoje, mostra a seta para avançar. Senão, esconde.
-    if(btnNext) btnNext.style.visibility = (mesAbsolutoAtual < mesAbsolutoHoje) ? 'visible' : 'hidden';
-}
 
+    if (btnPrev) btnPrev.style.visibility = (mesAbsolutoAtual > mesAbsolutoCriacao) ? 'visible' : 'hidden';
+    if (btnNext) btnNext.style.visibility = (mesAbsolutoAtual < mesAbsolutoHoje) ? 'visible' : 'hidden';
+}
+        
 function alterarMesCalendario(direcao) {
     calMesOff += direcao;
     renderizarCalendarioMes();
@@ -2939,7 +2915,7 @@ Pergunta: "${perguntaUsuario}"`;
                 </div>
             `);
             body.scrollTop = body.scrollHeight;
-        }
+        };
     </script>
 </body>
 </html>
