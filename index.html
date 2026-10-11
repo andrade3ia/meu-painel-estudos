@@ -545,6 +545,27 @@
                     <div style="position: relative; height:350px; width:100%; margin-top:20px;">
                         <canvas id="graficoEst"></canvas>
                     </div>
+
+                    <div id="est-extra" style="margin-top:30px; display:flex; flex-direction:column; gap:24px;">
+                        <div style="background:var(--bg-input); padding:18px; border-radius:var(--radius-sm);">
+                            <h3 style="margin:0 0 4px 0;">🎯 Meta de horas × Realizado</h3>
+                            <p style="font-size:0.8rem; color:var(--text-muted); margin:0 0 12px 0;">Semana atual (seg–dom) comparada à sua meta diária de horas (defina em Planejamento → Metas).</p>
+                            <div id="est-meta-resumo" style="margin-bottom:12px;"></div>
+                            <div style="position:relative; height:240px; width:100%;"><canvas id="graficoMetaSemana"></canvas></div>
+                            <h4 style="margin:18px 0 6px 0; font-size:0.9rem;">Últimas 8 semanas</h4>
+                            <div style="position:relative; height:220px; width:100%;"><canvas id="graficoMetaHistorico"></canvas></div>
+                        </div>
+                        <div style="background:var(--bg-input); padding:18px; border-radius:var(--radius-sm);">
+                            <h3 style="margin:0 0 4px 0;">🧩 Tópicos mais fracos</h3>
+                            <p style="font-size:0.8rem; color:var(--text-muted); margin:0 0 12px 0;">Menor aproveitamento primeiro. Só entram tópicos com pelo menos 10 questões resolvidas (respeita o filtro de matéria e período acima).</p>
+                            <div id="est-fracos"></div>
+                        </div>
+                        <div style="background:var(--bg-input); padding:18px; border-radius:var(--radius-sm);">
+                            <h3 style="margin:0 0 4px 0;">📊 Comparação de períodos</h3>
+                            <p style="font-size:0.8rem; color:var(--text-muted); margin:0 0 12px 0;">Semana atual × anterior (mesmos dias decorridos) e mês atual × anterior.</p>
+                            <div id="est-comparacao" style="overflow-x:auto;"></div>
+                        </div>
+                    </div>
                 </div>
             </div>
             <div id="view-pruma" style="display:none;">
@@ -2284,10 +2305,148 @@ div.innerHTML = finalDivHtml;
             });
             filteredSessoes.forEach(s => { tA += (s.acertos||0); tE += (s.erros||0); tSeg += (s.segundos||0); tPag += (s.paginas||0); tVid += (s.videos||0); tQts += (s.totalQts !== undefined ? s.totalQts : ((s.acertos||0)+(s.erros||0))); if(s.data) setDias.add(s.data); let chaveGraf = (materiasArr.length === 1) ? (s.topico || 'Geral') : s.materia; dadosGraf[chaveGraf] = (dadosGraf[chaveGraf]||0) + s.segundos; });
             document.getElementById('st-tempo').textContent = `${Math.floor(tSeg / 3600)}h ${Math.floor((tSeg % 3600) / 60)}m ${tSeg % 60}s`; document.getElementById('st-qts').textContent = tQts; document.getElementById('st-acertos').textContent = tA; document.getElementById('st-erros').textContent = tE; document.getElementById('st-perc').textContent = (tA+tE)>0 ? Math.round((tA/(tA+tE))*100)+'%' : '0%'; document.getElementById('st-pags').textContent = tPag; document.getElementById('st-vids').textContent = tVid; document.getElementById('st-ritmo').textContent = ((tSeg > 0) ? Math.round(tQts / (tSeg/3600)) : 0) + '/h'; document.getElementById('st-dias').textContent = setDias.size;
+            try { atualizarEstatisticasExtras(filteredSessoes); } catch(e) { console.warn('Estatísticas extras:', e); }
             if(graficoInstance) graficoInstance.destroy();
             let isDark = document.documentElement.getAttribute('data-theme') === 'dark'; let txtCor = isDark ? '#FFFFFF' : '#000000'; let keys = Object.keys(dadosGraf).length>0 ? Object.keys(dadosGraf) : ['Sem dados'], vals = Object.values(dadosGraf).length>0 ? Object.values(dadosGraf) : [1];
             let cores = keys.map(k => { if(materiasArr.length === 1) { return isDark ? '#FFFFFF' : '#000000'; } if(!Array.isArray(dbData.materias)) dbData.materias = Object.values(dbData.materias || {}); let m = dbData.materias.find(x=>x.nome.toLowerCase()===k.toLowerCase()); return m ? m.cor : paleta17[0]; });
             graficoInstance = new Chart(document.getElementById('graficoEst').getContext('2d'), { type: tipo, data: { labels: keys, datasets: [{ label: 'Tempo', data: vals, backgroundColor: cores, borderWidth: 0, borderRadius: tipo==='bar'?6:0 }] }, options: { responsive: true, maintainAspectRatio: false, color: txtCor, plugins: { legend: { labels: { color: txtCor } }, tooltip: { callbacks: { label: function(c) { let t = c.raw || 0; return ` ${c.label || ''}: ${Math.floor(t / 3600)}h ${Math.floor((t % 3600) / 60)}m ${t % 60}s`; } } } }, scales: tipo==='bar' ? { x:{ticks:{color:txtCor}}, y:{ticks:{color:txtCor}} } : {} } });
+        }
+        // ====== ESTATÍSTICAS EXTRAS: meta x realizado, tópicos fracos, comparação de períodos ======
+        let graficoMetaSemanaInst = null, graficoMetaHistInst = null;
+        function atualizarEstatisticasExtras(filtradas) {
+            const todas = Array.isArray(dbData.sessoes) ? dbData.sessoes : Object.values(dbData.sessoes || {});
+            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+            const txt = isDark ? '#FFFFFF' : '#000000';
+            const fmtH = s => Math.floor(s / 3600) + 'h' + String(Math.floor((s % 3600) / 60)).padStart(2, '0') + 'm';
+            const dia = (a, b, c) => new Date(a, b, c);
+            const agora = new Date();
+            const hoje = dia(agora.getFullYear(), agora.getMonth(), agora.getDate());
+            const idxHoje = (hoje.getDay() + 6) % 7; // 0 = segunda
+            const segIni = dia(hoje.getFullYear(), hoje.getMonth(), hoje.getDate() - idxHoje);
+            const metaDia = Number((dbData.metas && dbData.metas.horas) || 4);
+            const metaSemSeg = metaDia * 7 * 3600;
+
+            const agrega = (ini, fim) => {
+                let seg = 0, a = 0, e = 0; const dias = new Set();
+                todas.forEach(s => {
+                    const t = s.timestamp; if (!t || t < ini.getTime() || t >= fim.getTime()) return;
+                    seg += (s.segundos || 0); a += (s.acertos || 0); e += (s.erros || 0);
+                    if ((s.segundos || 0) > 0) { const d = new Date(t); dias.add(d.getFullYear() + '-' + d.getMonth() + '-' + d.getDate()); }
+                });
+                return { seg, a, e, q: a + e, dias: dias.size };
+            };
+
+            // ---- 1) Meta x realizado (semana atual) ----
+            const rotulos = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'];
+            const horasDia = rotulos.map((_, i) => {
+                const ini = dia(segIni.getFullYear(), segIni.getMonth(), segIni.getDate() + i);
+                const fim = dia(segIni.getFullYear(), segIni.getMonth(), segIni.getDate() + i + 1);
+                return +(agrega(ini, fim).seg / 3600).toFixed(2);
+            });
+            const fimSem = dia(segIni.getFullYear(), segIni.getMonth(), segIni.getDate() + 7);
+            const sem = agrega(segIni, fimSem);
+            const esperadoAteHoje = metaDia * (idxHoje + 1) * 3600;
+            const saldo = sem.seg - esperadoAteHoje;
+            const pctMeta = metaSemSeg > 0 ? Math.min(100, Math.round(sem.seg / metaSemSeg * 100)) : 0;
+            const projecao = (sem.seg > 0) ? Math.round(sem.seg / (idxHoje + 1) * 7) : 0;
+            const corSaldo = saldo >= 0 ? 'var(--brand-success)' : 'var(--brand-danger)';
+            const elRes = document.getElementById('est-meta-resumo');
+            if (elRes) elRes.innerHTML = `
+                <div style="display:flex; justify-content:space-between; font-size:0.85rem; margin-bottom:4px;"><span><b>${fmtH(sem.seg)}</b> de ${fmtH(metaSemSeg)} (meta semanal = ${metaDia}h × 7 dias)</span><b>${pctMeta}%</b></div>
+                <div style="height:10px; background:var(--border-color); border-radius:6px; overflow:hidden;"><div style="height:100%; width:${pctMeta}%; background:var(--brand-primary);"></div></div>
+                <div style="font-size:0.8rem; margin-top:8px; color:var(--text-muted);">Até hoje a meta seria ${fmtH(esperadoAteHoje)}: você está <b style="color:${corSaldo};">${saldo >= 0 ? 'adiantado' : 'atrasado'} em ${fmtH(Math.abs(saldo))}</b>. ${projecao ? 'No ritmo atual, fecha a semana com ~' + fmtH(projecao) + '.' : ''}</div>`;
+
+            const cvS = document.getElementById('graficoMetaSemana');
+            if (cvS) {
+                if (graficoMetaSemanaInst) graficoMetaSemanaInst.destroy();
+                graficoMetaSemanaInst = new Chart(cvS.getContext('2d'), {
+                    data: { labels: rotulos, datasets: [
+                        { type: 'bar', label: 'Estudado (h)', data: horasDia, borderRadius: 6, backgroundColor: horasDia.map(h => h >= metaDia ? '#34C759' : '#007AFF') },
+                        { type: 'line', label: 'Meta diária (h)', data: rotulos.map(() => metaDia), borderColor: '#FF9500', borderDash: [6, 4], pointRadius: 0, borderWidth: 2 }
+                    ] },
+                    options: { responsive: true, maintainAspectRatio: false, color: txt, plugins: { legend: { labels: { color: txt } } }, scales: { x: { ticks: { color: txt } }, y: { beginAtZero: true, ticks: { color: txt } } } }
+                });
+            }
+
+            // ---- histórico de 8 semanas ----
+            const rotH = [], valH = [];
+            for (let w = 7; w >= 0; w--) {
+                const ini = dia(segIni.getFullYear(), segIni.getMonth(), segIni.getDate() - 7 * w);
+                const fim = dia(ini.getFullYear(), ini.getMonth(), ini.getDate() + 7);
+                rotH.push(String(ini.getDate()).padStart(2, '0') + '/' + String(ini.getMonth() + 1).padStart(2, '0'));
+                valH.push(+(agrega(ini, fim).seg / 3600).toFixed(1));
+            }
+            const cvH = document.getElementById('graficoMetaHistorico');
+            if (cvH) {
+                if (graficoMetaHistInst) graficoMetaHistInst.destroy();
+                graficoMetaHistInst = new Chart(cvH.getContext('2d'), {
+                    data: { labels: rotH, datasets: [
+                        { type: 'bar', label: 'Horas na semana', data: valH, borderRadius: 6, backgroundColor: valH.map(h => h >= metaDia * 7 ? '#34C759' : '#007AFF') },
+                        { type: 'line', label: 'Meta semanal (h)', data: rotH.map(() => metaDia * 7), borderColor: '#FF9500', borderDash: [6, 4], pointRadius: 0, borderWidth: 2 }
+                    ] },
+                    options: { responsive: true, maintainAspectRatio: false, color: txt, plugins: { legend: { labels: { color: txt } } }, scales: { x: { title: { display: true, text: 'Semana (início)', color: txt }, ticks: { color: txt } }, y: { beginAtZero: true, ticks: { color: txt } } } }
+                });
+            }
+
+            // ---- 2) Tópicos mais fracos (respeita filtros da tela) ----
+            const mapa = {};
+            (filtradas || []).forEach(s => {
+                const chave = (s.materia || 'Geral') + '|||' + (s.topico || 'Geral');
+                const o = mapa[chave] || (mapa[chave] = { materia: s.materia || 'Geral', topico: s.topico || 'Geral', a: 0, e: 0 });
+                o.a += (s.acertos || 0); o.e += (s.erros || 0);
+            });
+            const lista = Object.values(mapa).map(o => ({ ...o, q: o.a + o.e, pct: (o.a + o.e) ? o.a / (o.a + o.e) * 100 : 0 }))
+                .filter(o => o.q >= 10).sort((x, y) => x.pct - y.pct || y.q - x.q).slice(0, 10);
+            const elF = document.getElementById('est-fracos');
+            if (elF) {
+                if (!lista.length) { elF.innerHTML = '<div style="color:var(--text-muted); font-size:0.85rem;">Ainda não há tópicos com 10 ou mais questões registradas neste filtro.</div>'; }
+                else {
+                    elF.innerHTML = lista.map((o, i) => {
+                        const cor = o.pct < 60 ? 'var(--brand-danger)' : (o.pct < 75 ? 'var(--brand-warning)' : 'var(--brand-success)');
+                        return `<div style="margin-bottom:10px;">
+                            <div style="display:flex; justify-content:space-between; gap:8px; font-size:0.85rem;"><span>${i + 1}. <b>${sanitizeText(o.topico)}</b> <span style="color:var(--text-muted);">· ${sanitizeText(o.materia)}</span></span><span style="white-space:nowrap;"><b style="color:${cor};">${Math.round(o.pct)}%</b> <span style="color:var(--text-muted);">(${o.a}/${o.q})</span></span></div>
+                            <div style="height:8px; background:var(--border-color); border-radius:5px; overflow:hidden; margin-top:3px;"><div style="height:100%; width:${Math.round(o.pct)}%; background:${cor};"></div></div>
+                        </div>`;
+                    }).join('');
+                }
+            }
+
+            // ---- 3) Comparação de períodos ----
+            const decorridoSem = idxHoje + 1;
+            const semAtual = agrega(segIni, dia(segIni.getFullYear(), segIni.getMonth(), segIni.getDate() + decorridoSem));
+            const iniSemAnt = dia(segIni.getFullYear(), segIni.getMonth(), segIni.getDate() - 7);
+            const semAnt = agrega(iniSemAnt, dia(iniSemAnt.getFullYear(), iniSemAnt.getMonth(), iniSemAnt.getDate() + decorridoSem));
+            const iniMes = dia(hoje.getFullYear(), hoje.getMonth(), 1);
+            const mesAtual = agrega(iniMes, dia(hoje.getFullYear(), hoje.getMonth(), hoje.getDate() + 1));
+            const iniMesAnt = dia(hoje.getFullYear(), hoje.getMonth() - 1, 1);
+            let fimMesAnt = dia(iniMesAnt.getFullYear(), iniMesAnt.getMonth(), hoje.getDate() + 1);
+            if (fimMesAnt > iniMes) fimMesAnt = iniMes; // não passa do fim do mês anterior
+            const mesAnt = agrega(iniMesAnt, fimMesAnt);
+
+            const aprov = p => p.q ? p.a / p.q * 100 : null;
+            const delta = (atual, ant, tipo) => {
+                if (tipo === 'pp') {
+                    if (atual === null || ant === null) return '<span style="color:var(--text-muted);">–</span>';
+                    const d = atual - ant; const c = d >= 0 ? 'var(--brand-success)' : 'var(--brand-danger)';
+                    return `<b style="color:${c};">${d >= 0 ? '▲' : '▼'} ${Math.abs(d).toFixed(1)} p.p.</b>`;
+                }
+                if (!ant) return atual ? '<b style="color:var(--brand-success);">▲ novo</b>' : '<span style="color:var(--text-muted);">–</span>';
+                const d = (atual - ant) / ant * 100; const c = d >= 0 ? 'var(--brand-success)' : 'var(--brand-danger)';
+                return `<b style="color:${c};">${d >= 0 ? '▲' : '▼'} ${Math.abs(Math.round(d))}%</b>`;
+            };
+            const fmtP = v => v === null ? '–' : Math.round(v) + '%';
+            const linhas = (rotulo, A, B, nomeA, nomeB) => `
+                <tr><td colspan="4" style="padding:10px 6px 4px; font-weight:700; font-size:0.8rem; color:var(--brand-primary);">${rotulo}</td></tr>
+                <tr style="font-size:0.75rem; color:var(--text-muted);"><td></td><td>${nomeA}</td><td>${nomeB}</td><td>Variação</td></tr>
+                <tr><td>Horas</td><td>${fmtH(A.seg)}</td><td>${fmtH(B.seg)}</td><td>${delta(A.seg, B.seg)}</td></tr>
+                <tr><td>Questões</td><td>${A.q}</td><td>${B.q}</td><td>${delta(A.q, B.q)}</td></tr>
+                <tr><td>Aproveitamento</td><td>${fmtP(aprov(A))}</td><td>${fmtP(aprov(B))}</td><td>${delta(aprov(A), aprov(B), 'pp')}</td></tr>
+                <tr><td>Dias estudados</td><td>${A.dias}</td><td>${B.dias}</td><td>${delta(A.dias, B.dias)}</td></tr>`;
+            const elC = document.getElementById('est-comparacao');
+            if (elC) elC.innerHTML = `<table style="width:100%; border-collapse:collapse; font-size:0.85rem; min-width:320px;"><tbody>
+                ${linhas('Semana (' + decorridoSem + ' dia(s) decorrido(s))', semAtual, semAnt, 'Esta semana', 'Semana passada')}
+                ${linhas('Mês (até o dia ' + hoje.getDate() + ')', mesAtual, mesAnt, 'Este mês', 'Mês passado')}
+            </tbody></table>`;
         }
         async function uploadArquivo() {
             let f = document.getElementById('bib-file').files[0]; 
@@ -2603,19 +2762,43 @@ div.innerHTML = finalDivHtml;
                 }
             }
         }
-        async function uploadParaGeminiFileAPI(blob, apiKey) {
-            const url = `https://generativelanguage.googleapis.com/upload/v1beta/files?key=${apiKey}`;
-            const response = await fetch(url, {
+        async function uploadParaGeminiFileAPI(blob, apiKey, nomeExibicao) {
+            // Valida o arquivo baixado (um proxy/CORS com erro devolve HTML, que o Gemini rejeita com 400)
+            if (!blob || !blob.size) throw new Error('O PDF baixado veio vazio (falha ao baixar do armazenamento).');
+            const cabecalho = new Uint8Array(await blob.slice(0, 5).arrayBuffer());
+            const ehPdf = String.fromCharCode.apply(null, cabecalho) === '%PDF-';
+            if (!ehPdf) throw new Error('O arquivo baixado não é um PDF válido (o link pode ter expirado ou sido bloqueado).');
+            if (blob.size > 50 * 1024 * 1024) throw new Error('PDF acima de 50 MB. Divida em partes menores (por capítulo).');
+
+            // Upload multipart (protocolo documentado), com a chave no cabeçalho
+            const boundary = 'pruma' + Date.now();
+            const meta = JSON.stringify({ file: { display_name: (nomeExibicao || 'documento.pdf').slice(0, 100) } });
+            const corpo = new Blob([
+                `--${boundary}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${meta}\r\n`,
+                `--${boundary}\r\nContent-Type: application/pdf\r\n\r\n`,
+                blob,
+                `\r\n--${boundary}--`
+            ]);
+            const response = await fetch('https://generativelanguage.googleapis.com/upload/v1beta/files?uploadType=multipart', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/pdf' },
-                body: blob
+                headers: { 'x-goog-api-key': apiKey, 'Content-Type': `multipart/related; boundary=${boundary}` },
+                body: corpo
             });
-            if (!response.ok) {
-                const errText = await response.text();
-                throw new Error(`Erro na File API: ${errText}`);
+            if (!response.ok) throw new Error('Erro no envio do PDF ao Gemini: ' + (await response.text()));
+            let arq = (await response.json()).file;
+            if (!arq || !arq.uri) throw new Error('O Gemini não devolveu o endereço do arquivo.');
+
+            // PDFs grandes demoram a ser processados: só podem ser usados quando o estado for ACTIVE
+            const inicio = Date.now();
+            while (arq.state && arq.state !== 'ACTIVE') {
+                if (arq.state === 'FAILED') throw new Error('O Gemini não conseguiu processar este PDF (pode estar protegido, corrompido ou ser só imagem).');
+                if (Date.now() - inicio > 120000) throw new Error('Tempo esgotado aguardando o Gemini processar o PDF. Tente um arquivo menor.');
+                await new Promise(r => setTimeout(r, 2500));
+                const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/${arq.name}`, { headers: { 'x-goog-api-key': apiKey } });
+                if (!r.ok) throw new Error('Erro ao consultar o processamento do PDF: ' + (await r.text()));
+                arq = await r.json();
             }
-            const data = await response.json();
-            return data.file.uri; 
+            return arq.uri;
         }
       async function executarIA(tipo, promptEspecifico = null, textoExibicao = null) {
     if (tipo === 'chat') return executarChat(promptEspecifico, textoExibicao);
@@ -2684,10 +2867,11 @@ div.innerHTML = finalDivHtml;
                         let resBlob = await fetch(doc.url);
                         if (!resBlob.ok) resBlob = await fetch(`https://corsproxy.io/?${encodeURIComponent(doc.url)}`);
                         let blob = await resBlob.blob();
-                        let fileUriGerada = await uploadParaGeminiFileAPI(blob, k);
+                        let fileUriGerada = await uploadParaGeminiFileAPI(blob, k, doc.nome);
                         partesDaMensagem.push({ fileData: { mimeType: "application/pdf", fileUri: fileUriGerada } });
                     } catch(err) {
                         if(doc.texto) textoContexto += `\n--- [${doc.nome}] ---\n${doc.texto}\n`;
+                        else throw new Error(`Falha ao usar o PDF "${doc.nome}": ${err.message}`);
                     }
                 } else if (doc.texto) {
                     textoContexto += `\n--- [${doc.nome}] ---\n${doc.texto}\n`;
@@ -3181,13 +3365,14 @@ async function montarFontes(containerId, apiKey, setStatus) {
                     let resBlob = await fetch(doc.url);
                     if (!resBlob.ok) resBlob = await fetch(`https://corsproxy.io/?${encodeURIComponent(doc.url)}`);
                     const blob = await resBlob.blob();
-                    uri = await uploadParaGeminiFileAPI(blob, apiKey);
+                    uri = await uploadParaGeminiFileAPI(blob, apiKey, doc.nome);
                     cacheArquivosGemini[doc.fbKey] = { uri: uri, ts: Date.now() };
                 }
                 partesPdf.push({ fileData: { mimeType: 'application/pdf', fileUri: uri } });
             } catch (err) {
                 // Se falhar o PDF, usa o texto salvo (limitado) como plano B
                 if (doc.texto) textoContexto += `\n--- [${doc.nome}] ---\n${doc.texto}\n`;
+                else throw new Error(`Falha ao usar o PDF "${doc.nome}": ${err.message}`);
             }
         } else if (doc.texto) {
             textoContexto += `\n--- [${doc.nome}] ---\n${doc.texto}\n`;
