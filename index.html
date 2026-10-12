@@ -112,14 +112,22 @@
         .conteudo-resposta-ia strong { color: var(--text-main); font-weight: 700; }
         mark { background-color: rgba(255, 235, 59, 0.6); color: var(--text-main); padding: 0 2px; border-radius: 3px; font-weight: 600; }
         .balao-caderno { background: var(--bg-card); padding: 18px; border-radius: 18px; border-bottom-left-radius: 4px; border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); width: 100%; margin-bottom: 12px; position: relative; }
-        /* Aba Planejamento: grade organizada */
-        #view-planejamento > * { margin-bottom: 20px; }
-        #view-planejamento .plan-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; align-items: stretch; }
-        #view-planejamento .plan-grid > .card { margin-bottom: 0; }
-        #view-planejamento .plan-treino { display: flex; flex-direction: column; justify-content: space-between; border-top: 4px solid var(--brand-warning); }
-        #view-planejamento .plan-treino-status { font-size: 0.9rem; color: var(--text-muted); line-height: 1.4; }
-        #view-planejamento .plan-missoes { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); gap: 20px; align-items: start; }
-        @media (max-width: 800px) { #view-planejamento .plan-missoes { grid-template-columns: 1fr; } }
+        /* Aba Planejamento: grade padronizada (mesmo cartão, mesmo cabeçalho, mesmas colunas) */
+        #view-planejamento .plan-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; align-items: stretch; margin-bottom: 20px; }
+        #view-planejamento .plan-row.plan-solo { grid-template-columns: 1fr; }
+        #view-planejamento .plan-card { display: flex; flex-direction: column; gap: 16px; padding: 20px; margin-bottom: 0; }
+        #view-planejamento .plan-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+        #view-planejamento .plan-head > div { min-width: 0; flex: 1; }
+        #view-planejamento .plan-head h2 { font-size: 1.05rem; margin: 0; padding: 0; border: none; letter-spacing: -0.2px; }
+        #view-planejamento .plan-head p { font-size: 0.8rem; color: var(--text-muted); margin: 4px 0 0 0; line-height: 1.4; }
+        #view-planejamento .plan-btn { width: auto; padding: 6px 12px; font-size: 0.8rem; flex-shrink: 0; box-shadow: none; }
+        #view-planejamento .plan-btn-grande { width: 100%; padding: 12px 18px; margin-top: auto; }
+        #view-planejamento .plan-rings { display: flex; justify-content: space-around; align-items: center; gap: 20px; flex: 1; }
+        #view-planejamento .plan-treino-corpo { font-size: 0.88rem; color: var(--text-muted); line-height: 1.5; }
+        #view-planejamento .plan-scroll { max-height: 340px; overflow-y: auto; }
+        #view-planejamento .plan-textarea { flex: 1; min-height: 200px; margin: 0; resize: vertical; line-height: 1.5; }
+        #view-planejamento > .card.plan-card { margin-bottom: 20px; }
+        @media (max-width: 800px) { #view-planejamento .plan-row { grid-template-columns: 1fr; } }
         .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: center; z-index: 2000; backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); padding: 20px; }
         .modal-content { background: var(--bg-card); padding: 32px; border-radius: var(--radius-lg); width: 100%; max-width: 520px; max-height: 90vh; overflow-y: auto; box-shadow: var(--shadow-md); position: relative; }
         /* JANELA DE REVISÃO DO CADERNO (missões do Planejamento) */
@@ -356,16 +364,13 @@
             </div>
             <!-- VIEW PLANEJAMENTO -->
             <div id="view-planejamento" style="display:none;">
-                <div class="plan-grid">
-                    <div class="card">
-                        <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:12px;">
-                            <div>
-                                <h2 style="margin-bottom:4px; border:none; padding:0;">🎯 Metas de hoje</h2>
-                                <p style="font-size:0.85rem; color:var(--text-muted); margin:0;">Atualizadas em tempo real com as suas sessões.</p>
-                            </div>
-                            <button class="btn-outline" style="width:auto; padding:6px 12px; font-size:0.8rem;" onclick="abrirModalMetas()">⚙️ Configurar</button>
+                <div class="plan-row" id="plan-row-topo">
+                    <div class="card plan-card">
+                        <div class="plan-head">
+                            <div><h2>🎯 Metas de hoje</h2><p>Atualizadas em tempo real com as suas sessões.</p></div>
+                            <button class="btn-outline plan-btn" onclick="abrirModalMetas()">⚙️ Configurar</button>
                         </div>
-                        <div style="display:flex; justify-content:space-around; align-items:center; flex-wrap:wrap; gap:20px; margin-top:16px;">
+                        <div class="plan-rings">
                         <div style="text-align:center;">
                             <div class="ring-container">
                                 <svg class="ring-svg" viewBox="0 0 100 100">
@@ -395,38 +400,37 @@
                         </div>
                     </div>
                     </div>
-                    <div class="card plan-treino" id="card-treino-diario" style="display:none;">
-                        <div>
-                            <h2 style="margin:0 0 4px 0; border:none; padding:0;">✨ Treino diário</h2>
-                            <div id="pruma-hoje-resumo" class="plan-treino-status">Dica do dia com fontes oficiais + questões Certo/Errado.</div>
-                            <p style="font-size:0.78rem; color:var(--text-muted); margin:10px 0 0 0;">Baseado nas matérias das suas provas. Não conta nas estatísticas.</p>
+                    <div class="card plan-card" id="card-treino-diario" style="display:none;">
+                        <div class="plan-head">
+                            <div><h2>✨ Treino diário</h2><p id="pruma-hoje-resumo">Dica curta + questões Certo/Errado, com fontes oficiais.</p></div>
                         </div>
-                        <button class="btn-primary" id="pruma-hoje-btn" style="width:100%; padding:12px 18px; margin-top:16px;" onclick="abrirTreinoDiario()">▶ Executar treino diário</button>
+                        <div class="plan-treino-corpo">Baseado nas matérias das suas provas. Não conta nas estatísticas.</div>
+                        <button class="btn-primary plan-btn-grande" id="pruma-hoje-btn" onclick="abrirTreinoDiario()">▶ Executar treino diário</button>
                     </div>
                 </div>
-                <div class="card" style="margin-bottom: 0;">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:12px;">
-                        <div>
-                            <h2 style="margin:0; border:none; padding:0;">🗓️ Visão Semanal</h2>
-                            <p style="font-size:0.85rem; color:var(--text-muted); margin-top:4px;">Navegue pela semana. Dias com ponto laranja possuem missões pendentes.</p>
-                        </div>
+
+                <div class="card plan-card">
+                    <div class="plan-head">
+                        <div><h2>🗓️ Visão Semanal</h2><p>Navegue pela semana. Dias com ponto laranja possuem missões pendentes.</p></div>
                         <input type="date" id="filtro-data-missoes" style="margin:0; width:auto; padding:8px 12px; border-radius:20px; display: none;">
-                        <button class="btn-outline" style="width:auto; padding:8px 12px; font-size:0.85rem;" title="Reorganiza missões passadas pendentes para os próximos dias" onclick="redistribuirAtrasadas()">🔄 Recalcular Rota</button>
+                        <button class="btn-outline" style="width:auto; padding:6px 12px; font-size:0.8rem;" title="Reorganiza missões passadas pendentes para os próximos dias" onclick="redistribuirAtrasadas()">🔄 Recalcular Rota</button>
                     </div>
-                    <div id="semana-grid" style="display: flex; gap: 8px; overflow-x: auto; padding-bottom: 12px; scrollbar-width: none;"></div>
+                    <div id="semana-grid" style="display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none;"></div>
                 </div>
-                <div class="plan-missoes">
-                    <div class="card" style="margin-bottom: 0;">
-                        <h2 style="margin:0 0 16px 0; border:none; padding:0;">📚 Missões do Dia Selecionado</h2>
-                        <div id="lista-missoes-div">Carregando missões...</div>
-                    </div>
-                    <div class="card" style="margin-bottom: 0; background: rgba(0, 122, 255, 0.03); border: 1px dashed var(--brand-primary);">
-                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-                            <h2 style="font-size: 1.1rem; border:none; margin:0; color:var(--brand-primary);">📝 Meu Ciclo Fixo</h2>
-                            <button class="btn-success" style="padding: 6px 12px; font-size: 0.8rem; width:auto; box-shadow:none;" onclick="salvarNotasCiclo(this)">Salvar</button>
+
+                <div class="plan-row">
+                    <div class="card plan-card">
+                        <div class="plan-head">
+                            <div><h2>📚 Missões do dia</h2><p>Do dia selecionado na visão semanal.</p></div>
                         </div>
-                        <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0; margin-bottom: 12px; line-height: 1.4;">Anote sua organização padrão (Ex: Seg - Penal, Ter - Const...) para consultar rapidamente sem precisar decidir o que estudar no dia.</p>
-                        <textarea id="notas-ciclo" rows="6" placeholder="Escreva seu ciclo semanal, matérias e prioridades aqui..." style="background: var(--bg-card); border-color: var(--border-color); resize: vertical; line-height: 1.5;"></textarea>
+                        <div id="lista-missoes-div" class="plan-scroll">Carregando missões...</div>
+                    </div>
+                    <div class="card plan-card">
+                        <div class="plan-head">
+                            <div><h2>📝 Meu ciclo fixo</h2><p>Anote sua organização padrão (Ex: Seg - Penal, Ter - Const...) para consultar rapidamente sem precisar decidir o que estudar no dia.</p></div>
+                            <button class="btn-success plan-btn" onclick="salvarNotasCiclo(this)">Salvar</button>
+                        </div>
+                        <textarea id="notas-ciclo" placeholder="Escreva seu ciclo semanal, matérias e prioridades aqui..." class="plan-textarea"></textarea>
                     </div>
                 </div>
             </div>
@@ -3885,7 +3889,11 @@ function prumaTreinoCarregado() {
 function renderizarPrumaHojeResumo() {
     const r = document.getElementById('pruma-hoje-resumo'), b = document.getElementById('pruma-hoje-btn');
     const card = document.getElementById('card-treino-diario');
-    if (card) card.style.display = prumaTreinoDisponivel() ? '' : 'none'; // sem prova com matéria, o treino não aparece
+    if (card) {
+        const ok = prumaTreinoDisponivel();
+        card.style.display = ok ? '' : 'none'; // sem prova com matéria, o treino não aparece
+        if (card.parentElement && card.parentElement.classList) card.parentElement.classList.toggle('plan-solo', !ok);
+    }
     if (!r) return;
     const t = dbData.treinoDia;
     if (prumaHojeGerando) { r.textContent = 'Preparando o treino de hoje... ⏳'; if (b) b.textContent = '▶ Abrir'; return; }
@@ -3895,7 +3903,7 @@ function renderizarPrumaHojeResumo() {
         r.textContent = (feitas === itens.length && itens.length) ? `Concluído hoje: ${acertos}/${itens.length} acertos · ${t.materia}` : `Pronto: ${t.materia} · ${t.topico} (${feitas}/${itens.length} respondidas)`;
         if (b) b.textContent = (feitas === itens.length && itens.length) ? '📖 Rever treino de hoje' : (feitas ? '▶ Continuar treino diário' : '▶ Executar treino diário');
     } else {
-        r.textContent = 'Dica do dia com fontes oficiais + questões Certo/Errado.';
+        r.textContent = 'Dica curta + questões Certo/Errado, com fontes oficiais.';
         if (b) b.textContent = '▶ Executar treino diário';
     }
 }
