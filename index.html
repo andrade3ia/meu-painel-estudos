@@ -244,6 +244,7 @@
         <div id="tela-painel" class="container-interno" style="display:none;">
             
             <div id="view-inicio">
+                <div class="card" id="pruma-hoje-card"><div id="pruma-hoje-corpo"></div></div>
                 <div class="card">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:12px;">
                         <h2 style="margin:0; border:none; padding:0;">Resumo Geral</h2>
@@ -1194,6 +1195,8 @@ function alterarMesCalendario(direcao) {
         function carregarDadosGlobais() {
             refDb.child('perfil/nome').on('value', s => { if(s.val()) document.getElementById('conta-nome').value = s.val(); });
             refDb.child('perfil/metas').on('value', s => { dbData.metas = s.val() || {horas: 4, questoes: 60}; if(document.getElementById('view-planejamento').style.display==='block') renderizarDashboardTatico(); });
+            refDb.child('perfil/treinoHist').on('value', s => { let v = s.val(); dbData.treinoHist = v ? (Array.isArray(v) ? v : Object.values(v)) : []; });
+            refDb.child('perfil/treinoDia').on('value', s => { dbData.treinoDia = s.val(); prumaTreinoCarregado(); });
             refDb.child('perfil/notas_ciclo').on('value', s => { 
                 dbData.notasCiclo = s.val() || ''; 
                 let el = document.getElementById('notas-ciclo');
@@ -2690,7 +2693,7 @@ div.innerHTML = finalDivHtml;
             if (chkWeb) chkWeb.checked = false;
             executarIA('chat', `Atue como professor. APROFUNDAR a explicação anterior:\n\n"${textoDoBalao}"`, "🔍 Aprofundar explicação");
         }
-        async function buscarNaWeb(query) {
+        async function buscarNaWeb(query, opts = {}) {
             try {
                 let res = await fetch('https://api.tavily.com/search', {
                     method: 'POST',
@@ -2700,11 +2703,13 @@ div.innerHTML = finalDivHtml;
                         query: query,
                         search_depth: "basic",
                         include_answer: false,
-                        max_results: 3
+                        max_results: opts.max || 3,
+                        ...(opts.dominios ? { include_domains: opts.dominios } : {})
                     })
                 });
                 if(res.ok) {
                     let data = await res.json();
+                    if(opts.estruturado) return data.results || [];
                     if(data.results && data.results.length > 0) {
                         return data.results.map((r, i) => `[Fonte ${i+1}: ${r.title}]\n${r.content}`).join('\n\n');
                     }
@@ -3579,6 +3584,293 @@ window.addEventListener('load', function () {
     if (window.mermaid) { try { mermaid.initialize({ startOnLoad: false, securityLevel: 'strict' }); } catch (e) { console.warn(e); } }
 });
 
-    </script>
+// ============ PRUMA HOJE: dica do dia + treino diário ============
+// Uma geração por dia (guardada no Firebase em perfil/treinoDia). Prioriza matérias de provas
+// próximas e tópicos com baixo aproveitamento; sem histórico, sorteia matéria/tópico.
+const PRUMA_DOMINIOS_OFICIAIS = ['gov.br', 'jus.br', 'leg.br', 'mp.br', 'edu.br'];
+let prumaHojeGerando = false;
+let prumaHojeTentouAuto = false;
+let prumaHojeSemFonte = null; // escolha pendente quando a web não achou fonte oficial
+let prumaHojeErro = '';
+
+function prumaIsoHoje() {
+    const d = new Date();
+    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+}
+function prumaListaTopicos(m) {
+    return (Array.isArray(m.topicos) ? m.topicos : Object.values(m.topicos || {})).filter(Boolean);
+}
+function prumaDesempenho() {
+    const perf = {};
+    (dbData.sessoes || []).forEach(s => {
+        const k = (s.materia || '') + '|' + (s.topico || '');
+        const o = perf[k] || (perf[k] = { a: 0, e: 0 });
+        o.a += (s.acertos || 0); o.e += (s.erros || 0);
+    });
+    return perf;
+}
+
+function prumaEscolherTopico() {
+    const mats = (Array.isArray(dbData.materias) ? dbData.materias : Object.values(dbData.materias || {})).filter(m => m && m.nome);
+    if (!mats.length) return null;
+    const provas = Array.isArray(dbData.provas) ? dbData.provas : Object.values(dbData.provas || {});
+    const hoje0 = new Date(); hoje0.setHours(0, 0, 0, 0);
+    const recentes = new Set((dbData.treinoHist || []).slice(-20).map(h => String(h).split('|').slice(1).join('|')));
+    const perf = prumaDesempenho();
+    const cand = [];
+    mats.forEach(m => {
+        const prova = provas.find(p => p && p.id === m.provaId);
+        let dp = null;
+        if (prova && prova.data) { const d = Math.round((new Date(prova.data + 'T00:00:00') - hoje0) / 86400000); if (d >= 0) dp = d; }
+        let wM = 1;
+        if (dp !== null) wM += 2 + (dp <= 60 ? 2 : 0); // matérias de prova futura pesam mais; prova próxima, mais ainda
+        const tops = prumaListaTopicos(m);
+        const base = { materia: m.nome, prova: prova ? prova.nome : '' };
+        if (!tops.length) {
+            cand.push({ ...base, topico: null, peso: recentes.has(m.nome + '|') ? wM * 0.1 : wM });
+        }
+        tops.forEach(t => {
+            const k = m.nome + '|' + t;
+            let w = wM;
+            const p = perf[k];
+            if (p && (p.a + p.e) >= 5 && p.a / (p.a + p.e) < 0.7) w += 4; // ponto fraco
+            if (recentes.has(k)) w *= 0.1; // evita repetir tópico recente
+            cand.push({ ...base, topico: t, peso: w });
+        });
+    });
+    if (!cand.length) return null;
+    const total = cand.reduce((s, c) => s + c.peso, 0);
+    let r = Math.random() * total;
+    for (const c of cand) { r -= c.peso; if (r <= 0) return c; }
+    return cand[cand.length - 1];
+}
+
+function prumaTopicosRevisao(excluirChave) {
+    const out = [], vistos = new Set([excluirChave]);
+    const add = (mat, top, motivo) => {
+        if (!mat) return;
+        const k = mat + '|' + (top || '');
+        if (vistos.has(k)) return; vistos.add(k);
+        out.push({ materia: mat, topico: top || null, motivo: motivo });
+    };
+    const iso = prumaIsoHoje();
+    (dbData.missoes || []).filter(x => x && x.status === 'pendente' && x.dataAlvo && x.dataAlvo <= iso).forEach(x => add(x.materia, x.topico, 'revisão programada'));
+    const perf = prumaDesempenho();
+    Object.keys(perf).filter(k => perf[k].a + perf[k].e >= 5 && perf[k].a / (perf[k].a + perf[k].e) < 0.7)
+        .sort((x, y) => perf[x].a / (perf[x].a + perf[x].e) - perf[y].a / (perf[y].a + perf[y].e))
+        .forEach(k => { const p = k.split('|'); add(p[0], p.slice(1).join('|'), 'ponto fraco'); });
+    (dbData.cadernos || []).slice(-5).reverse().forEach(c => add(c.materia, c.topico, 'seu caderno'));
+    return out.slice(0, 2);
+}
+
+function prumaExtrairJson(txt) {
+    let t = String(txt || '').replace(/```json/gi, '').replace(/```/g, '').trim();
+    try { return JSON.parse(t); } catch (e) { /* tenta recortar */ }
+    const i = t.indexOf('{'), j = t.lastIndexOf('}');
+    if (i !== -1 && j > i) return JSON.parse(t.slice(i, j + 1));
+    throw new Error('A IA não devolveu um JSON válido. Tente novamente.');
+}
+function prumaNormalizarItens(arr, materia, topico, origem) {
+    return (Array.isArray(arr) ? arr : []).map(it => ({
+        enunciado: String(it && it.enunciado || '').trim(),
+        correta: /^c/i.test(String(it && it.correta || '').trim()) ? 'Certo' : 'Errado',
+        comentario: String(it && it.comentario || '').trim(),
+        materia: String(it && it.materia || materia || 'Geral'),
+        topico: String(it && it.topico || topico || 'Geral'),
+        origem: origem
+    })).filter(it => it.enunciado.length > 15);
+}
+
+async function prumaBuscarFontes(esc) {
+    const q = `${esc.topico || ''} ${esc.materia} ${esc.prova || ''} concurso público`.replace(/\s+/g, ' ').trim();
+    const res = await buscarNaWeb(q, { dominios: PRUMA_DOMINIOS_OFICIAIS, max: 4, estruturado: true });
+    return (res || []).filter(r => r && r.url && r.content && r.content.length > 200)
+        .map(r => ({ titulo: String(r.title || r.url).slice(0, 140), url: r.url, trecho: String(r.content).slice(0, 1800) }));
+}
+
+async function prumaGerarHoje(opcoes) {
+    const forcarSemFonte = !!(opcoes && opcoes.semFonte);
+    if (prumaHojeGerando) return;
+    if (!localStorage.getItem('pruma_apikey')) { prumaHojeErro = 'Configure a API Key (menu lateral) para gerar a dica do dia.'; renderizarPrumaHoje(); return; }
+    prumaHojeGerando = true; prumaHojeErro = ''; renderizarPrumaHoje();
+    try {
+        const esc = (forcarSemFonte && prumaHojeSemFonte) ? prumaHojeSemFonte : prumaEscolherTopico();
+        if (!esc) { prumaHojeErro = 'Cadastre ao menos uma matéria (aba Matérias) para receber a dica do dia.'; return; }
+        prumaHojeSemFonte = null;
+
+        let fontes = [];
+        if (!forcarSemFonte) {
+            fontes = await prumaBuscarFontes(esc);
+            if (!fontes.length) { prumaHojeSemFonte = esc; return; }
+        }
+        const revisao = prumaTopicosRevisao(esc.materia + '|' + (esc.topico || ''));
+        const nPrincipal = revisao.length ? 3 : 5;
+        const alvo = esc.topico ? `matéria "${esc.materia}", tópico "${esc.topico}"` : `matéria "${esc.materia}" (escolha UM tópico específico e relevante para concursos)`;
+        const blocoFontes = fontes.length
+            ? 'FONTES (use SOMENTE isto; cite como [Fonte n]):\n' + fontes.map((f, i) => `[Fonte ${i + 1}] ${f.titulo}\n${f.trecho}`).join('\n\n')
+            : 'Não há fontes da web. Use apenas conhecimento consolidado, seja conservador, não cite números/artigos de que não tenha certeza.';
+        const sistema = 'Você é um professor experiente em concursos públicos brasileiros, com foco em provas do Cebraspe. Seja preciso: nunca invente dispositivos legais, números, prazos ou jurisprudência. Responda SOMENTE com JSON válido.';
+        const prompt = `Tarefa: ${alvo}${esc.prova ? `; prova alvo: ${esc.prova}` : ''}.\n\n${blocoFontes}\n\nProduza um JSON com exatamente estas chaves:\n{"topico":"tópico tratado","resumo":"resumo em markdown de 120 a 200 palavras, direto e útil para prova","pontos_chave":["3 a 5 pontos que mais caem"],"itens":[${nPrincipal} itens]}\nCada item: {"enunciado":"afirmação completa, autônoma, para julgar Certo ou Errado (estilo Cebraspe)","correta":"Certo" ou "Errado","comentario":"explicação curta${fontes.length ? ' citando [Fonte n]' : ''}"}.\nRegras: misture Certo e Errado (pelo menos 2 Errados); os itens devem se basear ${fontes.length ? 'SOMENTE nas fontes' : 'em conhecimento consolidado'}; se o material for insuficiente, devolva "itens": [] e explique no resumo.`;
+        const txt = await chamarGemini({ system: sistema, contents: [{ role: 'user', parts: [{ text: prompt }] }], temperatura: 0.4, json: true });
+        const j = prumaExtrairJson(txt);
+        const topicoFinal = String(j.topico || esc.topico || 'Geral');
+        let itens = prumaNormalizarItens(j.itens, esc.materia, topicoFinal, 'dica').slice(0, nPrincipal);
+
+        if (revisao.length && itens.length) {
+            try {
+                const lista = revisao.map(r => `- matéria "${r.materia}"${r.topico ? `, tópico "${r.topico}"` : ''} (${r.motivo})`).join('\n');
+                const p2 = `Gere 2 itens Certo/Errado (estilo Cebraspe) de revisão, distribuídos entre:\n${lista}\nJSON: {"itens":[{"materia":"...","topico":"...","enunciado":"...","correta":"Certo"|"Errado","comentario":"..."}]}. Use apenas conhecimento consolidado; não invente dispositivos nem números.`;
+                const t2 = await chamarGemini({ system: sistema, contents: [{ role: 'user', parts: [{ text: p2 }] }], temperatura: 0.4, json: true });
+                itens = itens.concat(prumaNormalizarItens(prumaExtrairJson(t2).itens, revisao[0].materia, revisao[0].topico, 'revisão'));
+            } catch (e) { console.warn('Itens de revisão não gerados:', e); }
+        }
+
+        const obj = {
+            data: prumaIsoHoje(), materia: esc.materia, topico: topicoFinal, prova: esc.prova || '',
+            resumo: String(j.resumo || ''), pontos: (Array.isArray(j.pontos_chave) ? j.pontos_chave : []).map(String).slice(0, 6),
+            fontes: fontes.map(f => ({ titulo: f.titulo, url: f.url })), semFonte: !fontes.length,
+            itens: itens, respostas: {}, registrado: false, geradoEm: Date.now()
+        };
+        dbData.treinoDia = obj;
+        refDb.child('perfil/treinoDia').set(JSON.parse(JSON.stringify(obj)));
+        const hist = (dbData.treinoHist || []).concat([obj.data + '|' + esc.materia + '|' + (esc.topico || '')]).slice(-60);
+        dbData.treinoHist = hist; refDb.child('perfil/treinoHist').set(hist);
+    } catch (e) {
+        console.warn(e);
+        prumaHojeErro = 'Não consegui gerar agora: ' + String(e.message || e).slice(0, 220);
+    } finally {
+        prumaHojeGerando = false; renderizarPrumaHoje();
+    }
+}
+
+function prumaRespostaDe(t, i) { const r = t.respostas || {}; return r[i] || null; }
+
+function prumaResponder(i, resp) {
+    const t = dbData.treinoDia; if (!t || t.data !== prumaIsoHoje() || prumaRespostaDe(t, i)) return;
+    if (!t.respostas || Array.isArray(t.respostas)) t.respostas = Object.assign({}, t.respostas || {});
+    t.respostas[i] = resp;
+    if (!t.primeiraResp) { t.primeiraResp = Date.now(); refDb.child('perfil/treinoDia/primeiraResp').set(t.primeiraResp); }
+    refDb.child('perfil/treinoDia/respostas/' + i).set(resp);
+    const todas = t.itens.every((_, k) => prumaRespostaDe(t, k));
+    if (todas && !t.registrado) prumaFinalizar();
+    renderizarPrumaHoje();
+}
+
+function prumaFinalizar() {
+    const t = dbData.treinoDia; if (!t || t.registrado) return;
+    t.registrado = true; refDb.child('perfil/treinoDia/registrado').set(true);
+    const grupos = {};
+    t.itens.forEach((it, k) => {
+        const ch = it.materia + '|' + it.topico;
+        const g = grupos[ch] || (grupos[ch] = { materia: it.materia, topico: it.topico, a: 0, e: 0 });
+        if (prumaRespostaDe(t, k) === it.correta) g.a++; else g.e++;
+    });
+    const dur = Math.max(60, Math.min(900, Math.round((Date.now() - (t.primeiraResp || Date.now())) / 1000) + 45));
+    const lista = Object.values(grupos), totalItens = t.itens.length;
+    const agora = new Date();
+    lista.forEach(g => {
+        const n = g.a + g.e;
+        const reg = {
+            id: gerarId(), timestamp: Date.now(), data: agora.toLocaleDateString(), hora: agora.toLocaleTimeString().substring(0, 5),
+            materia: g.materia, topico: g.topico, tipoEstudo: 'Questões', tipoMat: 'Questões',
+            segundos: Math.round(dur * n / totalItens), acertos: g.a, erros: g.e, totalQts: n, obs: 'Treino diário PRUMA'
+        };
+        if (!Array.isArray(dbData.sessoes)) dbData.sessoes = [];
+        dbData.sessoes.push(reg);
+        refDb.child('sessoes/' + reg.id).set(reg);
+    });
+}
+
+function prumaTextoItem(it, resp) {
+    return `${it.enunciado}\n\nGabarito: ${it.correta}${resp ? `\nMinha resposta: ${resp}` : ''}\nComentário: ${it.comentario}`;
+}
+function prumaSalvarItem(i, btn) {
+    const t = dbData.treinoDia; const it = t.itens[i];
+    abrirModalEnviarCaderno(prumaTextoItem(it, prumaRespostaDe(t, i)), btn, it.materia, it.topico, false);
+}
+function prumaSalvarTodas(btn) {
+    const t = dbData.treinoDia;
+    const txt = t.itens.map((it, i) => `**Questão ${i + 1}**\n${prumaTextoItem(it, prumaRespostaDe(t, i))}`).join('\n\n---\n\n');
+    abrirModalEnviarCaderno(txt, btn, t.materia, t.topico, false);
+}
+function prumaSalvarDica(btn) {
+    const t = dbData.treinoDia;
+    const fontes = (t.fontes || []).map(f => `- ${f.titulo}: ${f.url}`).join('\n');
+    const txt = `**Dica do dia: ${t.topico}**\n\n${t.resumo}\n\n**Pontos-chave**\n${(t.pontos || []).map(p => '- ' + p).join('\n')}${fontes ? '\n\n**Fontes**\n' + fontes : ''}${t.semFonte ? '\n\n(Gerado sem fonte web: confira antes de estudar.)' : ''}`;
+    abrirModalEnviarCaderno(txt, btn, t.materia, t.topico, false);
+}
+
+function prumaSafeUrl(u) { return /^https?:\/\//i.test(u) ? String(u).replace(/"/g, '%22').replace(/</g, '%3C') : '#'; }
+
+function renderizarPrumaHoje() {
+    const el = document.getElementById('pruma-hoje-corpo'); if (!el) return;
+    const titulo = '<h2 style="margin:0; border:none; padding:0;">✨ Hoje no PRUMA</h2>';
+    const t = dbData.treinoDia;
+    const btnG = 'class="btn-primary" style="width:auto; padding:8px 14px;"';
+    if (prumaHojeGerando) { el.innerHTML = `${titulo}<p style="color:var(--text-muted);">Buscando fontes oficiais e montando sua dica e seu treino... ⏳</p>`; return; }
+    if (prumaHojeSemFonte) {
+        const e = prumaHojeSemFonte;
+        el.innerHTML = `${titulo}<p style="color:var(--text-muted); font-size:0.9rem;">Não encontrei fonte oficial para <b>${sanitizeText(e.topico || e.materia)}</b> (${sanitizeText(e.materia)}). Prefiro não inventar conteúdo.</p>
+            <div style="display:flex; gap:8px; flex-wrap:wrap;"><button ${btnG} onclick="prumaTentarOutro()">🔄 Tentar outro tópico</button>
+            <button class="btn-outline" style="width:auto; padding:8px 14px;" onclick="prumaGerarHoje({semFonte:true})">Gerar sem fonte (conferir depois)</button></div>`;
+        return;
+    }
+    if (!t || t.data !== prumaIsoHoje()) {
+        el.innerHTML = `${titulo}<p style="color:var(--text-muted); font-size:0.9rem; margin:8px 0 12px;">Uma dica curta de uma matéria das suas provas, com fontes oficiais, e um treino de Certo/Errado. ${prumaHojeErro ? `<br><span style="color:var(--brand-danger);">${sanitizeText(prumaHojeErro)}</span>` : ''}</p>
+            <button ${btnG} onclick="prumaGerarHoje()">✨ Gerar dica e treino de hoje</button>`;
+        return;
+    }
+    const itens = t.itens || [];
+    const resp = itens.map((_, i) => prumaRespostaDe(t, i));
+    const feitas = resp.filter(Boolean).length;
+    const acertos = itens.filter((it, i) => resp[i] === it.correta).length;
+    const fontesHtml = (t.fontes || []).map((f, i) => `<a href="${prumaSafeUrl(f.url)}" target="_blank" rel="noopener noreferrer" style="display:block; font-size:0.78rem; color:var(--brand-primary);">[${i + 1}] ${sanitizeText(f.titulo)}</a>`).join('');
+    const itensHtml = itens.map((it, i) => {
+        const r = resp[i];
+        const sel = it.origem === 'revisão' ? ' <span style="font-size:0.7rem; color:var(--text-muted);">· revisão de ' + sanitizeText(it.topico) + ' (sem fonte web, confira)</span>' : '';
+        let corpo;
+        if (!r) {
+            corpo = `<div style="display:flex; gap:8px; margin-top:8px;"><button class="btn-outline" style="width:auto; padding:6px 16px;" onclick="prumaResponder(${i}, 'Certo')">Certo</button><button class="btn-outline" style="width:auto; padding:6px 16px;" onclick="prumaResponder(${i}, 'Errado')">Errado</button></div>`;
+        } else {
+            const ok = r === it.correta;
+            corpo = `<div style="margin-top:8px; padding:10px; border-radius:8px; background:var(--bg-input); font-size:0.85rem;"><b style="color:${ok ? 'var(--brand-success)' : 'var(--brand-danger)'};">${ok ? '✅ Acertou' : '❌ Errou'}</b> · Gabarito: <b>${it.correta}</b><br>${sanitizeText(it.comentario)}<div style="margin-top:8px;"><button class="btn-outline" style="width:auto; padding:4px 10px; font-size:0.75rem;" onclick="prumaSalvarItem(${i}, this)">📚 Salvar no caderno</button></div></div>`;
+        }
+        return `<div style="padding:12px 0; border-top:1px solid var(--border-color);"><b>${i + 1}.</b> ${sanitizeText(it.enunciado)}${sel}${corpo}</div>`;
+    }).join('');
+    const placar = itens.length ? `<span style="font-size:0.8rem; color:var(--text-muted);">${feitas}/${itens.length} respondidas${feitas === itens.length ? ` · acertos: <b>${acertos}</b>` : ''}</span>` : '';
+    el.innerHTML = `
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:6px;">${titulo}${placar}</div>
+        <div style="font-size:0.8rem; color:var(--text-muted); margin-bottom:8px;">${sanitizeText(t.materia)} · <b>${sanitizeText(t.topico)}</b>${t.prova ? ' · ' + sanitizeText(t.prova) : ''}</div>
+        ${t.semFonte ? '<div style="font-size:0.8rem; padding:8px; border-radius:8px; background:rgba(255,149,0,0.12); margin-bottom:8px;">⚠️ Gerado sem fonte da web. Confira antes de estudar.</div>' : ''}
+        <div style="font-size:0.92rem; line-height:1.55;">${sanitizeText(marked.parse(t.resumo || ''))}</div>
+        ${(t.pontos || []).length ? `<ul style="font-size:0.88rem; margin:8px 0 8px 18px;">${t.pontos.map(p => `<li>${sanitizeText(p)}</li>`).join('')}</ul>` : ''}
+        ${fontesHtml ? `<div style="margin:8px 0;"><span style="font-size:0.75rem; font-weight:700; color:var(--text-muted);">FONTES</span>${fontesHtml}</div>` : ''}
+        <div style="display:flex; gap:8px; flex-wrap:wrap; margin:10px 0;">
+            <button class="btn-outline" style="width:auto; padding:6px 12px; font-size:0.8rem;" onclick="prumaSalvarDica(this)">📚 Salvar dica no caderno</button>
+            ${itens.length ? `<button class="btn-outline" style="width:auto; padding:6px 12px; font-size:0.8rem;" onclick="prumaSalvarTodas(this)">📚 Salvar todas as questões</button>` : ''}
+            ${feitas === 0 ? `<button class="btn-outline" style="width:auto; padding:6px 12px; font-size:0.8rem;" onclick="prumaTentarOutro()">🔄 Trocar tópico</button>` : ''}
+        </div>
+        ${itens.length ? `<div style="font-weight:700; margin-top:6px;">🎯 Treino do dia</div>${itensHtml}` : '<p style="color:var(--text-muted); font-size:0.85rem;">O material encontrado não bastou para montar questões confiáveis. Use “Trocar tópico”.</p>'}
+        ${t.registrado ? '<div style="font-size:0.78rem; color:var(--text-muted); margin-top:8px;">✔ Resultado registrado nas suas estatísticas.</div>' : ''}`;
+}
+
+function prumaTreinoCarregado() {
+    const t = dbData.treinoDia;
+    if (t && (!t.respostas || Array.isArray(t.respostas))) t.respostas = Object.assign({}, t.respostas || {});
+    if (t && !Array.isArray(t.itens)) t.itens = Object.values(t.itens || {});
+    renderizarPrumaHoje();
+    if (!prumaHojeTentouAuto) {
+        prumaHojeTentouAuto = true;
+        setTimeout(function () {
+            const hojeOk = dbData.treinoDia && dbData.treinoDia.data === prumaIsoHoje();
+            const temMaterias = Array.isArray(dbData.materias) && dbData.materias.length > 0;
+            if (!hojeOk && temMaterias && localStorage.getItem('pruma_apikey') && !prumaHojeGerando) prumaGerarHoje();
+        }, 3500);
+    }
+}
+
+function prumaTentarOutro() { prumaHojeSemFonte = null; dbData.treinoDia = null; prumaGerarHoje(); }
+
+</script>
 </body>
 </html>
