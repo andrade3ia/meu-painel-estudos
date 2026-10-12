@@ -244,7 +244,6 @@
         <div id="tela-painel" class="container-interno" style="display:none;">
             
             <div id="view-inicio">
-                <div class="card" id="pruma-hoje-card"><div id="pruma-hoje-corpo"></div></div>
                 <div class="card">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:12px;">
                         <h2 style="margin:0; border:none; padding:0;">Resumo Geral</h2>
@@ -349,6 +348,15 @@
             </div>
             <!-- VIEW PLANEJAMENTO -->
             <div id="view-planejamento" style="display:none;">
+                <div class="card" style="border-top: 4px solid var(--brand-warning); margin-bottom: 20px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+                        <div style="min-width:0; flex:1;">
+                            <h2 style="margin:0 0 4px 0; border:none; padding:0;">✨ Treino diário</h2>
+                            <div id="pruma-hoje-resumo" style="font-size:0.85rem; color:var(--text-muted);">Dica do dia com fontes oficiais + questões Certo/Errado.</div>
+                        </div>
+                        <button class="btn-primary" id="pruma-hoje-btn" style="width:auto; padding:10px 18px;" onclick="abrirTreinoDiario()">▶ Executar treino diário</button>
+                    </div>
+                </div>
                 <div class="card" style="border-top: 4px solid var(--brand-primary); margin-bottom: 20px;">
                     <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:12px;">
                         <div>
@@ -734,6 +742,17 @@
             <button class="btn-primary" onclick="salvarApiKey()" style="width: 100%;">Salvar Configurações</button>
         </div>
     </div>
+    <!-- TREINO DIÁRIO (dica do dia + questões) -->
+    <div id="modal-treino" class="modal" style="z-index:1900;" onclick="if(event.target===this) fecharTreinoDiario()">
+        <div class="revisao-janela" role="dialog" aria-modal="true" aria-labelledby="treino-titulo">
+            <div class="revisao-topo">
+                <div class="revisao-titulo"><strong id="treino-titulo">✨ Treino diário</strong><span id="treino-subtitulo"></span></div>
+                <button style="background:transparent; border:none; font-size:1.5rem; cursor:pointer; color:var(--brand-danger); font-weight:700; line-height:1;" onclick="fecharTreinoDiario()">✖</button>
+            </div>
+            <div class="revisao-corpo" id="pruma-hoje-corpo"></div>
+        </div>
+    </div>
+
     <!-- JANELA DE REVISÃO (abre a partir das missões do dia, na aba Planejamento) -->
     <div id="modal-revisao" class="modal" onclick="if(event.target===this) fecharRevisao()">
         <div class="revisao-janela" role="dialog" aria-modal="true" aria-labelledby="revisao-materia">
@@ -3803,8 +3822,9 @@ function prumaSalvarDica(btn) {
 function prumaSafeUrl(u) { return /^https?:\/\//i.test(u) ? String(u).replace(/"/g, '%22').replace(/</g, '%3C') : '#'; }
 
 function renderizarPrumaHoje() {
+    renderizarPrumaHojeResumo();
     const el = document.getElementById('pruma-hoje-corpo'); if (!el) return;
-    const titulo = '<h2 style="margin:0; border:none; padding:0;">✨ Hoje no PRUMA</h2>';
+    const titulo = '';
     const t = dbData.treinoDia;
     const btnG = 'class="btn-primary" style="width:auto; padding:8px 14px;"';
     if (prumaHojeGerando) { el.innerHTML = `${titulo}<p style="color:var(--text-muted);">Buscando fontes oficiais e montando sua dica e seu treino... ⏳</p>`; return; }
@@ -3859,16 +3879,30 @@ function prumaTreinoCarregado() {
     if (t && (!t.respostas || Array.isArray(t.respostas))) t.respostas = Object.assign({}, t.respostas || {});
     if (t && !Array.isArray(t.itens)) t.itens = Object.values(t.itens || {});
     renderizarPrumaHoje();
-    if (!prumaHojeTentouAuto) {
-        prumaHojeTentouAuto = true;
-        setTimeout(function () {
-            const hojeOk = dbData.treinoDia && dbData.treinoDia.data === prumaIsoHoje();
-            const temMaterias = Array.isArray(dbData.materias) && dbData.materias.length > 0;
-            if (!hojeOk && temMaterias && localStorage.getItem('pruma_apikey') && !prumaHojeGerando) prumaGerarHoje();
-        }, 3500);
-    }
 }
 
+function renderizarPrumaHojeResumo() {
+    const r = document.getElementById('pruma-hoje-resumo'), b = document.getElementById('pruma-hoje-btn');
+    if (!r) return;
+    const t = dbData.treinoDia;
+    if (prumaHojeGerando) { r.textContent = 'Preparando o treino de hoje... ⏳'; if (b) b.textContent = '▶ Abrir'; return; }
+    if (t && t.data === prumaIsoHoje()) {
+        const itens = t.itens || [], feitas = itens.filter((_, i) => prumaRespostaDe(t, i)).length;
+        const acertos = itens.filter((it, i) => prumaRespostaDe(t, i) === it.correta).length;
+        r.textContent = (feitas === itens.length && itens.length) ? `Concluído hoje: ${acertos}/${itens.length} acertos · ${t.materia}` : `Pronto: ${t.materia} · ${t.topico} (${feitas}/${itens.length} respondidas)`;
+        if (b) b.textContent = (feitas === itens.length && itens.length) ? '📖 Rever treino de hoje' : (feitas ? '▶ Continuar treino diário' : '▶ Executar treino diário');
+    } else {
+        r.textContent = 'Dica do dia com fontes oficiais + questões Certo/Errado.';
+        if (b) b.textContent = '▶ Executar treino diário';
+    }
+}
+function abrirTreinoDiario() {
+    document.getElementById('modal-treino').style.display = 'flex';
+    const t = dbData.treinoDia;
+    if (!(t && t.data === prumaIsoHoje()) && !prumaHojeGerando && !prumaHojeSemFonte) prumaGerarHoje();
+    else renderizarPrumaHoje();
+}
+function fecharTreinoDiario() { document.getElementById('modal-treino').style.display = 'none'; }
 function prumaTentarOutro() { prumaHojeSemFonte = null; dbData.treinoDia = null; prumaGerarHoje(); }
 
 </script>
