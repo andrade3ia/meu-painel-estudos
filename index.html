@@ -675,7 +675,7 @@
                             <div style="display:flex; gap:12px; flex-wrap:wrap; align-items:flex-end;">
                                 <textarea id="inp-chat" placeholder="Digite sua dúvida ou peça um mapa mental..." rows="2" style="margin:0; resize:none; flex:1; min-width:200px;"></textarea>
                                 <div style="display:flex; flex-direction:column; gap:8px;">
-                                    <label style="display:flex; align-items:center; gap:6px; font-size:0.8rem; font-weight:600; cursor:pointer;" title="Faz uma busca usando a API Tavily."><input type="checkbox" id="chk-busca-web"> 🌐 Buscar Web</label>
+                                    <label style="display:flex; align-items:center; gap:6px; font-size:0.8rem; font-weight:600; cursor:pointer;" title="Busca em tempo real na web usando a sua API Key do Gemini (Google Search)."><input type="checkbox" id="chk-busca-web"> 🌐 Buscar Web</label>
                                     <div style="display:flex; gap:8px;">
                                         <button class="btn-primary" onclick="executarIA('chat')" style="width:120px;">Enviar</button>
                                         <button class="btn-outline" onclick="limparHistoricoChat()" style="width:120px;">Nova conversa</button>
@@ -957,7 +957,7 @@
             <div class="msg msg-a">Sou seu Mentor. Posso tirar dúvidas, registrar estudo, criar missões e ajustar sua meta — sempre perguntando antes de gravar.</div>
         </div>
         <div class="mentor-footer">
-            <label style="font-size:0.7rem; display:flex; align-items:center; gap:4px; flex-shrink:0;" title="Buscar na web"><input type="checkbox" id="chk-busca-web-mentor" style="width:auto; margin:0;">🌐</label>
+            <label style="font-size:0.7rem; display:flex; align-items:center; gap:4px; flex-shrink:0;" title="Buscar na web em tempo real (usa sua API Key do Gemini)"><input type="checkbox" id="chk-busca-web-mentor" style="width:auto; margin:0;">🌐</label>
             <input type="text" id="mentor-input" placeholder="Pergunte ao mentor..." onkeydown="if(event.key==='Enter') enviarMsgMentor()">
             <button class="btn-primary" style="width:auto; padding:8px 16px;" onclick="enviarMsgMentor()">Enviar</button>
         </div>
@@ -2801,31 +2801,70 @@ div.innerHTML = finalDivHtml;
             if (chkWeb) chkWeb.checked = false;
             executarIA('chat', `Atue como professor. APROFUNDAR a explicação anterior:\n\n"${textoDoBalao}"`, "🔍 Aprofundar explicação");
         }
-        async function buscarNaWeb(query, opts = {}) {
+        // Busca web em TEMPO REAL via Gemini (Google Search grounding). Exige a API Key do Gemini.
+        let ultimoErroBusca = '';
+        function avisoBusca(msg) {
             try {
-                let res = await fetch('https://api.tavily.com/search', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        api_key: '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',
-                        query: query,
-                        search_depth: "basic",
-                        include_answer: false,
-                        max_results: opts.max || 3,
-                        ...(opts.dominios ? { include_domains: opts.dominios } : {})
-                    })
+                let t = document.getElementById('toast-busca');
+                if (!t) { t = document.createElement('div'); t.id = 'toast-busca'; t.style.cssText = 'position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:#1C1C1E;color:#fff;padding:12px 16px;border-radius:12px;font-size:0.88rem;z-index:10050;max-width:90vw;box-shadow:0 6px 24px rgba(0,0,0,.35);'; document.body.appendChild(t); }
+                t.textContent = msg; t.style.display = 'block';
+                clearTimeout(t._h); t._h = setTimeout(() => { t.style.display = 'none'; }, 7000);
+            } catch (e) { /* sem aviso visual */ }
+        }
+        function dominioConfere(dom, lista) {
+            dom = String(dom || '').toLowerCase().replace(/^www\./, '');
+            return lista.some(d => dom === d || dom.endsWith('.' + d));
+        }
+        async function buscarNaWeb(query, opts = {}) {
+            ultimoErroBusca = '';
+            const k = localStorage.getItem('pruma_apikey');
+            if (!k) { ultimoErroBusca = 'A busca em tempo real usa a sua API Key do Gemini. Configure-a em Minha Conta.'; avisoBusca(ultimoErroBusca); return null; }
+            const modelo = localStorage.getItem('pruma_modelo') || 'gemini-3.5-flash-lite';
+            const max = opts.max || 3;
+            const dom = (opts.dominios && opts.dominios.length) ? opts.dominios : null;
+            const hoje = new Date().toLocaleDateString('pt-BR');
+            const pedido = `Hoje é ${hoje}. Pesquise na web e escreva uma nota de estudo objetiva (até 350 palavras, em português) sobre: ${query}\n` +
+                `Use SOMENTE o que as fontes encontradas dizem; não invente números de artigos, leis ou datas. Se não achar fonte confiável, diga isso.` +
+                (dom ? `\nDê preferência a sites oficiais (${dom.join(', ')}).` : '');
+            const ctrl = new AbortController(); const timer = setTimeout(() => ctrl.abort(), 45000);
+            try {
+                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelo}:generateContent`, {
+                    method: 'POST', signal: ctrl.signal,
+                    headers: { 'Content-Type': 'application/json', 'x-goog-api-key': k },
+                    body: JSON.stringify({ contents: [{ role: 'user', parts: [{ text: pedido }] }], tools: [{ google_search: {} }], generationConfig: { temperature: 0.2 } })
                 });
-                if(res.ok) {
-                    let data = await res.json();
-                    if(opts.estruturado) return data.results || [];
-                    if(data.results && data.results.length > 0) {
-                        return data.results.map((r, i) => `[Fonte ${i+1}: ${r.title}]\n${r.content}`).join('\n\n');
-                    }
+                if (!res.ok) {
+                    let det = ''; try { det = (JSON.parse(await res.text()).error || {}).message || ''; } catch (e) { /* ignora */ }
+                    ultimoErroBusca = `A busca em tempo real falhou (${res.status}). ${det.slice(0, 160)}`.trim();
+                    avisoBusca(ultimoErroBusca); return null;
                 }
-            } catch(e) {
-                console.warn("Erro na Tavily API:", e);
-            }
-            return null;
+                const data = await res.json();
+                const cand = data && data.candidates && data.candidates[0];
+                const texto = cand && cand.content && cand.content.parts ? cand.content.parts.map(p => p.text || '').join('').trim() : '';
+                const gm = (cand && cand.groundingMetadata) || {};
+                const chunks = (gm.groundingChunks || []).map((c, i) => ({ i, w: c.web || {} })).filter(c => c.w.uri);
+                if (!texto || !chunks.length) { ultimoErroBusca = 'A busca não encontrou fontes na web para isso.'; return opts.estruturado ? [] : null; }
+                const trechos = {};
+                (gm.groundingSupports || []).forEach(s => {
+                    const t = s && s.segment && s.segment.text; if (!t) return;
+                    (s.groundingChunkIndices || []).forEach(ix => { (trechos[ix] = trechos[ix] || []).push(t); });
+                });
+                let fontes = chunks.map(c => ({
+                    title: String(c.w.title || c.w.domain || c.w.uri), url: c.w.uri, dominio: String(c.w.domain || c.w.title || ''),
+                    content: (trechos[c.i] || []).join(' ').trim()
+                }));
+                if (dom) fontes = fontes.filter(f => dominioConfere(f.dominio, dom));
+                if (opts.estruturado) {
+                    const comTexto = fontes.filter(f => f.content);
+                    return (comTexto.length ? comTexto : fontes.map(f => ({ ...f, content: texto }))).slice(0, max);
+                }
+                if (dom && !fontes.length) return null;
+                const nomes = [...new Set(fontes.map(f => f.dominio || f.title))].slice(0, 6).join(', ');
+                return `${texto}\n\n[Fontes consultadas: ${nomes}]`;
+            } catch (e) {
+                ultimoErroBusca = e && e.name === 'AbortError' ? 'A busca demorou demais. Tente de novo.' : 'Não consegui fazer a busca em tempo real agora.';
+                console.warn('Erro na busca Gemini:', e); avisoBusca(ultimoErroBusca); return null;
+            } finally { clearTimeout(timer); }
         }
         function parseJSONComSeguranca(textoBruto) {
             let jsonString = textoBruto;
@@ -3941,7 +3980,7 @@ function abrirMaterialApoio(materia, topico) {
     materialPreencherSelects(materia || '', topico || '');
     const c = document.getElementById('material-corpo');
     if (materia) { materialBuscar(false); }
-    else c.innerHTML = '<div class="material-vazio">Escolha a matéria e o tópico e toque em <b>Buscar</b>. Procuro em sites oficiais (gov.br, jus.br, leg.br, mp.br, edu.br) e mostro os trechos com o link da fonte.</div>';
+    else c.innerHTML = '<div class="material-vazio">Escolha a matéria e o tópico e toque em <b>Buscar</b>. Pesquiso na web em tempo real (usa sua API Key do Gemini), priorizando sites oficiais (gov.br, jus.br, leg.br, mp.br, edu.br), e mostro os trechos com o link da fonte.</div>';
 }
 function abrirMaterialApoioId(materiaId, idx) {
     const m = mentorMaterias().find(x => x.id === materiaId);
@@ -3962,8 +4001,8 @@ async function materialBuscar(amplo) {
     try {
         const q = `${top} ${mat}`.replace(/\s+/g, ' ').trim() + (amplo ? ' resumo concurso' : '');
         const res = await buscarNaWeb(q, { dominios: amplo ? undefined : PRUMA_DOMINIOS_OFICIAIS, max: 6, estruturado: true });
-        materialFontes = (res || []).filter(r => r && /^https?:\/\//i.test(r.url || '') && r.content && r.content.length > 80)
-            .map(r => ({ titulo: String(r.title || r.url).slice(0, 160), url: r.url, trecho: String(r.content).slice(0, 1800), oficial: !amplo }));
+        materialFontes = (res || []).filter(r => r && /^https?:\/\//i.test(r.url || '') && r.content && r.content.length > 40)
+            .map(r => ({ titulo: String(r.title || r.url).slice(0, 160), url: r.url, dominio: r.dominio || '', trecho: String(r.content).slice(0, 1800), oficial: !amplo }));
     } catch (e) { materialFontes = []; }
     materialBuscando = false;
     materialRender();
@@ -3974,7 +4013,7 @@ function materialRender() {
     const ctx = materialCtx;
     const alvo = `${mentorEsc(ctx.materia)}${ctx.topico ? ' · ' + mentorEsc(ctx.topico) : ''}`;
     if (!materialFontes.length) {
-        c.innerHTML = `<div class="material-vazio">Não achei fonte ${ctx.amplo ? '' : 'oficial '}para <b>${alvo}</b>.<br><br>` +
+        c.innerHTML = `<div class="material-vazio">Não achei fonte ${ctx.amplo ? '' : 'oficial '}para <b>${alvo}</b>.${ultimoErroBusca ? '<br><span style="font-size:0.85rem;">' + mentorEsc(ultimoErroBusca) + '</span>' : ''}<br><br>` +
             (ctx.amplo ? 'Tente outro tópico.' : '<button class="btn-outline" style="width:auto;padding:10px 16px;" onclick="materialBuscar(true)">Buscar em qualquer site (confira a fonte)</button>') + '</div>';
         return;
     }
@@ -3983,7 +4022,7 @@ function materialRender() {
     h += '<div id="material-resumo"></div>';
     materialFontes.forEach((f, i) => {
         const trecho = f.trecho.length > 650 ? f.trecho.slice(0, 650).replace(/\s+\S*$/, '') + '…' : f.trecho;
-        h += `<div class="material-card"><div class="material-dom">${mentorEsc(materialDominio(f.url))} · ${f.oficial ? '✅ oficial' : '⚠️ não oficial'}</div>` +
+        h += `<div class="material-card"><div class="material-dom">${mentorEsc(f.dominio || materialDominio(f.url))} · ${f.oficial ? '✅ oficial' : '⚠️ não oficial'}</div>` +
             `<a href="${mentorEsc(f.url)}" target="_blank" rel="noopener noreferrer" class="material-link">${mentorEsc(f.titulo)}</a>` +
             `<div class="material-trecho">${mentorEsc(trecho)}</div>` +
             `<div class="material-bt"><a class="material-abrir" href="${mentorEsc(f.url)}" target="_blank" rel="noopener noreferrer">Abrir fonte ↗</a>` +
@@ -4122,7 +4161,7 @@ function prumaNormalizarItens(arr, materia, topico, origem) {
 async function prumaBuscarFontes(esc) {
     const q = `${esc.topico || ''} ${esc.materia} ${esc.prova || ''} concurso público`.replace(/\s+/g, ' ').trim();
     const res = await buscarNaWeb(q, { dominios: PRUMA_DOMINIOS_OFICIAIS, max: 4, estruturado: true });
-    return (res || []).filter(r => r && r.url && r.content && r.content.length > 200)
+    return (res || []).filter(r => r && r.url && r.content && r.content.length > 60)
         .map(r => ({ titulo: String(r.title || r.url).slice(0, 140), url: r.url, trecho: String(r.content).slice(0, 1800) }));
 }
 
