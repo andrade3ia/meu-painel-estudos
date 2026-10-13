@@ -225,6 +225,34 @@
             display: flex; gap: 8px; align-items: center;
         }
         .mentor-footer input { margin: 0; flex: 1; font-size: 0.9rem; padding: 10px; }
+
+        .mentor-resumo-card { background: var(--bg-card); border: 1px solid var(--border-color); border-left: 4px solid var(--brand-primary); border-radius: 12px; padding: 12px 14px; font-size: 0.88rem; line-height: 1.45; box-shadow: var(--shadow-sm); }
+        .mentor-resumo-tit { font-weight: 700; margin-bottom: 6px; }
+        .mentor-resumo-lin { margin: 4px 0; }
+        .mentor-resumo-barra { height: 6px; background: var(--border-color); border-radius: 4px; overflow: hidden; margin: 2px 0 6px; }
+        .mentor-resumo-barra > div { height: 100%; background: var(--brand-success); }
+        .mentor-resumo-item { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 4px 0 4px 10px; }
+        .mentor-resumo-item span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; flex: 1; }
+        .mentor-resumo-item button, .mentor-resumo-acoes button, .mentor-acao-bt button { width: auto !important; padding: 5px 10px !important; font-size: 0.78rem !important; }
+        .mentor-resumo-acoes, .mentor-acao-bt { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 6px; }
+        .mentor-resumo-dica { margin-top: 8px; font-size: 0.75rem; color: var(--text-muted); }
+        .mentor-acao { margin-top: 12px; border: 1px solid var(--brand-primary); background: rgba(0,122,255,0.06); border-radius: 10px; padding: 10px 12px; font-size: 0.88rem; }
+        .mentor-acao-tit { font-weight: 700; margin-bottom: 4px; }
+        .mentor-acao-res { font-weight: 600; font-size: 0.88rem; }
+        .material-filtros { display: flex; gap: 8px; padding: 10px 20px; border-bottom: 1px solid var(--border-color); flex-wrap: wrap; align-items: center; }
+        .material-filtros select { flex: 1; min-width: 140px; margin: 0; }
+        .material-filtros button { width: auto; padding: 10px 16px; margin: 0; }
+        .material-vazio { text-align: center; padding: 40px 12px; color: var(--text-muted); }
+        .material-topo { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; }
+        .material-topo-bt button, .material-bt button { width: auto; padding: 8px 14px; font-size: 0.85rem; }
+        .material-card { border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 14px 16px; margin-bottom: 12px; background: var(--bg-card); }
+        .material-dom { font-size: 0.75rem; color: var(--text-muted); margin-bottom: 4px; }
+        .material-link { font-weight: 700; color: var(--brand-primary); text-decoration: none; display: block; margin-bottom: 6px; }
+        .material-trecho { font-size: 0.92rem; line-height: 1.55; color: var(--text-main); white-space: pre-line; }
+        .material-bt { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-top: 10px; }
+        .material-abrir { font-size: 0.85rem; font-weight: 600; color: var(--brand-primary); text-decoration: none; }
+        .material-aviso { padding: 12px; border-radius: 8px; background: var(--bg-body); font-size: 0.9rem; margin-bottom: 12px; }
+        .material-resumo-ia { border: 1px solid var(--brand-primary); background: rgba(0,122,255,0.05); border-radius: var(--radius-md); padding: 14px 16px; margin-bottom: 14px; }
         @media(max-width: 768px) {
             body { flex-direction: column; }
             .mobile-header { display: flex; }
@@ -792,6 +820,22 @@
         </div>
     </div>
 
+    <!-- MATERIAL DE APOIO (fontes oficiais por matéria/tópico) -->
+    <div id="modal-material" class="modal" style="z-index:1900;" onclick="if(event.target===this) fecharMaterialApoio()">
+        <div class="revisao-janela" role="dialog" aria-modal="true" aria-labelledby="material-titulo">
+            <div class="revisao-topo">
+                <div class="revisao-titulo"><strong id="material-titulo">📎 Material de apoio</strong><span>Trechos de fontes oficiais, com o link para conferir</span></div>
+                <button style="background:transparent; border:none; font-size:1.5rem; cursor:pointer; color:var(--brand-danger); font-weight:700; line-height:1;" onclick="fecharMaterialApoio()">✖</button>
+            </div>
+            <div class="material-filtros">
+                <select id="mat-sel-mat" onchange="materialMudouMateria()"></select>
+                <select id="mat-sel-top"></select>
+                <button class="btn-primary" onclick="materialBuscar(false)">🔎 Buscar</button>
+            </div>
+            <div class="revisao-corpo" id="material-corpo"></div>
+        </div>
+    </div>
+
     <!-- JANELA DE REVISÃO (abre a partir das missões do dia, na aba Planejamento) -->
     <div id="modal-revisao" class="modal" onclick="if(event.target===this) fecharRevisao()">
         <div class="revisao-janela" role="dialog" aria-modal="true" aria-labelledby="revisao-materia">
@@ -905,10 +949,12 @@
     <div class="mentor-flutuante-box" id="mentor-box">
         <div class="mentor-header">
             <span>🧠 Mentor Especialista</span>
-            <button style="background:none; border:none; color:white; font-size:1.2rem; cursor:pointer;" onclick="toggleMentor()">✖</button>
+            <span style="display:flex; gap:10px; align-items:center;"><button style="background:none; border:none; color:white; font-size:1.1rem; cursor:pointer;" title="Material de apoio (fontes oficiais)" onclick="abrirMaterialApoio('', '')">📎</button>
+            <button style="background:none; border:none; color:white; font-size:1.2rem; cursor:pointer;" onclick="toggleMentor()">✖</button></span>
         </div>
         <div class="mentor-body" id="mentor-chat-body">
-            <div class="msg msg-a">Olá! Sou seu Mentor PRUMA. Especialista em concursos, leis e técnicas de estudo. Como posso guiar sua aprovação hoje?</div>
+            <div id="mentor-resumo"></div>
+            <div class="msg msg-a">Sou seu Mentor. Posso tirar dúvidas, registrar estudo, criar missões e ajustar sua meta — sempre perguntando antes de gravar.</div>
         </div>
         <div class="mentor-footer">
             <label style="font-size:0.7rem; display:flex; align-items:center; gap:4px; flex-shrink:0;" title="Buscar na web"><input type="checkbox" id="chk-busca-web-mentor" style="width:auto; margin:0;">🌐</label>
@@ -1126,6 +1172,7 @@ function alterarMesCalendario(direcao) {
         function toggleMentor() {
             let b = document.getElementById('mentor-box');
             b.style.display = (b.style.display === 'flex') ? 'none' : 'flex';
+            if (b.style.display === 'flex') { try { mentorRenderResumo(); } catch (e) { console.warn(e); } }
         }
         async function enviarMsgMentor() {
             let inp = document.getElementById('mentor-input');
@@ -1972,9 +2019,9 @@ function alterarMesCalendario(direcao) {
                 let isGeral = p === 'geral'; let nomeP = isGeral ? 'Matérias Gerais' : (dbData.provas.find(x=>x.id===p)?.nome || 'Matérias Gerais');
                 let conteudoMat = grupos[p].map(m => {
                     if(!Array.isArray(m.topicos)) m.topicos = Object.values(m.topicos || {});
-                    let htmlT = m.topicos.map((t, i) => `<div style="padding:8px 0; border-bottom:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center; gap:8px;" title="${sanitizeText(t)}"><span style="overflow:hidden;text-overflow:ellipsis;min-width:0;flex:1;" title="${sanitizeText(t)}">📄 ${sanitizeText(t)}</span><div style="display:flex;align-items:center;gap:6px;flex-shrink:0;"><button style="background:transparent;border:none;cursor:pointer;font-size:1rem;" title="Editar Tópico" onclick="editarTopico('${m.id}', ${i})">✏️</button><button style="background:transparent;border:none;cursor:pointer;font-size:1rem;" title="Juntar Tópicos" onclick="abrirModalJuntar('${m.id}', '${sanitizeText(t).replace(/'/g,"\\'")}')">🔗</button> <button class="btn-x-vermelho" onclick="excluirTopicoMateria('${m.id}', ${i})">✖</button></div></div>`).join('');
+                    let htmlT = m.topicos.map((t, i) => `<div style="padding:8px 0; border-bottom:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center; gap:8px;" title="${sanitizeText(t)}"><span style="overflow:hidden;text-overflow:ellipsis;min-width:0;flex:1;" title="${sanitizeText(t)}">📄 ${sanitizeText(t)}</span><div style="display:flex;align-items:center;gap:6px;flex-shrink:0;"><button style="background:transparent;border:none;cursor:pointer;font-size:1rem;" title="Material de apoio" onclick="abrirMaterialApoioId('${m.id}', ${i})">📎</button><button style="background:transparent;border:none;cursor:pointer;font-size:1rem;" title="Editar Tópico" onclick="editarTopico('${m.id}', ${i})">✏️</button><button style="background:transparent;border:none;cursor:pointer;font-size:1rem;" title="Juntar Tópicos" onclick="abrirModalJuntar('${m.id}', '${sanitizeText(t).replace(/'/g,"\\'")}')">🔗</button> <button class="btn-x-vermelho" onclick="excluirTopicoMateria('${m.id}', ${i})">✖</button></div></div>`).join('');
                     let vazioOpcao = `<div style="color:var(--text-muted);font-size:0.85rem; padding:6px 0; display:flex; justify-content:space-between; align-items:center;"><span>Sem tópicos.</span> <button class="btn-danger" style="padding:4px 8px; font-size:0.75rem;" onclick="if(confirm('Excluir?')){ dbData.materias=dbData.materias.filter(x=>x.id!=='${m.id}'); refDb.child('materias').set(dbData.materias); }">Excluir Matéria</button></div>`;
-                    return `<div class="pasta-header" data-folder-id="${m.id}" style="border-left:5px solid ${m.cor};" onclick="this.nextElementSibling.classList.toggle('aberta')" title="${sanitizeText(m.nome)}"><span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1; min-width:0;" title="${sanitizeText(m.nome)}">📁 ${sanitizeText(m.nome)} (${m.topicos.length})</span><div style="display:flex; gap:8px; align-items:center;"><button style="background:transparent;border:none;cursor:pointer;font-size:1.1rem;" title="Mover para Prova" onclick="event.stopPropagation(); moverMateriaParaProva('${m.id}')">🔄</button><button class="btn-x-vermelho" style="flex-shrink:0;" onclick="event.stopPropagation(); if(confirm('Apagar matéria inteira?')) { dbData.materias=dbData.materias.filter(x=>x.id!=='${m.id}'); refDb.child('materias').set(dbData.materias); }">✖</button></div></div><div class="pasta-body">${htmlT || vazioOpcao}</div>`;
+                    return `<div class="pasta-header" data-folder-id="${m.id}" style="border-left:5px solid ${m.cor};" onclick="this.nextElementSibling.classList.toggle('aberta')" title="${sanitizeText(m.nome)}"><span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1; min-width:0;" title="${sanitizeText(m.nome)}">📁 ${sanitizeText(m.nome)} (${m.topicos.length})</span><div style="display:flex; gap:8px; align-items:center;"><button style="background:transparent;border:none;cursor:pointer;font-size:1.1rem;" title="Material de apoio da matéria" onclick="event.stopPropagation(); abrirMaterialApoioId('${m.id}', null)">📎</button><button style="background:transparent;border:none;cursor:pointer;font-size:1.1rem;" title="Mover para Prova" onclick="event.stopPropagation(); moverMateriaParaProva('${m.id}')">🔄</button><button class="btn-x-vermelho" style="flex-shrink:0;" onclick="event.stopPropagation(); if(confirm('Apagar matéria inteira?')) { dbData.materias=dbData.materias.filter(x=>x.id!=='${m.id}'); refDb.child('materias').set(dbData.materias); }">✖</button></div></div><div class="pasta-body">${htmlT || vazioOpcao}</div>`;
                 }).join('');
                 if(!isGeral) {
                     let isBlockOpen = stateBlocos.includes(p);
@@ -3255,6 +3302,9 @@ Pergunta: "${perguntaUsuario}"`;
 
             let respostaAgente = await executarLoopReActDoAgente(textoInput);
             let loadEl = document.getElementById('load-agente'); if (loadEl) loadEl.remove();
+            let _acoes = { texto: respostaAgente, html: '' };
+            try { _acoes = mentorProcessarAcoes(respostaAgente); } catch (e) { console.warn('Ações do Mentor ignoradas:', e); }
+            respostaAgente = _acoes.texto;
 
             // Interceptador de componentes (parser de tags)
             let fragments = {}; let counter = 0;
@@ -3325,18 +3375,20 @@ Pergunta: "${perguntaUsuario}"`;
 
             let textoPuroParaCaderno = encodeURIComponent(respostaAgente);
 
-            let botoesAcaoHtml = `
+            var botoesAcaoHtml = `
                 <div style="display:flex; gap:8px; margin-top:15px; flex-wrap:wrap; border-top:1px solid var(--border-color); padding-top:12px;">
                     <button class="btn-outline" style="font-size:0.75rem; font-weight:600; width:auto; padding:6px 12px;" onclick="window.aprofundarMentorTutor(this)">🔍 Aprofundar</button>
                     <button class="btn-primary" style="font-size:0.75rem; width:auto; padding:6px 12px;" data-payload="${textoPuroParaCaderno}" onclick="abrirModalEnviarCaderno(decodeURIComponent(this.getAttribute('data-payload')), this, 'Tutor IA', 'Interação Geral', false)">📚 Salvar no Caderno</button>
                 </div>
             `;
 
+            if (_acoes.html) botoesAcaoHtml = '';
             body.insertAdjacentHTML('beforeend', `
                 <div class="msg msg-a" style="max-width:100%; width:100%;">
                     <div class="conteudo-resposta-ia" style="font-size:0.95rem; line-height:1.6;">
                         ${htmlFinal}
                     </div>
+                    ${_acoes.html}
                     ${botoesAcaoHtml}
                 </div>
             `);
@@ -3604,7 +3656,7 @@ async function executarLoopReActDoAgente(perguntaUsuario) {
         }
     } catch (e) { console.warn('Busca web do Mentor ignorada:', e); }
 
-    const system = PROMPT_MENTOR_REGRAS +
+    const system = PROMPT_MENTOR_REGRAS + PROMPT_MENTOR_ACOES + mentorContextoExtra() +
         `\n\nCONTEXTO DO ALUNO (use só se for relevante para a pergunta): ${JSON.stringify(agenteContextoSilencioso)}`;
 
     const contents = [
@@ -3644,6 +3696,323 @@ async function executarLoopReActDoAgente(perguntaUsuario) {
 window.addEventListener('load', function () {
     if (window.mermaid) { try { mermaid.initialize({ startOnLoad: false, securityLevel: 'strict' }); } catch (e) { console.warn(e); } }
 });
+
+
+// ============ MENTOR TREINADOR: resumo do dia + ações com confirmação ============
+const mentorAcoesPend = {};
+let mentorUltimoResumo = '';
+
+function mentorMesmoDia(ts, ref) {
+    const a = new Date(ts), b = ref || new Date();
+    return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+}
+function mentorEsc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+function mentorMaterias() {
+    return (Array.isArray(dbData.materias) ? dbData.materias : Object.values(dbData.materias || {})).filter(m => m && m.nome);
+}
+function mentorAchaMateria(nome) {
+    const n = String(nome || '').trim().toLowerCase();
+    return mentorMaterias().find(m => String(m.nome).trim().toLowerCase() === n) || null;
+}
+function mentorSituacao() {
+    const iso = prumaIsoHoje();
+    const hoje = new Date();
+    const segHoje = (dbData.sessoes || []).filter(s => s && s.timestamp && mentorMesmoDia(s.timestamp, hoje)).reduce((t, s) => t + (s.segundos || 0), 0);
+    const metaH = Number((dbData.metas && dbData.metas.horas) || 4);
+    const pend = (dbData.missoes || []).filter(m => m && m.status === 'pendente' && m.dataAlvo && m.dataAlvo <= iso)
+        .sort((a, b) => a.dataAlvo.localeCompare(b.dataAlvo));
+    // prova mais próxima
+    const hoje0 = new Date(); hoje0.setHours(0, 0, 0, 0);
+    let prova = null;
+    (Array.isArray(dbData.provas) ? dbData.provas : Object.values(dbData.provas || {})).forEach(p => {
+        if (!p || !p.data) return;
+        const d = Math.round((new Date(p.data + 'T00:00:00') - hoje0) / 86400000);
+        if (d >= 0 && (!prova || d < prova.dias)) prova = { nome: p.nome, dias: d };
+    });
+    // tópico mais fraco (>=5 questões)
+    const perf = prumaDesempenho();
+    let fraco = null;
+    Object.keys(perf).forEach(k => {
+        const t = perf[k].a + perf[k].e;
+        if (t < 5) return;
+        const taxa = perf[k].a / t;
+        if (!fraco || taxa < fraco.taxa) { const p = k.split('|'); fraco = { materia: p[0], topico: p.slice(1).join('|'), taxa: taxa, total: t }; }
+    });
+    return { segHoje, metaH, pctMeta: metaH > 0 ? Math.min(100, Math.round(segHoje / 3600 / metaH * 100)) : 0, pend, prova, fraco };
+}
+
+function mentorRenderResumo() {
+    const box = document.getElementById('mentor-resumo');
+    if (!box || !dbData) return;
+    const s = mentorSituacao();
+    const fmtH = seg => { const m = Math.round(seg / 60); return m >= 60 ? Math.floor(m / 60) + 'h' + String(m % 60).padStart(2, '0') : m + ' min'; };
+    let h = `<div class="mentor-resumo-card"><div class="mentor-resumo-tit">📋 Seu dia</div>`;
+    h += `<div class="mentor-resumo-lin">⏱ <b>${fmtH(s.segHoje)}</b> de ${s.metaH}h (${s.pctMeta}% da meta)</div>`;
+    h += `<div class="mentor-resumo-barra"><div style="width:${s.pctMeta}%;"></div></div>`;
+    if (s.prova) h += `<div class="mentor-resumo-lin">🎯 ${mentorEsc(s.prova.nome)}: ${s.prova.dias === 0 ? '<b>é hoje!</b>' : 'faltam <b>' + s.prova.dias + ' dias</b>'}</div>`;
+    if (s.pend.length) {
+        h += `<div class="mentor-resumo-lin">✅ <b>${s.pend.length}</b> missão(ões) pendente(s):</div>`;
+        s.pend.slice(0, 3).forEach(m => {
+            h += `<div class="mentor-resumo-item"><span title="${mentorEsc(m.materia)} · ${mentorEsc(m.topico || 'Geral')}">${mentorEsc(m.materia)} · ${mentorEsc(m.topico || 'Geral')}</span><button class="btn-outline" data-id="${mentorEsc(m.id)}" onclick="mentorAbrirMissao(this.dataset.id)">Abrir</button></div>`;
+        });
+        if (s.pend.length > 3) h += `<div class="mentor-resumo-lin" style="color:var(--text-muted);">+ ${s.pend.length - 3} na aba Planejamento</div>`;
+    } else {
+        h += `<div class="mentor-resumo-lin">✅ Nenhuma missão pendente para hoje.</div>`;
+    }
+    if (s.fraco) {
+        h += `<div class="mentor-resumo-lin">⚠️ Ponto fraco: <b>${mentorEsc(s.fraco.topico || s.fraco.materia)}</b> (${Math.round(s.fraco.taxa * 100)}% em ${s.fraco.total} questões)</div>`;
+        h += `<div class="mentor-resumo-acoes"><button class="btn-primary" data-m="${mentorEsc(s.fraco.materia)}" data-t="${mentorEsc(s.fraco.topico)}" onclick="mentorEstudar(this.dataset.m, this.dataset.t)">▶ Estudar isso</button><button class="btn-outline" data-m="${mentorEsc(s.fraco.materia)}" data-t="${mentorEsc(s.fraco.topico)}" onclick="mentorMaterial(this.dataset.m, this.dataset.t)">📎 Material</button></div>`;
+    } else if (!s.pend.length) {
+        h += `<div class="mentor-resumo-lin" style="color:var(--text-muted);">Ainda sem histórico de questões suficiente para apontar pontos fracos.</div>`;
+    }
+    h += `<div class="mentor-resumo-dica">Dica: peça "registra 45 min de Português, 10 acertos e 2 erros" ou "cria uma revisão de Direito Adm. para sexta". Eu pergunto antes de gravar.</div></div>`;
+    box.innerHTML = h;
+}
+function mentorFechar() { const b = document.getElementById('mentor-box'); if (b) b.style.display = 'none'; }
+function mentorAbrirMissao(id) {
+    mentorFechar();
+    try { abrirRevisao(id); } catch (e) { irTela('planejamento'); }
+}
+function mentorEstudar(materia, topico) {
+    mentorFechar();
+    irTela('inicio');
+    const m = document.getElementById('ses-mat'), t = document.getElementById('ses-top');
+    if (m) { m.value = materia; try { atualizarTopicosSessao(materia); } catch (e) { /* segue */ } }
+    if (t) t.value = topico || '';
+    try { iniciarCronometro(); } catch (e) { /* o aluno pode iniciar manualmente */ }
+    try { window.scrollTo({ top: 0, behavior: 'smooth' }); } catch (e) { /* ok */ }
+}
+function mentorMaterial(materia, topico) { mentorFechar(); abrirMaterialApoio(materia, topico); }
+
+// ---- ações propostas pela IA (nunca gravam sem o aluno confirmar) ----
+function mentorIsoValida(s) {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(String(s || ''))) return null;
+    const d = new Date(s + 'T00:00:00');
+    return isNaN(d.getTime()) ? null : d;
+}
+function mentorValidarAcao(a) {
+    if (!a || typeof a !== 'object') return { erro: 'Ação inválida.' };
+    const hoje0 = new Date(); hoje0.setHours(0, 0, 0, 0);
+    const inteiro = (v, min, max) => { const n = Math.round(Number(v)); return isFinite(n) && n >= min && n <= max ? n : null; };
+    if (a.tipo === 'registrar_sessao') {
+        const mat = mentorAchaMateria(a.materia);
+        if (!mat) return { erro: `A matéria "${mentorEsc(a.materia)}" não está cadastrada. Cadastre-a em Matérias ou diga o nome exato.` };
+        const min = inteiro(a.minutos, 1, 720); if (min === null) return { erro: 'Tempo inválido (use de 1 a 720 minutos).' };
+        const ac = a.acertos == null ? 0 : inteiro(a.acertos, 0, 1000), er = a.erros == null ? 0 : inteiro(a.erros, 0, 1000);
+        if (ac === null || er === null) return { erro: 'Acertos/erros inválidos.' };
+        let d = hoje0;
+        if (a.data) { d = mentorIsoValida(a.data); if (!d) return { erro: 'Data inválida.' }; if (d > hoje0) return { erro: 'Não registro estudo em data futura.' }; }
+        const top = sanitizeText(String(a.topico || '').trim()).slice(0, 120);
+        return { ok: true, acao: { tipo: 'registrar_sessao', materia: mat.nome, topico: top, minutos: min, acertos: ac, erros: er, data: d.getTime() },
+            resumo: `Registrar sessão: <b>${mentorEsc(mat.nome)}</b>${top ? ' · ' + mentorEsc(top) : ''} — ${min} min${(ac + er) ? `, ${ac} acertos e ${er} erros` : ''} em ${d.toLocaleDateString('pt-BR')} (gera as revisões 24h/7d/30d).` };
+    }
+    if (a.tipo === 'criar_missao') {
+        const mat = mentorAchaMateria(a.materia);
+        if (!mat) return { erro: `A matéria "${mentorEsc(a.materia)}" não está cadastrada.` };
+        const d = mentorIsoValida(a.dataAlvo);
+        if (!d) return { erro: 'Data da missão inválida.' };
+        if (d < hoje0 || d - hoje0 > 366 * 86400000) return { erro: 'A data da missão deve ser de hoje até 1 ano à frente.' };
+        const top = sanitizeText(String(a.topico || '').trim()).slice(0, 120);
+        const tit = sanitizeText(String(a.titulo || 'Revisão extra').trim()).replace(/[<>]/g, '').slice(0, 40) || 'Revisão extra';
+        return { ok: true, acao: { tipo: 'criar_missao', materia: mat.nome, topico: top, titulo: tit, dataAlvo: a.dataAlvo },
+            resumo: `Criar missão "${mentorEsc(tit)}": <b>${mentorEsc(mat.nome)}</b>${top ? ' · ' + mentorEsc(top) : ''} para ${d.toLocaleDateString('pt-BR')}.` };
+    }
+    if (a.tipo === 'alterar_meta') {
+        const h = a.horas == null ? null : inteiro(a.horas, 1, 16), q = a.questoes == null ? null : inteiro(a.questoes, 0, 1000);
+        if (a.horas != null && h === null) return { erro: 'Meta de horas inválida (1 a 16).' };
+        if (a.questoes != null && q === null) return { erro: 'Meta de questões inválida.' };
+        if (h === null && q === null) return { erro: 'Nenhuma meta informada.' };
+        const atual = dbData.metas || { horas: 4, questoes: 60 };
+        const novo = { horas: h === null ? Number(atual.horas) || 4 : h, questoes: q === null ? Number(atual.questoes) || 60 : q };
+        return { ok: true, acao: { tipo: 'alterar_meta', horas: novo.horas, questoes: novo.questoes },
+            resumo: `Mudar a meta diária: de ${Number(atual.horas) || 4}h / ${Number(atual.questoes) || 60} questões para <b>${novo.horas}h / ${novo.questoes} questões</b>.` };
+    }
+    return { erro: 'Tipo de ação desconhecido.' };
+}
+function mentorExecutarAcao(a) {
+    if (a.tipo === 'registrar_sessao') {
+        const dObj = new Date(a.data);
+        const reg = {
+            id: gerarId(), timestamp: dObj.getTime(), data: dObj.toLocaleDateString('pt-BR'), hora: new Date().toLocaleTimeString().substring(0, 5),
+            materia: a.materia, topico: a.topico, tipoEstudo: (a.acertos + a.erros) > 0 ? 'Questões' : 'Teoria',
+            tipoMat: (a.acertos + a.erros) > 0 ? 'Questões' : 'PDF/Lei Seca', segundos: a.minutos * 60,
+            acertos: a.acertos, erros: a.erros, totalQts: a.acertos + a.erros, obs: 'Registrado pelo Mentor'
+        };
+        const mat = mentorAchaMateria(a.materia);
+        if (mat && a.topico) {
+            if (!Array.isArray(mat.topicos)) mat.topicos = Object.values(mat.topicos || {});
+            if (!mat.topicos.includes(a.topico)) { mat.topicos.push(a.topico); refDb.child('materias').set(dbData.materias); }
+        }
+        if (!Array.isArray(dbData.sessoes)) dbData.sessoes = [];
+        dbData.sessoes.push(reg);
+        refDb.child('sessoes/' + reg.id).set(reg);
+        gerarMissoesSRS(a.materia, a.topico, dObj);
+        try { renderizarInicio(); renderizarDashboardTatico(); } catch (e) { /* o listener atualiza */ }
+        return 'Sessão registrada e revisões agendadas.';
+    }
+    if (a.tipo === 'criar_missao') {
+        if (!Array.isArray(dbData.missoes)) dbData.missoes = [];
+        dbData.missoes.push({ id: gerarId(), grupoId: gerarId(), materia: a.materia, topico: a.topico, tipo: a.titulo, etapa: 0, dataAlvo: a.dataAlvo, status: 'pendente', timestamp: Date.now() });
+        refDb.child('missoes').set(dbData.missoes);
+        try { renderizarMissoes(); renderizarVisaoSemanal(); } catch (e) { /* ok */ }
+        return 'Missão criada.';
+    }
+    if (a.tipo === 'alterar_meta') {
+        dbData.metas = { horas: a.horas, questoes: a.questoes };
+        refDb.child('perfil/metas').set(dbData.metas);
+        try { renderizarDashboardTatico(); } catch (e) { /* ok */ }
+        return 'Meta atualizada.';
+    }
+    throw new Error('Ação desconhecida.');
+}
+function mentorConfirmar(id, ok) {
+    const el = document.getElementById('acao-' + id);
+    const pend = mentorAcoesPend[id];
+    if (!el || !pend) return;
+    delete mentorAcoesPend[id];
+    if (!ok) { el.innerHTML = `<div class="mentor-acao-res" style="color:var(--text-muted);">Cancelado. Nada foi gravado.</div>`; return; }
+    try {
+        const msg = mentorExecutarAcao(pend);
+        el.innerHTML = `<div class="mentor-acao-res" style="color:var(--brand-success);">✅ ${mentorEsc(msg)}</div>`;
+        mentorRenderResumo();
+    } catch (e) {
+        el.innerHTML = `<div class="mentor-acao-res" style="color:var(--brand-danger);">⚠️ Não consegui gravar: ${mentorEsc(e.message)}</div>`;
+    }
+}
+// Extrai [ACAO]{...}[FIM_ACAO], devolve texto limpo + HTML dos cartões de confirmação
+function mentorProcessarAcoes(texto) {
+    const cartoes = [];
+    let n = 0;
+    const limpo = String(texto || '').replace(/\[ACAO\]([\s\S]*?)\[FIM_ACAO\]/g, (m, inner) => {
+        if (++n > 3) return '';
+        let obj = null;
+        try { obj = JSON.parse(inner.trim().replace(/^```json|```$/g, '')); } catch (e) { obj = null; }
+        const v = obj ? mentorValidarAcao(obj) : { erro: 'Não entendi a ação proposta.' };
+        if (!v.ok) { cartoes.push(`<div class="mentor-acao"><div class="mentor-acao-res" style="color:var(--brand-danger);">⚠️ ${v.erro}</div></div>`); return ''; }
+        const id = gerarId();
+        mentorAcoesPend[id] = v.acao;
+        cartoes.push(`<div class="mentor-acao" id="acao-${id}"><div class="mentor-acao-tit">Confirma?</div><div>${v.resumo}</div><div class="mentor-acao-bt"><button class="btn-primary" onclick="mentorConfirmar('${id}', true)">Confirmar</button><button class="btn-outline" onclick="mentorConfirmar('${id}', false)">Cancelar</button></div></div>`);
+        return '';
+    }).replace(/Caso precise de uma resposta mais aprofundada, clique em Aprofundar\.?/g, cartoes.length ? '' : '$&').trim();
+    return { texto: limpo, html: cartoes.join('') };
+}
+function mentorContextoExtra() {
+    const mats = mentorMaterias().map(m => `${m.nome}${prumaListaTopicos(m).length ? ' [' + prumaListaTopicos(m).slice(0, 12).join('; ') + ']' : ''}`);
+    const dias = ['domingo', 'segunda', 'terça', 'quarta', 'quinta', 'sexta', 'sábado'];
+    return `\n\nHOJE: ${prumaIsoHoje()} (${dias[new Date().getDay()]}).\nMETA DIÁRIA: ${JSON.stringify(dbData.metas || { horas: 4, questoes: 60 })}.\nMATÉRIAS CADASTRADAS (nome exato): ${mats.join(' | ') || 'nenhuma'}.`;
+}
+const PROMPT_MENTOR_ACOES = `
+
+MODO MENTOR (treinador): além de tirar dúvidas, você ajuda a organizar o estudo no painel.
+AÇÕES NO PAINEL: você pode PROPOR ações; quem grava é o sistema, depois que o aluno clicar em Confirmar. Nunca diga que já fez algo. Para propor, escreva uma frase curta e coloque no fim um bloco por ação (JSON em uma linha):
+[ACAO]{"tipo":"registrar_sessao","materia":"nome exato","topico":"opcional","minutos":45,"acertos":0,"erros":0,"data":"AAAA-MM-DD opcional"}[FIM_ACAO]
+[ACAO]{"tipo":"criar_missao","materia":"nome exato","topico":"opcional","titulo":"Revisão extra","dataAlvo":"AAAA-MM-DD"}[FIM_ACAO]
+[ACAO]{"tipo":"alterar_meta","horas":4,"questoes":60}[FIM_ACAO]
+Regras: use só matérias da lista MATÉRIAS CADASTRADAS; se faltar dado essencial (matéria, tempo, data), pergunte em vez de inventar; no máximo 3 ações por resposta; só proponha ação quando o aluno pedir algo desse tipo. Ao propor ação, NÃO use a frase de encerramento fixa.`;
+
+// ============ MATERIAL DE APOIO: fontes oficiais por matéria/tópico ============
+let materialFontes = [];
+let materialCtx = { materia: '', topico: '' };
+let materialBuscando = false;
+let materialResumoTxt = '';
+
+function materialOpcoesMaterias() {
+    const comProva = new Set(prumaMateriasDeProvas().map(m => m.id));
+    return mentorMaterias().slice().sort((a, b) => (comProva.has(b.id) ? 1 : 0) - (comProva.has(a.id) ? 1 : 0) || String(a.nome).localeCompare(String(b.nome), 'pt-BR'));
+}
+function materialPreencherSelects(materia, topico) {
+    const sm = document.getElementById('mat-sel-mat'), st = document.getElementById('mat-sel-top');
+    if (!sm || !st) return;
+    const mats = materialOpcoesMaterias();
+    sm.innerHTML = mats.length ? mats.map(m => `<option value="${mentorEsc(m.nome)}">${mentorEsc(m.nome)}</option>`).join('') : '<option value="">Nenhuma matéria cadastrada</option>';
+    if (materia && mats.some(m => m.nome === materia)) sm.value = materia;
+    materialMudouMateria(topico);
+}
+function materialMudouMateria(topicoSel) {
+    const sm = document.getElementById('mat-sel-mat'), st = document.getElementById('mat-sel-top');
+    const m = mentorAchaMateria(sm.value);
+    const tops = m ? prumaListaTopicos(m) : [];
+    st.innerHTML = '<option value="">(matéria inteira)</option>' + tops.map(t => `<option value="${mentorEsc(t)}">${mentorEsc(t)}</option>`).join('');
+    if (typeof topicoSel === 'string' && tops.includes(topicoSel)) st.value = topicoSel;
+}
+function abrirMaterialApoio(materia, topico) {
+    document.getElementById('modal-material').style.display = 'flex';
+    materialFontes = []; materialResumoTxt = '';
+    materialPreencherSelects(materia || '', topico || '');
+    const c = document.getElementById('material-corpo');
+    if (materia) { materialBuscar(false); }
+    else c.innerHTML = '<div class="material-vazio">Escolha a matéria e o tópico e toque em <b>Buscar</b>. Procuro em sites oficiais (gov.br, jus.br, leg.br, mp.br, edu.br) e mostro os trechos com o link da fonte.</div>';
+}
+function abrirMaterialApoioId(materiaId, idx) {
+    const m = mentorMaterias().find(x => x.id === materiaId);
+    if (!m) return;
+    const tops = prumaListaTopicos(m);
+    abrirMaterialApoio(m.nome, idx == null ? '' : (tops[idx] || ''));
+}
+function fecharMaterialApoio() { document.getElementById('modal-material').style.display = 'none'; }
+
+async function materialBuscar(amplo) {
+    if (materialBuscando) return;
+    const mat = document.getElementById('mat-sel-mat').value, top = document.getElementById('mat-sel-top').value;
+    const c = document.getElementById('material-corpo');
+    if (!mat) { c.innerHTML = '<div class="material-vazio">Cadastre uma matéria na aba Matérias para usar o material de apoio.</div>'; return; }
+    materialCtx = { materia: mat, topico: top, amplo: !!amplo };
+    materialBuscando = true; materialResumoTxt = '';
+    c.innerHTML = '<div class="material-vazio">Buscando fontes' + (amplo ? ' em toda a web' : ' oficiais') + '... ⏳</div>';
+    try {
+        const q = `${top} ${mat}`.replace(/\s+/g, ' ').trim() + (amplo ? ' resumo concurso' : '');
+        const res = await buscarNaWeb(q, { dominios: amplo ? undefined : PRUMA_DOMINIOS_OFICIAIS, max: 6, estruturado: true });
+        materialFontes = (res || []).filter(r => r && /^https?:\/\//i.test(r.url || '') && r.content && r.content.length > 80)
+            .map(r => ({ titulo: String(r.title || r.url).slice(0, 160), url: r.url, trecho: String(r.content).slice(0, 1800), oficial: !amplo }));
+    } catch (e) { materialFontes = []; }
+    materialBuscando = false;
+    materialRender();
+}
+function materialDominio(u) { try { return new URL(u).hostname.replace(/^www\./, ''); } catch (e) { return ''; } }
+function materialRender() {
+    const c = document.getElementById('material-corpo');
+    const ctx = materialCtx;
+    const alvo = `${mentorEsc(ctx.materia)}${ctx.topico ? ' · ' + mentorEsc(ctx.topico) : ''}`;
+    if (!materialFontes.length) {
+        c.innerHTML = `<div class="material-vazio">Não achei fonte ${ctx.amplo ? '' : 'oficial '}para <b>${alvo}</b>.<br><br>` +
+            (ctx.amplo ? 'Tente outro tópico.' : '<button class="btn-outline" style="width:auto;padding:10px 16px;" onclick="materialBuscar(true)">Buscar em qualquer site (confira a fonte)</button>') + '</div>';
+        return;
+    }
+    let h = `<div class="material-topo"><div><b>${alvo}</b><div style="font-size:0.8rem;color:var(--text-muted);">${materialFontes.length} fonte(s) ${ctx.amplo ? '— sites variados, confira antes de confiar' : 'oficiais'}</div></div>` +
+        `<div class="material-topo-bt"><button class="btn-outline" onclick="materialResumir()">✨ Resumir com a IA</button></div></div>`;
+    h += '<div id="material-resumo"></div>';
+    materialFontes.forEach((f, i) => {
+        const trecho = f.trecho.length > 650 ? f.trecho.slice(0, 650).replace(/\s+\S*$/, '') + '…' : f.trecho;
+        h += `<div class="material-card"><div class="material-dom">${mentorEsc(materialDominio(f.url))} · ${f.oficial ? '✅ oficial' : '⚠️ não oficial'}</div>` +
+            `<a href="${mentorEsc(f.url)}" target="_blank" rel="noopener noreferrer" class="material-link">${mentorEsc(f.titulo)}</a>` +
+            `<div class="material-trecho">${mentorEsc(trecho)}</div>` +
+            `<div class="material-bt"><a class="material-abrir" href="${mentorEsc(f.url)}" target="_blank" rel="noopener noreferrer">Abrir fonte ↗</a>` +
+            `<button class="btn-outline" onclick="materialSalvar(${i}, this)">📚 Salvar no caderno</button></div></div>`;
+    });
+    if (!ctx.amplo) h += `<div style="text-align:center;margin-top:8px;"><button class="btn-outline" style="width:auto;padding:8px 14px;font-size:0.85rem;" onclick="materialBuscar(true)">Não é isso? Buscar em qualquer site</button></div>`;
+    c.innerHTML = h;
+}
+function materialSalvar(i, btn) {
+    const f = materialFontes[i]; if (!f) return;
+    const txt = `**${f.titulo}**\n\nFonte: ${f.url}\n\n> ${f.trecho.replace(/\n+/g, '\n> ')}`;
+    abrirModalEnviarCaderno(txt, btn, materialCtx.materia, materialCtx.topico);
+}
+async function materialResumir() {
+    const box = document.getElementById('material-resumo');
+    if (!box || !materialFontes.length) return;
+    if (!localStorage.getItem('pruma_apikey')) { box.innerHTML = '<div class="material-aviso">Configure a API Key (Minha Conta) para resumir com a IA.</div>'; return; }
+    box.innerHTML = '<div class="material-aviso">Resumindo as fontes... ⏳</div>';
+    try {
+        const fontes = materialFontes.slice(0, 5).map((f, i) => `[Fonte ${i + 1}] ${f.titulo}\n${f.trecho}`).join('\n\n');
+        const system = 'Você prepara material de estudo para concursos. Use SOMENTE as fontes fornecidas. Faça um resumo objetivo em tópicos (máx. ~250 palavras), citando [Fonte n] ao lado de cada afirmação. NUNCA invente número de artigo, lei ou súmula; se as fontes não cobrirem o tema, diga isso claramente. Sem saudações.';
+        const r = await chamarGemini({ system, temperatura: 0.2, contents: [{ role: 'user', parts: [{ text: `Matéria: ${materialCtx.materia}\nTópico: ${materialCtx.topico || '(geral)'}\n\n${fontes}` }] }] });
+        materialResumoTxt = r;
+        box.innerHTML = `<div class="material-resumo-ia"><div class="conteudo-resposta-ia">${sanitizeText(marked.parse(r))}</div>` +
+            `<div class="material-bt"><button class="btn-primary" style="width:auto;padding:8px 14px;" onclick="abrirModalEnviarCaderno(materialResumoTxt + '\\n\\nFontes:\\n' + materialFontes.slice(0,5).map((f,i)=>'['+(i+1)+'] '+f.url).join('\\n'), this, materialCtx.materia, materialCtx.topico)">📚 Salvar resumo no caderno</button></div></div>`;
+    } catch (e) {
+        box.innerHTML = `<div class="material-aviso" style="color:var(--brand-danger);">Erro ao resumir: ${mentorEsc(String(e.message).slice(0, 200))}</div>`;
+    }
+}
 
 // ============ PRUMA HOJE: dica do dia + treino diário ============
 // Uma geração por dia (guardada no Firebase em perfil/treinoDia). Prioriza matérias de provas
