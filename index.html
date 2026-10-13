@@ -79,8 +79,8 @@
         .mermaid-container { background: var(--bg-body); border-radius: 8px; padding: 10px; text-align: center; overflow: auto; border: 1px solid var(--border-color); margin-bottom: 12px; }
         .mermaid-container svg { max-width: 100%; height: auto; }
         .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 16px; margin-bottom: 24px; width: 100%; }
-        .stat-card { background: var(--bg-card); padding: 20px; border-radius: var(--radius-md); text-align: center; border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); min-width: 0; }
-        .stat-card span { display: block; font-size: 0.7rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .stat-card { background: var(--bg-card); padding: 16px 10px; border-radius: var(--radius-md); text-align: center; border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); min-width: 0; }
+        .stat-card span { display: block; font-size: 0.7rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; line-height: 1.25; white-space: normal; overflow-wrap: anywhere; }
         .stat-card strong { display: block; font-size: 1.6rem; color: var(--text-main); font-weight: 700; margin-top: 6px; }
         .registro-curto { display: flex; justify-content: space-between; align-items: flex-start; background: var(--bg-input); padding: 12px 16px; border-radius: var(--radius-sm); margin-bottom: 10px; border: 1px solid var(--border-color); width: 100%; gap: 10px; flex-direction: column; }
         .registro-curto-header { display: flex; justify-content: space-between; align-items: center; width: 100%; gap: 10px; }
@@ -128,6 +128,22 @@
         #view-planejamento .plan-textarea { flex: 1; min-height: 200px; margin: 0; resize: vertical; line-height: 1.5; }
         #view-planejamento > .card.plan-card { margin-bottom: 20px; }
         @media (max-width: 800px) { #view-planejamento .plan-row { grid-template-columns: 1fr; } }
+        /* Filtros de Estatísticas: seleção por caixas */
+        .est-multi { position: relative; }
+        .est-multi > summary { list-style: none; cursor: pointer; padding: 12px 16px; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-sm); display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 0.95rem; }
+        .est-multi > summary::-webkit-details-marker { display: none; }
+        .est-multi > summary::after { content: '▾'; color: var(--text-muted); flex-shrink: 0; }
+        .est-multi > summary span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .est-multi[open] > summary { border-color: var(--brand-primary); }
+        .est-multi-lista { position: absolute; z-index: 40; top: calc(100% + 6px); left: 0; right: 0; min-width: 200px; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-sm); box-shadow: var(--shadow-md); max-height: 260px; overflow-y: auto; padding: 6px; }
+        .est-multi-lista label { display: flex; align-items: center; gap: 10px; padding: 10px; border-radius: 8px; cursor: pointer; font-size: 0.9rem; }
+        .est-multi-lista label:hover { background: var(--bg-hover); }
+        .est-multi-lista input[type=checkbox] { width: 18px; height: 18px; padding: 0; margin: 0; flex-shrink: 0; }
+        .est-multi-vazio { padding: 10px; font-size: 0.85rem; color: var(--text-muted); }
+        .est-multi-limpar { display: block; width: 100%; text-align: left; background: transparent; border: none; color: var(--brand-primary); font-weight: 600; font-size: 0.8rem; padding: 8px 10px; cursor: pointer; }
+        /* Contraste do texto de exemplo nos campos */
+        ::placeholder { color: #6C6C70; opacity: 1; }
+        [data-theme="dark"] ::placeholder { color: #A0A0A8; }
         .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: center; z-index: 2000; backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); padding: 20px; }
         .modal-content { background: var(--bg-card); padding: 32px; border-radius: var(--radius-lg); width: 100%; max-width: 520px; max-height: 90vh; overflow-y: auto; box-shadow: var(--shadow-md); position: relative; }
         /* JANELA DE REVISÃO DO CADERNO (missões do Planejamento) */
@@ -213,6 +229,15 @@
             body { flex-direction: column; }
             .mobile-header { display: flex; }
             .main-content { padding: 16px; }
+            .container-interno { padding-bottom: 100px; }
+            /* Início no celular: cronômetro/registro primeiro, resumo depois */
+            #view-inicio:not([style*="none"]) { display: flex !important; flex-direction: column; }
+            #view-inicio > :first-child { order: 1; }
+            #view-inicio > :nth-child(2) { order: 0; }
+            #view-inicio > :nth-child(n+3) { order: 2; }
+            #view-inicio .stats-grid, #view-estatisticas .stats-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            #view-inicio .stats-grid > .stat-card:first-child, #view-estatisticas .stats-grid > .stat-card:first-child { grid-column: 1 / -1; }
+            .mentor-flutuante-btn { width: 48px; height: 48px; font-size: 22px; bottom: 16px; right: 16px; opacity: 0.92; }
             .sidebar { position: fixed; top: 60px; left: -100%; width: 100%; height: calc(100vh - 60px); transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
             .sidebar.open { left: 0; }
         }
@@ -294,10 +319,10 @@
                             <div id="visor-pausa-container" style="display:none; font-size:0.85rem; font-weight:600; color:var(--text-muted); margin-bottom:8px;">⏸️ Pausado: <span id="visor-pausa" style="font-variant-numeric:tabular-nums;">00:00:00</span></div>
                             
                             <div style="display:flex; justify-content:center; gap:8px; flex-wrap:wrap; margin-top:12px;" id="container-botoes-cron">
-                                <button id="btn-iniciar-cron" class="btn-success" onclick="iniciarCronometro()" style="flex:1; min-width:80px; padding:10px;">▶ Iniciar</button>
-                                <button id="btn-pausar-cron" class="btn-outline" onclick="pausarCronometro()" style="flex:1; min-width:80px; padding:10px; display:none;">⏸ Pausar</button>
-                                <button id="btn-reiniciar-cron" class="btn-outline" style="flex:1; min-width:80px; padding:10px; color:var(--brand-danger); border-color:var(--brand-danger); display:none;" onclick="reiniciarCronometro()">🔄 Zerar</button>
-                                <button id="btn-salvar-cron" class="btn-primary" style="flex:1; min-width:80px; padding:10px; display:none;" onclick="enviarTempoParaRegistro()">💾 Salvar</button>
+                                <button id="btn-iniciar-cron" class="btn-success" onclick="iniciarCronometro()" style="flex:1; min-width:80px; padding:14px;">▶ Iniciar</button>
+                                <button id="btn-pausar-cron" class="btn-outline" onclick="pausarCronometro()" style="flex:1; min-width:80px; padding:14px; display:none;">⏸ Pausar</button>
+                                <button id="btn-reiniciar-cron" class="btn-outline" style="flex:1; min-width:80px; padding:14px; color:var(--brand-danger); border-color:var(--brand-danger); display:none;" onclick="reiniciarCronometro()">🔄 Zerar</button>
+                                <button id="btn-salvar-cron" class="btn-primary" style="flex:1; min-width:80px; padding:14px; display:none;" onclick="enviarTempoParaRegistro()">💾 Salvar</button>
                             </div>
                         </div>
                         <div style="background:var(--bg-input); padding:16px; border-radius:var(--radius-md); width:100%;">
@@ -536,17 +561,18 @@
                     <div style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:20px; background:var(--bg-input); padding:16px; border-radius:var(--radius-sm);">
                         <div style="flex:1; min-width:140px;">
                             <label style="font-size:0.75rem; font-weight:700; color:var(--text-muted); display:block; margin-bottom:4px;">PROVA(S)</label>
-                            <input type="text" id="est-filtro-provas" placeholder="Todas (sep. por vírgula)" list="dl-est-provas" oninput="atualizarEstatisticas()" style="margin:0;" onclick="try{this.showPicker()}catch(e){}">
-                            <datalist id="dl-est-provas"></datalist>
+                            <input type="hidden" id="est-filtro-provas">
+                            <details class="est-multi" id="multi-est-provas"><summary><span>Todos</span></summary><div class="est-multi-lista"></div></details>
                         </div>
                         <div style="flex:1; min-width:140px;">
                             <label style="font-size:0.75rem; font-weight:700; color:var(--text-muted); display:block; margin-bottom:4px;">MATÉRIA(S)</label>
-                            <input type="text" id="est-filtro-materias" placeholder="Várias matérias (sep. por vírgula)" list="dl-materias-cadastradas" oninput="onEstMateriasInput()" style="margin:0;" onclick="try{this.showPicker()}catch(e){}">
+                            <input type="hidden" id="est-filtro-materias">
+                            <details class="est-multi" id="multi-est-materias"><summary><span>Todos</span></summary><div class="est-multi-lista"></div></details>
                         </div>
                         <div style="flex:1; min-width:140px;">
                             <label style="font-size:0.75rem; font-weight:700; color:var(--text-muted); display:block; margin-bottom:4px;">TÓPICO(S)</label>
-                            <input type="text" id="est-filtro-topicos" placeholder="Todos (apenas se 1 matéria)" list="dl-est-topicos" oninput="atualizarEstatisticas()" style="margin:0;" onclick="try{this.showPicker()}catch(e){}">
-                            <datalist id="dl-est-topicos"></datalist>
+                            <input type="hidden" id="est-filtro-topicos">
+                            <details class="est-multi" id="multi-est-topicos"><summary><span>Todos</span></summary><div class="est-multi-lista"></div></details>
                         </div>
                     </div>
                     <div id="est-custom-dates" style="display:none; gap:16px; margin-bottom:20px; background:var(--bg-input); padding:16px; border-radius:var(--radius-sm); flex-wrap:wrap;">
@@ -2321,6 +2347,7 @@ div.innerHTML = finalDivHtml;
                 dlProvas.innerHTML = htmlP;
             }
             atualizarTopicosFiltroEstatisticas();
+            try { renderizarMultiEst(); } catch (e) { console.warn(e); }
         }
         function onEstMateriasInput() {
             atualizarTopicosFiltroEstatisticas(); let matInput = document.getElementById('est-filtro-materias').value.trim(); let mats = matInput ? matInput.split(',').map(x => x.trim()).filter(Boolean) : []; let topInputEl = document.getElementById('est-filtro-topicos');
@@ -3916,6 +3943,56 @@ function abrirTreinoDiario() {
 }
 function fecharTreinoDiario() { document.getElementById('modal-treino').style.display = 'none'; }
 function prumaTentarOutro() { prumaHojeSemFonte = null; dbData.treinoDia = null; prumaGerarHoje(); }
+
+// ====== Filtros de Estatísticas (seleção por caixas; mantém os campos de texto ocultos que o resto do código lê) ======
+function estMultiNomes(q) {
+    if (q === 'provas') return (Array.isArray(dbData.provas) ? dbData.provas : Object.values(dbData.provas || {})).filter(p => p && p.nome).map(p => p.nome);
+    if (q === 'materias') return (Array.isArray(dbData.materias) ? dbData.materias : Object.values(dbData.materias || {})).filter(m => m && m.nome).map(m => m.nome);
+    const mats = (document.getElementById('est-filtro-materias').value || '').split(',').map(x => x.trim().toLowerCase()).filter(Boolean);
+    if (mats.length !== 1) return null; // tópicos só com 1 matéria
+    const set = new Set();
+    (Array.isArray(dbData.materias) ? dbData.materias : Object.values(dbData.materias || {})).forEach(m => { if (m && m.nome && m.nome.toLowerCase() === mats[0]) prumaListaTopicos(m).forEach(t => set.add(t)); });
+    (dbData.sessoes || []).forEach(s => { if (s.materia && s.materia.toLowerCase() === mats[0] && s.topico) set.add(s.topico); });
+    return [...set];
+}
+function renderizarMultiEst() {
+    ['provas', 'materias', 'topicos'].forEach(q => {
+        const box = document.getElementById('multi-est-' + q), input = document.getElementById('est-filtro-' + q);
+        if (!box || !input) return;
+        const lista = box.querySelector('.est-multi-lista'), rotulo = box.querySelector('summary span');
+        const nomes = estMultiNomes(q);
+        const sel = (input.value || '').split(',').map(x => x.trim()).filter(Boolean);
+        const selLower = sel.map(x => x.toLowerCase());
+        lista.innerHTML = '';
+        if (nomes === null) {
+            rotulo.textContent = 'Escolha 1 matéria';
+            const v = document.createElement('div'); v.className = 'est-multi-vazio'; v.textContent = 'Selecione uma única matéria para filtrar por tópico.'; lista.appendChild(v);
+            return;
+        }
+        if (!nomes.length) { const v = document.createElement('div'); v.className = 'est-multi-vazio'; v.textContent = 'Nada cadastrado ainda.'; lista.appendChild(v); }
+        nomes.forEach(n => {
+            const l = document.createElement('label'), c = document.createElement('input');
+            c.type = 'checkbox'; c.value = n; c.checked = selLower.includes(n.toLowerCase());
+            c.addEventListener('change', () => estMultiMudou(q));
+            l.appendChild(c); l.appendChild(document.createTextNode(n)); lista.appendChild(l);
+        });
+        if (sel.length) {
+            const lim = document.createElement('button'); lim.type = 'button'; lim.className = 'est-multi-limpar'; lim.textContent = 'Limpar seleção';
+            lim.addEventListener('click', () => { input.value = ''; estMultiMudou(q, true); });
+            lista.appendChild(lim);
+        }
+        rotulo.textContent = !sel.length ? (q === 'topicos' ? 'Todos' : (q === 'provas' ? 'Todas' : 'Todas')) : (sel.length <= 2 ? sel.join(', ') : sel.length + ' selecionados');
+    });
+}
+function estMultiMudou(q, jaLimpo) {
+    const box = document.getElementById('multi-est-' + q), input = document.getElementById('est-filtro-' + q);
+    if (!jaLimpo) input.value = [...box.querySelectorAll('input[type=checkbox]:checked')].map(c => c.value).join(', ');
+    if (q === 'materias') onEstMateriasInput(); else atualizarEstatisticas();
+    renderizarMultiEst();
+}
+document.addEventListener('click', function (e) {
+    document.querySelectorAll('details.est-multi[open]').forEach(d => { if (!d.contains(e.target)) d.removeAttribute('open'); });
+});
 
 </script>
 </body>
