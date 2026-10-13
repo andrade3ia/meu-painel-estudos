@@ -1269,7 +1269,7 @@ function alterarMesCalendario(direcao) {
         }
         function carregarDadosGlobais() {
             refDb.child('perfil/nome').on('value', s => { if(s.val()) document.getElementById('conta-nome').value = s.val(); });
-            refDb.child('perfil/metas').on('value', s => { dbData.metas = s.val() || {horas: 4, questoes: 60}; if(document.getElementById('view-planejamento').style.display==='block') renderizarDashboardTatico(); });
+            refDb.child('perfil/metas').on('value', s => { dbData.metas = s.val() || {horas: 4, questoes: 60}; if(document.getElementById('view-planejamento').style.display==='block') renderizarDashboardTatico(); if(typeof mentorAtualizarSeAberto === 'function') mentorAtualizarSeAberto(); });
             refDb.child('perfil/treinoHist').on('value', s => { let v = s.val(); dbData.treinoHist = v ? (Array.isArray(v) ? v : Object.values(v)) : []; });
             refDb.child('perfil/treinoDia').on('value', s => { dbData.treinoDia = s.val(); prumaTreinoCarregado(); });
             refDb.child('perfil/notas_ciclo').on('value', s => { 
@@ -1280,11 +1280,13 @@ function alterarMesCalendario(direcao) {
             refDb.child('sessoes').on('value', s => { 
                 dbData.sessoes = s.val() ? Object.values(s.val()) : []; 
                 renderizarInicio(); 
+                if(typeof mentorAtualizarSeAberto === 'function') mentorAtualizarSeAberto();
                 if(document.getElementById('view-estatisticas').style.display==='block') { renderizarFiltrosEstatisticas(); atualizarEstatisticas(); } 
                 if(document.getElementById('view-planejamento').style.display==='block') renderizarDashboardTatico();
             });
             refDb.child('missoes').on('value', s => {
                 let v = s.val(); dbData.missoes = v ? (Array.isArray(v) ? v : Object.values(v)) : [];
+                if(typeof mentorAtualizarSeAberto === 'function') mentorAtualizarSeAberto();
                 if(document.getElementById('view-planejamento').style.display === 'block') { renderizarMissoes(); renderizarVisaoSemanal(); }
             });
             refDb.child('provas').on('value', s => { let v = s.val(); dbData.provas = v ? (Array.isArray(v) ? v : Object.values(v)) : []; renderizarProvas(); atualizarSelectsUI(); if(document.getElementById('view-estatisticas').style.display==='block') renderizarFiltrosEstatisticas(); });
@@ -1347,19 +1349,25 @@ function alterarMesCalendario(direcao) {
                 renderizarDashboardTatico();
             }
         }
-        function renderizarDashboardTatico() {
+        // Total do dia e metas: fonte única, usada pelo Planejamento e pelo Mentor
+        function estudoDeHoje() {
             let hojeStr = new Date().toLocaleDateString();
-            let tSegundos = 0, tQts = 0;
-            
-            dbData.sessoes.forEach(s => {
+            let seg = 0, qts = 0;
+            (dbData.sessoes || []).forEach(s => {
                 let sDataStr = s.data || new Date(s.timestamp).toLocaleDateString();
                 if(sDataStr === hojeStr) {
-                    tSegundos += (s.segundos || 0);
-                    tQts += (s.totalQts !== undefined ? s.totalQts : ((s.acertos||0)+(s.erros||0)));
+                    seg += (s.segundos || 0);
+                    qts += (s.totalQts !== undefined ? s.totalQts : ((s.acertos||0)+(s.erros||0)));
                 }
             });
-            let objHoras = dbData.metas.horas || 4;
-            let objQts = dbData.metas.questoes || 60;
+            let metas = dbData.metas || {};
+            return { seg: seg, qts: qts, metaH: metas.horas || 4, metaQ: metas.questoes || 60 };
+        }
+        function renderizarDashboardTatico() {
+            let hoje = estudoDeHoje();
+            let tSegundos = hoje.seg, tQts = hoje.qts;
+            let objHoras = hoje.metaH;
+            let objQts = hoje.metaQ;
             let horasFeitasNum = tSegundos / 3600;
             document.getElementById('text-ring-horas').textContent = `${Math.floor(horasFeitasNum)}h ${Math.floor((tSegundos%3600)/60)}m`;
             document.getElementById('text-ring-qts').textContent = tQts;
@@ -3760,8 +3768,8 @@ function mentorAchaMateria(nome) {
 function mentorSituacao() {
     const iso = prumaIsoHoje();
     const hoje = new Date();
-    const segHoje = (dbData.sessoes || []).filter(s => s && s.timestamp && mentorMesmoDia(s.timestamp, hoje)).reduce((t, s) => t + (s.segundos || 0), 0);
-    const metaH = Number((dbData.metas && dbData.metas.horas) || 4);
+    const eh = estudoDeHoje();
+    const segHoje = eh.seg, metaH = Number(eh.metaH) || 4, qtsHoje = eh.qts, metaQ = Number(eh.metaQ) || 60;
     const pend = (dbData.missoes || []).filter(m => m && m.status === 'pendente' && m.dataAlvo && m.dataAlvo <= iso)
         .sort((a, b) => a.dataAlvo.localeCompare(b.dataAlvo));
     // prova mais próxima
@@ -3781,7 +3789,7 @@ function mentorSituacao() {
         const taxa = perf[k].a / t;
         if (!fraco || taxa < fraco.taxa) { const p = k.split('|'); fraco = { materia: p[0], topico: p.slice(1).join('|'), taxa: taxa, total: t }; }
     });
-    return { segHoje, metaH, pctMeta: metaH > 0 ? Math.min(100, Math.round(segHoje / 3600 / metaH * 100)) : 0, pend, prova, fraco };
+    return { segHoje, metaH, qtsHoje, metaQ, pctMeta: Math.min(100, Math.round(segHoje / 3600 / metaH * 100)), pctQts: Math.min(100, Math.round(qtsHoje / metaQ * 100)), pend, prova, fraco };
 }
 
 function mentorRenderResumo() {
@@ -3792,6 +3800,8 @@ function mentorRenderResumo() {
     let h = `<div class="mentor-resumo-card"><div class="mentor-resumo-tit">📋 Seu dia</div>`;
     h += `<div class="mentor-resumo-lin">⏱ <b>${fmtH(s.segHoje)}</b> de ${s.metaH}h (${s.pctMeta}% da meta)</div>`;
     h += `<div class="mentor-resumo-barra"><div style="width:${s.pctMeta}%;"></div></div>`;
+    h += `<div class="mentor-resumo-lin">📝 <b>${s.qtsHoje}</b> de ${s.metaQ} questões (${s.pctQts}% da meta)</div>`;
+    h += `<div class="mentor-resumo-barra"><div style="width:${s.pctQts}%;"></div></div>`;
     if (s.prova) h += `<div class="mentor-resumo-lin">🎯 ${mentorEsc(s.prova.nome)}: ${s.prova.dias === 0 ? '<b>é hoje!</b>' : 'faltam <b>' + s.prova.dias + ' dias</b>'}</div>`;
     if (s.pend.length) {
         h += `<div class="mentor-resumo-lin">✅ <b>${s.pend.length}</b> missão(ões) pendente(s):</div>`;
@@ -3811,6 +3821,7 @@ function mentorRenderResumo() {
     h += `<div class="mentor-resumo-dica">Dica: peça "registra 45 min de Português, 10 acertos e 2 erros" ou "cria uma revisão de Direito Adm. para sexta". Eu pergunto antes de gravar.</div></div>`;
     box.innerHTML = h;
 }
+function mentorAtualizarSeAberto() { const b = document.getElementById('mentor-box'); if (b && b.style.display === 'flex') { try { mentorRenderResumo(); } catch (e) { /* ok */ } } }
 function mentorFechar() { const b = document.getElementById('mentor-box'); if (b) b.style.display = 'none'; }
 function mentorAbrirMissao(id) {
     mentorFechar();
