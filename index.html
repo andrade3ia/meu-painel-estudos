@@ -239,9 +239,20 @@
         .mentor-acao { margin-top: 12px; border: 1px solid var(--brand-primary); background: rgba(0,122,255,0.06); border-radius: 10px; padding: 10px 12px; font-size: 0.88rem; }
         .mentor-acao-tit { font-weight: 700; margin-bottom: 4px; }
         .mentor-acao-res { font-weight: 600; font-size: 0.88rem; }
-        .material-filtros { display: flex; gap: 8px; padding: 10px 20px; border-bottom: 1px solid var(--border-color); flex-wrap: wrap; align-items: center; }
-        .material-filtros select { flex: 1; min-width: 140px; margin: 0; }
-        .material-filtros button { width: auto; padding: 10px 16px; margin: 0; }
+        .material-filtros { padding: 0 0 14px; margin-bottom: 14px; border-bottom: 1px solid var(--border-color); }
+        .material-filtros summary { cursor: pointer; font-weight: 700; padding: 4px 0; }
+        .material-filtros select, .material-filtros input[type=text] { margin: 0 0 4px; width: 100%; }
+        .material-rot { display: block; font-size: 0.78rem; font-weight: 700; color: var(--text-muted); margin: 10px 0 4px; }
+        .material-chk { display: inline-flex; align-items: center; gap: 6px; font-size: 0.88rem; margin: 3px 14px 3px 0; cursor: pointer; }
+        .material-chk input { width: auto; margin: 0; }
+        .material-chk-todos { font-weight: 700; display: flex; }
+        .material-lista-topicos { max-height: 170px; overflow-y: auto; border: 1px solid var(--border-color); border-radius: 8px; padding: 6px 10px; margin-top: 4px; }
+        .material-lista-topicos .material-chk { display: flex; margin-right: 0; }
+        .material-grupo { margin: 4px 0; }
+        .material-grupo-nome { display: inline-block; min-width: 150px; font-size: 0.78rem; color: var(--text-muted); }
+        .material-nota { font-size: 0.85rem; color: var(--text-muted); padding: 4px 0 10px; }
+        .material-grupo-tit { font-weight: 700; margin: 16px 0 8px; }
+        .material-orgao { background: rgba(0,122,255,0.12); color: var(--brand-primary); font-weight: 700; padding: 2px 8px; border-radius: 10px; font-size: 0.72rem; }
         .material-vazio { text-align: center; padding: 40px 12px; color: var(--text-muted); }
         .material-topo { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; }
         .material-topo-bt button, .material-bt button { width: auto; padding: 8px 14px; font-size: 0.85rem; }
@@ -824,15 +835,24 @@
     <div id="modal-material" class="modal" style="z-index:1900;" onclick="if(event.target===this) fecharMaterialApoio()">
         <div class="revisao-janela" role="dialog" aria-modal="true" aria-labelledby="material-titulo">
             <div class="revisao-topo">
-                <div class="revisao-titulo"><strong id="material-titulo">📎 Material de apoio</strong><span>Trechos de fontes oficiais, com o link para conferir</span></div>
+                <div class="revisao-titulo"><strong id="material-titulo">📎 Material de apoio</strong><span>Jurisprudência de tribunais, conselhos, MP, TCU e CGU</span></div>
                 <button style="background:transparent; border:none; font-size:1.5rem; cursor:pointer; color:var(--brand-danger); font-weight:700; line-height:1;" onclick="fecharMaterialApoio()">✖</button>
             </div>
-            <div class="material-filtros">
+            <div class="revisao-corpo">
+            <details id="mat-filtros" class="material-filtros" open>
+                <summary>⚙️ Filtros da busca</summary>
+                <label class="material-rot">Matéria</label>
                 <select id="mat-sel-mat" onchange="materialMudouMateria()"></select>
-                <select id="mat-sel-top"></select>
-                <button class="btn-primary" onclick="materialBuscar(false)">🔎 Buscar</button>
+                <label class="material-rot">Tópicos</label>
+                <div id="mat-topicos"></div>
+                <label class="material-rot">Tema livre (opcional)</label>
+                <input type="text" id="mat-tema" placeholder="Ex.: improbidade administrativa e dolo" onkeydown="if(event.key==='Enter') materialBuscar()">
+                <label class="material-rot">Órgãos</label>
+                <div id="mat-orgaos"></div>
+                <button class="btn-primary" style="margin-top:12px;" onclick="materialBuscar()">🔎 Buscar jurisprudência</button>
+            </details>
+            <div id="material-corpo"></div>
             </div>
-            <div class="revisao-corpo" id="material-corpo"></div>
         </div>
     </div>
 
@@ -3910,38 +3930,99 @@ AÇÕES NO PAINEL: você pode PROPOR ações; quem grava é o sistema, depois qu
 [ACAO]{"tipo":"alterar_meta","horas":4,"questoes":60}[FIM_ACAO]
 Regras: use só matérias da lista MATÉRIAS CADASTRADAS; se faltar dado essencial (matéria, tempo, data), pergunte em vez de inventar; no máximo 3 ações por resposta; só proponha ação quando o aluno pedir algo desse tipo. Ao propor ação, NÃO use a frase de encerramento fixa.`;
 
-// ============ MATERIAL DE APOIO: fontes oficiais por matéria/tópico ============
-let materialFontes = [];
-let materialCtx = { materia: '', topico: '' };
+// ============ MATERIAL DE APOIO: jurisprudência de órgãos oficiais (busca via Tavily) ============
+const MATERIAL_ORGAOS = [
+    { k: 'STF', grupo: 'Tribunais superiores', dom: ['stf.jus.br'] },
+    { k: 'STJ', grupo: 'Tribunais superiores', dom: ['stj.jus.br'] },
+    { k: 'TST', grupo: 'Tribunais superiores', dom: ['tst.jus.br'] },
+    { k: 'TSE', grupo: 'Tribunais superiores', dom: ['tse.jus.br'] },
+    { k: 'STM', grupo: 'Tribunais superiores', dom: ['stm.jus.br'] },
+    { k: 'CNJ', grupo: 'Conselhos de Justiça', dom: ['cnj.jus.br'] },
+    { k: 'CJF', grupo: 'Conselhos de Justiça', dom: ['cjf.jus.br'] },
+    { k: 'CSJT', grupo: 'Conselhos de Justiça', dom: ['csjt.jus.br'] },
+    { k: 'CNMP', grupo: 'Ministério Público', dom: ['cnmp.mp.br'] },
+    { k: 'MPF', grupo: 'Ministério Público', dom: ['mpf.mp.br'] },
+    { k: 'TCU', grupo: 'Controle', dom: ['tcu.gov.br'] },
+    { k: 'CGU', grupo: 'Controle', dom: ['cgu.gov.br', 'gov.br'] }
+];
+const MATERIAL_MAX_BUSCAS = 8;
+let materialSel = { materia: '', topicos: new Set(), orgaos: new Set(MATERIAL_ORGAOS.map(o => o.k)) };
+let materialTopicosLista = [];
+let materialGrupos = [];
 let materialBuscando = false;
 let materialResumoTxt = '';
+let materialAviso = '';
 
 function materialOpcoesMaterias() {
     const comProva = new Set(prumaMateriasDeProvas().map(m => m.id));
     return mentorMaterias().slice().sort((a, b) => (comProva.has(b.id) ? 1 : 0) - (comProva.has(a.id) ? 1 : 0) || String(a.nome).localeCompare(String(b.nome), 'pt-BR'));
 }
-function materialPreencherSelects(materia, topico) {
-    const sm = document.getElementById('mat-sel-mat'), st = document.getElementById('mat-sel-top');
-    if (!sm || !st) return;
-    const mats = materialOpcoesMaterias();
-    sm.innerHTML = mats.length ? mats.map(m => `<option value="${mentorEsc(m.nome)}">${mentorEsc(m.nome)}</option>`).join('') : '<option value="">Nenhuma matéria cadastrada</option>';
-    if (materia && mats.some(m => m.nome === materia)) sm.value = materia;
-    materialMudouMateria(topico);
+function materialRenderOrgaos() {
+    const box = document.getElementById('mat-orgaos'); if (!box) return;
+    const grupos = []; MATERIAL_ORGAOS.forEach(o => { if (!grupos.includes(o.grupo)) grupos.push(o.grupo); });
+    const todos = MATERIAL_ORGAOS.every(o => materialSel.orgaos.has(o.k));
+    let h = `<label class="material-chk material-chk-todos"><input type="checkbox" id="mat-chk-org-todos" ${todos ? 'checked' : ''} onchange="materialToggleOrgaosTodos(this.checked)"> Todos os órgãos</label>`;
+    grupos.forEach(g => {
+        h += `<div class="material-grupo"><span class="material-grupo-nome">${mentorEsc(g)}</span>` +
+            MATERIAL_ORGAOS.filter(o => o.grupo === g).map(o => `<label class="material-chk"><input type="checkbox" ${materialSel.orgaos.has(o.k) ? 'checked' : ''} onchange="materialToggleOrgao('${o.k}', this.checked)"> ${o.k}</label>`).join('') + '</div>';
+    });
+    box.innerHTML = h;
 }
-function materialMudouMateria(topicoSel) {
-    const sm = document.getElementById('mat-sel-mat'), st = document.getElementById('mat-sel-top');
-    const m = mentorAchaMateria(sm.value);
-    const tops = m ? prumaListaTopicos(m) : [];
-    st.innerHTML = '<option value="">(matéria inteira)</option>' + tops.map(t => `<option value="${mentorEsc(t)}">${mentorEsc(t)}</option>`).join('');
-    if (typeof topicoSel === 'string' && tops.includes(topicoSel)) st.value = topicoSel;
+function materialToggleOrgao(k, on) {
+    if (on) materialSel.orgaos.add(k); else materialSel.orgaos.delete(k);
+    const t = document.getElementById('mat-chk-org-todos'); if (t) t.checked = MATERIAL_ORGAOS.every(o => materialSel.orgaos.has(o.k));
+}
+function materialToggleOrgaosTodos(on) {
+    materialSel.orgaos = new Set(on ? MATERIAL_ORGAOS.map(o => o.k) : []);
+    materialRenderOrgaos();
+}
+function materialRenderTopicos() {
+    const box = document.getElementById('mat-topicos'); if (!box) return;
+    const n = materialTopicosLista.length;
+    const todos = n > 0 && materialTopicosLista.every(t => materialSel.topicos.has(t));
+    if (!n) { box.innerHTML = '<div class="material-nota">Esta matéria não tem tópicos cadastrados: a busca usará o nome da matéria (ou o tema livre abaixo).</div>'; return; }
+    let h = `<label class="material-chk material-chk-todos"><input type="checkbox" id="mat-chk-todos" ${todos ? 'checked' : ''} onchange="materialToggleTodos(this.checked)"> Selecionar todos os tópicos (${n})</label><div class="material-lista-topicos">`;
+    materialTopicosLista.forEach((t, i) => { h += `<label class="material-chk"><input type="checkbox" ${materialSel.topicos.has(t) ? 'checked' : ''} onchange="materialToggleTopico(${i}, this.checked)"> ${mentorEsc(t)}</label>`; });
+    box.innerHTML = h + '</div>';
+}
+function materialToggleTopico(i, on) {
+    const t = materialTopicosLista[i]; if (t === undefined) return;
+    if (on) materialSel.topicos.add(t); else materialSel.topicos.delete(t);
+    const c = document.getElementById('mat-chk-todos'); if (c) c.checked = materialTopicosLista.every(x => materialSel.topicos.has(x));
+}
+function materialToggleTodos(on) {
+    materialSel.topicos = new Set(on ? materialTopicosLista : []);
+    materialRenderTopicos();
+}
+function materialMudouMateria(topicosMarcar) {
+    const sm = document.getElementById('mat-sel-mat');
+    const m = mentorAchaMateria(sm ? sm.value : materialSel.materia);
+    materialSel.materia = m ? m.nome : '';
+    materialTopicosLista = m ? prumaListaTopicos(m) : [];
+    materialSel.topicos = new Set(Array.isArray(topicosMarcar) ? topicosMarcar.filter(t => materialTopicosLista.includes(t)) : []);
+    materialRenderTopicos();
+}
+function materialPreparar(materia, topicosMarcar) {
+    const sm = document.getElementById('mat-sel-mat');
+    const mats = materialOpcoesMaterias();
+    if (sm) {
+        sm.innerHTML = mats.length ? mats.map(m => `<option value="${mentorEsc(m.nome)}">${mentorEsc(m.nome)}</option>`).join('') : '<option value="">Nenhuma matéria cadastrada</option>';
+        if (materia && mats.some(m => m.nome === materia)) sm.value = materia;
+    }
+    materialMudouMateria(topicosMarcar);
+    materialRenderOrgaos();
+    const tema = document.getElementById('mat-tema'); if (tema) tema.value = '';
 }
 function abrirMaterialApoio(materia, topico) {
     document.getElementById('modal-material').style.display = 'flex';
-    materialFontes = []; materialResumoTxt = '';
-    materialPreencherSelects(materia || '', topico || '');
+    materialGrupos = []; materialResumoTxt = ''; materialAviso = '';
+    const det = document.getElementById('mat-filtros'); if (det) det.open = true;
+    const m = mentorAchaMateria(materia);
+    const tops = m ? prumaListaTopicos(m) : [];
+    materialPreparar(materia || '', topico ? [topico] : (m ? tops : []));
     const c = document.getElementById('material-corpo');
-    if (materia) { materialBuscar(false); }
-    else c.innerHTML = '<div class="material-vazio">Escolha a matéria e o tópico e toque em <b>Buscar</b>. Procuro em sites oficiais (gov.br, jus.br, leg.br, mp.br, edu.br) e mostro os trechos com o link da fonte.</div>';
+    if (m) materialBuscar();
+    else c.innerHTML = '<div class="material-vazio">Escolha a matéria, marque os tópicos (ou todos) e toque em <b>Buscar jurisprudência</b>. Procuro nos sites do STF, STJ, TST, TSE, STM, CNJ, CJF, CSJT, CNMP, MPF, TCU e CGU e mostro os trechos com o link para conferir.</div>';
 }
 function abrirMaterialApoioId(materiaId, idx) {
     const m = mentorMaterias().find(x => x.id === materiaId);
@@ -3951,64 +4032,100 @@ function abrirMaterialApoioId(materiaId, idx) {
 }
 function fecharMaterialApoio() { document.getElementById('modal-material').style.display = 'none'; }
 
-async function materialBuscar(amplo) {
+function materialOrgaoDe(url) {
+    let host = ''; try { host = new URL(url).hostname.replace(/^www\./, '').toLowerCase(); } catch (e) { return ''; }
+    const o = MATERIAL_ORGAOS.find(x => x.dom.filter(d => d !== 'gov.br').some(d => host === d || host.endsWith('.' + d)));
+    if (o) return o.k;
+    return host.endsWith('gov.br') ? 'gov.br' : host;
+}
+async function materialBuscar() {
     if (materialBuscando) return;
-    const mat = document.getElementById('mat-sel-mat').value, top = document.getElementById('mat-sel-top').value;
     const c = document.getElementById('material-corpo');
-    if (!mat) { c.innerHTML = '<div class="material-vazio">Cadastre uma matéria na aba Matérias para usar o material de apoio.</div>'; return; }
-    materialCtx = { materia: mat, topico: top, amplo: !!amplo };
-    materialBuscando = true; materialResumoTxt = '';
-    c.innerHTML = '<div class="material-vazio">Buscando fontes' + (amplo ? ' em toda a web' : ' oficiais') + '... ⏳</div>';
-    try {
-        const q = `${top} ${mat}`.replace(/\s+/g, ' ').trim() + (amplo ? ' resumo concurso' : '');
-        const res = await buscarNaWeb(q, { dominios: amplo ? undefined : PRUMA_DOMINIOS_OFICIAIS, max: 6, estruturado: true });
-        materialFontes = (res || []).filter(r => r && /^https?:\/\//i.test(r.url || '') && r.content && r.content.length > 80)
-            .map(r => ({ titulo: String(r.title || r.url).slice(0, 160), url: r.url, trecho: String(r.content).slice(0, 1800), oficial: !amplo }));
-    } catch (e) { materialFontes = []; }
+    const tema = (document.getElementById('mat-tema') ? document.getElementById('mat-tema').value : '').trim();
+    const orgaos = MATERIAL_ORGAOS.filter(o => materialSel.orgaos.has(o.k));
+    if (!orgaos.length) { c.innerHTML = '<div class="material-vazio">Marque pelo menos um órgão para buscar.</div>'; return; }
+    const mat = materialSel.materia;
+    let alvos = materialTopicosLista.filter(t => materialSel.topicos.has(t)).map(t => ({ topico: t, assunto: t }));
+    if (tema) alvos.push({ topico: '', assunto: tema, tema: true });
+    if (!alvos.length && mat && !materialTopicosLista.length) alvos.push({ topico: '', assunto: mat });
+    if (!alvos.length) { c.innerHTML = '<div class="material-vazio">Marque pelo menos um tópico (ou escreva um tema livre) para buscar.</div>'; return; }
+    materialAviso = '';
+    if (alvos.length > MATERIAL_MAX_BUSCAS) { materialAviso = `Busquei os ${MATERIAL_MAX_BUSCAS} primeiros de ${alvos.length} itens marcados. Refaça a busca com os demais.`; alvos = alvos.slice(0, MATERIAL_MAX_BUSCAS); }
+    const dominios = [...new Set(orgaos.flatMap(o => o.dom))];
+    materialBuscando = true; materialResumoTxt = ''; materialGrupos = [];
+    const det = document.getElementById('mat-filtros'); if (det) det.open = false;
+    let feitas = 0;
+    const atualiza = () => { c.innerHTML = `<div class="material-vazio">Buscando jurisprudência... ${feitas}/${alvos.length} ⏳</div>`; };
+    atualiza();
+    const vistos = new Set();
+    const resultados = new Array(alvos.length);
+    let prox = 0;
+    const trabalhador = async () => {
+        while (prox < alvos.length) {
+            const i = prox++; const a = alvos[i];
+            let res = null;
+            try { res = await buscarNaWeb(`jurisprudência decisão acórdão súmula ${a.assunto} ${a.tema ? '' : mat}`.replace(/\s+/g, ' ').trim(), { dominios, max: 5, estruturado: true }); } catch (e) { res = null; }
+            resultados[i] = res || [];
+            feitas++; atualiza();
+        }
+    };
+    await Promise.all([trabalhador(), trabalhador(), trabalhador()]);
+    alvos.forEach((a, i) => {
+        const fontes = [];
+        (resultados[i] || []).forEach(r => {
+            if (!r || !/^https?:\/\//i.test(r.url || '') || !r.content || r.content.length < 60 || vistos.has(r.url)) return;
+            vistos.add(r.url);
+            fontes.push({ titulo: String(r.title || r.url).slice(0, 160), url: r.url, orgao: materialOrgaoDe(r.url), trecho: String(r.content).slice(0, 1800) });
+        });
+        materialGrupos.push({ materia: mat, topico: a.topico, assunto: a.assunto, tema: !!a.tema, fontes });
+    });
     materialBuscando = false;
     materialRender();
 }
-function materialDominio(u) { try { return new URL(u).hostname.replace(/^www\./, ''); } catch (e) { return ''; } }
+function materialTodasFontes() { const t = []; materialGrupos.forEach((g, gi) => g.fontes.forEach((f, fi) => t.push({ g, gi, f, fi }))); return t; }
 function materialRender() {
     const c = document.getElementById('material-corpo');
-    const ctx = materialCtx;
-    const alvo = `${mentorEsc(ctx.materia)}${ctx.topico ? ' · ' + mentorEsc(ctx.topico) : ''}`;
-    if (!materialFontes.length) {
-        c.innerHTML = `<div class="material-vazio">Não achei fonte ${ctx.amplo ? '' : 'oficial '}para <b>${alvo}</b>.<br><br>` +
-            (ctx.amplo ? 'Tente outro tópico.' : '<button class="btn-outline" style="width:auto;padding:10px 16px;" onclick="materialBuscar(true)">Buscar em qualquer site (confira a fonte)</button>') + '</div>';
+    const total = materialTodasFontes().length;
+    let h = '';
+    if (materialAviso) h += `<div class="material-aviso">${mentorEsc(materialAviso)}</div>`;
+    if (!total) {
+        c.innerHTML = h + `<div class="material-vazio">Não encontrei jurisprudência nesses órgãos para o que foi marcado.<br><span style="font-size:0.85rem;">Tente marcar mais órgãos, usar um tema livre mais específico (ex.: "improbidade administrativa dolo") ou outro tópico.</span></div>`;
         return;
     }
-    let h = `<div class="material-topo"><div><b>${alvo}</b><div style="font-size:0.8rem;color:var(--text-muted);">${materialFontes.length} fonte(s) ${ctx.amplo ? '— sites variados, confira antes de confiar' : 'oficiais'}</div></div>` +
-        `<div class="material-topo-bt"><button class="btn-outline" onclick="materialResumir()">✨ Resumir com a IA</button></div></div>`;
-    h += '<div id="material-resumo"></div>';
-    materialFontes.forEach((f, i) => {
-        const trecho = f.trecho.length > 650 ? f.trecho.slice(0, 650).replace(/\s+\S*$/, '') + '…' : f.trecho;
-        h += `<div class="material-card"><div class="material-dom">${mentorEsc(materialDominio(f.url))} · ${f.oficial ? '✅ oficial' : '⚠️ não oficial'}</div>` +
-            `<a href="${mentorEsc(f.url)}" target="_blank" rel="noopener noreferrer" class="material-link">${mentorEsc(f.titulo)}</a>` +
-            `<div class="material-trecho">${mentorEsc(trecho)}</div>` +
-            `<div class="material-bt"><a class="material-abrir" href="${mentorEsc(f.url)}" target="_blank" rel="noopener noreferrer">Abrir fonte ↗</a>` +
-            `<button class="btn-outline" onclick="materialSalvar(${i}, this)">📚 Salvar no caderno</button></div></div>`;
+    h += `<div class="material-topo"><div><b>${mentorEsc(materialSel.materia || 'Resultados')}</b><div style="font-size:0.8rem;color:var(--text-muted);">${total} resultado(s) em ${materialGrupos.length} busca(s). Confira sempre a decisão completa no link.</div></div>` +
+        `<div class="material-topo-bt"><button class="btn-outline" onclick="materialResumir()">✨ Resumir com a IA</button></div></div><div id="material-resumo"></div>`;
+    materialGrupos.forEach((g, gi) => {
+        h += `<div class="material-grupo-tit">${g.tema ? '🔎 Tema' : '📄'} ${mentorEsc(g.assunto)} <span style="font-weight:400;color:var(--text-muted);">(${g.fontes.length})</span></div>`;
+        if (!g.fontes.length) h += '<div class="material-nota">Nada encontrado para este item.</div>';
+        g.fontes.forEach((f, fi) => {
+            const trecho = f.trecho.length > 650 ? f.trecho.slice(0, 650).replace(/\s+\S*$/, '') + '…' : f.trecho;
+            h += `<div class="material-card"><div class="material-dom"><span class="material-orgao">${mentorEsc(f.orgao)}</span></div>` +
+                `<a href="${mentorEsc(f.url)}" target="_blank" rel="noopener noreferrer" class="material-link">${mentorEsc(f.titulo)}</a>` +
+                `<div class="material-trecho">${mentorEsc(trecho)}</div>` +
+                `<div class="material-bt"><a class="material-abrir" href="${mentorEsc(f.url)}" target="_blank" rel="noopener noreferrer">Abrir fonte ↗</a>` +
+                `<button class="btn-outline" onclick="materialSalvar(${gi}, ${fi}, this)">📚 Salvar no caderno</button></div></div>`;
+        });
     });
-    if (!ctx.amplo) h += `<div style="text-align:center;margin-top:8px;"><button class="btn-outline" style="width:auto;padding:8px 14px;font-size:0.85rem;" onclick="materialBuscar(true)">Não é isso? Buscar em qualquer site</button></div>`;
     c.innerHTML = h;
 }
-function materialSalvar(i, btn) {
-    const f = materialFontes[i]; if (!f) return;
-    const txt = `**${f.titulo}**\n\nFonte: ${f.url}\n\n> ${f.trecho.replace(/\n+/g, '\n> ')}`;
-    abrirModalEnviarCaderno(txt, btn, materialCtx.materia, materialCtx.topico);
+function materialSalvar(gi, fi, btn) {
+    const g = materialGrupos[gi], f = g && g.fontes[fi]; if (!f) return;
+    const txt = `**${f.titulo}** (${f.orgao})\n\nFonte: ${f.url}\n\n> ${f.trecho.replace(/\n+/g, '\n> ')}`;
+    abrirModalEnviarCaderno(txt, btn, g.materia || materialSel.materia, g.topico || '');
 }
 async function materialResumir() {
     const box = document.getElementById('material-resumo');
-    if (!box || !materialFontes.length) return;
+    const todas = materialTodasFontes().slice(0, 8);
+    if (!box || !todas.length) return;
     if (!localStorage.getItem('pruma_apikey')) { box.innerHTML = '<div class="material-aviso">Configure a API Key (Minha Conta) para resumir com a IA.</div>'; return; }
-    box.innerHTML = '<div class="material-aviso">Resumindo as fontes... ⏳</div>';
+    box.innerHTML = '<div class="material-aviso">Resumindo os resultados... ⏳</div>';
     try {
-        const fontes = materialFontes.slice(0, 5).map((f, i) => `[Fonte ${i + 1}] ${f.titulo}\n${f.trecho}`).join('\n\n');
-        const system = 'Você prepara material de estudo para concursos. Use SOMENTE as fontes fornecidas. Faça um resumo objetivo em tópicos (máx. ~250 palavras), citando [Fonte n] ao lado de cada afirmação. NUNCA invente número de artigo, lei ou súmula; se as fontes não cobrirem o tema, diga isso claramente. Sem saudações.';
-        const r = await chamarGemini({ system, temperatura: 0.2, contents: [{ role: 'user', parts: [{ text: `Matéria: ${materialCtx.materia}\nTópico: ${materialCtx.topico || '(geral)'}\n\n${fontes}` }] }] });
-        materialResumoTxt = r;
+        const fontes = todas.map((x, i) => `[Fonte ${i + 1}] (${x.f.orgao}) ${x.f.titulo}\n${x.f.trecho.slice(0, 1200)}`).join('\n\n');
+        const system = 'Você prepara material de estudo para concursos. Use SOMENTE as fontes fornecidas (trechos de sites de tribunais, conselhos, MP, TCU e CGU). Resuma em tópicos os entendimentos/teses que aparecem, citando [Fonte n] em cada afirmação e o órgão. NUNCA invente número de processo, súmula, tema ou data; se o trecho não trouxer, não cite. Se as fontes não tratarem do assunto, diga isso. Máx. ~300 palavras, sem saudações.';
+        const r = await chamarGemini({ system, temperatura: 0.2, contents: [{ role: 'user', parts: [{ text: `Matéria: ${materialSel.materia}\nAssuntos: ${materialGrupos.map(g => g.assunto).join('; ')}\n\n${fontes}` }] }] });
+        materialResumoTxt = r + '\n\nFontes:\n' + todas.map((x, i) => `[${i + 1}] ${x.f.orgao} — ${x.f.url}`).join('\n');
         box.innerHTML = `<div class="material-resumo-ia"><div class="conteudo-resposta-ia">${sanitizeText(marked.parse(r))}</div>` +
-            `<div class="material-bt"><button class="btn-primary" style="width:auto;padding:8px 14px;" onclick="abrirModalEnviarCaderno(materialResumoTxt + '\\n\\nFontes:\\n' + materialFontes.slice(0,5).map((f,i)=>'['+(i+1)+'] '+f.url).join('\\n'), this, materialCtx.materia, materialCtx.topico)">📚 Salvar resumo no caderno</button></div></div>`;
+            `<div class="material-bt"><button class="btn-primary" style="width:auto;padding:8px 14px;" onclick="abrirModalEnviarCaderno(materialResumoTxt, this, materialSel.materia, materialSel.topicos.size === 1 ? [...materialSel.topicos][0] : '')">📚 Salvar resumo no caderno</button></div></div>`;
     } catch (e) {
         box.innerHTML = `<div class="material-aviso" style="color:var(--brand-danger);">Erro ao resumir: ${mentorEsc(String(e.message).slice(0, 200))}</div>`;
     }
