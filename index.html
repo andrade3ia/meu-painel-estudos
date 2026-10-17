@@ -78,6 +78,11 @@
         }
         .mermaid-container { background: var(--bg-body); border-radius: 8px; padding: 10px; text-align: center; overflow: auto; border: 1px solid var(--border-color); margin-bottom: 12px; }
         .mermaid-container svg { max-width: 100%; height: auto; }
+        .mapa-barra { display: flex; gap: 8px; align-items: center; padding: 10px 20px; border-bottom: 1px solid var(--border-color); flex-wrap: wrap; }
+        .mapa-barra button { width: auto; padding: 8px 14px; margin: 0; font-size: 0.9rem; }
+        .mapa-zoom-txt { min-width: 48px; text-align: center; font-weight: 600; font-size: 0.9rem; }
+        .mapa-area { padding: 16px; background: var(--bg-body); }
+        #mapa-conteudo { width: max-content; min-width: 100%; text-align: center; }
         .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 16px; margin-bottom: 24px; width: 100%; }
         .stat-card { background: var(--bg-card); padding: 16px 10px; border-radius: var(--radius-md); text-align: center; border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); min-width: 0; }
         .stat-card span { display: block; font-size: 0.7rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; line-height: 1.25; white-space: normal; overflow-wrap: anywhere; }
@@ -804,6 +809,26 @@
                 <button style="background:transparent; border:none; font-size:1.5rem; cursor:pointer; color:var(--brand-danger); font-weight:700; line-height:1;" onclick="fecharTreinoDiario()">✖</button>
             </div>
             <div class="revisao-corpo" id="pruma-hoje-corpo"></div>
+        </div>
+    </div>
+
+    <!-- MAPA MENTAL AMPLIADO -->
+    <div id="modal-mapa" class="modal" style="z-index:10010;" onclick="if(event.target===this) fecharMapaMental()">
+        <div class="revisao-janela" role="dialog" aria-modal="true" aria-labelledby="mapa-titulo" style="max-width:1100px;">
+            <div class="revisao-topo">
+                <div class="revisao-titulo"><strong id="mapa-titulo">🧠 Mapa mental</strong><span>Use + e − para ajustar o tamanho; arraste para navegar</span></div>
+                <button style="background:transparent; border:none; font-size:1.5rem; cursor:pointer; color:var(--brand-danger); font-weight:700; line-height:1;" onclick="fecharMapaMental()">✖</button>
+            </div>
+            <div class="mapa-barra">
+                <button class="btn-outline" onclick="zoomMapa(-1)" title="Diminuir">−</button>
+                <span id="mapa-zoom" class="mapa-zoom-txt">100%</span>
+                <button class="btn-outline" onclick="zoomMapa(1)" title="Aumentar">+</button>
+                <button class="btn-outline" onclick="zoomMapa(0)">Ajustar</button>
+                <span style="flex:1;"></span>
+                <button class="btn-outline" onclick="baixarMapa('svg')">⬇ SVG</button>
+                <button class="btn-primary" onclick="baixarMapa('png')">⬇ PNG</button>
+            </div>
+            <div class="revisao-corpo mapa-area" id="mapa-area"><div id="mapa-conteudo"></div></div>
         </div>
     </div>
 
@@ -2233,6 +2258,86 @@ function alterarMesCalendario(direcao) {
             } else {
                 alert("⚡ Flashcard salvo com sucesso na sua base!");
             }
+        }
+        // ===== Mapa mental ampliado (botão "Ampliar" do chat e do caderno) =====
+        let mapaZoom = 1, mapaSvgAtual = '';
+        function limparSvgMapa(svg) {
+            return DOMPurify.sanitize(svg, { USE_PROFILES: { svg: true, svgFilters: true, html: true }, ADD_TAGS: ['foreignObject', 'style'], HTML_INTEGRATION_POINTS: { foreignobject: true } });
+        }
+        async function expandirMapaMental(codificado) {
+            let bruto = '';
+            try { bruto = decodeURIComponent(codificado || ''); } catch (e) { bruto = String(codificado || ''); }
+            bruto = bruto.trim();
+            let svg = '';
+            try {
+                if (/^(<\?xml[\s\S]*?\?>\s*)?<svg[\s>]/i.test(bruto)) svg = bruto;
+                else {
+                    const code = bruto.replace(/```mermaid/g, '').replace(/```/g, '').trim();
+                    if (!code || typeof mermaid === 'undefined') throw new Error('sem código');
+                    svg = (await mermaid.render('mapa-amp-' + Date.now(), code)).svg;
+                }
+            } catch (e) { return alert('Não consegui abrir este mapa mental.'); }
+            svg = limparSvgMapa(svg);
+            if (!svg || svg.indexOf('<svg') === -1) return alert('Não consegui abrir este mapa mental.');
+            mapaSvgAtual = svg;
+            document.getElementById('mapa-conteudo').innerHTML = svg;
+            document.getElementById('modal-mapa').style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+            zoomMapa(0);
+        }
+        function mapaTamanhoNatural(el) {
+            const vb = el.viewBox && el.viewBox.baseVal;
+            if (vb && vb.width && vb.height) return { w: vb.width, h: vb.height };
+            const r = el.getBBox ? el.getBBox() : { width: 800, height: 600 };
+            return { w: r.width || 800, h: r.height || 600 };
+        }
+        function zoomMapa(dir) {
+            const el = document.querySelector('#mapa-conteudo svg'); if (!el) return;
+            const nat = mapaTamanhoNatural(el);
+            if (dir === 0) {
+                const area = document.getElementById('mapa-area');
+                const pad = area ? (parseFloat(getComputedStyle(area).paddingLeft) || 0) + (parseFloat(getComputedStyle(area).paddingRight) || 0) : 32;
+                const larg = Math.max(200, (area ? area.clientWidth : 800) - pad - 4);
+                mapaZoom = Math.min(2, larg / nat.w);
+            } else {
+                mapaZoom = Math.min(6, Math.max(0.2, mapaZoom * (dir > 0 ? 1.25 : 0.8)));
+            }
+            el.style.maxWidth = 'none';
+            el.setAttribute('width', Math.round(nat.w * mapaZoom));
+            el.setAttribute('height', Math.round(nat.h * mapaZoom));
+            const z = document.getElementById('mapa-zoom'); if (z) z.textContent = Math.round(mapaZoom * 100) + '%';
+        }
+        function fecharMapaMental() {
+            document.getElementById('modal-mapa').style.display = 'none';
+            document.body.style.overflow = '';
+        }
+        function mapaBaixarBlob(blob, nome) {
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a'); a.href = url; a.download = nome;
+            document.body.appendChild(a); a.click(); a.remove();
+            setTimeout(() => URL.revokeObjectURL(url), 4000);
+        }
+        function baixarMapa(formato) {
+            if (!mapaSvgAtual) return;
+            let svg = mapaSvgAtual;
+            if (!/xmlns=/.test(svg)) svg = svg.replace('<svg', '<svg xmlns="http://www.w3.org/2000/svg"');
+            if (formato === 'svg') return mapaBaixarBlob(new Blob([svg], { type: 'image/svg+xml' }), 'mapa-mental.svg');
+            const el = document.querySelector('#mapa-conteudo svg');
+            const nat = el ? mapaTamanhoNatural(el) : { w: 1200, h: 800 };
+            const escala = Math.min(3, Math.max(1, 2400 / nat.w));
+            const img = new Image();
+            img.onload = () => {
+                try {
+                    const c = document.createElement('canvas');
+                    c.width = Math.round(nat.w * escala); c.height = Math.round(nat.h * escala);
+                    const ctx = c.getContext('2d');
+                    ctx.fillStyle = '#FFFFFF'; ctx.fillRect(0, 0, c.width, c.height);
+                    ctx.drawImage(img, 0, 0, c.width, c.height);
+                    c.toBlob(b => { if (b) mapaBaixarBlob(b, 'mapa-mental.png'); else { alert('Não deu para gerar o PNG deste mapa. Baixei em SVG (abre no navegador e dá para imprimir).'); baixarMapa('svg'); } }, 'image/png');
+                } catch (e) { alert('Não deu para gerar o PNG deste mapa. Baixei em SVG (abre no navegador e dá para imprimir).'); baixarMapa('svg'); }
+            };
+            img.onerror = () => { alert('Não deu para gerar o PNG deste mapa. Baixei em SVG.'); baixarMapa('svg'); };
+            img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
         }
         function abrirVisorRespostaFlashcard(btn) {
             let conteudoHTML = btn.nextElementSibling.innerHTML;
