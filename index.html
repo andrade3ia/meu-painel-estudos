@@ -882,8 +882,10 @@
             <button class="modal-close" style="position:absolute; top:16px; right:16px; background:transparent; border:none; font-size:1.5rem; cursor:pointer; color:var(--brand-danger); font-weight:700; z-index:10;" onclick="document.getElementById('modal-enviar-caderno').style.display='none'">✖</button>
             <h2 style="margin-top:0;">📚 Enviar para Caderno</h2>
             <div style="margin-bottom:12px;">
-                <label style="font-size:0.75rem; font-weight:700; color:var(--text-muted); display:block; margin-bottom:4px;">CADERNO PRINCIPAL</label>
-                <input type="text" id="env-cad-mat" placeholder="Ex: Dir. Penal" list="lista-materias-dl" oninput="atualizarTopicosCaderno(this.value, 'dl-env-top', 'cadernos')" onclick="try{this.showPicker()}catch(e){}">
+                <label style="font-size:0.75rem; font-weight:700; color:var(--text-muted); display:block; margin-bottom:4px;">CADERNO <span style="color:var(--brand-danger);">*</span></label>
+                <select id="env-cad-sel" onchange="envCadMudouSelect()"></select>
+                <input type="text" id="env-cad-mat" placeholder="Nome do novo caderno (ex.: Dir. Penal)" list="dl-materias-cadastradas" style="display:none; margin-top:8px;" oninput="envCadLimparErro(); atualizarTopicosCaderno(this.value, 'dl-env-top', 'cadernos')">
+                <div id="env-cad-erro" style="display:none; color:var(--brand-danger); font-size:0.8rem; margin-top:4px;">Escolha um caderno ou crie um novo.</div>
             </div>
             <div style="margin-bottom:16px;">
                 <label style="font-size:0.75rem; font-weight:700; color:var(--text-muted); display:block; margin-bottom:4px;">SUB-CADERNO (OPCIONAL)</label>
@@ -2195,19 +2197,80 @@ function alterarMesCalendario(direcao) {
             document.getElementById('err-texto').value = ''; document.getElementById('err-mat').value = ''; document.getElementById('err-top').value = ''; alert("Salvo no Caderno!");
         }
         
+        // ===== Funções de apoio dos campos de matéria/tópico (sugestões nas listas) =====
+        function escAttrSimples(t) { return String(t == null ? '' : t).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+        function preencherDatalist(dlId, nomes) {
+            const dl = document.getElementById(dlId); if (!dl) return;
+            const lista = [...new Set((nomes || []).map(x => String(x || '').trim()).filter(Boolean))].sort((x, y) => x.localeCompare(y, 'pt-BR'));
+            dl.innerHTML = lista.map(t => `<option value="${escAttrSimples(t)}">`).join('');
+        }
+        function topicosDaMateriaCadastrada(mat) {
+            const n = String(mat || '').trim().toLowerCase(); if (!n) return [];
+            const m = (Array.isArray(dbData.materias) ? dbData.materias : Object.values(dbData.materias || {})).find(x => x && String(x.nome || '').trim().toLowerCase() === n);
+            return m ? (Array.isArray(m.topicos) ? m.topicos : Object.values(m.topicos || {})) : [];
+        }
+        function atualizarTopicosCaderno(mat, dlId, tipoDb) {
+            const n = String(mat || '').trim().toLowerCase();
+            const fonte = Array.isArray(dbData[tipoDb || 'cadernos']) ? dbData[tipoDb || 'cadernos'] : Object.values(dbData[tipoDb || 'cadernos'] || {});
+            const doCaderno = n ? fonte.filter(c => c && String(c.materia || '').trim().toLowerCase() === n).map(c => c.topico) : [];
+            preencherDatalist(dlId, doCaderno.concat(topicosDaMateriaCadastrada(mat)));
+        }
+        function atualizarTopicosSessao(mat) {
+            const n = String(mat || '').trim().toLowerCase();
+            const dasSessoes = n ? (dbData.sessoes || []).filter(x => x && String(x.materia || '').trim().toLowerCase() === n).flatMap(x => String(x.topico || '').split(',')) : [];
+            preencherDatalist('dl-ses-top', topicosDaMateriaCadastrada(mat).concat(dasSessoes));
+        }
+        function atualizarTopicosMover(mat) {
+            const tipo = (document.getElementById('mov-tipo-db') || {}).value || 'cadernos';
+            atualizarTopicosCaderno(mat, 'dl-mov-top', tipo);
+        }
+        function toggleCamposDetalhes() {
+            const tipo = (document.getElementById('ses-tipo-mat') || {}).value || '';
+            const pdf = document.getElementById('campos-pdf'), vid = document.getElementById('campos-video');
+            if (pdf) pdf.style.display = tipo.includes('PDF') ? 'flex' : 'none';
+            if (vid) vid.style.display = tipo === 'Vídeo Aula' ? 'flex' : 'none';
+        }
+
+        // ===== Enviar para Caderno: o aluno escolhe o caderno (ou cria um); tópico é opcional =====
+        function cadernosExistentes() {
+            const lista = Array.isArray(dbData.cadernos) ? dbData.cadernos : Object.values(dbData.cadernos || {});
+            return [...new Set(lista.map(c => String((c && c.materia) || '').trim()).filter(Boolean))].sort((x, y) => x.localeCompare(y, 'pt-BR'));
+        }
+        function envCadLimparErro() { const e = document.getElementById('env-cad-erro'); if (e) e.style.display = 'none'; }
+        function envCadMudouSelect() {
+            envCadLimparErro();
+            const sel = document.getElementById('env-cad-sel'), inp = document.getElementById('env-cad-mat');
+            const novo = sel.value === '__novo__';
+            inp.style.display = novo ? 'block' : 'none';
+            if (novo) { inp.value = ''; try { inp.focus(); } catch (e) { /* ok */ } }
+            atualizarTopicosCaderno(novo ? '' : sel.value, 'dl-env-top', 'cadernos');
+        }
         function abrirModalEnviarCaderno(conteudoTexto, btnElement = null, defaultMat = '', defaultTop = '', isHtml = false, isMapa = false) {
+            // defaultMat/defaultTop são ignorados de propósito: a escolha do caderno é sempre do aluno
             document.getElementById('env-cad-conteudo').value = conteudoTexto;
-            document.getElementById('env-cad-mat').value = defaultMat;
-            document.getElementById('env-cad-top').value = defaultTop;
             document.getElementById('env-cad-ishtml').value = isHtml ? 'true' : 'false';
             document.getElementById('env-cad-ismapa').value = isMapa ? 'true' : 'false';
-            atualizarTopicosCaderno(defaultMat, 'dl-env-top', 'cadernos');
+            const existentes = cadernosExistentes();
+            const sel = document.getElementById('env-cad-sel');
+            sel.innerHTML = (existentes.length ? '<option value="">Selecione o caderno...</option>' : '') +
+                existentes.map(m => `<option value="${escAttrSimples(m)}">${escAttrSimples(m)}</option>`).join('') +
+                '<option value="__novo__">➕ Criar novo caderno</option>';
+            sel.value = existentes.length ? '' : '__novo__';
+            document.getElementById('env-cad-top').value = '';
+            envCadMudouSelect();
             document.getElementById('modal-enviar-caderno').style.display = 'flex';
             window.btnAtualFc = btnElement;
         }
         function confirmarEnvioCaderno() {
-            let m = document.getElementById('env-cad-mat').value || 'PRUMA IA';
-            let t = document.getElementById('env-cad-top').value || 'Geral';
+            const sel = document.getElementById('env-cad-sel');
+            let m = sel.value === '__novo__' ? document.getElementById('env-cad-mat').value.trim() : sel.value;
+            m = sanitizeText(m || '').trim();
+            if (!m) {
+                const e = document.getElementById('env-cad-erro'); if (e) e.style.display = 'block';
+                try { (sel.value === '__novo__' ? document.getElementById('env-cad-mat') : sel).focus(); } catch (x) { /* ok */ }
+                return;
+            }
+            let t = sanitizeText(document.getElementById('env-cad-top').value || '').trim() || 'Geral';
             let txt = document.getElementById('env-cad-conteudo').value;
             let isH = document.getElementById('env-cad-ishtml').value === 'true';
             let isM = document.getElementById('env-cad-ismapa').value === 'true';
@@ -3761,19 +3824,12 @@ async function executarChat(promptEspecifico = null, textoExibicao = null) {
 
         const badge = `<div style="font-size:0.7rem; color:var(--text-muted); text-align:right;">🛡️ PRUMA IA ${tagWeb}${nomes.length ? ' · 📚 ' + sanitizeText(nomes.join(', ')) : ''}</div>`;
         const html = sanitizeText(marked.parse(resposta));
-        // Matéria sugerida para o caderno: a da primeira fonte marcada (se não for "Geral")
-        let matPadrao = '';
-        try {
-            const c1 = document.querySelector('#chk-container-chat .chk-fonte-biblioteca:checked');
-            const d1 = c1 && (dbData.biblioteca || []).find(d => d.fbKey === c1.value);
-            if (d1 && d1.materia && d1.materia !== 'Geral') matPadrao = d1.materia;
-        } catch (e) { /* sem sugestão */ }
         box.insertAdjacentHTML('beforeend', `
             <div class="msg msg-a" style="max-width:100%; width:100%;">
                 <div class="conteudo-resposta-ia">${badge}${html}</div>
                 <div style="margin-top:10px; display:flex; gap:8px; flex-wrap:wrap;">
                     <button class="btn-outline" style="width:auto; padding:6px 12px; font-size:0.8rem;" onclick="aprofundarRespostaContextual(this)">🔍 Aprofundar</button>
-                    <button class="btn-primary" style="width:auto; padding:6px 12px; font-size:0.8rem;" data-payload="${encodeURIComponent(html)}" data-mat="${encodeURIComponent(matPadrao)}" onclick="abrirModalEnviarCaderno(decodeURIComponent(this.dataset.payload), this, decodeURIComponent(this.dataset.mat), '', true)">📚 Salvar no Caderno</button>
+                    <button class="btn-primary" style="width:auto; padding:6px 12px; font-size:0.8rem;" data-payload="${encodeURIComponent(html)}" onclick="abrirModalEnviarCaderno(decodeURIComponent(this.dataset.payload), this, '', '', true)">📚 Salvar no Caderno</button>
                 </div>
             </div>`);
         box.scrollTop = box.scrollHeight;
