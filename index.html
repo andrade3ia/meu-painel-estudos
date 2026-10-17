@@ -3761,11 +3761,19 @@ async function executarChat(promptEspecifico = null, textoExibicao = null) {
 
         const badge = `<div style="font-size:0.7rem; color:var(--text-muted); text-align:right;">🛡️ PRUMA IA ${tagWeb}${nomes.length ? ' · 📚 ' + sanitizeText(nomes.join(', ')) : ''}</div>`;
         const html = sanitizeText(marked.parse(resposta));
+        // Matéria sugerida para o caderno: a da primeira fonte marcada (se não for "Geral")
+        let matPadrao = '';
+        try {
+            const c1 = document.querySelector('#chk-container-chat .chk-fonte-biblioteca:checked');
+            const d1 = c1 && (dbData.biblioteca || []).find(d => d.fbKey === c1.value);
+            if (d1 && d1.materia && d1.materia !== 'Geral') matPadrao = d1.materia;
+        } catch (e) { /* sem sugestão */ }
         box.insertAdjacentHTML('beforeend', `
             <div class="msg msg-a" style="max-width:100%; width:100%;">
                 <div class="conteudo-resposta-ia">${badge}${html}</div>
-                <div style="margin-top:10px;">
+                <div style="margin-top:10px; display:flex; gap:8px; flex-wrap:wrap;">
                     <button class="btn-outline" style="width:auto; padding:6px 12px; font-size:0.8rem;" onclick="aprofundarRespostaContextual(this)">🔍 Aprofundar</button>
+                    <button class="btn-primary" style="width:auto; padding:6px 12px; font-size:0.8rem;" data-payload="${encodeURIComponent(html)}" data-mat="${encodeURIComponent(matPadrao)}" onclick="abrirModalEnviarCaderno(decodeURIComponent(this.dataset.payload), this, decodeURIComponent(this.dataset.mat), '', true)">📚 Salvar no Caderno</button>
                 </div>
             </div>`);
         box.scrollTop = box.scrollHeight;
