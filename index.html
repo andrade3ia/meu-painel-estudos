@@ -250,10 +250,6 @@
             .main-content { padding: 16px; }
             .container-interno { padding-bottom: 100px; }
             /* Início no celular: cronômetro/registro primeiro, resumo depois */
-            #view-inicio:not([style*="none"]) { display: flex !important; flex-direction: column; }
-            #view-inicio > :first-child { order: 1; }
-            #view-inicio > :nth-child(2) { order: 0; }
-            #view-inicio > :nth-child(n+3) { order: 2; }
             #view-inicio .stats-grid, #view-estatisticas .stats-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
             #view-inicio .stats-grid > .stat-card:first-child, #view-estatisticas .stats-grid > .stat-card:first-child { grid-column: 1 / -1; }
             .mentor-flutuante-btn { width: 48px; height: 48px; font-size: 22px; bottom: 16px; right: 16px; opacity: 0.92; }
