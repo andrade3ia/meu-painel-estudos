@@ -6,12 +6,12 @@
     <title>PRUMA | Painel de Estudos</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>👨‍💻</text></svg>">
     
-    <script src="https://cdn.jsdelivr.net/npm/chart.js" crossorigin="anonymous" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.js" crossorigin="anonymous" defer></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js" crossorigin="anonymous" defer></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js" crossorigin="anonymous" defer></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" crossorigin="anonymous" defer></script>
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js" crossorigin="anonymous" defer></script>
-    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js" crossorigin="anonymous" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked@15.0.12/marked.min.js" crossorigin="anonymous" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js" crossorigin="anonymous" defer></script>
     
     <link href="https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -996,7 +996,7 @@ document.addEventListener("DOMContentLoaded", () => {
             carregarPaletaSistema(); carregarApiKey(); carregarDadosGlobais(); irTela('inicio');
             
             let sesDataEl = document.getElementById('ses-data');
-            if(sesDataEl && !sesDataEl.value) sesDataEl.value = new Date().toISOString().split('T')[0];
+            if(sesDataEl && !sesDataEl.value) sesDataEl.value = dataLocalISO(new Date());
             
             let hojeDate = new Date();
             let hYear = hojeDate.getFullYear();
@@ -1038,7 +1038,7 @@ function atualizarResumoGeral() {
     
     let arr = dbData.sessoes.filter(s => {
         if(per === 'tudo') return true;
-        if(per === 'hoje') return s.data === new Date().toLocaleDateString();
+        if(per === 'hoje') return s.data === new Date().toLocaleDateString('pt-BR');
         if(per === 'custom') {
             if(dtI && dtF) {
                 let tMin = new Date(dtI + 'T00:00:00').getTime();
@@ -1243,6 +1243,8 @@ function alterarMesCalendario(direcao) {
             });
             return tpl.innerHTML;
         }
+        // Data AAAA-MM-DD no fuso do aparelho (toISOString usa UTC: depois das 21h no Brasil já virava o dia seguinte)
+        function dataLocalISO(d) { d = d || new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; }
         function gerarId() { return Date.now().toString(36) + Math.random().toString(36).substr(2); }
         
         function alternarTema() { 
@@ -1299,7 +1301,7 @@ function alterarMesCalendario(direcao) {
                     let snap = await db.ref(raiz).once('value'); let dados = snap.val();
                     if(dados) {
                         if(raiz==='historico_sessoes') await refDb.child('sessoes').update(dados);
-                        if(raiz==='pdfs') { Object.values(dados).forEach(p => refDb.child('biblioteca').push({id:gerarId(), nome:p.nome||'PDF', tipo:'ARQUIVO', url:p.url, texto:p.texto||'', materia:'Geral', data:p.data||new Date().toLocaleDateString()})); }
+                        if(raiz==='pdfs') { Object.values(dados).forEach(p => refDb.child('biblioteca').push({id:gerarId(), nome:p.nome||'PDF', tipo:'ARQUIVO', url:p.url, texto:p.texto||'', materia:'Geral', data:p.data||new Date().toLocaleDateString('pt-BR')})); }
                         if(raiz==='caderno_erros') await refDb.child('cadernos').set(dados);
                         if(raiz==='concursos') await refDb.child('provas').set(dados);
                     }
@@ -1391,10 +1393,10 @@ function alterarMesCalendario(direcao) {
         }
         // Total do dia e metas: fonte única, usada pelo Planejamento e pelo Mentor
         function estudoDeHoje() {
-            let hojeStr = new Date().toLocaleDateString();
+            let hojeStr = new Date().toLocaleDateString('pt-BR');
             let seg = 0, qts = 0;
             (dbData.sessoes || []).forEach(s => {
-                let sDataStr = s.data || new Date(s.timestamp).toLocaleDateString();
+                let sDataStr = s.data || new Date(s.timestamp).toLocaleDateString('pt-BR');
                 if(sDataStr === hojeStr) {
                     seg += (s.segundos || 0);
                     qts += (s.totalQts !== undefined ? s.totalQts : ((s.acertos||0)+(s.erros||0)));
@@ -1514,7 +1516,7 @@ function alterarMesCalendario(direcao) {
                 m.sessaoId = novo.id; m.materia = novo.materia; m.topico = novo.topico;
                 if(antigo.timestamp !== novo.timestamp && m.etapa) {
                     let d = new Date(novo.timestamp); d.setDate(d.getDate() + m.etapa);
-                    m.dataAlvo = d.toISOString().split('T')[0];
+                    m.dataAlvo = dataLocalISO(d);
                 }
             });
             refDb.child('missoes').set(dbData.missoes);
@@ -1567,7 +1569,7 @@ function alterarMesCalendario(direcao) {
                     topico: topico,
                     tipo: `Revisão ${inv.t}`,
                     etapa: inv.d,
-                    dataAlvo: dAlvo.toISOString().split('T')[0],
+                    dataAlvo: dataLocalISO(dAlvo),
                     status: 'pendente',
                     timestamp: Date.now()
                 };
@@ -2004,7 +2006,7 @@ function alterarMesCalendario(direcao) {
                 let sDate = new Date(s.timestamp);
                 let year = sDate.getFullYear(), month = String(sDate.getMonth() + 1).padStart(2, '0'), day = String(sDate.getDate()).padStart(2, '0');
                 document.getElementById('ses-data').value = `${year}-${month}-${day}`;
-            } else { document.getElementById('ses-data').value = new Date().toISOString().split('T')[0]; }
+            } else { document.getElementById('ses-data').value = dataLocalISO(new Date()); }
             document.getElementById('ses-mat').value = s.materia || ''; document.getElementById('ses-top').value = s.topico || '';
             document.getElementById('ses-tipo-estudo').value = s.tipoEstudo || 'Teoria'; document.getElementById('ses-tipo-mat').value = s.tipoMat || 'Questões'; toggleCamposDetalhes();
             document.getElementById('ses-acertos').value = s.acertos || ''; document.getElementById('ses-erros').value = s.erros || '';
@@ -2036,7 +2038,7 @@ function alterarMesCalendario(direcao) {
             
             if(termoReg) {
                 arr = arr.filter(s => {
-                    let d = s.data || new Date(s.timestamp).toLocaleDateString();
+                    let d = s.data || new Date(s.timestamp).toLocaleDateString('pt-BR');
                     return (s.materia && s.materia.toLowerCase().includes(termoReg)) ||
                            (s.topico && s.topico.toLowerCase().includes(termoReg)) ||
                            (d && d.toLowerCase().includes(termoReg)) ||
@@ -2045,7 +2047,7 @@ function alterarMesCalendario(direcao) {
             }
             if(!arr.length) { divReg.innerHTML = 'Nenhum registro encontrado.'; atualizarResumoGeral(); renderizarCalendarioMes(); return; }
             let agrupadoPorData = {};
-            arr.forEach(s => { let d = s.data || new Date(s.timestamp).toLocaleDateString(); if(!agrupadoPorData[d]) agrupadoPorData[d] = []; agrupadoPorData[d].push(s); });
+            arr.forEach(s => { let d = s.data || new Date(s.timestamp).toLocaleDateString('pt-BR'); if(!agrupadoPorData[d]) agrupadoPorData[d] = []; agrupadoPorData[d].push(s); });
             let count = 0; let limiteExibicao = termoReg ? 100 : 15;
             let finalHtml = '';
             for(let dataStr in agrupadoPorData) {
@@ -2237,7 +2239,7 @@ function alterarMesCalendario(direcao) {
         function salvarErro() {
             let m = sanitizeText(document.getElementById('err-mat').value) || 'Geral', t = sanitizeText(document.getElementById('err-top').value) || 'Geral', txt = sanitizeText(document.getElementById('err-texto').value) || '(Sem anotação)';
             if(!Array.isArray(dbData.cadernos)) dbData.cadernos = [];
-            dbData.cadernos.push({id: gerarId(), materia: m, topico: t, texto: txt, isHtml: false, isMapa: false, timestamp: Date.now(), data: new Date().toLocaleDateString()}); refDb.child('cadernos').set(dbData.cadernos);
+            dbData.cadernos.push({id: gerarId(), materia: m, topico: t, texto: txt, isHtml: false, isMapa: false, timestamp: Date.now(), data: new Date().toLocaleDateString('pt-BR')}); refDb.child('cadernos').set(dbData.cadernos);
             document.getElementById('err-texto').value = ''; document.getElementById('err-mat').value = ''; document.getElementById('err-top').value = ''; alert("Salvo no Caderno!");
         }
         
@@ -2320,7 +2322,7 @@ function alterarMesCalendario(direcao) {
             let isM = document.getElementById('env-cad-ismapa').value === 'true';
             
             if(!Array.isArray(dbData.cadernos)) dbData.cadernos = [];
-            dbData.cadernos.push({ id: gerarId(), materia: m, topico: t, texto: txt, isHtml: isH, isMapa: isM, timestamp: Date.now(), data: new Date().toLocaleDateString() });
+            dbData.cadernos.push({ id: gerarId(), materia: m, topico: t, texto: txt, isHtml: isH, isMapa: isM, timestamp: Date.now(), data: new Date().toLocaleDateString('pt-BR') });
             refDb.child('cadernos').set(dbData.cadernos);
             
             document.getElementById('modal-enviar-caderno').style.display = 'none';
@@ -2350,7 +2352,7 @@ function alterarMesCalendario(direcao) {
             let txt = document.getElementById('env-fc-conteudo').value;
             
             if(!Array.isArray(dbData.flashcards)) dbData.flashcards = [];
-            dbData.flashcards.push({ id: gerarId(), materia: m, topico: t, texto: txt, isHtml: true, timestamp: Date.now(), data: new Date().toLocaleDateString() });
+            dbData.flashcards.push({ id: gerarId(), materia: m, topico: t, texto: txt, isHtml: true, timestamp: Date.now(), data: new Date().toLocaleDateString('pt-BR') });
             refDb.child('flashcards').set(dbData.flashcards);
             
             document.getElementById('modal-enviar-flashcard').style.display = 'none';
@@ -2688,7 +2690,7 @@ div.innerHTML = finalDivHtml;
             let materiasInput = document.getElementById('est-filtro-materias').value.trim().toLowerCase(), materiasArr = materiasInput ? materiasInput.split(',').map(x => x.trim()).filter(Boolean) : [];
             let topicosInput = document.getElementById('est-filtro-topicos').value.trim().toLowerCase(), topicosArr = (materiasArr.length === 1 && topicosInput) ? topicosInput.split(',').map(x => x.trim()).filter(Boolean) : [];
             let filteredSessoes = dbData.sessoes.filter(s => {
-                if(per !== 'tudo') { if(per === 'hoje') { if(s.data !== new Date().toLocaleDateString()) return false; } else if(per === 'custom') { if(dtI && dtF) { let tMin = new Date(dtI).getTime(), tMax = new Date(dtF).getTime() + 86399999; if(s.timestamp < tMin || s.timestamp > tMax) return false; } } else { if((agora - s.timestamp) > (parseInt(per)*86400000)) return false; } }
+                if(per !== 'tudo') { if(per === 'hoje') { if(s.data !== new Date().toLocaleDateString('pt-BR')) return false; } else if(per === 'custom') { if(dtI && dtF) { let tMin = new Date(dtI + 'T00:00:00').getTime(), tMax = new Date(dtF + 'T23:59:59').getTime() + 999; if(s.timestamp < tMin || s.timestamp > tMax) return false; } } else { if((agora - s.timestamp) > (parseInt(per)*86400000)) return false; } }
                 if(provasArr.length > 0) { let matObj = dbData.materias.find(m => m.nome.toLowerCase() === s.materia.toLowerCase()); let pNome = "geral"; if(matObj && matObj.provaId) { let pObj = dbData.provas.find(p => p.id === matObj.provaId); if(pObj) pNome = pObj.nome.toLowerCase(); } if(!provasArr.some(p => pNome.includes(p))) return false; }
                 if(materiasArr.length > 0) { if(!materiasArr.some(m => s.materia.toLowerCase() === m)) return false; }
                 if(topicosArr.length > 0) { let sTop = s.topico ? s.topico.toLowerCase() : ''; if(!topicosArr.some(t => sTop === t)) return false; }
@@ -2891,7 +2893,7 @@ div.innerHTML = finalDivHtml;
                     url: url, 
                     texto: txt.substring(0, 20000), 
                     materia: m, 
-                    data: new Date().toLocaleDateString(), 
+                    data: new Date().toLocaleDateString('pt-BR'), 
                     refPath: refF.fullPath,
                     geminiUri: geminiUri // <- O SEGREDO DA VELOCIDADE
                 }); 
@@ -2921,7 +2923,7 @@ div.innerHTML = finalDivHtml;
                     if (res2.ok) htmlObtido = await res2.text();
                     else throw new Error("Falha Proxy 2");
                 } catch(e2) {
-                    refDb.child('biblioteca').push({ id: gerarId(), nome: "🌐 " + new URL(url).hostname, tipo: 'LINK', url: url, texto: "Conteúdo Web referenciado: " + url, materia: mat, data: new Date().toLocaleDateString() }); 
+                    refDb.child('biblioteca').push({ id: gerarId(), nome: "🌐 " + new URL(url).hostname, tipo: 'LINK', url: url, texto: "Conteúdo Web referenciado: " + url, materia: mat, data: new Date().toLocaleDateString('pt-BR') }); 
                     alert("Aviso: O site bloqueou a leitura em tempo real. Salvo como referência.");
                     document.getElementById('bib-link').value = ''; btn.textContent = tx; btn.disabled = false;
                     return;
@@ -2933,10 +2935,10 @@ div.innerHTML = finalDivHtml;
                 let textoExtraido = doc.body ? doc.body.innerText.replace(/\s+/g, ' ').trim() : "";
                 let tituloSite = doc.title || new URL(url).hostname;
                 if(!textoExtraido) throw new Error("Vazio");
-                refDb.child('biblioteca').push({ id: gerarId(), nome: "🌐 " + tituloSite.substring(0, 40), tipo: 'LINK', url: url, texto: `[URL: ${url}]\n\n${textoExtraido.substring(0, 15000)}`, materia: mat, data: new Date().toLocaleDateString() }); 
+                refDb.child('biblioteca').push({ id: gerarId(), nome: "🌐 " + tituloSite.substring(0, 40), tipo: 'LINK', url: url, texto: `[URL: ${url}]\n\n${textoExtraido.substring(0, 15000)}`, materia: mat, data: new Date().toLocaleDateString('pt-BR') }); 
                 alert("Site lido com sucesso!"); 
             } catch(e) {
-                refDb.child('biblioteca').push({ id: gerarId(), nome: "🌐 " + new URL(url).hostname, tipo: 'LINK', url: url, texto: "Referência: " + url, materia: mat, data: new Date().toLocaleDateString() }); 
+                refDb.child('biblioteca').push({ id: gerarId(), nome: "🌐 " + new URL(url).hostname, tipo: 'LINK', url: url, texto: "Referência: " + url, materia: mat, data: new Date().toLocaleDateString('pt-BR') }); 
                 alert("Site salvo, mas texto não extraído.");
             } finally {
                 document.getElementById('bib-link').value = ''; btn.textContent = tx; btn.disabled = false;
@@ -3378,7 +3380,7 @@ div.innerHTML = finalDivHtml;
         // PILAR 1: Leitura de Contexto Silencioso
         function iniciarLeituraSilenciosa() {
             if (!dbData) return;
-            let hojeStr = new Date().toLocaleDateString();
+            let hojeStr = new Date().toLocaleDateString('pt-BR');
             let sementesHoje = dbData.sessoes.filter(s => s.data === hojeStr);
             let totalSegundosHoje = sementesHoje.reduce((acc, s) => acc + (s.segundos || 0), 0);
             let horasHoje = totalSegundosHoje / 3600;
@@ -3508,6 +3510,11 @@ Pergunta: "${perguntaUsuario}"`;
         // 4.1 Validação Verde/Vermelho das Questões
         window.validarQMentor = function(btn, escolhida, gabarito, comentarioCoded) {
             let container = btn.closest('.pruma-q-inline');
+            if (escolhida === undefined) { // formato novo: dados nos atributos data-*
+                escolhida = btn.dataset.letra || '';
+                gabarito = container.dataset.gab || '';
+                comentarioCoded = container.dataset.coment || '';
+            }
             let botoes = container.querySelectorAll('.m-opt');
             botoes.forEach(b => {
                 b.disabled = true;
@@ -3520,15 +3527,16 @@ Pergunta: "${perguntaUsuario}"`;
             });
             let feedback = container.querySelector('.q-feedback');
             feedback.style.display = "block";
-            feedback.innerHTML = `<strong>✅ Gabarito: ${gabarito}</strong><hr style="margin:8px 0; border-color:rgba(0,0,0,0.1);"><div style="font-size:0.9rem;">${decodeURIComponent(comentarioCoded)}</div>`;
+            feedback.innerHTML = `<strong>✅ Gabarito: ${gabarito}</strong><hr style="margin:8px 0; border-color:rgba(0,0,0,0.1);"><div style="font-size:0.9rem;">${sanitizeText(decodeURIComponent(comentarioCoded))}</div>`;
             feedback.style.background = escolhida === gabarito ? "rgba(40, 167, 69, 0.1)" : "rgba(220, 53, 69, 0.1)";
             feedback.style.borderLeft = `4px solid ${escolhida === gabarito ? "#28a745" : "#dc3545"}`;
         };
 
         // 4.2 Tela Cheia do Flashcard
         window.abrirFlashcardTelaCheiaMentor = function(fCoded, vCoded) {
-            let f = decodeURIComponent(fCoded);
-            let v = decodeURIComponent(vCoded);
+            if (fCoded && fCoded.dataset) { const el = fCoded.closest('.pruma-flashcard-inline'); fCoded = el.dataset.f; vCoded = el.dataset.v; }
+            let f = sanitizeText(decodeURIComponent(fCoded || ''));
+            let v = sanitizeText(decodeURIComponent(vCoded || ''));
             let modal = document.createElement('div');
             modal.style.cssText = 'position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.95); z-index:99999; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:20px;';
             
@@ -3608,19 +3616,20 @@ Pergunta: "${perguntaUsuario}"`;
                 let markdownCru = `${enunciado}\n\n${opts.map(o => o.letra + ") " + o.texto).join('\n')}\n\nGabarito: ${gabarito}\nComentário: ${comentario}`;
                 let encodedRaw = encodeURIComponent(markdownCru);
 
-                let htmlOpts = opts.map(o => `<button class="btn-outline m-opt" style="text-align:left; padding:10px; border-radius:8px; margin-bottom:6px; width:100%; font-size:0.9rem; transition:0.3s;" onclick="validarQMentor(this, '${o.letra}', '${gabarito}', '${encodeURIComponent(marked.parse(comentario))}')"><b>${o.letra})</b> ${o.texto}</button>`).join('');
+                let htmlOpts = opts.map(o => `<button class="btn-outline m-opt" style="text-align:left; padding:10px; border-radius:8px; margin-bottom:6px; width:100%; font-size:0.9rem; transition:0.3s;" data-letra="${o.letra}" onclick="validarQMentor(this)"><b>${o.letra})</b> ${sanitizeText(marked.parseInline(o.texto))}</button>`).join('');
 
-                let id = `__PRUMA_Q_${counter++}__`;
+                // Marcador sem "_" nem "*", para o Markdown não transformá-lo em negrito/itálico
+                let id = `PRUMAFRAGQ${counter++}FIM`;
                 fragments[id] = `
-                    <div class="pruma-q-inline" style="background:var(--bg-body); border:1px solid var(--border-color); padding:15px; border-radius:12px; margin:15px 0;">
-                        <div style="margin-bottom:15px; font-weight:500;">${marked.parse(enunciado)}</div>
+                    <div class="pruma-q-inline" data-gab="${gabarito}" data-coment="${encodeURIComponent(sanitizeText(marked.parse(comentario)))}" data-raw="${encodedRaw}" style="background:var(--bg-body); border:1px solid var(--border-color); padding:15px; border-radius:12px; margin:15px 0;">
+                        <div style="margin-bottom:15px; font-weight:500;">${sanitizeText(marked.parse(enunciado))}</div>
                         <div style="display:flex; flex-direction:column;">${htmlOpts}</div>
                         <div class="q-feedback" style="display:none; margin-top:10px; padding:12px; border-radius:8px;"></div>
                         <div style="margin-top:15px; text-align:right;">
-                            <button class="btn-primary" style="font-size:0.8rem; padding:6px 12px; width:auto;" onclick="abrirModalEnviarCaderno(decodeURIComponent('${encodedRaw}'), this, 'Tutor IA', 'Questão', false)">📚 Salvar no Caderno</button>
+                            <button class="btn-primary" style="font-size:0.8rem; padding:6px 12px; width:auto;" onclick="abrirModalEnviarCaderno(decodeURIComponent(this.closest('.pruma-q-inline').dataset.raw), this, 'Tutor IA', 'Questão', false)">📚 Salvar no Caderno</button>
                         </div>
                     </div>`;
-                return id;
+                return `\n\n${id}\n\n`;
             });
 
             // 2. Construtor visual de flashcards
@@ -3633,24 +3642,25 @@ Pergunta: "${perguntaUsuario}"`;
                 let markdownCru = `${frente}\n\nVERSO:\n${verso}`;
                 let encodedF = encodeURIComponent(frente); let encodedV = encodeURIComponent(verso);
 
-                let id = `__PRUMA_F_${counter++}__`;
+                let id = `PRUMAFRAGF${counter++}FIM`;
                 fragments[id] = `
-                    <div class="pruma-flashcard-inline" style="background:var(--bg-body); border:1px dashed var(--brand-warning); padding:12px 15px; border-radius:12px; margin:15px 0; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+                    <div class="pruma-flashcard-inline" data-f="${encodedF}" data-v="${encodedV}" data-raw="${encodeURIComponent(markdownCru)}" style="background:var(--bg-body); border:1px dashed var(--brand-warning); padding:12px 15px; border-radius:12px; margin:15px 0; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
                         <div style="font-weight:600; font-size:0.9rem; flex:1; min-width:150px;">🗂️ Flashcard IA<br><span style="font-size:0.75rem; font-weight:400; opacity:0.8;">${sanitizeText(frente.substring(0, 30))}...</span></div>
                         <div style="display:flex; gap:8px;">
-                            <button class="btn-outline" style="font-size:0.8rem; padding:6px 10px; width:auto;" onclick="abrirFlashcardTelaCheiaMentor('${encodedF}', '${encodedV}')">🔄 Treinar</button>
-                            <button class="btn-primary" style="font-size:0.8rem; padding:6px 10px; width:auto; background:var(--brand-warning); border:none; color:#000;" onclick="abrirModalEnviarFlashcard(decodeURIComponent('${encodeURIComponent(markdownCru)}'), this, 'Flashcards IA', 'Geral')">⚡ Salvar</button>
+                            <button class="btn-outline" style="font-size:0.8rem; padding:6px 10px; width:auto;" onclick="abrirFlashcardTelaCheiaMentor(this)">🔄 Treinar</button>
+                            <button class="btn-primary" style="font-size:0.8rem; padding:6px 10px; width:auto; background:var(--brand-warning); border:none; color:#000;" onclick="abrirModalEnviarFlashcard(decodeURIComponent(this.closest('.pruma-flashcard-inline').dataset.raw), this, 'Flashcards IA', 'Geral')">⚡ Salvar</button>
                         </div>
                     </div>`;
-                return id;
+                return `\n\n${id}\n\n`;
             });
 
             // Transforma o texto restante em HTML (Markdown padrão)
             let htmlFinal = sanitizeText(marked.parse(textoPreProcessado));
 
             // Reinjeta os componentes interativos no HTML final
+            // (função no replace: evita que "$&", "$'" etc. no texto da IA sejam interpretados)
             for (let id in fragments) {
-                htmlFinal = htmlFinal.replace(id, fragments[id]);
+                htmlFinal = htmlFinal.replace(`<p>${id}</p>`, () => fragments[id]).replace(id, () => fragments[id]);
             }
 
             let textoPuroParaCaderno = encodeURIComponent(respostaAgente);
